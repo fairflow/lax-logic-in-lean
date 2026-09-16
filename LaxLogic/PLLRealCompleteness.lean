@@ -43,7 +43,7 @@ is underivable, some finite checked model, decorated with token evidence
 over the table algebra, realises every hypothesis at its refuting world
 while `C` is unrealisable there. -/
 theorem realP_countermodel_of_underivable {Γ : List PLLFormula}
-    {C : PLLFormula} (h : ¬ Nonempty (LaxND Γ C)) :
+    {C : PLLFormula} (h : Γ ⊬ C) :
     ∃ (M : FinCM) (w : Nat) (hwf : M.WellFormed) (hlt : w < M.n),
       (∀ ψ ∈ Γ, ∃ x,
         x ⊩ᵖ[tokenEvidence tblPca M hwf tok₀, tblκ, ⟨w, hlt⟩] ψ) ∧

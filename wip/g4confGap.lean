@@ -173,7 +173,7 @@ theorem derivU_gapSeq : ConfluentU.DerivU gapSeq (prop "p") :=
           (.laxR (.init (by decide))) (.init (by decide))))))
 
 /-- `S` is not PLL-derivable: the five-world `∀∃`-countermodel. -/
-theorem pll_not_gapSeq : ¬ Nonempty (LaxND gapSeq (prop "p")) :=
+theorem pll_not_gapSeq : gapSeq ⊬ prop "p" :=
   FinCM.not_provable_of_check
     (M := ⟨5, [(0, 1), (0, 2), (1, 3), (2, 4), (0, 3), (0, 4)],
       [(1, 3), (2, 4), (0, 3)], [],

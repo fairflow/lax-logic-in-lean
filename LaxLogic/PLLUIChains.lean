@@ -35,7 +35,7 @@ namespace UIChains
 then `φ` has no least `P`-consequence — no post-interpolant. -/
 theorem no_least_consequence (P : PLLFormula → Prop) (D : Nat → PLLFormula)
     (hP : ∀ n, P (D n))
-    (hstrict : ∀ n, ¬ Deriv [D n] (D (n + 1)))
+    (hstrict : ∀ n, [D n] ⊬ D (n + 1))
     (φ : PLLFormula)
     (hbelow : ∀ n, Deriv [φ] (D n))
     (htrap : ∀ ψ, P ψ → Deriv [φ] ψ → ∃ n, Deriv [D n] ψ) :
@@ -51,7 +51,7 @@ theorem no_least_consequence (P : PLLFormula → Prop) (D : Nat → PLLFormula)
 `φ`, then `φ` has no greatest `P`-antecedent — no pre-interpolant. -/
 theorem no_greatest_antecedent (P : PLLFormula → Prop) (A : Nat → PLLFormula)
     (hP : ∀ n, P (A n))
-    (hstrict : ∀ n, ¬ Deriv [A (n + 1)] (A n))
+    (hstrict : ∀ n, [A (n + 1)] ⊬ A n)
     (φ : PLLFormula)
     (habove : ∀ n, Deriv [A n] φ)
     (htrap : ∀ ψ, P ψ → Deriv [ψ] φ → ∃ n, Deriv [ψ] (A n)) :

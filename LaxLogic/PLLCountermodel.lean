@@ -31,7 +31,7 @@ namespace PLLND
 constraint model refutes it at a world.  (Contrapositive of the finite model
 property.) -/
 theorem not_provable_iff_exists_finite_countermodel {φ : PLLFormula} :
-    ¬ Nonempty (LaxND [] φ) ↔
+    [] ⊬ φ ↔
       ∃ C : ConstraintModel, Finite C.W ∧ ∃ w : C.W, ¬ C.force w φ := by
   constructor
   · intro hnp
@@ -47,7 +47,7 @@ theorem not_provable_iff_exists_finite_countermodel {φ : PLLFormula} :
 /-- The refuting world does force the (empty) hypotheses vacuously — recorded so
 the statement reads as a genuine countermodel to the sequent `⊢ φ`. -/
 theorem not_provable_iff_exists_finite_countermodel' {φ : PLLFormula} :
-    ¬ Nonempty (LaxND [] φ) ↔
+    [] ⊬ φ ↔
       ∃ C : ConstraintModel, Finite C.W ∧ ∃ w : C.W,
         (∀ ψ ∈ ([] : List PLLFormula), C.force w ψ) ∧ ¬ C.force w φ := by
   rw [not_provable_iff_exists_finite_countermodel]

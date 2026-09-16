@@ -1,4 +1,8 @@
 import LaxLogic.PLLFormula
+-- Explicit since 2026-09-04: `Std.HashMap` is in Lean core and stopped
+-- arriving transitively when the foundation modules dropped their
+-- blanket Mathlib re-export.
+import Std.Data.HashMap
 
 /-!
 # CoverConj probe: is the `p`-valuation replaceable by a variable-free one?

@@ -1,0 +1,1103 @@
+\documentclass[11pt,a4paper]{article}
+\input{preamble}
+
+\title{A Forward Refutation Calculus for Intuitionistic Logic,\\
+       Mechanised --- and the First Step Toward the Lax Modality}
+\author{Matthew Fairtlough \quad (with Claude Opus 5)}
+\date{16 August 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This is a record of a mechanisation, in Lean 4, of Fiorentini and
+Ferrari's forward refutation calculus \textbf{FRJ}$(G)$ for intuitionistic
+propositional logic, and of the first step of its extension with the lax
+modality~$\bigcirc$ of Propositional Lax Logic. The mechanised base is
+sorry-free and choice-free: soundness, completeness and the biconditional
+between refutability and the existence of a countermodel are all proved,
+the completeness proof \emph{computes} a refutation from a countermodel,
+and the only appeal to classical logic in the whole development is
+isolated in one statement, where it is a property of the statement and not
+of the proof. The extension step adds the modality to the syntax and to
+the semantics while leaving every result about the modality-free fragment
+intact; two things the build discovered along the way are recorded as
+findings, one of them a correction to the plan the extension was following.
+All Lean code appears in Appendix~\ref{app:code}, and the exposition
+quotes from it throughout.
+\end{abstract}
+
+\tableofcontents
+
+%% ==================================================================
+\section{Provenance, and what is borrowed}
+\label{sec:prov}
+
+The calculus is due to Camillo Fiorentini and Mauro Ferrari, \emph{Duality
+between Unprovability and Provability in Forward Refutation-search for
+IPL}, ACM Transactions on Computational Logic 21(3), Article 22, 2020.
+\textbf{The definitions, the rule table, the statements of the numbered
+results and the structure of their proofs are theirs}; wording is borrowed
+from that article throughout, and where a definition or a proof outline
+below reads like the original that is because it is the original,
+transcribed. What is ours is the mechanisation, the divergences recorded
+as divergences, and everything from \S\ref{sec:w1} onward.
+
+Two texts carry this calculus and they are not the same text. The
+mechanisation was transcribed from the \LaTeX{} source of
+arXiv:1804.06689, and cross-read against the published article. Inside the
+material formalised here the published version
+
+\begin{itemize}
+\item adds a lemma, that every member of the stable set of a derivable
+  irregular sequent is smaller than the sequent's right formula, whose
+  proof uses one of the refutation-search restrictions;
+\item states part (ii) of the key soundness lemma with the hypothesis
+  ``the p-sequent forces the whole stable set'' along a restricted
+  reachability relation, where the arXiv text has ``forces the stable set
+  intersected with the proper subformulas of the goal'' along the plain
+  one;
+\item swaps the numbering of two properties inside the join case, renames
+  the search restrictions, and moves the height bounds to a later section.
+\end{itemize}
+
+The arXiv form of part (ii) is the \emph{stronger} statement --- weaker
+hypothesis, larger range of quantification --- and it needs none of the
+search restrictions, so it is the one mechanised. Numbering below is the
+published article's. The correspondence, established by reading both:
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Result & journal & arXiv preprint\\
+\hline
+Soundness of the calculus & Theorem 3.1 & Theorem 1\\
+Left formulas along the step relation & Lemma 3.5 & Lemma 1\\
+The key soundness lemma & Lemma 3.10 & Lemma 2\\
+The extracted model is a countermodel & Theorem 3.12 & Theorem 2\\
+Rank equals extracted height & Lemma 6.2 & Lemma 13\\
+The completeness construction & Lemma 6.3 & Lemma 14\\
+Minimal-height refutation & Theorem 6.4 & Theorem 11\\
+The closure of the determining part & Lemma 6.7 & Lemma 15\\
+Completeness & Theorem 5.13(i) & Theorem 10\\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Notation.} The article writes the two zones of an irregular
+sequent with Greek capitals that Lean reserves. Throughout this paper and
+the development they are written \texttt{St} (the \emph{stable} set, the
+article's own word for it) and \texttt{Th}. Contexts of regular sequents
+keep the letter $\Gamma$.
+
+%% ==================================================================
+\section{Why a refutation calculus}
+\label{sec:why}
+
+Under the standing discipline of this project a claim is \textsc{proved}
+only when it is machine-checked, and otherwise \textsc{refuted} --- by a
+kernel-checked countermodel --- or \textsc{open}. If a refutation costs
+orders of magnitude more than a proof, every campaign accumulates open
+cells it cannot afford to settle. The existing decision procedure for
+Propositional Lax Logic gives an effective \emph{proof} procedure but an
+exhaustive generate-and-test \emph{disproof} procedure. A refutation
+calculus reads a countermodel off a derivation directly, which is what
+makes disproof as cheap as proof.
+
+FRJ$(G)$ is that calculus for intuitionistic logic, and it has two
+properties that make it the right base. It is \emph{forward}: derivations
+are built from axioms upward, over a finite set of sequents fixed by the
+goal formula~$G$, so termination is structural. And its soundness is a
+\emph{model construction}: a derivation is not merely a certificate that a
+countermodel exists, it \emph{is} one, once read correctly.
+
+%% ==================================================================
+\section{Preliminaries}
+\label{sec:prelim}
+
+\subsection{Language}
+
+The language has propositional variables, the connectives $\land$, $\lor$,
+$\supset$ and the constant $\bot$; negation is defined. To it we add the
+unary modality $\bigcirc$, present in the syntax from the start of
+\S\ref{sec:w1} and mentioned by no rule.
+
+\begin{lstlisting}
+inductive Form where
+  | atom : String → Form
+  | bot : Form
+  | and : Form → Form → Form
+  | or : Form → Form → Form
+  | imp : Form → Form → Form
+  | circ : Form → Form
+  deriving DecidableEq, Repr
+\end{lstlisting}
+
+\noindent
+The full text is Appendix~\ref{app:basic}. The size of a formula is its
+number of symbols; the modality contributes one.
+
+\subsection{Left and right subformulas}
+
+The calculus is goal-directed: every formula occurring in a sequent is a
+subformula of $G$, and \emph{which side} of a sequent it may occur on is
+fixed by the polarity of its occurrence in $G$. The article defines the
+sets of left and right subformulas as the smallest subsets of the
+subformulas of $G$ closed under: $G$ is a right subformula; a conjunction
+or disjunction passes its polarity to both components; an implication in
+left position puts its consequent left and its antecedent right, and
+dually. The modality passes its polarity to its argument, like conjunction
+and disjunction and unlike implication --- forced, since $\bigcirc$ is
+monotone in its argument.
+
+Rather than define the two sets inductively and then compute them, the
+development computes them by a mutual recursion, and \emph{proves} the
+article's closure clauses of the computed pair. That proof is the fidelity
+check on the definition:
+
+\begin{lstlisting}
+structure SfClosed (R L : List Form) : Prop where
+  rAnd : ∀ {A B : Form}, Form.and A B ∈ R → A ∈ R ∧ B ∈ R
+  rOr  : ∀ {A B : Form}, Form.or A B ∈ R → A ∈ R ∧ B ∈ R
+  rImp : ∀ {A B : Form}, Form.imp A B ∈ R → A ∈ L ∧ B ∈ R
+  rCirc : ∀ {A : Form}, Form.circ A ∈ R → A ∈ R
+  lAnd : ∀ {A B : Form}, Form.and A B ∈ L → A ∈ L ∧ B ∈ L
+  lOr  : ∀ {A B : Form}, Form.or A B ∈ L → A ∈ L ∧ B ∈ L
+  lImp : ∀ {A B : Form}, Form.imp A B ∈ L → A ∈ R ∧ B ∈ L
+  lCirc : ∀ {A : Form}, Form.circ A ∈ L → A ∈ L
+\end{lstlisting}
+
+\subsection{Models and forcing}
+
+A model is a finite poset with a minimum and a monotone valuation. Two
+divergences from the article, both deliberate and both recorded in the
+source (Appendix~\ref{app:basic}).
+
+First, finiteness is carried as a \emph{constructive enumeration} ---~a
+list of all worlds together with a proof that it is complete, plus
+decidable equality, order and valuation~--- rather than as a finiteness
+\emph{property}. The reason is not aesthetic: eliminating a finiteness
+property into data requires a choice principle, and the development is
+choice-free. The payoff is immediate: forcing becomes a
+\emph{decision procedure}, not merely a proposition.
+
+Second, the clause for implication is written as an implication rather
+than as the article's disjunction ``$\beta \nVdash A$ or $\beta \Vdash
+B$''; writing the disjunction would put excluded middle into the
+definition itself.
+
+\begin{lstlisting}
+def force (K : Kripke) : K.W → Form → Prop
+  | _, .bot => False
+  | a, .atom p => K.V a p
+  | a, .and A B => force K a A ∧ force K a B
+  | a, .or A B => force K a A ∨ force K a B
+  | a, .imp A B => ∀ b, K.le a b → force K b A → force K b B
+  | a, .circ A => ∀ b, K.le a b → ∃ c, K.Rm b c ∧ force K c A
+\end{lstlisting}
+
+\noindent
+The last clause and the relation \texttt{Rm} it consults are the subject
+of \S\ref{sec:w1}; the five above it are the article's.
+
+\subsection{The closure}
+
+The single most important auxiliary notion is the \emph{closure} of a set
+of formulas, generated by the grammar
+\[
+X \;::=\; C \mid X \land X \mid A \lor X \mid X \lor A \mid A \supset X
+\qquad (C \in \Gamma,\ A \text{ any formula}).
+\]
+It is the set of formulas that a world forces \emph{merely because} it
+forces $\Gamma$, and it is what allows the calculus to have no left rules
+at all: conjunction and disjunction on the left are absorbed into it. Six
+properties are proved (Appendix~\ref{app:basic}); the first, that forcing
+$\Gamma$ implies forcing its closure, is the one the rules consume, and
+the fifth, that the closure adds no new propositional variable, is what
+makes the valuation of the extracted model well defined.
+
+Note where the modality is \emph{not}: the grammar has no clause for it.
+That absence is deliberate and is discussed in
+Finding~\ref{find:zone}.
+
+%% ==================================================================
+\section{The calculus}
+\label{sec:calc}
+
+\subsection{Sequents}
+
+There are two kinds. A \emph{regular} sequent $\Gamma \Rightarrow C$ is
+read ``some world forces $\Gamma$ and refutes $C$''. An \emph{irregular}
+sequent $\texttt{St} ; \texttt{Th} \to C$ carries two zones: the stable
+set, which must be preserved when the sequent is used, and a second zone
+some of whose members may be lost. Contexts are drawn from
+\[
+\hat G \;=\; \hat G_{\mathrm{at}} \cup \hat G_{\supset},
+\]
+the propositional variables and the implications among the left
+subformulas of $G$ --- and the fact that these two exhaust the possible
+context members is exactly what conjunction and disjunction being absorbed
+by the closure buys.
+
+\subsection{The rules}
+
+Two axioms, right-introduction rules for the three connectives, and two
+\emph{join} rules; there are no left rules. The two joins are the only way
+to obtain a regular sequent from irregular ones, and they are where the
+countermodel grows: the conclusion of a join corresponds to a \emph{new
+world}, lying below the worlds of its premises.
+
+The join rules take $n \geq 1$ irregular premises. Writing the zones of
+the $j$-th premise split into their atomic and implicational parts, the
+conclusion keeps the union of the stable atomic parts, the intersection of
+the second zones' atomic parts, the union of the stable implicational
+parts, and the intersection of the second zones' implicational parts
+\emph{restricted} to those implications whose antecedent is the right
+formula of some premise. Two side conditions govern them: each premise's
+stable set is contained in the union of every other premise's two zones,
+and every implication in a stable set is \emph{supported}, meaning its
+antecedent is the right formula of some premise.
+
+The support condition is the heart of the calculus and deserves a
+sentence of semantics. The new world must force the implications kept in
+its context. An implication is forced at a world when its antecedent fails
+there; support arranges exactly that, by making the antecedent the goal of
+a premise, and the goal of a premise is what fails at the new world.
+
+The Lean rule table is Appendix~\ref{app:calculus}. Each constructor
+carries every side condition as a field, and the figure's blanket
+condition, that the right formula of every conclusion is a right
+subformula of $G$, is a field on every constructor.
+
+\subsection{Canonical contexts}
+\label{sec:nf}
+
+One design point in the mechanisation has no counterpart in the article
+and is worth stating because it is load-bearing.
+
+Contexts denote sets. On the article's finite sets, the split of a zone as
+$\texttt{Th} \cup \Lambda$ demanded by the irregular implication rule is a
+literal equality. On lists it is not: concatenation is neither commutative
+nor idempotent. Nor can one transport along ``same members'', because
+\emph{same members does not imply same derivations} --- the irregular
+axiom pins its own zone. The resolution is a change of carrier, not of
+calculus: represent every computed context canonically, as the members of
+$\hat G$ lying in it.
+
+\begin{lstlisting}
+def nf (G : Form) (l : List Form) : List Form :=
+  (gHat G).filter (fun x => decide (x ∈ l))
+
+theorem nf_ext {G : Form} {l m : List Form}
+    (h : ∀ x, x ∈ gHat G → (x ∈ l ↔ x ∈ m)) : nf G l = nf G m
+\end{lstlisting}
+
+\noindent
+Two contexts with the same members inside $\hat G$ are then \emph{literally
+the same list}: the property that concatenation lacks and finite sets had.
+This is legitimate exactly because every context of a derivable sequent is
+a subset of $\hat G$ --- a lemma, proved in Appendix~\ref{app:step} ---
+and because every side condition in the rule table is membership-based.
+
+%% ==================================================================
+\section{Soundness}
+\label{sec:sound}
+
+Soundness is the statement that a refutation of $G$ yields a countermodel
+for $G$, and its proof is a construction.
+
+\subsection{The step relation}
+
+Write $\sigma_1 \mapsto_0 \sigma_2$ when $\sigma_2$ is the conclusion of a
+rule and $\sigma_1$ one of its premises, and $\mapsto$ for the transitive
+closure. The first lemma controls how the left formulas move along it.
+
+\begin{lemma}[Lemma 3.5]
+\label{lem:lhs}
+If $\sigma_1 \mapsto_0 \sigma_2$ by a rule other than the
+implication-not-in rule then the left formulas of $\sigma_2$ are among
+those of $\sigma_1$; in general they lie in the closure of those of
+$\sigma_1$; and the same holds along the transitive closure.
+\end{lemma}
+
+This is the lemma that makes the extracted model's valuation monotone, via
+the closure property that no new variable is created.
+
+\subsection{The extracted model}
+
+Call a regular sequent of a derivation a \emph{p-sequent} when it is an
+axiom or the conclusion of a join. The worlds of the extracted model are
+the p-sequents; one lies below another when the second reaches the first
+by the step relation; and the valuation of a world is the set of
+propositional variables among its left formulas.
+
+The mechanisation builds this in pieces rather than all at once, because
+the recursion on derivations is what produces it. The key construction
+places a fresh root below the disjoint union of a family of models:
+
+\begin{lstlisting}
+def addRoot {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe)
+    (V₀ : List Form) (M : ι → Kripke)
+    (hV : ∀ (i : ι) (p : String), Form.atom p ∈ V₀ → (M i).V (M i).root p) :
+    Kripke where ...
+\end{lstlisting}
+
+\noindent
+and the lemma that makes working in pieces legitimate is that forcing is
+unchanged at a component world (Appendix~\ref{app:model}). This is not a
+reformulation of the article's model: a join's conclusion is a fresh
+p-sequent lying below exactly the p-sequents of its premises, and every
+p-sequent has a unique p-sequent immediately below it, so the article's
+order \emph{is} computed by this placement.
+
+\subsection{The key lemma}
+
+\begin{lemma}[Lemma 3.10]
+\label{lem:key}
+For every sequent occurring in a refutation:
+(i) if it is regular, the p-sequent immediately above it forces its
+context and refutes its goal;
+(ii) if it is irregular, then any p-sequent it reaches which forces its
+stable set intersected with the proper subformulas of its goal refutes
+that goal.
+\end{lemma}
+
+The proof is a main induction on the height of the sequent in the
+derivation, by cases on the last rule. The join case carries a
+\emph{secondary} induction, on the size of a formula, proving two things
+simultaneously: that every implication kept in the conclusion is forced at
+the new world, and that the right formula of every premise fails there.
+The two feed each other --- the first at an implication calls the second
+at its antecedent, and the second calls the first at the members of a
+stable set that are proper subformulas of the goal --- and it is the
+strict decrease of size that makes the mutual call well founded. This is
+the only place in the development where the article's proof has real
+depth, and the mechanisation follows it step for step; the article's own
+proof is in its appendix and was read there.
+
+\begin{theorem}[Theorems 3.12 and 3.1]
+The extracted model is a countermodel for $G$; hence if $G$ is refutable
+then $G$ is not valid.
+\end{theorem}
+
+%% ==================================================================
+\section{Completeness}
+\label{sec:complete}
+
+The article proves completeness twice: once in the main text, as a
+corollary of a duality with a second calculus and the correctness of a
+search procedure, and once in its minimality section, directly, by a
+construction on an arbitrary countermodel. The second route is
+mechanised. It is equally published, it is a fraction of the work, and ---
+decisively --- it \emph{computes}.
+
+\subsection{The determining part}
+
+Fix a countermodel and a world $\alpha$. Say that $\alpha$ forces a
+formula \emph{determinately} when it forces it and, in the case of an
+implication, fails its antecedent. The \emph{determining part} at $\alpha$
+is the set of left subformulas of $G$ determinately forced there. The
+point of it is:
+
+\begin{lemma}[Lemma 6.7, in the two directions actually used]
+\label{lem:det}
+Everything in the determining part is forced at $\alpha$; and every left
+subformula of $G$ forced at $\alpha$ lies in the closure of the
+determining part.
+\end{lemma}
+
+\begin{remark}
+The article states this as a chain of set equalities, and taken literally
+the first of them is false: the closure grammar lets its implication
+clause range over \emph{all} antecedents, so the closure of the
+determining part contains implications that need not be left subformulas
+of $G$. The proof also has a step that silently needs a conjunction to be
+a left subformula. The two directions the construction actually uses are
+true, and are what is proved. This divergence is recorded in the
+development's fidelity table.
+\end{remark}
+
+\subsection{The construction}
+
+\begin{lemma}[Lemma 6.3]
+\label{lem:minmod}
+For every world $\alpha$ and every right subformula $C$ of $G$ not forced
+at $\alpha$ there are: an irregular refutation whose stable set lies
+between the determining part and its union with the second zone; and a
+regular refutation whose context contains the determining part of some
+world above $\alpha$.
+\end{lemma}
+
+The proof is a triple induction --- on the height of the world, then on
+the kind of sequent with irregular before regular, then on the size of the
+goal --- and in the mechanisation it is a \emph{function}, returning the
+refutation, because extracting a refutation from an existence statement
+needs a choice principle. That is the whole point:
+
+\begin{lstlisting}
+def completenessData {G : Form} (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
+    (K : Kripke) (hK : ¬ K.valid G) : Derivation G :=
+  let w := minMod K G hcf K.root 1 G (sfR_self G) hK
+  ⟨w.ctx, w.der⟩
+\end{lstlisting}
+
+\noindent
+an algorithm from countermodel to refutation. The side condition
+\texttt{hcf} is the subject of \S\ref{sec:w1}; on a modality-free goal it
+holds automatically, and before \S\ref{sec:w1} it was not there at all.
+
+\subsection{Two simplifications}
+
+The article's construction carries rank bounds, which serve its
+minimal-height theorem and are not needed for completeness; and it obeys
+four refutation-search restrictions, which exist to shrink the search
+space. Both are dropped. Dropping restrictions can only make soundness
+\emph{stronger} --- more derivations to be sound about --- and costs
+completeness nothing, because the construction happens to satisfy them
+anyway.
+
+%% ==================================================================
+\section{Choice, and where it is unavoidable}
+\label{sec:choice}
+
+The development is choice-free, and this was not free. Two sources had to
+be removed. The finite-set library of the ambient mathematical library
+reports a choice axiom at the level of \emph{definitions}: union, deletion
+and image all do, so a term that merely mentions them carries choice
+however it is proved. The list operations do not. And one automation
+tactic reasons classically. So: lists throughout, shape predicates as
+booleans, a constructive enumeration in place of a finiteness property,
+and explicit proofs where the tactic was used.
+
+What remains is a genuine divergence, and it is a property of a
+\emph{statement}. The passage from ``not every model validates $G$'' to
+``some model refutes $G$'' is not constructively valid. The development
+therefore states the biconditional twice:
+
+\begin{lstlisting}
+theorem frj_iff_countermodel (G : Form) (hcf : ...) :
+    Provable G ↔ ∃ K : Kripke, ¬ K.valid G          -- choice-free
+
+theorem frj_iff_not_IPL (G : Form) (hcf : ...) :
+    Provable G ↔ ¬ IPL G                            -- the article's
+\end{lstlisting}
+
+\noindent
+and the second is the only place in the whole development where a choice
+axiom appears. The axiom audit (Appendix~\ref{app:audit}) pins this, and
+every pin is guarded so that a regression is a build failure rather than a
+discovery months later.
+
+\textbf{Consequence for anything modal}: results about the modality belong
+on the countermodel side of that line.
+
+%% ==================================================================
+\section{The modality: the first step}
+\label{sec:w1}
+
+The extension is staged. The first stage adds the modality to the syntax
+and to the semantics, adds no rule, and requires that every
+modality-free result still holds. The point of doing it this way is that
+the eight modules then say, by breaking or not breaking, exactly which
+proofs are modality-sensitive.
+
+\subsection{What was added}
+
+The formula constructor, its clauses in size, subformulas and polarity;
+a second accessibility relation on models, a preorder contained in the
+first; the forcing clause
+\[
+K,\alpha \Vdash \bigcirc A \quad\text{iff}\quad
+\text{for every } \beta \geq \alpha \text{ there is } \gamma
+\text{ with } \texttt{Rm}\,\beta\,\gamma \text{ and } K,\gamma \Vdash A,
+\]
+and the corresponding clause of the decision procedure for forcing, so
+that forcing stays decidable --- with no axioms at all. The universal
+quantifier over $\beta$ is what makes the modality monotone without any
+interaction axiom between the two frames.
+
+The result: \texttt{lake build FRJ} is green, and the axiom audit file is
+\emph{untouched} --- every pin still passes.
+
+\subsection{Two findings}
+
+\begin{finding}[The fresh-root construction needs its own modal relation]
+\label{find:arrm}
+The obvious choice, taking the modal relation of the assembled model to be
+its order, makes the component-preservation lemma \textbf{false} for the
+modality: at a component world the modal clause would then quantify over
+the component's \emph{order}-successors, where the component itself
+quantifies over its own modal successors. The assembled model must
+therefore carry a separate inductive relation which keeps each component's
+modal relation and lets the fresh root see everything modally.
+\end{finding}
+
+\begin{lstlisting}
+inductive ARRm {ι : Type} (M : ι → Kripke) :
+    Option ((i : ι) × (M i).W) → Option ((i : ι) × (M i).W) → Prop
+  | root (x) : ARRm M none x
+  | comp {i a b} : (M i).Rm a b → ARRm M (some ⟨i, a⟩) (some ⟨i, b⟩)
+\end{lstlisting}
+
+\begin{finding}[The third zone cannot precede the rules]
+\label{find:zone}
+The modality needs a third context zone. Semantically: the closure absorbs
+conjunction and disjunction on the left, which is why two zones are
+exhaustive for intuitionistic logic, and it absorbs the modality no
+better than it absorbs implication, since $\bigcirc A$ can be forced where
+$A$ is not, exactly as $A \supset B$ can be forced where $B$ is not.
+Empirically, from an earlier screen over 156 cells: with the determining
+part taken to be variables, falsehood and implications there are 32
+certified failures; adding the modal formulas gives none.
+
+\emph{Nevertheless the third zone cannot be added at this stage}, and the
+build is what showed it. With a third zone present, the side condition of
+the implication-not-in rule admits a modal formula into a zone; the
+irregular implication rule can then shift it into a stable set; and the
+join rules, which keep only the atomic and implicational parts, silently
+\emph{drop} it --- breaking the condition that the join case of
+Lemma~\ref{lem:key} has to verify. The third zone, the modal clause of the
+closure and the modal clause of the determining part are therefore
+\emph{one change together with the rules}, not a change before them.
+\end{finding}
+
+\subsection{The asymmetry}
+
+Soundness came through the extension \textbf{unchanged}: it needs no side
+condition, because it never asks what determines a world. Completeness
+gained one --- that every subformula of the goal is modality-free ---
+threaded from Lemma~\ref{lem:det} through the construction to
+\texttt{completenessData} and the two biconditionals. That is the honest
+statement of what the modality-free theory proves: it is a theory of
+modality-free goals, and the determining part is where the modality first
+bites.
+
+%% ==================================================================
+\section{The modal rules: screens, and the design}
+\label{sec:rules}
+
+The rules are new mathematics: the calculus has a published source, its
+modal extension does not. They are therefore screened before anything is
+proved about them, and the screens are part of the library
+(Appendix~\ref{app:modallean}): five semantic obligations proved with no
+axioms, and every cell settled by the decision procedure for forcing.
+
+\subsection{The difficulty, in one sentence}
+
+For implication the obligation at a new world is \emph{negative} --- the
+antecedent fails there, so the implication holds vacuously --- which is
+all the support condition has to arrange, by naming the antecedent as some
+premise's goal. For the modality the obligation is \emph{positive}: a
+modal witness must exist, and nothing in the calculus's data supplies one.
+
+\begin{lstlisting}
+theorem circ_intro {w : K.W} {A : Form}
+    (wit : ∃ u, K.Rm w u ∧ K.force u A)
+    (above : ∀ v, K.le w v → v ≠ w → K.force v (.circ A)) :
+    K.force w (.circ A)
+
+theorem not_force_circ {w : K.W} {A : Form}
+    (h : ∀ u, K.Rm w u → ¬ K.force u A) : ¬ K.force w (.circ A)
+\end{lstlisting}
+
+\subsection{Three screens}
+
+\paragraph{The witness must be selective.} In the two-world model with the
+variable true only at the upper world and the modal relation equal to the
+order, the root forces $\bigcirc p$ and refutes $p$. So a rule must be able
+to build a world whose modal successor forces something the world itself
+does not.
+
+\paragraph{The witness is per-world.} In the three-world model with a root
+below two incomparable worlds carrying $p$ and $q$, the root forces
+$\bigcirc(p \lor q)$ while both $\bigcirc p$ and $\bigcirc q$ fail. So the
+modal data cannot be one promise fixed for the whole derivation: it
+belongs to the world a join creates. The same model refutes the
+distribution of the modality over disjunction.
+
+\paragraph{The witness cannot be an arbitrary context.} This screen is a
+refutation of a design rather than a model. The tempting rule declares
+``there is a world forcing $\Delta$'' for a context of its choosing. That
+is exactly the design refuted in the abandoned first attempt at this
+extension, whose world predicate constrained a zone only by membership in
+the universe, with no closure condition; three kernel-checked cells killed
+it. So a declared context carries a \emph{realisability} obligation, and
+realisability is not membership. The obligation is stated in the library
+and nothing proves it, which is the point.
+
+\subsection{The zones arrive with the rules}
+\label{sec:zones}
+
+Finding~\ref{find:zone} makes the following one \emph{atomic} change, each
+part of which is unsound without the others: the context universe gains
+its third zone; the closure gains a modal clause; the determining part
+gains modal formulas; the join rules gain a modal zone and its support
+condition; and the modal rules are added. Because canonical contexts are
+computed by filtering against the universe, the first part
+re-canonicalises \emph{every} context in the development --- which is the
+cost of the step, and the reason it must be done once rather than in
+pieces.
+
+\subsection{The rules}
+
+\paragraph{Regular modal introduction, gated by barrenness.}
+\[
+\frac{\Gamma \Rightarrow Z}{\Gamma \Rightarrow \bigcirc Z}
+\qquad \text{barren},\quad \bigcirc Z \in \mathrm{Sf}^{R}(G)
+\]
+where \emph{barren} says the world this refutation builds declared no
+modal successor. It is an index on the regular judgment, not a computed
+property: a function on the family cannot be defined while the family is.
+Obligation: \texttt{not\_force\_circ\_of\_no\_promise}, proved.
+
+\paragraph{The promise join.} A join carries one additional regular
+premise whose world becomes the modal successor of the new world, with
+three side conditions: every modal formula kept in the conclusion has its
+argument forced at the promise world; every modal formula kept is itself
+forced there; and the whole conclusion context is forced there.
+Obligation: \texttt{circ\_intro}, proved.
+
+\subsection{The decision the screens force}
+\label{sec:decision}
+
+The two positive screens do not settle the design between them. A world
+that forces everything witnesses every modal formula at once: enough for
+the first screen, not for the second, which needs two worlds with
+\emph{different} witnesses. Conversely the promise join alone cannot reach
+every countermodel, and the sharp instance is $\bigcirc p \supset p$.
+
+Its right subformulas are the goal and $p$, and contain no falsehood, so
+the only regular axiom is the one at $p$ and both axioms at $p$ delete it:
+no derivable regular context of this goal contains $p$, so no promise
+premise can force $p$. Semantically the reason is sharper. The
+countermodel needs a world forcing $p$; there the modality holds by its
+unit, hence so does the goal, and falsehood is not a right subformula ---
+so that world refutes \emph{nothing} available to the calculus, while
+every world of the extracted model is a p-sequent and refutes its own goal
+by construction.
+
+So the witness cannot be a p-sequent. Three ways out, and only one
+survives:
+
+\begin{center}
+\begin{tabular}{p{0.46\textwidth}p{0.44\textwidth}}
+\hline
+route & verdict\\
+\hline
+declare a context and assert a world forcing it &
+\textbf{refuted} by the third screen: needs realisability, which is not
+membership\\
+let the extracted model carry worlds that are not p-sequents, labelled by
+a context and refuting nothing &
+the same obligation in different clothing --- such a label must be
+realisable\\
+a \emph{fallible} world &
+no realisability obligation at all: a fallible world forces everything
+\emph{by construction}\\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+The recommendation is therefore fallible worlds, with two consequences to
+be accepted knowingly. The witness must cover the whole cone above the new
+world, so the fallible world has to be reachable by the modal relation
+\emph{from every world of that cone}, and no world of such a model is
+barren. And it changes the modality-free semantics: falsehood becomes
+forceable. The logic is unchanged, and soundness is unaffected because
+every model the calculus \emph{builds} can leave the fallible set empty
+unless a rule says otherwise; but completeness starts from an
+\emph{arbitrary} countermodel, which may now have fallible worlds, and the
+construction must handle them. That cost falls on the next stage, not this
+one.
+
+\begin{remark}[a correction]\label{rem:correction}
+An earlier draft of this section asserted that a model with a fallible
+maximum forces every modal formula everywhere. That is false, and the
+error is instructive. The modal clause quantifies over the whole cone
+above a world and asks for a modally accessible successor of \emph{each}
+world in it, and the modal relation is in general a \emph{proper}
+subrelation of the intuitionistic one. A fallible world may therefore sit
+above everything in the order and be modally invisible, in which case it
+contributes nothing. The two-world model \texttt{Screen.silent} of
+\S\ref{app:fallible} is the countermodel: worlds $w < f$ with $f$ fallible
+and the modal relation equality; the root refutes both $\bigcirc\bot$ and
+$\bigcirc p$, and \emph{validates} $\neg\bigcirc\bot$. What does the work
+in the construction of \S\ref{sec:w3} is the modal visibility of the
+fallible world, not its position in the order.
+\end{remark}
+
+%% ==================================================================
+\section{Fallible worlds, and the modal rule}
+\label{sec:w3}
+
+Fallible worlds were signed off, and this section is what they turned out
+to buy. The short version: the two constructions available pull in
+opposite directions, each reaches formulas the other cannot, and the gap
+between them is exactly the promise rule that is still missing.
+
+\subsection{The semantics}
+
+A model now carries a set of \emph{fallible} worlds --- the worlds at
+which falsehood holds --- inherited upwards along the order, at which
+every variable is true. The clause for falsehood becomes
+Fairtlough--Mendler's, that a world forces $\bot$ exactly when it is
+fallible, in place of the paper's clause that no world does.
+
+\begin{lemma}[\texttt{Kripke.fal\_force}]\label{lem:falforce}
+A fallible world forces every formula.
+\end{lemma}
+
+\noindent
+The induction is routine except at the modality, which is where the modal
+frame enters: a fallible world forces $\bigcirc A$ because the modal
+relation is reflexive, so the world is its own witness. The lemma depends
+on no axioms whatever.
+
+With fallibility present, validity splits in two. Write $\mathrm{IPL}$ for
+validity in the \emph{infallible} models --- these are the paper's models,
+so this is its own notion read in the extended language --- and
+$\mathrm{PLL}$ for validity in all constraint models. Every
+$\mathrm{PLL}$-valid formula is $\mathrm{IPL}$-valid, and the converse
+fails, as the next result shows.
+
+\subsection{Why the fallible worlds are not optional}
+
+\begin{lemma}[\texttt{valid\_neg\_circ\_bot\_of\_infallible}]
+Every infallible model validates $\neg\bigcirc\bot$.
+\end{lemma}
+
+\begin{proof}
+For a world to force $\bigcirc\bot$ it needs a modally accessible
+successor forcing $\bot$, that is, a fallible world.
+\end{proof}
+
+\begin{theorem}[\texttt{not\_provable\_neg\_circ\_bot}]\label{thm:incomplete}
+$\neg\bigcirc\bot$ is not provable in the calculus.
+\end{theorem}
+
+\begin{proof}
+Soundness concludes non-$\mathrm{IPL}$-validity, and
+$\neg\bigcirc\bot$ is $\mathrm{IPL}$-valid.
+\end{proof}
+
+This is an incompleteness, and it is not an accident of the rules written
+so far: it holds of \emph{every} extension of the calculus whose extracted
+models are infallible. Since $\neg\bigcirc\bot$ is not valid in the logic
+(\S\ref{sec:tworoutes}), fallible worlds are needed to reach it. The
+argument is due to Matthew Fairtlough; what is recorded here is its
+mechanisation.
+
+\subsection{The extracted model is barren, and the rule that follows}
+
+The packaging of an extracted model used to take the modal relation to be
+the order, which was free while no rule mentioned the modality. It now
+takes it to be \emph{equality}: every extracted world is \emph{barren},
+its only modal successor being itself. The consequence, proved as
+\texttt{toKripke\_force\_circ}, is that in every extracted model
+
+\[ \mathrm{Mod}(D),\alpha \Vdash \bigcirc A \quad\text{iff}\quad
+   \mathrm{Mod}(D),\alpha \Vdash A, \]
+
+so the modality is the \emph{identity} there. Both halves are used: left
+to right is the soundness of the new rule, right to left is the unit of
+the modality.
+
+The rule is
+\[
+\frac{\Gamma \Rightarrow Z}{\Gamma \Rightarrow \bigcirc Z}
+\qquad\text{with } \bigcirc Z \in Sf^{R}(G)
+\]
+with no side condition. The design discussion of \S\ref{sec:rules}
+proposed an index recording that the conclusion's world is barren; it is
+not needed, because barrenness is a property of the model
+\emph{construction} --- it holds at every world of every extracted model
+--- rather than something a derivation must track. It would be needed the
+moment a rule creates a modal successor.
+
+\begin{remark}[what is and is not committed in advance]
+The rule looks like a commitment: building a world with no modal
+successors in order to refute $\bigcirc Z$. Nothing is committed in
+advance. The calculus is \emph{forward}, so the rule consumes a refutation
+of $\Gamma \Rightarrow Z$ already in hand, and the premise's derivation is
+itself the certificate that a world forcing $\Gamma$ and refuting $Z$
+exists. What \emph{is} committed in advance is the uniform choice of
+equality for the modal relation, and that choice has a stated price: it
+makes the rule sound at every world with no bookkeeping, and it makes the
+modality the identity, so the model can never witness a modality
+non-trivially. In barren models a world refutes $\bigcirc A$ exactly when
+it refutes $A$, so the rule is invertible there --- exactly right for the
+models the calculus builds, and the ceiling of what those models can do.
+\end{remark}
+
+\subsection{The fallible route}
+
+The other construction, \texttt{Kripke.falTop}, puts one fallible world on
+top of a model and makes it \emph{modally visible from every world}. Then
+every world forces every modal formula. By Remark~\ref{rem:correction} the
+visibility is the operative condition, not the position.
+
+Let $\operatorname{triv} A$ be $A$ with every modal subformula replaced by
+truth, and structural elsewhere; it is modality-free, so the
+modality-free calculus applies to it as a goal.
+
+\begin{theorem}[\texttt{falTop\_force}]\label{thm:falTop}
+At every old world, the extended model forces $A$ exactly when the
+original forces $\operatorname{triv} A$.
+\end{theorem}
+
+\begin{proposition}[\texttt{not\_PLL\_of\_provable\_triv}]
+A derivation of $\operatorname{triv} G$ refutes the $\mathrm{PLL}$-validity
+of $G$.
+\end{proposition}
+
+This needed \emph{no new rule}. What \S\ref{sec:decision} called the
+fallible promise join has been relocated from the calculus to the model
+construction, which is where it costs nothing.
+
+\subsection{The two routes are incomparable}
+\label{sec:tworoutes}
+
+Each reaches a formula the other cannot, and both directions are
+machine-checked.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+formula & barren route & fallible route\\
+\hline
+$\bigcirc p$ & refutes it & cannot: its trivialisation is truth\\
+$\neg\bigcirc\bot$ & cannot (Thm.~\ref{thm:incomplete}) & refutes it\\
+$\bigcirc p \supset p$ & cannot & refutes it\\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+The two entries in the right-hand column are actual derivations, not
+appeals to a model. In each, the irregular axiom at falsehood places
+$\bot \supset \bot$ in the irregular zone, the join keeps it by the
+restriction --- its antecedent is the premise's right formula --- and the
+implication rule discharges it from the closure. This closes the concrete
+instance $\bigcirc p \supset p$ raised in \S\ref{sec:decision}.
+
+\subsection{What completeness now says}
+
+The completeness results gained the hypothesis that the countermodel they
+start from is infallible, and the biconditional now reads: the goal is
+provable exactly when it has an \emph{infallible} countermodel --- which
+is stronger than before in the left-to-right direction. The hypothesis is
+not a gap in the proof. At a fallible world every formula is forced, so
+the set of refuted right subformulas is empty and the closure of the
+determining part cannot reach falsehood; a fallible countermodel carries
+no data the calculus can consume. It is the exact statement of
+Theorem~\ref{thm:incomplete}.
+
+%% ==================================================================
+\section{The promise join: soundness for the full modal calculus}
+\label{sec:promise}
+
+The uniform choices of \S\ref{sec:w3} were provisional, and their
+retirement was forced by a machine-checked observation: each uniform
+choice of the modal relation realises a \emph{nucleus} --- equality gives
+the identity, the order gives double negation
+(\texttt{force\_circ\_iff\_nn}, no axioms), the fallible top gives the
+trivialisation --- and each has a blind spot that is a theorem about the
+construction, not a missing rule.  The general calculus must let the
+derivation \emph{declare} the modal successors of each world it creates.
+That is the promise join, and this section records its soundness,
+machine-checked in full.
+
+Two constraints from the review that preceded the build: the framework is
+\textsc{pll}-general from the outset --- the promise is a \emph{family}
+of premises of arbitrary finite arity, because full \textsc{pll} needs
+unbounded arity while confluent reduced frames need only one --- and
+every device sticks to the source paper's own idiom, with the two
+genuinely new devices flagged as ours and tied to the semantic facts that
+force them.  The fidelity map is in the repository's fidelity document;
+its headlines appear below.
+
+\subsection{The atomic change}
+
+Five parts, landed as one commit, each unsound without the others.  The
+universe gains its third zone, the modal left subformulas, for the same
+reason the paper's universe has its implicational zone: a world can force
+$\bigcirc A$ without forcing $A$, so modal formulas are determining data.
+The closure gains the modal clause, sound by the unit.  Contexts split
+three ways.  The join rules split into three families.  And the
+extraction carries the modal relation and the fallible set as
+\emph{data}, declared by the derivation.
+
+\subsection{The rules}
+
+The barren joins are the paper's two, with one new side condition: the
+stable modal zone is empty --- a join that keeps no modal part must not
+have committed modal formulas, else condition (\dag) of the key lemma
+breaks.  The \emph{promise} joins take, besides the irregular premises, a
+family of regular premises $\Delta_i \Rightarrow D_i$ whose worlds become
+the modal successors of the new world, subject to
+\begin{itemize}
+\item[(J5)] every stable modal formula's body lands in the closure of
+  \emph{some} promise context (different formulas may use different
+  witnesses); for the second zone this is a \emph{restriction}, mirroring
+  the paper's restriction of the second implicational zone;
+\item[(J7)] the whole conclusion context lands in the closure of
+  \emph{every} promise context --- each promise world lies modally, hence
+  intuitionistically, above the new world.  This is the source paper's
+  step-relation discipline extended to the promise edge, exactly as the
+  negative implication rule supplies its own containment condition.
+\end{itemize}
+The \emph{fallible} joins declare a fallible modal successor instead: it
+forces everything, so the whole modal zone is kept with no condition, and
+it refutes nothing, so it carries no premise --- the one world of the
+extracted model that is not the world of a p-sequent.  Every other world
+still is one: the paper's identification of worlds with p-sequents
+survives the extension intact.
+
+\subsection{The pledge}
+
+The modal introduction rule is sound at a world exactly when the world's
+\emph{whole modal cone} refutes the body.  The derivation records this as
+a tag --- barren, or pledged to a single formula, or blocked --- with the
+pledge propagating down the promise chain: a join is pledged to $D$ when
+every promise has goal $D$ \emph{and} every promise's own tag continues
+the pledge.  The recursion is the point: the first draft gated the rule
+on the root's immediate promise only, and the cone \emph{beyond} the
+promise root broke it.  The semantic content of the tag is the
+\texttt{mfal} component of the repository's own canonical model for the
+logic, whose worlds are triples of a theory, a falsified set, and a set
+\emph{pledged false at every modal successor}, with the modal relation
+inclusion on both coordinates.  The tag is that mechanism restricted to a
+single pledge, and the pledge theorem --- mutually recursive with the key
+soundness lemma --- proves it honoured.
+
+\subsection{What is now machine-checked}
+
+Soundness: every derivation's extracted model is a countermodel, so
+provability refutes validity in \emph{all} constraint models.  The two
+standing cells are now settled \emph{inside} the calculus: $\neg\bigcirc\bot$
+and $\bigcirc p \supset p$ are both provable --- the irregular axiom
+feeds a fallible join, whose context keeps the modal formula, and the
+implication rule discharges it from the closure --- while the register of
+\S\ref{sec:w3} survives as the fact that \emph{no} infallible extraction
+could reach them.  As a bonus, deleting the fallible worlds of a model
+preserves modality-free forcing (the failure witnesses of implications
+are never fallible), which closes open item (4) of \S\ref{sec:w3} and
+restores both biconditionals for modality-free goals.
+
+\subsection{What remains open}
+
+Completeness with modal goals: the determining part does not yet carry
+the modal zone, the modal-goal case of the construction is unwritten, and
+the multiplicity question --- promise families against pledge sets
+against branching in the order --- is deliberately undecided until the
+authors' own S4 model-generation paper (J.\ Logic and Computation 31(3),
+2021) has been read at source; it is paywalled, and obtaining it is the
+one external action this stage requests.
+
+%% ==================================================================
+\section{Status}
+\label{sec:status}
+
+\textsc{Proved}, sorry-free and pinned: everything in
+\S\S\ref{sec:prelim}--\ref{sec:choice}, for modality-free goals; the
+extension of \S\ref{sec:w1}; the five semantic obligations and three
+screens of \S\ref{sec:rules}; all of \S\ref{sec:w3}; and the
+\emph{soundness of the full promise-join calculus} of
+\S\ref{sec:promise}, fallible joins included.
+
+\textsc{Open}, and unchanged by \S\ref{sec:w3}:
+
+\begin{enumerate}
+\item The \emph{promise join}: the only rule that would make the modality
+  non-trivially true and so break the erasure ceiling of \S\ref{sec:w3}.
+  It needs the index the screens described, because a rule that creates a
+  modal successor destroys barrenness at the world it creates.
+\item The third zone of the universe, still not added, for the reason
+  recorded in \S\ref{sec:zones}; it is an atomic change together with the
+  joins, and the promise join would force it.
+\item Completeness for fallible countermodels, that is, for validity in
+  all constraint models rather than in the infallible ones. Needs (1).
+\item That the two notions of validity agree on modality-free formulas
+  --- deleting the fallible worlds of a model preserves modality-free
+  forcing at the worlds that remain. Nothing above needs it; it would let
+  the biconditional be restated for the wider notion.
+\end{enumerate}
+
+\appendix
+%% ==================================================================
+\section{The Lean development}
+\label{app:code}
+
+Every definition and proof discussed above appears below, unedited, in
+dependency order. The library builds from scratch with no sorries, no
+\texttt{native\_decide}, and the axiom pins of \S\ref{app:audit}.
+
+\subsection{Preliminaries: language, models, forcing, closure}
+\label{app:basic}
+\lstinputlisting{../../FRJ/Basic.lean}
+
+\subsection{The calculus}
+\label{app:calculus}
+\lstinputlisting{../../FRJ/Calculus.lean}
+
+\subsection{The step relation and well-formedness}
+\label{app:step}
+\lstinputlisting{../../FRJ/Step.lean}
+
+\subsection{The fresh-root construction}
+\label{app:model}
+\lstinputlisting{../../FRJ/Model.lean}
+
+\subsection{Extraction of the model}
+\label{app:extract}
+\lstinputlisting{../../FRJ/Extract.lean}
+
+\subsection{Soundness}
+\label{app:soundness}
+\lstinputlisting{../../FRJ/Sound.lean}
+
+\subsection{The determining part}
+\label{app:completelean}
+\lstinputlisting{../../FRJ/Complete.lean}
+
+\subsection{The completeness construction}
+\label{app:minimal}
+\lstinputlisting{../../FRJ/Minimal.lean}
+
+\subsection{Fallible worlds, the trivialisation, the two routes}
+\label{app:fallible}
+\lstinputlisting{../../FRJ/Fallible.lean}
+
+\subsection{The modality: semantics, obligations, screens}
+\label{app:modallean}
+\lstinputlisting{../../FRJ/Modal.lean}
+
+\subsection{The axiom audit}
+\label{app:audit}
+\lstinputlisting{../../FRJ/Audit.lean}
+
+%% ==================================================================
+\section{The archived parallel development}
+\label{app:archive}
+
+A parallel re-derivation was carried out before the modality-free
+development was finished, and is superseded by it; it is archived rather
+than deleted. Its modal semantics and screens have since been re-homed onto the live
+development (Appendix~\ref{app:modallean}); what remains of interest here
+is the parallel rule table, which reached index-equality by never
+computing an index, and the replayed refutations from the article.
+
+\subsection{Constraint models}
+\lstinputlisting{../../Archive/FRJLax-parallel/Model.lean}
+
+\subsection{The parallel rule table}
+\lstinputlisting{../../Archive/FRJLax-parallel/Calculus.lean}
+
+\subsection{The paper's own refutations, replayed}
+\lstinputlisting{../../Archive/FRJLax-parallel/Paper.lean}
+
+\subsection{The first modal refutation}
+\lstinputlisting{../../Archive/FRJLax-parallel/Circ.lean}
+
+\end{document}

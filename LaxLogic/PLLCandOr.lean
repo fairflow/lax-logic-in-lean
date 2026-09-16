@@ -1,4 +1,8 @@
 import LaxLogic.PLLCandidate
+-- Explicit since 2026-09-03: uses `aesop`; the foundation modules no longer
+-- re-export Mathlib.  OUTSIDE the runtime closure of `lake exe pll`, so
+-- this costs the decider nothing.
+import Mathlib
 
 /-!
 # The attack on `cl_orL`: the consequence candidate

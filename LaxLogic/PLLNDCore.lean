@@ -1,4 +1,10 @@
 import LaxLogic.PLLFormula
+-- Explicit since 2026-09-03: `PLLFormula` no longer re-exports Mathlib
+-- (it was carrying `import Mathlib.Tactic` for a legacy `Set`-valued
+-- island, now `LaxLogic/PLLSubformulaSet.lean`).  These are the proof
+-- tactics THIS file uses; the definitions need nothing.
+import Batteries
+import Mathlib.Tactic.Tauto
 
 /-!
 # A slime-free core ND system for PLL, with conservativity over IPL
@@ -97,6 +103,21 @@ inductive LaxND : List PLLFormula → PLLFormula → Type
       LaxND Γ (.somehow ψ)
 
 infix:70 " ⊢- " => LaxND
+
+/-- `Γ ⊬ φ`: `φ` is NOT derivable from `Γ`.
+
+`Γ ⊢- φ` is the *type* of derivations, so underivability is the emptiness of that
+type.  Lean's general spelling for that is `¬ Nonempty _`, or as a class
+`IsEmpty _` (`not_nonempty_iff : ¬ Nonempty α ↔ IsEmpty α`); `Empty` is the empty
+type itself, not this.  Here it is worth a name of its own: refutation results are
+half of this development, the repo's comments have always written them `⊬`, and a
+`reducible` definition displays that way in goals while still unifying silently
+with the `¬ Nonempty (LaxND …)` and `¬ Deriv …` spellings already in use — so
+existing certificates typecheck against it unchanged. -/
+abbrev Underivable (Γ : List PLLFormula) (φ : PLLFormula) : Prop :=
+  ¬ Nonempty (LaxND Γ φ)
+
+@[inherit_doc] infix:70 " ⊬ " => Underivable
 
 /-! ## Admissible structural rules
 

@@ -1,6 +1,6 @@
 # A map of the calculi
 
-This development contains six or seven distinct proof systems for propositional
+This development contains seven or eight distinct proof systems for propositional
 lax logic, several of them named after their originators and several of them
 repairs or extensions of one another. Confusing them is easy and has happened
 more than once. This page says, for each: what it is, whose it is, where it
@@ -99,16 +99,176 @@ result is really about**.
 * **Status here**: `derivUNoFall_iff_infallible_valid`, plus results that are
   ours: `varfree_dichotomy` (the variable-free fragment collapses to `{⊥, ⊤}`;
   the proof uses the axiom exactly once, in the `◯` case, and never uses
-  distribution, so it applies verbatim to PLL + `¬◯⊥`), and `exUI` / `allUI`
+  distribution, so it applies verbatim to PLL + `¬◯⊥`), `exUI` / `allUI`
   (uniform interpolation into the variable-free fragment, trivial once that
   fragment is two elements — the ≥ 2-variable problem is deliberately not
-  asserted).
+  asserted), and `derivUNoFall_iff_IPLND` in `PLLNoFallNF.lean`
+  (**conservativity over IPC on the `◯`-free fragment**: on `◯`-free sequents
+  PCLL + `¬◯⊥` proves neither more nor less than IPC — both hypotheses are
+  `isIPL`, so it says nothing about a formula carrying a `◯`.  Ours, not
+  F&M's; it calibrates uniform interpolation, since full UI here contains
+  full UI for IPC by Pitts).
+* **What `¬◯⊥` does NOT do, flagged 2026-08-31**: it does not collapse `◯`.
+  `◯` survives on atoms and implications — that is exactly what the `◯`-normal
+  form of `PLLNoFallNF.lean` is for.  The word "collapse" in this development
+  refers ONLY to the VARIABLE-FREE fragment (`varfree_dichotomy`), infinite in
+  PLL and PCLL because `◯⊥` generates a Rieger–Nishimura-style ladder.
+  Reading "infallible collapse" as "`◯` becomes vacuous" put a false claim
+  into the calculus ledger; the phrase has been removed from the table below.
 * **Naming caveat, flagged 2026-08-07**: the theorem name says
   "infallible_valid" but the model class is *mutually confluent **and***
   infallible, which is strictly smaller than F&M's `F = ∅` class — on the plain
   `F = ∅` class distribution genuinely fails. F&M state their two bullets
   separately and never the conjunction; ours is a routine merge of their two
   specialisations. The name should be corrected.
+
+### `LJF◯` — the lax-flagged focused calculus, and the interpolant
+
+* **Files**: `LaxLogic/LJFOCore.lean` (frozen — syntax, the four judgments,
+  weights, the modal interpolant `interp` with its termination, and soundness),
+  `LaxLogic/LJFORows.lean` (the three station maps `eConjRows` /
+  `truStationRows` / `laxRows`, and the nine aggregate equations),
+  `LaxLogic/LJFO.lean` (the minimality development). Direction-neutral
+  infrastructure: `LJFOHeight.lean` (height-indexed judgments + equivalence),
+  `LJFOUniverse.lean` (subformula closures), `LJFOSearch.lean` (the decider
+  round-trip), `LJFOFuel.lean` (`interpF`, the fuel-founded retention
+  interpolant). **Zero imports** throughout — not mathlib, not `Deriv`, not
+  `G4c`.
+* **Whose**: ours. It is the `◯`-extension of `LaxLogic/LJF.lean`, which is
+  itself **not a port**: that file's header records that it is built from its
+  own rules, importing nothing, so that "the *technique* is what is under
+  test". The focusing discipline — polarised formulas and the four judgments
+  `Inv` / `Stab` / `RFocus` / `LFoc` — is LJF-style, after Liang and Miller;
+  no metatheory is borrowed from any other calculus here. The modal part is
+  three rules and a coercion: `circ` in the syntax; `circR`, which *sets* its
+  premise to lax from either flag; `circL`, the only rule with modal content
+  and lax-only — F&M's `SC` side condition "the succedent must be
+  `◯`-shaped", recast as a phase condition; and `laxOf`, the truth-to-lax
+  coercion at the stable judgment, without which the calculus misses `◯φ` for
+  provable implicational `φ`.
+* **Status here**: soundness of both interpolants — **E1 (`eSound`) and A1
+  (`aSound`) — is PROVED outright**, together with `interp_pfree` (the
+  interpolant is `p`-free), `idNeg`, and the G4iLL-blocker standing test
+  (`BlockerTest.blocker`, axiom-free). Minimality — **E2 (`satE2`) and A2
+  (`satA2`) — is sorry-free and machine-checked but CONDITIONAL** on a single
+  isolated typed obligation, `CimpAnt`, the `◯`-implication antecedent miner
+  (staged exactly as `DykAnt` was; `dykAnt` discharges the intuitionistic
+  analogue, but *relative to* `CimpAnt`, since it lives in the same
+  parameterised mutual). Seven `#guard_msgs` axiom pins. **Uniform
+  interpolation for PLL is OPEN and is not claimed**: it needs `CimpAnt`
+  discharged, plus the interpolant read-back through `negOfO`.
+  **Focalization for PLL — once the other half of this — is PROVED**
+  (2026-08-13): `bridge_iff` in `LJF/OBridge.lean`,
+  `[propext, Quot.sound]`, no choice — MERGED (the LJF split-out of
+  2026-08-22 brought it in; an earlier note here saying "on branch
+  `claude/t1-lax-logic-refutation-37c0bf`, not yet merged" was stale,
+  corrected 2026-08-31). Clause-by-clause detail, with the
+  four forced departures from paper practice: `docs/ljfo-fidelity.md`.
+* **Depended on by**: its own family — `LJFORows`, `LJFO`, `LJFOHeight`,
+  `LJFOUniverse`, `LJFOSearch`, `LJFOFuel`, and the four `wip/ljfo_*`
+  probes (`_eval`, `_attack`, `_attack_weights`, `_crosscheck`) — and,
+  since 2026-08-31, by `Gbu◯` completeness: `gbuC_complete`
+  (`wip/gbu_ljfo.lean`) rests on `bridge_iff`.  (The earlier claim here
+  that no result elsewhere rests on it is superseded.)
+* **Do not confuse with the θ-chain results.** `thetaStabilises`,
+  `thetaNotStrict` and the GZ-candidate-cell analysis (`wip/ljfo_theta_*`) are
+  **`LaxND`** statements about PLL formulas — `Nonempty (LaxND Γ φ)` —
+  certified by `PLLND.Search.prove?Bounded` and revalidated by the kernel.
+  They concern the *cell* the LJF◯ construction was aimed at, not the
+  construction, and they would stand unchanged if LJF◯ were abandoned.
+
+### `Gbu◯` — the two-judgment provability calculus, complete for PLL
+
+* **Files** (promoted out of `wip/` on 2026-09-02, lakefile library
+  `FRJGbu`): `FRJ/Gbu/Base.lean` (`Gbu`, `◯`-free), `FRJ/Gbu/Circ.lean`
+  (`Gbu◯`: the regular judgment `Ψ ⇒g C` / `GbuRC` and the irregular
+  right-focused judgment `Ψ →g C` / `GbuIC`, with the three `◯` rules),
+  `FRJ/Gbu/Transport.lean` (`≐`-transport of derivations),
+  `FRJ/Gbu/LaxND.lean` (the translation into `LaxND`); still in `wip/`:
+  `wip/gbu_ljfo.lean` + `wip/gbu_ljfo_support.lean` +
+  `wip/gbu_ljfo_transport.lean` (the LJF◯ → Gbu◯ translation; not core
+  by Matthew's ruling of 2026-09-02, see `wip/README-gbu-residue.md`).
+* **Whose**: `Gbu` is Fiorentini & Ferrari §5; the `◯`-extension is
+  ours, including the licenced `|◯C|` adaptation of `L⊃ᵢ` (2026-08-31:
+  side condition `A ∈ Sf^R G` in place of the size bound; the
+  justifying underivable-but-valid cell is documented at the rule).
+* **Status**: soundness `pll_of_provableGbuC` `[propext]`;
+  conservativity over `Gbu` on `◯`-free `G`
+  (`provableGbuC_iff_provableGbu`, `[propext]`); **completeness for
+  PLL PROVED (2026-08-31)**:
+
+      gbuC_complete : Nonempty (LaxND [] φ) → ProvableGbuC (ofPLL φ)
+
+  `#guard_msgs`-pinned `[propext, Quot.sound]`, in
+  `wip/gbu_ljfo.lean` — composition of `bridge_iff` (LJF◯
+  focalization) with the mode-generic CPS translation `tInv`.  With
+  soundness, `Gbu◯` is complete in itself; the `◯L`/`◯R`
+  admissibility questions of `wip/gbu_ndrules.lean` are corollaries.
+  Sequent form via the `LaxND` deduction theorem
+  (`gbuC_sequent_complete`, same file, same pin):
+  `Nonempty (LaxND Γ φ) → ProvableGbuC (ofPLL (bigAnd Γ ⊃ φ))`.
+  **Syntactic soundness for `LaxND` PROVED (2026-09-02)**, the partner
+  of `gbuC_complete` in the other direction:
+
+      laxND_of_provableGbuC : ProvableGbuC G → Nonempty (LaxND [] (toPLL G))
+
+  `[propext, Quot.sound]`, `FRJ/Gbu/LaxND.lean` (`laxOfR`/`laxOfI`, a
+  mutual structural translation of the 24 constructors, cut written as
+  `impElim (impIntro q) p`).  A second, independent completeness proof
+  comes from the FRJW side (`gbuw_complete` + `soundnessW`, next
+  section).
+* **Do not confuse**: FRJ-family objects (FRJ / FRJV / FRJW) are
+  DISPROOFS; `Gbu◯` derivations are proofs.  The FRJ database/search
+  route to `Gbu◯` completeness (`searchO`, Theorem 8◯) is RETIRED —
+  its two supplies are jointly unsatisfiable
+  (`residues_unsatisfiable`, `wip/gbu_search_circ.lean`).
+
+### `FRJW` — the modal forward refutation calculus, and the decision chain
+
+* **Files**: `FRJ/CalculusW.lean` (the two judgments, regular
+  `t : Γ ⇒ C` / `FRJWr` and irregular `Ξ ; Θ → C` / `FRJWi`, and
+  `DisprovableW`), `FRJ/StepW.lean`, `FRJ/ExtractW.lean`,
+  `FRJ/SoundW.lean` (`soundnessW : DisprovableW G → ¬ PLL G`); the
+  decision chain `FRJ/Gbu/W/{Dichotomy, DB, CircDB, Corner, Search,
+  Closure, Exclusion, Saturate}.lean` (promoted from `wip/` on
+  2026-09-02, library `FRJGbu`); the syntactic bridge
+  `FRJ/Gbu/W/LaxND.lean`.  Notation: `docs/notation.md`.
+* **Whose**: FRJ(G) is Fiorentini–Ferrari (TOCL 2020); the `◯`
+  extensions (FRJ◯, its RefAt repair FRJV, and FRJW, the calculus
+  paired with `Gbu◯`) are ours.
+* **Status** (all `[propext, Quot.sound]`, no choice; in
+  `FRJ/Gbu/W/Saturate.lean` unless said):
+
+      decideGbuW G     : ProvableGbuC G ⊕' DisprovableW G
+      frjw_complete    : ¬ ProvableGbuC G → DisprovableW G
+      gbuw_complete    : ¬ DisprovableW G → ProvableGbuC G
+      provableGbuC_iff_pll : ProvableGbuC G ↔ PLL G
+      disprovableW_iff_not_pll : DisprovableW G ↔ ¬ PLL G
+      decidePLL G      : Decidable (PLL G)
+      decideGbuWData G : GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G)
+
+  and, composing with `laxOfR` (`FRJ/Gbu/LaxND.lean`), in
+  `FRJ/Gbu/W/LaxND.lean`:
+
+      PLL_iff_laxND : PLL (ofPLL φ) ↔ Nonempty (LaxND [] φ)
+      finite_poset_model_property :
+        Nonempty (LaxND [] φ) ↔ ∀ K : Kripke, K.valid (ofPLL φ)
+      decideLaxND φ : Decidable (Nonempty (LaxND [] φ))
+
+* **Do not confuse**: (i) `FRJ.PLL A` (`FRJ/Basic.lean:567`) is
+  SEMANTIC, validity in every finite rooted POSET constraint model
+  (`FRJ.Kripke`, antisymmetric order); it coincides with `LaxND`
+  provability only through `PLL_iff_laxND`, and the finite POSET model
+  property is strictly more than `finite_model_property`
+  (`LaxLogic/PLLFiniteModel.lean`), whose filtration models are
+  preorders; the ≤-quotient of a preorder model does NOT preserve
+  `◯`-forcing (`wip/quot_cm.lean`, four worlds, `[propext]`).
+  (ii) FRJW objects are DISPROOFS.  (iii) `decideGbuW` is a proof
+  object, not a practical algorithm: the search is `searchW`, the
+  fuel is the pigeonhole over canonical keys.
+* **Exposition**: `docs/frjw-explainer.md` (the proof strategy, with
+  proof-state traces), `docs/searchw-architecture.md`,
+  `docs/frjw-compaction.md`, `docs/frjw-complexity-comparison.md`.
 
 ### The term calculus and reduction
 
@@ -134,8 +294,19 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | join-primality / visibility proofs | `SC` (Harrop induction) | `wip/visible.lean` |
 | the `◯`-depth hierarchy | `LaxND` + constraint models | `wip/depth*.lean` |
 | distribution, confluence | `DerivU` | `PLLConfluentComplete.lean` |
-| infallible collapse | `DerivUNoFall` | `PLLNoFall.lean` |
+| completeness for `F = ∅` (F&M Thm 4.7, first bullet) | `DerivUNoFall` | `PLLNoFall.lean` |
+| the VARIABLE-FREE collapse to `{⊥, ⊤}` | `DerivUNoFall` | `PLLNoFall.lean` |
+| conservativity over IPC on the `◯`-free fragment | `DerivUNoFall` | `PLLNoFallNF.lean` |
 | strong normalisation | proof terms of `LaxND` | `PLLTopTop.lean` |
+| the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJFOCore.lean` |
+| the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
+| E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJFO.lean` |
+| completeness of `Gbu◯` for PLL (`gbuC_complete`) | `Gbu◯`, via `LJF◯` (`bridge_iff` + `tInv`) | `wip/gbu_ljfo.lean` |
+| soundness of `Gbu◯` for natural deduction (`laxND_of_provableGbuC`) | `Gbu◯` → `LaxND` | `FRJ/Gbu/LaxND.lean` |
+| PLL decidable by simultaneous completeness (`decideGbuW`, `decidePLL`) | `Gbu◯` + `FRJW`, over the finite rooted poset models `FRJ.Kripke` | `FRJ/Gbu/W/Saturate.lean` |
+| `LaxND` provability decidable choice-free; the finite POSET model property (`PLL_iff_laxND`, `decideLaxND`) | `LaxND`, via `Gbu◯` → `LaxND` and `FRJ.Kripke` | `FRJ/Gbu/W/LaxND.lean` |
+| the θ-chain, the GZ-candidate cell, `thetaStabilises` | `LaxND` (certificates from `G4c` search) | `wip/ljfo_theta_*.lean` |
+| the 1-pv ∃p wrapper: `semExC_upper`/`semExC_adjunction` PROVED; the amalgamation conditional on `ClosedCollapse 6` — REFUTED-in-spirit (no collapse ≤ 7; `R₀ = 5` refuted outright), so the kernels stand OPEN; `SemExC1Definable` OPEN | `DerivU` + confluent constraint models | `wip/pcll1pv_stage*.lean`, `wip/closed_frag*.lean` |
 
 ---
 
@@ -146,7 +317,10 @@ with its cut, contraction, completeness and equivalences; the decider; the
 variable-free collapse under `¬◯⊥`; and everything about the structure of the
 closed fragment RN(◯,{}) — the Rieger–Nishimura ladder embedded by `p ↦ ◯⊥`,
 the families, the gap antichain, the descending chain with no floor, the
-visibility proofs, and the strict `◯`-depth hierarchy. None of that appears in
+visibility proofs, and the strict `◯`-depth hierarchy; and `LJF◯` with its
+modal interpolant — the focusing discipline is LJF-style after Liang and
+Miller, but the calculus, the `◯` rules, the interpolant and everything
+proved about them are ours. None of that appears in
 F&M 1997, which contains no "Rieger", no "variable-free", no "closed fragment"
 and no interpolation at all.
 

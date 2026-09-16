@@ -1,0 +1,54 @@
+%% Shared preamble: fonts, listings, theorem environments.
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black,
+            citecolor=blue!50!black}
+
+%% DejaVu covers most of the Lean symbol set; STIX Two Math fills the rest.
+\directlua{luaotfload.add_fallback("monofb",
+  {"file:STIXTwoMath-Regular.otf:mode=node;",
+   "file:DejaVuSans.ttf:mode=node;"})}
+\setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase,
+  RawFeature={fallback=monofb}]
+
+\lstdefinelanguage{lean}{
+  morekeywords={theorem,lemma,def,structure,inductive,mutual,end,namespace,
+    instance,abbrev,where,match,with,fun,let,have,show,from,by,intro,exact,
+    refine,cases,rcases,obtain,induction,simp,omega,rfl,deriving,open,import,
+    variable,attribute,example,at,do,if,then,else,noncomputable},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[n]{/-}{-/},
+  morestring=[b]",
+}
+\lstset{
+  language=lean,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!55!black}\bfseries,
+  commentstyle=\color{green!35!black}\itshape,
+  stringstyle=\color{red!50!black},
+  columns=flexible,
+  breaklines=true,
+  breakatwhitespace=true,
+  showstringspaces=false,
+  frame=leftline,
+  framesep=6pt,
+  xleftmargin=10pt,
+  numbers=none,
+  captionpos=b,
+  %% one fullwidth capital appears in a docstring and is in neither font
+  literate={Ｄ}{{D}}1,
+}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{finding}[theorem]{Finding}

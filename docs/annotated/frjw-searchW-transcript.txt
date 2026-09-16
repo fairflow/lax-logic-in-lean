@@ -1,0 +1,514 @@
+# Raw trace_state transcript of wip/gbu_frjw_search.lean at b2f2525 (searchW), produced 2026-09-02 16:00 BST
+# Method: docs/annotated/README.md; the traced copy lived outside the repository; 22 labelled snapshots; the linter warnings at the end are for the inserted 'trace' tactics.
+== S0a: after wgLt_wf.fix: the motive at x, with ihW
+== S0b: the cell (reg, Ψ, C) with hx and IH, before cases reg
+== S2: irregular preamble (C ∉ Ψ, so not an axiom), before cases C
+== S3: irregular ⊃-goal with ¬ Clo Ψ A: R⊃ₙᵢ, paid by unclosed
+== S4: irregular ◯Z goal: the dispatcher, before the two scans of Ψ
+== S5: the CRITICAL modal cell (Ψ ⊆ Ĝ_at ∪ Ĝ_imp, goal ◯Z), before decI Ψ Z
+== S5a-i: Z refuted, no classical countermodel, R₀ set: the certificate test
+== S5a-ii: THE CORNER: Y₂ = A₂ ⊃ B₂ fails the certificate test; totalityW is called at A₂
+== S5a-ii(Der): A₂ is derivable (hDer): L⊃ᵢ through Y₂, after focus and coverage
+== S5b: Z unrefuted at the critical cell: R◯ᵢ
+== S6: a modal member ◯Y' of Ψ: L◯ᵢ, after focus and coverage
+== S7: a non-Ĝ member A ∧ B of Ψ: L∧ᵢ, after focus and coverage
+== S8: REGULAR preamble (C ∉ Ψ), before the Ĝ-scan of Ψ
+== S8-crit: the critical regular cell (Ψ ⊆ Ĝ)
+== S8a: inside limpStep: L⊃ on A ⊃ B ∈ Ψ with A unrefuted, after focus
+== S8b(∧): regular ∧-goal: R∧, both premises paid by seqSize
+== S8b(⊃): regular ⊃-goal with ¬ Clo Ψ A: R⊃ₙ, paid by unclosed
+== S8b(◯)-crit: regular ◯Z goal at a critical cell, before decI Ψ Z
+== S8b(◯)-R◯: Z unrefuted: R◯ releases to irregular mode, paid by tpC
+== S8b(◯)-L◯: a modal member ◯Y' of Ψ: L◯, after focus
+== S9: the non-critical regular cell: a non-Ĝ member X, focused
+== S10: main established: the base call
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+⊢ (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = x → WSearchOk G D p
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+reg : Bool
+Ψ : List Form
+C : Form
+hx : wgC G (reg, Ψ, C).1 (reg, Ψ, C).2.1 (reg, Ψ, C).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G reg Ψ C) → WSearchOk G D q
+⊢ WSearchOk G D (reg, Ψ, C)
+case false
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+C : Form
+hx : wgC G (false, Ψ, C).1 (false, Ψ, C).2.1 (false, Ψ, C).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ C) → WSearchOk G D q
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hΩc : C.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : C ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ C
+hne : ¬WEvalI D Ψ C
+hax : C ∉ Ψ
+⊢ GbuIC G Ψ C
+case false.imp.refine_2
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+A B : Form
+hx : wgC G (false, Ψ, A.imp B).1 (false, Ψ, A.imp B).2.1 (false, Ψ, A.imp B).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ (A.imp B)) → WSearchOk G D q
+hΩc : (A.imp B).isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : A.imp B ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ (A.imp B)
+hne : ¬WEvalI D Ψ (A.imp B)
+hax : A.imp B ∉ Ψ
+hA : A ∈ sfL G
+hB : B ∈ sfR G
+hg : ∀ X ∈ Ψ, X ∈ gHat G
+hcl : ¬Clo Ψ A
+⊢ GbuIC G Ψ (A.imp B)
+case false.circ
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+Z : Form
+hx : wgC G (false, Ψ, Z.circ).1 (false, Ψ, Z.circ).2.1 (false, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ Z.circ) → WSearchOk G D q
+hΩc : Z.circ.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : Z.circ ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ Z.circ
+hne : ¬WEvalI D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+hZsf : Z ∈ sfR G
+⊢ GbuIC G Ψ Z.circ
+case false.circ.inl.inl
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+Z : Form
+hx : wgC G (false, Ψ, Z.circ).1 (false, Ψ, Z.circ).2.1 (false, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ Z.circ) → WSearchOk G D q
+hΩc : Z.circ.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : Z.circ ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ Z.circ
+hne : ¬WEvalI D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+hZsf : Z ∈ sfR G
+hg : ∀ a ∈ Ψ, a ∈ gHat G
+hnoc : ∀ a ∈ Ψ, a.isCirc = false
+hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G
+⊢ GbuIC G Ψ Z.circ
+case false.circ.inl.inl.refine_1.inr
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+Z : Form
+hx : wgC G (false, Ψ, Z.circ).1 (false, Ψ, Z.circ).2.1 (false, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ Z.circ) → WSearchOk G D q
+hΩc : Z.circ.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : Z.circ ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ Z.circ
+hne : ¬WEvalI D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+hZsf : Z ∈ sfR G
+hg : ∀ a ∈ Ψ, a ∈ gHat G
+hnoc : ∀ a ∈ Ψ, a.isCirc = false
+hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G
+heZ : WEvalI D Ψ Z
+hnocm : ∀ ats ∈ (gAt G).sublists, ¬(classForce ats Z = false ∧ ∀ X ∈ Ψ, classForce ats X = true)
+R₀ : List Form := List.filter (fun A => decide (WEvalI D Ψ A)) (sfR G)
+hR₀def : R₀ = List.filter (fun A => decide (WEvalI D Ψ A)) (sfR G)
+hR₀ok : ∀ A ∈ R₀, WEvalI D Ψ A
+⊢ GbuIC G Ψ Z.circ
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+Z : Form
+hx : wgC G (false, Ψ, Z.circ).1 (false, Ψ, Z.circ).2.1 (false, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ Z.circ) → WSearchOk G D q
+hΩc : Z.circ.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : Z.circ ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ Z.circ
+hne : ¬WEvalI D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+hZsf : Z ∈ sfR G
+hg : ∀ a ∈ Ψ, a ∈ gHat G
+hnoc : ∀ a ∈ Ψ, a.isCirc = false
+hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G
+heZ : WEvalI D Ψ Z
+hnocm : ∀ ats ∈ (gAt G).sublists, ¬(classForce ats Z = false ∧ ∀ X ∈ Ψ, classForce ats X = true)
+R₀ : List Form := List.filter (fun A => decide (WEvalI D Ψ A)) (sfR G)
+hR₀def : R₀ = List.filter (fun A => decide (WEvalI D Ψ A)) (sfR G)
+hR₀ok : ∀ A ∈ R₀, WEvalI D Ψ A
+Y₂ : Form
+hnK✝ : ¬(ante Y₂ ∈ R₀ ∨ RefAt true (Z :: R₀) Ψ (ante Y₂))
+hY₂i : Y₂.isImp = true
+hY₂Ψ✝ : Y₂ ∈ Ψ
+A₂ B₂ : Form
+x✝ : (A₂.imp B₂).isImp = true
+hY₂Ψ : A₂.imp B₂ ∈ Ψ
+hnK : ¬(ante (A₂.imp B₂) ∈ R₀ ∨ RefAt true (Z :: R₀) Ψ (ante (A₂.imp B₂)))
+hY₂ : A₂.imp B₂ ∈ impPart Ψ
+hA₂sf : A₂ ∈ sfR G
+hB₂sf : B₂ ∈ sfL G
+⊢ GbuIC G Ψ Z.circ
+case inr
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+Z : Form
+hx : wgC G (false, Ψ, Z.circ).1 (false, Ψ, Z.circ).2.1 (false, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ Z.circ) → WSearchOk G D q
+hΩc : Z.circ.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : Z.circ ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ Z.circ
+hne : ¬WEvalI D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+hZsf : Z ∈ sfR G
+hg : ∀ a ∈ Ψ, a ∈ gHat G
+hnoc : ∀ a ∈ Ψ, a.isCirc = false
+hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G
+heZ : WEvalI D Ψ Z
+hnocm : ∀ ats ∈ (gAt G).sublists, ¬(classForce ats Z = false ∧ ∀ X ∈ Ψ, classForce ats X = true)
+R₀ : List Form := List.filter (fun A => decide (WEvalI D Ψ A)) (sfR G)
+hR₀def : R₀ = List.filter (fun A => decide (WEvalI D Ψ A)) (sfR G)
+hR₀ok : ∀ A ∈ R₀, WEvalI D Ψ A
+Y₂ : Form
+hnK✝ : ¬(ante Y₂ ∈ R₀ ∨ RefAt true (Z :: R₀) Ψ (ante Y₂))
+hY₂i : Y₂.isImp = true
+hY₂Ψ✝ : Y₂ ∈ Ψ
+A₂ B₂ : Form
+x✝ : (A₂.imp B₂).isImp = true
+hY₂Ψ : A₂.imp B₂ ∈ Ψ
+hnK : ¬(ante (A₂.imp B₂) ∈ R₀ ∨ RefAt true (Z :: R₀) Ψ (ante (A₂.imp B₂)))
+hY₂ : A₂.imp B₂ ∈ impPart Ψ
+hA₂sf : A₂ ∈ sfR G
+hB₂sf : B₂ ∈ sfL G
+hDer : GbuIC G Ψ A₂
+f : Focus Ψ (A₂.imp B₂)
+hclB₂ : ∀ W ∈ Ψ, Clo (B₂ :: f.rest) W
+⊢ GbuIC G Ψ Z.circ
+case false.circ.inl.inl.refine_2
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+Z : Form
+hx : wgC G (false, Ψ, Z.circ).1 (false, Ψ, Z.circ).2.1 (false, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ Z.circ) → WSearchOk G D q
+hΩc : Z.circ.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : Z.circ ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ Z.circ
+hne : ¬WEvalI D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+hZsf : Z ∈ sfR G
+hg : ∀ a ∈ Ψ, a ∈ gHat G
+hnoc : ∀ a ∈ Ψ, a.isCirc = false
+hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G
+heZ : ¬WEvalI D Ψ Z
+⊢ GbuIC G Ψ Z.circ
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+Z : Form
+hx : wgC G (false, Ψ, Z.circ).1 (false, Ψ, Z.circ).2.1 (false, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ Z.circ) → WSearchOk G D q
+hΩc : Z.circ.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : Z.circ ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ Z.circ
+hne : ¬WEvalI D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+hZsf : Z ∈ sfR G
+hg : ∀ a ∈ Ψ, a ∈ gHat G
+Y : Form
+hYc' : Y.isCirc = true
+Y' : Form
+x✝ : Y'.circ.isCirc = true
+hYΨ : Y'.circ ∈ Ψ
+hYc : ¬Y'.circ.isCirc = false
+f : Focus Ψ Y'.circ
+hY'sf : Y' ∈ sfL G
+hcov : ∀ V ∈ Ψ, Clo (Y' :: f.rest) V
+⊢ GbuIC G Ψ Z.circ
+case false.circ.inr.and
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+Z : Form
+hx : wgC G (false, Ψ, Z.circ).1 (false, Ψ, Z.circ).2.1 (false, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G false Ψ Z.circ) → WSearchOk G D q
+hΩc : Z.circ.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G
+hC : Z.circ ∈ sfR G
+hnb : WUnrefutedBelow G D Ψ Z.circ
+hne : ¬WEvalI D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+hZsf : Z ∈ sfR G
+A B : Form
+hXΨ : A.and B ∈ Ψ
+hXn : A.and B ∉ gHat G
+f : Focus Ψ (A.and B)
+hA : A ∈ sfL G
+hB : B ∈ sfL G
+hcov : ∀ V ∈ Ψ, Clo (A :: B :: f.rest) V
+⊢ GbuIC G Ψ Z.circ
+case true
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+C : Form
+hx : wgC G (true, Ψ, C).1 (true, Ψ, C).2.1 (true, Ψ, C).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ C) → WSearchOk G D q
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hC : C ∈ sfR G
+hne : ¬WEvalR D Ψ C
+hax : C ∉ Ψ
+⊢ GbuRC G Ψ C
+case true.inl
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+C : Form
+hx : wgC G (true, Ψ, C).1 (true, Ψ, C).2.1 (true, Ψ, C).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ C) → WSearchOk G D q
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hC : C ∈ sfR G
+hne : ¬WEvalR D Ψ C
+hax : C ∉ Ψ
+hall : ∀ X ∈ Ψ, isHat X = true
+hΩ : ∀ Y ∈ Ψ, Y ∈ gHat G
+⊢ GbuRC G Ψ C
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+C : Form
+hx : wgC G (true, Ψ, C).1 (true, Ψ, C).2.1 (true, Ψ, C).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ C) → WSearchOk G D q
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hC : C ∈ sfR G
+hne : ¬WEvalR D Ψ C
+hax : C ∉ Ψ
+hall : ∀ X ∈ Ψ, isHat X = true
+hΩ : ∀ Y ∈ Ψ, Y ∈ gHat G
+A B : Form
+hYΨ : A.imp B ∈ Ψ
+hnA : ¬WEvalI D Ψ A
+f : Focus Ψ (A.imp B)
+hAsf : A ∈ sfR G
+hBsf : B ∈ sfL G
+hΩ' : ∀ W ∈ A.imp B :: f.rest, W ∈ gHat G
+⊢ GbuRC G Ψ C
+case true.inl.and
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hall : ∀ X ∈ Ψ, isHat X = true
+hΩ : ∀ Y ∈ Ψ, Y ∈ gHat G
+upsToImp : (∀ Y ∈ impPart Ψ, WEvalI D Ψ (ante Y)) → ∀ (A B : Form), A.imp B ∈ Ψ → WEvalI D Ψ A
+C₁ C₂ : Form
+hx : wgC G (true, Ψ, C₁.and C₂).1 (true, Ψ, C₁.and C₂).2.1 (true, Ψ, C₁.and C₂).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ (C₁.and C₂)) → WSearchOk G D q
+hC : C₁.and C₂ ∈ sfR G
+hne : ¬WEvalR D Ψ (C₁.and C₂)
+hax : C₁.and C₂ ∉ Ψ
+limpStep : (A B : Form) → A.imp B ∈ Ψ → ¬WEvalI D Ψ A → GbuRC G Ψ (C₁.and C₂)
+fromImp : (Y : Form) → Y ∈ impPart Ψ → ¬WEvalI D Ψ (ante Y) → GbuRC G Ψ (C₁.and C₂)
+h₁ : C₁ ∈ sfR G
+h₂ : C₂ ∈ sfR G
+⊢ GbuRC G Ψ (C₁.and C₂)
+case true.inl.imp.refine_2
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hall : ∀ X ∈ Ψ, isHat X = true
+hΩ : ∀ Y ∈ Ψ, Y ∈ gHat G
+upsToImp : (∀ Y ∈ impPart Ψ, WEvalI D Ψ (ante Y)) → ∀ (A B : Form), A.imp B ∈ Ψ → WEvalI D Ψ A
+A B : Form
+hx : wgC G (true, Ψ, A.imp B).1 (true, Ψ, A.imp B).2.1 (true, Ψ, A.imp B).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ (A.imp B)) → WSearchOk G D q
+hC : A.imp B ∈ sfR G
+hne : ¬WEvalR D Ψ (A.imp B)
+hax : A.imp B ∉ Ψ
+limpStep : (A_1 B_1 : Form) → A_1.imp B_1 ∈ Ψ → ¬WEvalI D Ψ A_1 → GbuRC G Ψ (A.imp B)
+fromImp : (Y : Form) → Y ∈ impPart Ψ → ¬WEvalI D Ψ (ante Y) → GbuRC G Ψ (A.imp B)
+hA : A ∈ sfL G
+hB : B ∈ sfR G
+hcl : ¬Clo Ψ A
+⊢ GbuRC G Ψ (A.imp B)
+case true.inl.circ.inl
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hall : ∀ X ∈ Ψ, isHat X = true
+hΩ : ∀ Y ∈ Ψ, Y ∈ gHat G
+upsToImp : (∀ Y ∈ impPart Ψ, WEvalI D Ψ (ante Y)) → ∀ (A B : Form), A.imp B ∈ Ψ → WEvalI D Ψ A
+Z : Form
+hx : wgC G (true, Ψ, Z.circ).1 (true, Ψ, Z.circ).2.1 (true, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ Z.circ) → WSearchOk G D q
+hC : Z.circ ∈ sfR G
+hne : ¬WEvalR D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+limpStep : (A B : Form) → A.imp B ∈ Ψ → ¬WEvalI D Ψ A → GbuRC G Ψ Z.circ
+fromImp : (Y : Form) → Y ∈ impPart Ψ → ¬WEvalI D Ψ (ante Y) → GbuRC G Ψ Z.circ
+hnoc : ∀ a ∈ Ψ, a.isCirc = false
+hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G
+⊢ GbuRC G Ψ Z.circ
+case true.inl.circ.inl.refine_2
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hall : ∀ X ∈ Ψ, isHat X = true
+hΩ : ∀ Y ∈ Ψ, Y ∈ gHat G
+upsToImp : (∀ Y ∈ impPart Ψ, WEvalI D Ψ (ante Y)) → ∀ (A B : Form), A.imp B ∈ Ψ → WEvalI D Ψ A
+Z : Form
+hx : wgC G (true, Ψ, Z.circ).1 (true, Ψ, Z.circ).2.1 (true, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ Z.circ) → WSearchOk G D q
+hC : Z.circ ∈ sfR G
+hne : ¬WEvalR D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+limpStep : (A B : Form) → A.imp B ∈ Ψ → ¬WEvalI D Ψ A → GbuRC G Ψ Z.circ
+fromImp : (Y : Form) → Y ∈ impPart Ψ → ¬WEvalI D Ψ (ante Y) → GbuRC G Ψ Z.circ
+hnoc : ∀ a ∈ Ψ, a.isCirc = false
+hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G
+heZ : ¬WEvalI D Ψ Z
+⊢ GbuRC G Ψ Z.circ
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hall : ∀ X ∈ Ψ, isHat X = true
+hΩ : ∀ Y ∈ Ψ, Y ∈ gHat G
+upsToImp : (∀ Y ∈ impPart Ψ, WEvalI D Ψ (ante Y)) → ∀ (A B : Form), A.imp B ∈ Ψ → WEvalI D Ψ A
+Z : Form
+hx : wgC G (true, Ψ, Z.circ).1 (true, Ψ, Z.circ).2.1 (true, Ψ, Z.circ).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ Z.circ) → WSearchOk G D q
+hC : Z.circ ∈ sfR G
+hne : ¬WEvalR D Ψ Z.circ
+hax : Z.circ ∉ Ψ
+limpStep : (A B : Form) → A.imp B ∈ Ψ → ¬WEvalI D Ψ A → GbuRC G Ψ Z.circ
+fromImp : (Y : Form) → Y ∈ impPart Ψ → ¬WEvalI D Ψ (ante Y) → GbuRC G Ψ Z.circ
+Y : Form
+hYc' : Y.isCirc = true
+Y' : Form
+x✝ : Y'.circ.isCirc = true
+hYΨ : Y'.circ ∈ Ψ
+hYc : ¬Y'.circ.isCirc = false
+f : Focus Ψ Y'.circ
+hY'sf : Y' ∈ sfL G
+⊢ GbuRC G Ψ Z.circ
+case true.inr
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+x : ℕ × ℕ × ℕ
+ihW : (y : ℕ × ℕ × ℕ) → WgLt y x → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = y → WSearchOk G D p
+Ψ : List Form
+C : Form
+hx : wgC G (true, Ψ, C).1 (true, Ψ, C).2.1 (true, Ψ, C).2.2 = x
+IH : (q : Bool × List Form × Form) → WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G true Ψ C) → WSearchOk G D q
+hΨ : ∀ X ∈ Ψ, X ∈ sfL G
+hC : C ∈ sfR G
+hne : ¬WEvalR D Ψ C
+hax : C ∉ Ψ
+l r : List Form
+X : Form
+hsplit : Ψ = l ++ X :: r
+hX : isHat X = false
+hXmem : X ∈ Ψ
+f : Focus Ψ X
+⊢ GbuRC G Ψ C
+G : Form
+D : WSeq → Prop
+hsat : WSaturated G D
+decI : (Ω : List Form) → (C : Form) → Decidable (WEvalI D Ω C)
+main : (x : ℕ × ℕ × ℕ) → (p : Bool × List Form × Form) → wgC G p.1 p.2.1 p.2.2 = x → WSearchOk G D p
+⊢ (p : Bool × List Form × Form) → WSearchOk G D p

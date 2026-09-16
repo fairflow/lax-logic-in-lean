@@ -1,0 +1,10 @@
+=== TWO-SIDED ENGINE on the two order flags — Built trees on 7 worlds + LJF◯ at fuels [] ===
+    …100000 frames
+    …200000 frames
+    …300000 frames
+    …400000 frames
+    …500000 frames
+  frames streamed: 599424; passing BuiltB: 599424 (control: a shortfall is a generator bug)
+  certified hits: 0
+  no Built countermodel on 7 worlds (edge-generated Rm family) — flags STAND at this size (report, never drop)
+TWO-SIDED-FLAGS-DONE

@@ -1,0 +1,30 @@
+T3 SEARCHER — forward saturation over constructions, with sharing
+COVERAGE = CLOSURE: a saturation settles exactly what its
+covering goal's subformula closure reaches.  Two goals, to show it.
+
+== GOAL 1 — the closed fragment (13 catalogue representatives) ==
+   closure 26 formulas; atoms []
+   saturation: 20 DISTINCT states; witnesses min 1 max 13 total 127 worlds
+   CAL pass  ⊬ ¬◯⊥ — node 3, world 0
+   CAL pass  ⊬ ρ4 = ¬◯⊥ ∨ ◯⊥ — node 4, world 0
+   CAL pass  ⊬ ρ6 = ¬¬◯⊥ ∨ ¬◯⊥ — node 5, world 0
+   CAL pass  ⊬ ρ11 = g1 — node 6, world 0
+   CAL pass  ⊬ ρ12 = r1 — node 5, world 0
+   CAL 5/5
+   ADV pass (6 derivable sequents, none certified)
+   HARVEST 93/156 ordered pairs separated (93 facts from 20 nodes, 127 worlds)
+
+== GOAL 2 — a p,q covering goal (the SAME method, atoms present) ==
+   closure 21 formulas; atoms [p, q]
+   saturation: 68 DISTINCT states; witnesses min 1 max 7 total 220 worlds
+   CAL pass  ⊬ ◯p — node 0, world 0
+   CAL pass  ⊬ ◯p ⊃ p — node 9, world 0
+   CAL pass  ⊬ (p⊃q)∨(q⊃p) — node 32, world 0
+   CAL pass  ⊬ p ∨ ¬p — node 13, world 0
+   CAL pass  ⊬ ◯(p∨q) ⊃ (◯p∨◯q)  [PCLL-only] — node 33, world 0
+   CAL 5/5
+   ADV pass (6 derivable sequents, none certified)
+   HARVEST 47/72 ordered pairs separated (47 facts from 68 nodes, 220 worlds)
+
+TOTAL harvested separations: 140
+T3-SEARCH-DONE

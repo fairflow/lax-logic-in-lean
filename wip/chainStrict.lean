@@ -83,7 +83,7 @@ Refuted on the lifted ladder at world `k+1`: its cone is
 forced) but with the point `k+1` outside `T(2k+1) = [0, k]`
 (conclusion not forced); `soundness` does the rest. -/
 theorem chain_step_strict (k : Nat) :
-    ¬ Deriv [chainF (k + 1)] (chainF k) := by
+    [chainF (k + 1)] ⊬ chainF k := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some (k + 1)) ?_
   · -- the conclusion is not forced at k+1
@@ -125,7 +125,7 @@ theorem chain_up {j k : Nat} (h : j ≤ k) : Deriv [chainF j] (chainF k) := by
 violation would compose with `chain_up` into a violation of the single
 step at `j`. -/
 theorem chain_lt_strict {j k : Nat} (h : j < k) :
-    ¬ Deriv [chainF k] (chainF j) := fun d =>
+    [chainF k] ⊬ chainF j := fun d =>
   chain_step_strict j (Deriv.cutHead (chain_up (show j + 1 ≤ k from h)) d)
 
 /-- **The boxed odd rungs are pairwise non-interderivable**: an

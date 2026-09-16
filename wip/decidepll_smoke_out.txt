@@ -1,0 +1,27 @@
+# decidePLL smoke probe — 2026-09-01 21:15 BST — interpreted, untrusted evidence
+# gate-watch: atom cell run with expected=true first -> FAIL observed, then restored
+atom: decidePLL=false expected=false PASS
+bot: decidePLL=false expected=false PASS
+circbot: decidePLL=false expected=false PASS
+impid: decidePLL=true expected=true PASS
+unit: decidePLL=true expected=true PASS
+atom: decideGbuWData=disproof(tag=FRJ.Tag.chain (FRJ.Form.atom "p"), |Γ|=0) expected-proof=false PASS
+unit: decideGbuWData=proof expected-proof=true PASS
+# regression after compaction stage 3 (pair-V measure retired) — 2026-09-02 10:12 BST
+# wip chain rebuilt by explicit target (search 17s, closure 10s, saturate 11s); pins unchanged
+atom: decidePLL=false expected=false PASS
+bot: decidePLL=false expected=false PASS
+circbot: decidePLL=false expected=false PASS
+impid: decidePLL=true expected=true PASS
+unit: decidePLL=true expected=true PASS
+atom: decideGbuWData=disproof(tag=FRJ.Tag.chain (FRJ.Form.atom "p"), |Γ|=0) expected-proof=false PASS
+unit: decideGbuWData=proof expected-proof=true PASS
+# regression after promotion wip/ -> FRJ/Gbu/ + Greek rename + bridge modules moved — 2026-09-02 17:30 BST
+# bare lake build green (8718 jobs, FRJGbu in defaultTargets); 131 pins byte-identical
+atom: decidePLL=false expected=false PASS
+bot: decidePLL=false expected=false PASS
+circbot: decidePLL=false expected=false PASS
+impid: decidePLL=true expected=true PASS
+unit: decidePLL=true expected=true PASS
+atom: decideGbuWData=disproof(tag=FRJ.Tag.chain (FRJ.Form.atom "p"), |Γ|=0) expected-proof=false PASS
+unit: decideGbuWData=proof expected-proof=true PASS

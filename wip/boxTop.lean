@@ -77,7 +77,7 @@ theorem cBox11_not_top : ¬ Interd (q11.somehow) q1 := by
 
 /-- No rung is a theorem: rung `2n+3` refuses to derive `rn n` (world
 `n+1` lies in its truth set but beyond rung `n`'s bound). -/
-theorem rung_not_derivable : ∀ n : Nat, ¬ Deriv [] (rnSub n) := by
+theorem rung_not_derivable : ∀ n : Nat, [] ⊬ rnSub n := by
   intro n h
   have hw : Deriv [rnSub (2 * n + 3)] (rnSub n) := wkHead _ h
   have hle : rungLe (2 * n + 3) n = true :=
@@ -95,7 +95,7 @@ theorem rung_not_derivable : ∀ n : Nat, ¬ Deriv [] (rnSub n) := by
   | true => exact absurd (rungMem_bound hb) (by omega)
 
 /-- **The ◯-chain never reaches `⊤`**: `◯(rnSub n) ≢ ⊤` for every `n`. -/
-theorem chain_never_top : ∀ n : Nat, ¬ Deriv [] ((rnSub n).somehow) :=
+theorem chain_never_top : ∀ n : Nat, [] ⊬ (rnSub n).somehow :=
   fun n h => rung_not_derivable n (box_reflects_thm h)
 
 /-! ## Axiom audits — sorry-free throughout -/

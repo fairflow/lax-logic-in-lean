@@ -1,0 +1,2 @@
+XCELL 12 18 HIT 7030931ms rounds=16 lamCap=20 jmax=4 pmax=3 r=8 RS=27 IS=61 lamCapped=false dbCapped=false jmaxBinding=true pmaxBinding=true
+XCELL 13 18 HIT 6795522ms rounds=16 lamCap=20 jmax=4 pmax=3 r=8 RS=27 IS=61 lamCapped=false dbCapped=false jmaxBinding=true pmaxBinding=true

@@ -147,7 +147,7 @@ lines prove any cell of any size.
 -/
 
 example : Deriv [rnSub 0] (rnSub 5) := (rnSub_order 0 5).mpr (by decide)
-example : ¬ Deriv [rnSub 5] (rnSub 6) := fun h => by
+example : [rnSub 5] ⊬ rnSub 6 := fun h => by
   have := (rnSub_order 5 6).mp h; exact absurd this (by decide)
 
 /-- The order on the first nine rungs, as a Boolean matrix. -/

@@ -249,7 +249,7 @@ theorem cmE_transfer (k : Nat) :
 `k+3` forces the box (its cone escapes through the edge and through the
 low rungs) but not the rung itself. -/
 theorem box_not_fix (k : Nat) :
-    ¬ Deriv [chainF (k + 2)] (rnSub (2 * (k + 2) + 1)) := by
+    [chainF (k + 2)] ⊬ rnSub (2 * (k + 2) + 1) := by
   rintro ⟨d⟩
   have hs := soundness d (cmE k) (some (k + 3)) ?_
   · -- conclusion not forced at k+3

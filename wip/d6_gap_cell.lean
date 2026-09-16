@@ -58,19 +58,19 @@ def M6p : FinCM := ⟨3, [(0,1),(1,2),(0,2)], [(1,2)], [2], [(2,"p")]⟩
 def M3p : FinCM := ⟨3, [(0,1),(1,2),(0,2)], [(1,2)], [], [(2,"p")]⟩
 
 /-- **The verdict**: `◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥) ⊬ ◯(◯q⊃q)` in plain LaxND. -/
-theorem D6_gap_underivable : ¬ Nonempty (LaxND [D6] phiQ) :=
+theorem D6_gap_underivable : [D6] ⊬ phiQ :=
   FinCM.not_provable_of_check (M := M6) (w := 0) (by decide)
 
 /-- The same, by the fallible-free countermodel. -/
-theorem D6_gap_underivable_ffree : ¬ Nonempty (LaxND [D6] phiQ) :=
+theorem D6_gap_underivable_ffree : [D6] ⊬ phiQ :=
   FinCM.not_provable_of_check (M := M3) (w := 0) (by decide)
 
 /-- The harness cell (3,8) ∀-side as literally scanned (atom `p`). -/
-theorem D6_gap_underivable_p : ¬ Nonempty (LaxND [D6] phiP) :=
+theorem D6_gap_underivable_p : [D6] ⊬ phiP :=
   FinCM.not_provable_of_check (M := M6p) (w := 0) (by decide)
 
 /-- And its fallible-free twin. -/
-theorem D6_gap_underivable_p_ffree : ¬ Nonempty (LaxND [D6] phiP) :=
+theorem D6_gap_underivable_p_ffree : [D6] ⊬ phiP :=
   FinCM.not_provable_of_check (M := M3p) (w := 0) (by decide)
 
 #print axioms D6_gap_underivable
@@ -94,7 +94,7 @@ def Mfork : FinCM := ⟨4, [(0,1),(0,2),(2,3),(0,3)], [(2,3)], [3],
                       [(2,"p"),(3,"p")]⟩
 
 /-- The crank≤5 ∃-side skip of the gap row: REFUTED. -/
-theorem gap_row_exists_dOr_underivable : ¬ Nonempty (LaxND [phiP] dOr) :=
+theorem gap_row_exists_dOr_underivable : [phiP] ⊬ dOr :=
   FinCM.not_provable_of_check (M := Mfork) (w := 0) (by decide)
 
 #print axioms gap_row_exists_dOr_underivable

@@ -1,0 +1,9 @@
+== ρ12 ⊬ ρ9? — FRJ(◯) Profile raised budget (rounds=40 RS/IS=6000 lamcap=0)
+ρ12⊃ρ9	CLOSED-CAP-FREE	104ms	r=7 RS=16 IS=46 fams=146 caps=NONE
+== ρ12 ⊢ ρ9? — LJF◯ searchProves fuel ≤64
+PROCESS-CAP 2700s (LJF, ρ12/ρ9)
+== ρ13 ⊬ ρ6? — FRJ(◯) Profile raised budget (rounds=40 RS/IS=6000 lamcap=0)
+ρ13⊃ρ6	CLOSED-CAP-FREE	119ms	r=7 RS=9 IS=40 fams=270 caps=NONE
+== ρ13 ⊢ ρ6? — LJF◯ searchProves fuel ≤64
+PROCESS-CAP 2700s (LJF, ρ13/ρ6)
+FRONTIER2-DONE 2026-08-25 00:02 BST

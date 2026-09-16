@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1340 1040" font-family="Helvetica,Arial,sans-serif">
+<rect width="1340" height="1040" fill="#ffffff"/>
+<text x="24" y="36" font-size="19" fill="#16233a">RN(◯,∅) — the large-scale structure (verified families, 2026-08-26)</text>
+<text x="24" y="56" font-size="12" fill="#8a93a6">a = ◯⊥.  Solid edges: strict &lt;.  Dotted rows: pairwise-incomparable antichains.  Dashes: proved infinite continuation.  All theorems PLL, sorry-free, pinned.</text>
+<circle cx="670" cy="975" r="4" fill="#3556a8"/><text x="670" y="966" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">⊥</text><text x="670" y="995" font-size="10.5" fill="#8a93a6" text-anchor="middle">ρ0</text>
+<circle cx="670" cy="90" r="4" fill="#3556a8"/><text x="670" y="81" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">⊤</text><text x="670" y="110" font-size="10.5" fill="#8a93a6" text-anchor="middle">ρ1</text>
+<line x1="240" y1="900" x2="170" y2="830" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="900" x2="310" y2="830" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="170" y1="830" x2="240" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="170" y1="830" x2="110" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="310" y1="830" x2="240" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="760" x2="190" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="760" x2="340" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="110" y1="760" x2="190" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="190" y1="690" x2="265" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="190" y1="690" x2="120" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="340" y1="690" x2="265" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="670" y1="975" x2="240" y2="900" stroke="#8a93a6" stroke-width="1.0"/>
+<line x1="265" y1="620" x2="200" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="120" y1="620" x2="200" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="265" y1="620" x2="330" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<circle cx="240" cy="900" r="3.5" fill="#3556a8"/><text x="240" y="891" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₀=⊥</text>
+<circle cx="170" cy="830" r="3.5" fill="#3556a8"/><text x="170" y="821" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">a</text>
+<circle cx="310" cy="830" r="3.5" fill="#3556a8"/><text x="310" y="821" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬a</text>
+<circle cx="240" cy="760" r="3.5" fill="#3556a8"/><text x="240" y="751" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">a∨¬a</text>
+<circle cx="110" cy="760" r="3.5" fill="#3556a8"/><text x="110" y="751" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬¬a</text>
+<circle cx="190" cy="690" r="3.5" fill="#3556a8"/><text x="190" y="681" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₅</text>
+<circle cx="340" cy="690" r="3.5" fill="#3556a8"/><text x="340" y="681" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬¬a⊃a</text>
+<circle cx="265" cy="620" r="3.5" fill="#3556a8"/><text x="265" y="611" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₇</text>
+<circle cx="120" cy="620" r="3.5" fill="#3556a8"/><text x="120" y="611" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₈</text>
+<circle cx="200" cy="550" r="3.5" fill="#8a93a6"/>
+<circle cx="330" cy="550" r="3.5" fill="#8a93a6"/>
+<text x="265" y="520" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="235" y="470" font-size="12.5" fill="#16233a" text-anchor="middle">RN({p})-embedding ladder (zigzag)</text>
+<text x="235" y="486" font-size="10.5" fill="#8a93a6" text-anchor="middle">rnEmbed (15 pins) · rnSub_order · covers9_stable</text>
+<rect x="560" y="700" width="220" height="200" rx="10" fill="#eef2f8" stroke="#8a93a6"/>
+<circle cx="670" cy="885" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="861" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="861" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="837" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="837" r="2.5" fill="#8a93a6"/>
+<circle cx="622" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="718" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="607" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="733" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="607" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="733" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="622" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="718" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="717" r="2.5" fill="#8a93a6"/>
+<text x="670" y="723" font-size="12.5" fill="#16233a" text-anchor="middle">R — the certified catalogue</text>
+<text x="670" y="738" font-size="10.5" fill="#8a93a6" text-anchor="middle">22 classes · height 7 · matrix total</text>
+<text x="670" y="752" font-size="10.5" fill="#8a93a6" text-anchor="middle">(detail: rho-hasse-pll.svg, rho-optables.html)</text>
+<line x1="670" y1="975" x2="670" y2="900" stroke="#8a93a6" stroke-width="1.0"/>
+<circle cx="970" cy="820" r="4" fill="#3556a8"/><text x="970" y="811" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₁ = ◯(a∨¬a)</text><text x="970" y="840" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ7</text>
+<circle cx="970" cy="730" r="4" fill="#3556a8"/><text x="970" y="721" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₂ = ◯rn₅</text><text x="970" y="750" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ◯ρ6, ∉R cand.</text>
+<line x1="970" y1="820" x2="970" y2="736" stroke="#3556a8" stroke-width="1.4"/>
+<circle cx="970" cy="640" r="4" fill="#3556a8"/><text x="970" y="631" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₃ = ◯rn₇</text>
+<line x1="970" y1="730" x2="970" y2="646" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="970" y1="640" x2="970" y2="560" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="970" y="545" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="970" y="862" font-size="12.5" fill="#16233a" text-anchor="middle">ascending chain c_k = ◯ rn₂ₖ₊₁</text>
+<text x="970" y="877" font-size="10.5" fill="#8a93a6" text-anchor="middle">chain_lt_strict · chain_pairwise (wip/chainStrict.lean)</text>
+<circle cx="1180" cy="820" r="4" fill="#3556a8"/><text x="1180" y="811" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₁</text><text x="1180" y="840" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ9</text>
+<circle cx="1180" cy="730" r="4" fill="#3556a8"/><text x="1180" y="721" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₂</text>
+<line x1="1180" y1="820" x2="1180" y2="736" stroke="#3556a8" stroke-width="1.4"/>
+<circle cx="1180" cy="640" r="4" fill="#3556a8"/><text x="1180" y="631" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₃</text>
+<line x1="1180" y1="730" x2="1180" y2="646" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="1180" y1="640" x2="1180" y2="560" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="1180" y="545" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="1180" y="862" font-size="12.5" fill="#16233a" text-anchor="middle">ascending chain sC_k = c_k ∨ rn₂ₖ₊₂</text>
+<text x="1180" y="877" font-size="10.5" fill="#8a93a6" text-anchor="middle">sC_le · sC_strict (wip/families.lean)</text>
+<circle cx="840" cy="180" r="4" fill="#3556a8"/><text x="840" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₂</text>
+<circle cx="950" cy="180" r="4" fill="#3556a8"/><text x="950" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₃</text>
+<line x1="858" y1="180" x2="932" y2="180" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="180" r="4" fill="#3556a8"/><text x="1060" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₄</text>
+<line x1="968" y1="180" x2="1042" y2="180" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="184" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="154" font-size="12.5" fill="#16233a">antichain ◯(g_k) — ONE infinite antichain (k ≥ 2)</text>
+<text x="838" y="214" font-size="10.5" fill="#8a93a6">bg_incomparable · bg_pairwise (wip/families.lean)  ·  ◯g₁ ≡ ◯ρ11: membership OPEN</text>
+<circle cx="840" cy="300" r="4" fill="#3556a8"/><text x="840" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₁</text><text x="840" y="320" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ12</text>
+<circle cx="950" cy="300" r="4" fill="#3556a8"/><text x="950" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₂</text>
+<line x1="858" y1="300" x2="932" y2="300" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="300" r="4" fill="#3556a8"/><text x="1060" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₃</text>
+<line x1="968" y1="300" x2="1042" y2="300" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="304" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="274" font-size="12.5" fill="#16233a">antichain r_k = rn₂ₖ₊₄ ⊃ c_k — all j ≠ k ≥ 1</text>
+<text x="838" y="334" font-size="10.5" fill="#8a93a6">rC_incomparable · rC_pairwise (wip/families.lean)</text>
+<circle cx="840" cy="420" r="4" fill="#3556a8"/><text x="840" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₁</text><text x="840" y="440" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ11</text>
+<circle cx="950" cy="420" r="4" fill="#3556a8"/><text x="950" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₂</text>
+<line x1="858" y1="420" x2="932" y2="420" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="420" r="4" fill="#3556a8"/><text x="1060" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₃</text>
+<line x1="968" y1="420" x2="1042" y2="420" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="424" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="394" font-size="12.5" fill="#16233a">antichain g_k = c_k ⊃ rn₂ₖ₊₁ (k ≥ 2; g₁ anchors)</text>
+<text x="838" y="454" font-size="10.5" fill="#8a93a6">gap_incomparable (wip/gapWidth.lean)</text>
+<line x1="950" y1="414" x2="950" y2="192" stroke="#8a93a6" stroke-width="1" stroke-dasharray="1,3"/>
+<text x="957" y="305" font-size="10" fill="#8a93a6" transform="rotate(-90 957 305)">g_k ≤ ◯g_k (unit)</text>
+<circle cx="520" cy="470" r="4" fill="#3556a8"/><text x="520" y="461" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₀ = g₁</text><text x="520" y="490" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ11</text>
+<circle cx="520" cy="570" r="4" fill="#3556a8"/><text x="520" y="561" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₁ = g₁∧g₂</text>
+<circle cx="520" cy="670" r="4" fill="#3556a8"/><text x="520" y="661" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₂ = g₁∧g₂∧g₃</text>
+<line x1="520" y1="476" x2="520" y2="560" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="520" y1="576" x2="520" y2="660" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="520" y1="676" x2="520" y2="800" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="520" y="825" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="520" y="855" font-size="11" fill="#b3402e" text-anchor="middle">strictly descending, NO FLOOR — never reaches ⊥</text>
+<text x="520" y="440" font-size="12.5" fill="#16233a" text-anchor="middle">descending ladder Gmeet n = g₁ ∧ … ∧ g_{n+1}</text>
+<text x="520" y="425" font-size="10.5" fill="#8a93a6" text-anchor="middle">Gmeet_strict · no_least_consequence (wip/hunts.lean)</text>
+<text x="24" y="1000" font-size="12" fill="#16233a">RN(◯,∅) is INFINITE three ways — height (the ladder and both chains), width (the three antichains), depth (Gmeet, no floor):</text>
+<text x="24" y="1016" font-size="12" fill="#16233a">closed_lax_infinite, LaxLogic/PLLLaxInfinite.lean, pinned [propext, Classical.choice, Quot.sound].  Anchors ≡ ρk are certified identities; nothing else is asserted between families.</text>
+</svg>

@@ -1,0 +1,199 @@
+FRJW / Gbu-circ SEARCH-STATE TRACES
+Produced by wip/frjw_trace.lean (untrusted #eval evidence: taints nothing,
+proves nothing; the kernel gates are the #guard_msgs axiom pins in
+wip/gbu_frjw_saturate.lean).  Repository lax-logic-in-lean, branch
+trace-examples, code at commit b2f2525.  Lean toolchain v4.31.0.
+Every run below was capped with  perl -e 'alarm 600' ...  and finished
+well inside the cap; the wall time of each run is recorded with it.
+
+
+============================================================================
+$ perl -e 'alarm 600; exec @ARGV' -- lake env lean --run wip/frjw_trace.lean unit store
+date: 2026-09-02 15:58:02 BST
+wall: 11.9 s   exit: 0
+============================================================================
+
+cell     unit
+G        p ⊃ ◯p
+Sf^L G   [p]
+Sf^R G   [p ⊃ ◯p, ◯p, p]
+Ĝ        [p]
+
+=== saturation, round by round (db₀ = [], db_{k+1} = insertNew G (stepNew G db_k) db_k) ===
+round 1: stepAll emitted 3 rows, 3 fresh, 3 stored
+    axR  |  barren : [] ⇒ p
+    axI  |  [] ; [] → p
+    axIC  |  [] ; [] → ◯p
+    store now 3 rows
+round 2: stepAll emitted 19 rows, 11 fresh, 4 stored
+    circIn  |  barren : [] ⇒ ◯p
+    joinAtF  |  blocked : [] ⇒ p
+    joinAtP  |  chain p : [] ⇒ p
+    joinCircP  |  chain p : [] ⇒ ◯p
+    store now 7 rows
+round 3: stepAll emitted 44 rows, 9 fresh, 1 stored
+    joinAtP  |  chain ◯p : [] ⇒ p
+    store now 8 rows
+round 4: stepAll emitted 45 rows, 0 fresh: FIXPOINT
+
+final store: 8 rows
+closureDB G: 8 rows; sequent lists identical: true
+
+=== root scan: rootDisproof? (closureDB G) ===
+rootDisproof? = none: no regular root row with goal G;
+  decideOfStore therefore runs searchW and returns a Gbu◯ derivation.
+
+
+============================================================================
+$ perl -e 'alarm 600; exec @ARGV' -- lake env lean --run wip/frjw_trace.lean unit tree
+date: 2026-09-02 15:58:14 BST
+wall: 12.0 s   exit: 0
+============================================================================
+
+cell     unit
+G        p ⊃ ◯p
+Sf^L G   [p]
+Sf^R G   [p ⊃ ◯p, ◯p, p]
+Ĝ        [p]
+
+=== decideGbuWData G ===
+.inl: a Gbu◯ derivation of [] ⇒ G.  PROOF side.
+node format: rule | cell (reg?, Ψ, C) | wgC=(unclosed, tpC, seqSize) | guards
+
+rimpNI | (reg, [], p ⊃ ◯p) | wgC=(1, 2, 4) | cloB Ψ p=false  Ψ⊆Ĝ=true  ◯∈Ψ=false  focus=-
+  rcirc | (reg, [p], ◯p) | wgC=(0, 2, 3) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=false  focus=-
+    axI | (irr, [p], p) | wgC=(0, 0, 2) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=false  focus=p
+
+
+============================================================================
+$ perl -e 'alarm 600; exec @ARGV' -- lake env lean --run wip/frjw_trace.lean circp_p store
+date: 2026-09-02 15:58:26 BST
+wall: 12.1 s   exit: 0
+============================================================================
+
+cell     circp_p
+G        ◯p ⊃ p
+Sf^L G   [◯p, p]
+Sf^R G   [◯p ⊃ p, p]
+Ĝ        [p, ◯p]
+
+=== saturation, round by round (db₀ = [], db_{k+1} = insertNew G (stepNew G db_k) db_k) ===
+round 1: stepAll emitted 2 rows, 2 fresh, 2 stored
+    axR  |  barren : [] ⇒ p
+    axI  |  [] ; [◯p] → p
+    store now 2 rows
+round 2: stepAll emitted 7 rows, 4 fresh, 4 stored
+    impInI  |  [◯p] ; [] → ◯p ⊃ p
+    lift  |  [] ; [] → p
+    joinAtF  |  blocked : [◯p] ⇒ p
+    joinAtP  |  chain p : [] ⇒ p
+    store now 6 rows
+round 3: stepAll emitted 24 rows, 3 fresh, 2 stored
+    impIn  |  blocked : [◯p] ⇒ ◯p ⊃ p
+    joinAtF  |  blocked : [] ⇒ p
+    store now 8 rows
+round 4: stepAll emitted 26 rows, 1 fresh, 1 stored
+    lift  |  [] ; [◯p] → ◯p ⊃ p
+    store now 9 rows
+round 5: stepAll emitted 48 rows, 0 fresh: FIXPOINT
+
+final store: 9 rows
+closureDB G: 9 rows; sequent lists identical: true
+
+=== root scan: rootDisproof? (closureDB G) ===
+rootDisproof? = some: tag blocked, |Γ|=1, Γ = [◯p]
+head rule: impIn
+
+=== the FRJW disproof of the root, whole tree ===
+impIn | blocked : [◯p] ⇒ ◯p ⊃ p
+  joinAtF[irr 1] | blocked : [◯p] ⇒ p
+    · irr premise j=0
+      axI | [] ; [◯p] → p
+
+
+============================================================================
+$ perl -e 'alarm 600; exec @ARGV' -- lake env lean --run wip/frjw_trace.lean circp_p tree
+date: 2026-09-02 15:58:38 BST
+wall: 12.0 s   exit: 0
+============================================================================
+
+cell     circp_p
+G        ◯p ⊃ p
+Sf^L G   [◯p, p]
+Sf^R G   [◯p ⊃ p, p]
+Ĝ        [p, ◯p]
+
+=== decideGbuWData G ===
+.inr: an FRJW disproof of G.  DISPROOF side.  tag blocked, |Γ|=1
+
+impIn | blocked : [◯p] ⇒ ◯p ⊃ p
+  joinAtF[irr 1] | blocked : [◯p] ⇒ p
+    · irr premise j=0
+      axI | [] ; [◯p] → p
+
+
+============================================================================
+$ perl -e 'alarm 600; exec @ARGV' -- lake env lean --run wip/frjw_trace.lean G2 store
+date: 2026-09-02 15:58:50 BST
+wall: 16.4 s   exit: 0
+============================================================================
+
+cell     G2
+G        ◯p ⊃ ◯p ∧ ◯p
+Sf^L G   [◯p, p]
+Sf^R G   [◯p ⊃ ◯p ∧ ◯p, ◯p ∧ ◯p, ◯p, p, ◯p, p]
+Ĝ        [p, ◯p]
+
+=== saturation, round by round (db₀ = [], db_{k+1} = insertNew G (stepNew G db_k) db_k) ===
+round 1: stepAll emitted 3 rows, 3 fresh, 3 stored
+    axR  |  barren : [] ⇒ p
+    axI  |  [] ; [◯p] → p
+    axIC  |  [] ; [] → ◯p
+    store now 3 rows
+round 2: stepAll emitted 20 rows, 13 fresh, 7 stored
+    circIn  |  barren : [] ⇒ ◯p
+    andI1  |  [] ; [] → ◯p ∧ ◯p
+    lift  |  [] ; [] → p
+    joinAtF  |  blocked : [] ⇒ p
+    joinAtF  |  blocked : [◯p] ⇒ p
+    joinAtP  |  chain p : [] ⇒ p
+    joinCircP  |  chain p : [] ⇒ ◯p
+    store now 10 rows
+round 3: stepAll emitted 184 rows, 47 fresh, 3 stored
+    andR1  |  chain p : [] ⇒ ◯p ∧ ◯p
+    andR1  |  barren : [] ⇒ ◯p ∧ ◯p
+    joinAtP  |  chain ◯p : [] ⇒ p
+    store now 13 rows
+round 4: stepAll emitted 232 rows, 45 fresh, 1 stored
+    joinAtP  |  chain ◯p ∧ ◯p : [] ⇒ p
+    store now 14 rows
+round 5: stepAll emitted 233 rows, 0 fresh: FIXPOINT
+
+final store: 14 rows
+closureDB G: 14 rows; sequent lists identical: true
+
+=== root scan: rootDisproof? (closureDB G) ===
+rootDisproof? = none: no regular root row with goal G;
+  decideOfStore therefore runs searchW and returns a Gbu◯ derivation.
+
+
+============================================================================
+$ perl -e 'alarm 600; exec @ARGV' -- lake env lean --run wip/frjw_trace.lean G2 tree
+date: 2026-09-02 15:59:07 BST
+wall: 14.3 s   exit: 0
+============================================================================
+
+cell     G2
+G        ◯p ⊃ ◯p ∧ ◯p
+Sf^L G   [◯p, p]
+Sf^R G   [◯p ⊃ ◯p ∧ ◯p, ◯p ∧ ◯p, ◯p, p, ◯p, p]
+Ĝ        [p, ◯p]
+
+=== decideGbuWData G ===
+.inl: a Gbu◯ derivation of [] ⇒ G.  PROOF side.
+node format: rule | cell (reg?, Ψ, C) | wgC=(unclosed, tpC, seqSize) | guards
+
+rimpNI | (reg, [], ◯p ⊃ ◯p ∧ ◯p) | wgC=(2, 2, 8) | cloB Ψ ◯p=false  Ψ⊆Ĝ=true  ◯∈Ψ=false  focus=-
+  randR | (reg, [◯p], ◯p ∧ ◯p) | wgC=(1, 2, 7) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=true  focus=-
+    ax | (reg, [◯p], ◯p) | wgC=(1, 2, 4) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=true  focus=◯p
+    ax | (reg, [◯p], ◯p) | wgC=(1, 2, 4) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=true  focus=◯p

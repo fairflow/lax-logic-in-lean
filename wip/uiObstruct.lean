@@ -128,7 +128,7 @@ theorem Gmeet_forced {m : Nat} :
 
 /-- **The partial meets never reach the next gap**:
 `g 1 ∧ … ∧ g (n+1) ⊬ g (n+2)`. -/
-theorem Gmeet_strict (n : Nat) : ¬ Deriv [Gmeet n] (gap (n + 2)) := by
+theorem Gmeet_strict (n : Nat) : [Gmeet n] ⊬ gap (n + 2) := by
   rintro ⟨d⟩
   have hs := soundness d (cmE (n + 1)) (some ((n + 1) + 3)) (fun ψ hψ => by
     have e : ψ = Gmeet n := by
@@ -141,7 +141,7 @@ theorem Gmeet_strict (n : Nat) : ¬ Deriv [Gmeet n] (gap (n + 2)) := by
 
 /-- **RN(◯,{}) contains an infinite strictly DESCENDING chain**:
 `Gmeet 0 > Gmeet 1 > Gmeet 2 > …`. -/
-theorem Gmeet_desc_strict (n : Nat) : ¬ Deriv [Gmeet n] (Gmeet (n + 1)) :=
+theorem Gmeet_desc_strict (n : Nat) : [Gmeet n] ⊬ Gmeet (n + 1) :=
   fun h => Gmeet_strict n
     (Deriv.cutHead h (Deriv.andElim2 (Deriv.iden (.head _))))
 
@@ -167,7 +167,7 @@ post-interpolant. -/
 theorem no_post_interp_schema {φ : PLLFormula}
     (hg : ∀ k, 1 ≤ k → Deriv [φ] (gap k))
     (hL : ∀ χ, atomFree χ = true → (∀ k, 1 ≤ k → Deriv [χ] (gap k)) →
-      ¬ Deriv [φ] χ) :
+      [φ] ⊬ χ) :
     ¬ ∃ ψ, IsPostInterp φ ψ := by
   rintro ⟨ψ, hψa, hφψ, hmin⟩
   exact hL ψ hψa (fun k hk => hmin (gap k) (gap_atomFree k) (hg k hk)) hφψ
@@ -178,7 +178,7 @@ no uniform pre-interpolant. -/
 theorem no_pre_interp_schema {φ : PLLFormula}
     (hc : ∀ k, Deriv [chainF k] φ)
     (hU : ∀ χ, atomFree χ = true → (∀ k, Deriv [chainF k] χ) →
-      ¬ Deriv [χ] φ) :
+      [χ] ⊬ φ) :
     ¬ ∃ ψ, IsPreInterp φ ψ := by
   rintro ⟨ψ, hψa, hψφ, hmax⟩
   exact hU ψ hψa (fun k => hmax (chainF k) (chainF_atomFree k) (hc k)) hψφ
@@ -188,7 +188,7 @@ theorem no_pre_interp_schema {φ : PLLFormula}
 /-- The c-chain is cofinal over the rungs: `chainF (n+1) ⊬ t n` for
 every `n` — no rung bounds the chain. -/
 theorem chain_cofinal_not_rung (n : Nat) :
-    ¬ Deriv [chainF (n + 1)] (rnSub n) := by
+    [chainF (n + 1)] ⊬ rnSub n := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some (n + 1)) (fun ψ hψ => by
     have e : ψ = chainF (n + 1) := by

@@ -1,0 +1,880 @@
+════════ LEFT association:  (q6 ∨ q10) ∨ q14 ════════
+φ  = ((¬¬◯⊥ ∨ (¬¬◯⊥ ⊃ ◯⊥)) ∨ ((¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥))
+polarised sequent handed to FRJ◯:
+   · ; [] ⊢[tru] ↑((↓(↓(↓◯0 → ↑0) → ↑0) ⊕ ↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)) ⊕ ↓(↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) → ◯↓(↓◯0 → ↑0)))     ⟨inversion⟩
+
+FRJ◯ verdict: REFUTED.  derivation size 430 nodes, model 9 worlds, root world 0
+
+──── the refutation derivation ────
+· ; [] ⊢[tru] ↑((↓(↓(↓◯0 → ↑0) → ↑0) ⊕ ↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)) ⊕ ↓(↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) → ◯↓(↓◯0 → ↑0)))     ⟨inversion⟩
+  ├ rule 0: stabilise — refuting premise 0 of 1
+    · ⊢[tru] ((↓(↓(↓◯0 → ↑0) → ↑0) ⊕ ↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)) ⊕ ↓(↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) → ◯↓(↓◯0 → ↑0)))     ⟨stable⟩
+      ├ rule 0: Rfocus — refuting premise 0 of 1
+        · ⊢[tru] ⟦((↓(↓(↓◯0 → ↑0) → ↑0) ⊕ ↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)) ⊕ ↓(↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) → ◯↓(↓◯0 → ↑0)))⟧     ⟨right focus⟩
+          ├ rule 0: ⊕R₁ — refuting premise 0 of 1
+            · ⊢[tru] ⟦(↓(↓(↓◯0 → ↑0) → ↑0) ⊕ ↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0))⟧     ⟨right focus⟩
+              ├ rule 0: ⊕R₁ — refuting premise 0 of 1
+                · ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                    · ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                      ├ rule 0: →R — refuting premise 0 of 1
+                        · ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                            (↓◯0 → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                (↓◯0 → ↑0) ⊢[tru] 0     ⟨stable⟩
+                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                    (↓◯0 → ↑0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                    (↓◯0 → ↑0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                      ├ rule 0: →L — refuting premise 0 of 2
+                                        (↓◯0 → ↑0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                            (↓◯0 → ↑0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                (↓◯0 → ↑0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                  ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                    (↓◯0 → ↑0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                      ├ rule 0: stabilise — refuting premise 0 of 1
+                                                        (↓◯0 → ↑0) ⊢[lax] 0     ⟨stable⟩
+                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                            (↓◯0 → ↑0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                          ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                            (↓◯0 → ↑0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                          ├ rule 2: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                          ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                            (↓◯0 → ↑0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                └─ CYCLE — back-edge to this stable sequent in the history
+              ├ rule 1: ⊕R₂ — refuting premise 0 of 1
+                · ⊢[tru] ⟦↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧     ⟨right focus⟩
+                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                    · ; [] ⊢[tru] (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)     ⟨inversion⟩
+                      ├ rule 0: →R — refuting premise 0 of 1
+                        · ; [↓(↓(↓◯0 → ↑0) → ↑0)] ⊢[tru] ◯0     ⟨inversion⟩
+                          ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                            · ; [↓(↓(↓◯0 → ↑0) → ↑0)] ⊢[lax] ↑0     ⟨inversion⟩
+                              ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                    (↓(↓◯0 → ↑0) → ↑0) ⊢[lax] 0     ⟨stable⟩
+                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                        (↓(↓◯0 → ↑0) → ↑0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                      ├ rule 1: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                        (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                          ├ rule 0: →L — refuting premise 0 of 2
+                                            (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                    (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                        (↓(↓◯0 → ↑0) → ↑0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] 0     ⟨stable⟩
+                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                                  ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦◯0⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                  ├ rule 2: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                                                                  ├ rule 0: →R — refuting premise 0 of 1
+                                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                      ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                        ◯0, ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦◯0⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                                          ├ rule 2: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                              ├ rule 1: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                      ├ rule 2: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                        (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] 0     ⟨stable⟩
+                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                            (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                          ├ rule 1: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                            (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                    (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                        (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                                          ├ rule 0: →R — refuting premise 0 of 1
+                                                            (↓(↓◯0 → ↑0) → ↑0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                              ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] 0     ⟨stable⟩
+                                                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                                      ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦◯0⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                      ├ rule 2: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                            ◯0, ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦◯0⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                                              ├ rule 2: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                  ├ rule 1: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                    (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                          ├ rule 1: ↓L (to context) — refuting premise 0 of 1
+                            (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                              ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                    (↓(↓◯0 → ↑0) → ↑0) ⊢[lax] 0     ⟨stable⟩
+                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                        (↓(↓◯0 → ↑0) → ↑0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                      ├ rule 1: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                        (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                          ├ rule 0: →L — refuting premise 0 of 2
+                                            (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                    (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                        (↓(↓◯0 → ↑0) → ↑0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] 0     ⟨stable⟩
+                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                                  ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦◯0⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                  ├ rule 2: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                                                                  ├ rule 0: →R — refuting premise 0 of 1
+                                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                      ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                        ◯0, ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦◯0⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                                          ├ rule 2: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                              ├ rule 1: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                      ├ rule 2: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                        (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] 0     ⟨stable⟩
+                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                            (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                          ├ rule 1: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                            (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                    (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                        (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                                          ├ rule 0: →R — refuting premise 0 of 1
+                                                            (↓(↓◯0 → ↑0) → ↑0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                              ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] 0     ⟨stable⟩
+                                                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                                      ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦◯0⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                      ├ rule 2: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                    ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                                                        ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                            ◯0, ◯0, (↓(↓◯0 → ↑0) → ↑0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦◯0⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                                              ├ rule 2: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                                                ◯0, (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                  ├ rule 1: Lfocus on (↓(↓◯0 → ↑0) → ↑0) — refuting premise 0 of 1
+                                                    (↓(↓◯0 → ↑0) → ↑0) ; ⟦(↓(↓◯0 → ↑0) → ↑0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                        └─ CYCLE — back-edge to this stable sequent in the history
+          ├ rule 1: ⊕R₂ — refuting premise 0 of 1
+            · ⊢[tru] ⟦↓(↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) → ◯↓(↓◯0 → ↑0))⟧     ⟨right focus⟩
+              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                · ; [] ⊢[tru] (↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) → ◯↓(↓◯0 → ↑0))     ⟨inversion⟩
+                  ├ rule 0: →R — refuting premise 0 of 1
+                    · ; [↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)] ⊢[tru] ◯↓(↓◯0 → ↑0)     ⟨inversion⟩
+                      ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                        · ; [↓(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)] ⊢[lax] ↑↓(↓◯0 → ↑0)     ⟨inversion⟩
+                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑↓(↓◯0 → ↑0)     ⟨inversion⟩
+                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] (↓◯0 → ↑0)     ⟨inversion⟩
+                                  ├ rule 1: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                      ├ rule 0: →L — refuting premise 0 of 2
+                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                  ├ rule 0: →R — refuting premise 0 of 1
+                                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                      ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                          ├ rule 0: stabilise — refuting premise 0 of 1
+                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] 0     ⟨stable⟩
+                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                                                          ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                                              ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] 0     ⟨stable⟩
+                                                                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                                                      ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                      ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                                            (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                      ├ rule 3: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                      ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                      ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                          ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                              ├ rule 0: →R — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                  ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                      ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                      ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                                                      ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] 0     ⟨stable⟩
+                                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                              ├ rule 3: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                      ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                          ├ rule 1: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                  ├ rule 2: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                          ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                              ├ rule 0: →R — refuting premise 0 of 1
+                                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                  ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                    ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                      ├ rule 0: stabilise — refuting premise 0 of 1
+                                                        ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] 0     ⟨stable⟩
+                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                            ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                          ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                            ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦◯0⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                          ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                            ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                              ├ rule 0: →L — refuting premise 1 of 2
+                                                                ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦◯0⟧ ⊢[tru] 0     ⟨left focus⟩
+                                      ├ rule 1: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                          ├ rule 0: →L — refuting premise 0 of 2
+                                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] 0     ⟨stable⟩
+                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                                                  ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                                                      ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] 0     ⟨stable⟩
+                                                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                                                          ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                          ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                                          ├ rule 0: →R — refuting premise 0 of 1
+                                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                              ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                                                (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                          ├ rule 3: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                          ├ rule 0: →R — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                              ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                  ├ rule 0: →R — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                      ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                                                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                                                          ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] 0     ⟨stable⟩
+                                                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                                  ├ rule 3: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                              ├ rule 1: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                      ├ rule 1: ↓L (to context) — refuting premise 0 of 1
+                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯↓(↓◯0 → ↑0)     ⟨inversion⟩
+                          ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑↓(↓◯0 → ↑0)     ⟨inversion⟩
+                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] (↓◯0 → ↑0)     ⟨inversion⟩
+                                  ├ rule 1: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                      ├ rule 0: →L — refuting premise 0 of 2
+                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                  ├ rule 0: →R — refuting premise 0 of 1
+                                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                      ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                          ├ rule 0: stabilise — refuting premise 0 of 1
+                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] 0     ⟨stable⟩
+                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                                                          ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                                              ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] 0     ⟨stable⟩
+                                                                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                                                      ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                      ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                                            (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                      ├ rule 3: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                      ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                      ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                          ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                              ├ rule 0: →R — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                  ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                      ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                      ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                                                      ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] 0     ⟨stable⟩
+                                                                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                              ├ rule 3: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                              ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                      ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                          ├ rule 0: →L — refuting premise 0 of 2
+                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                          ├ rule 1: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                  ├ rule 2: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓◯0 → ↑0)     ⟨stable⟩
+                                      ├ rule 0: Rfocus — refuting premise 0 of 1
+                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓◯0 → ↑0)⟧     ⟨right focus⟩
+                                          ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓◯0 → ↑0)     ⟨inversion⟩
+                                              ├ rule 0: →R — refuting premise 0 of 1
+                                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓◯0] ⊢[tru] ↑0     ⟨inversion⟩
+                                                  ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                    ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                      ├ rule 0: stabilise — refuting premise 0 of 1
+                                                        ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] 0     ⟨stable⟩
+                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                            ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                          ├ rule 1: Lfocus on ◯0 — refuting premise 0 of 1
+                                                            ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦◯0⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                          ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                            ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                              ├ rule 0: →L — refuting premise 1 of 2
+                                                                ◯0, (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦◯0⟧ ⊢[tru] 0     ⟨left focus⟩
+                                      ├ rule 1: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓◯0 → ↑0)     ⟨left focus⟩
+                                          ├ rule 0: →L — refuting premise 0 of 2
+                                            (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                              ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                  ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                    (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                      ├ rule 0: →R — refuting premise 0 of 1
+                                                        (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                          ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] 0     ⟨stable⟩
+                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦0⟧     ⟨right focus⟩
+                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                                                  ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                                                      ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] 0     ⟨stable⟩
+                                                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                                                          ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                          ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                                          ├ rule 0: →R — refuting premise 0 of 1
+                                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                              ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                                                (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                          ├ rule 3: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                          ├ rule 0: →R — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                              ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                                  ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] 0     ⟨left focus⟩
+                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨stable⟩
+                                                                          ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓(↓(↓◯0 → ↑0) → ↑0)⟧     ⟨right focus⟩
+                                                                              ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] (↓(↓◯0 → ↑0) → ↑0)     ⟨inversion⟩
+                                                                                  ├ rule 0: →R — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [↓(↓◯0 → ↑0)] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                      ├ rule 0: ↓L (to context) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ↑0     ⟨inversion⟩
+                                                                                          ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                            └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ↓◯0     ⟨stable⟩
+                                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[tru] ⟦↓◯0⟧     ⟨right focus⟩
+                                                                                      ├ rule 0: ↓R (release) — refuting premise 0 of 1
+                                                                                        (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[tru] ◯0     ⟨inversion⟩
+                                                                                          ├ rule 0: ◯R  ← enters the lax phase — refuting premise 0 of 1
+                                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; [] ⊢[lax] ↑0     ⟨inversion⟩
+                                                                                              ├ rule 0: stabilise — refuting premise 0 of 1
+                                                                                                (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] 0     ⟨stable⟩
+                                                                                                  ├ rule 0: Rfocus — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ⊢[lax] ⟦0⟧     ⟨right focus⟩
+                                                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[lax] 0     ⟨left focus⟩
+                                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                                  ├ rule 3: lax-coercion (tru→lax) — refuting premise 0 of 1
+                                                                                                    └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                  ├ rule 1: Lfocus on (↓◯0 → ↑0) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓◯0 → ↑0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                                  ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                                    (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓◯0     ⟨left focus⟩
+                                                                                      ├ rule 0: →L — refuting premise 0 of 2
+                                                                                        └─ CYCLE — back-edge to this stable sequent in the history
+                                                                          ├ rule 2: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                                            (↓◯0 → ↑0), (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                                              ├ rule 0: →L — refuting premise 0 of 2
+                                                                                └─ CYCLE — back-edge to this stable sequent in the history
+                                              ├ rule 1: Lfocus on (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) — refuting premise 0 of 1
+                                                (↓(↓(↓◯0 → ↑0) → ↑0) → ◯0) ; ⟦(↓(↓(↓◯0 → ↑0) → ↑0) → ◯0)⟧ ⊢[tru] ↓(↓(↓◯0 → ↑0) → ↑0)     ⟨left focus⟩
+                                                  ├ rule 0: →L — refuting premise 0 of 2
+                                                    └─ CYCLE — back-edge to this stable sequent in the history
+
+──── the extracted countermodel ────
+M = ⟨n := 9, ri := [(0, 7), (0, 8), (2, 7), (4, 8), (6, 8), (3, 7), (4, 6), (4, 5), (2, 3), (1, 5), (0, 6), (0, 5), (0, 4), (0, 3), (0, 2), (0, 1)], rm := [(6, 8), (3, 7)], fall := [8, 7], val := []⟩
+wellB M                 = true
+FRJO.wf [] s t          = true   (searcher self-check, control)
+FinCM.checkB M 0 [] φ    = true   ← the VERIFIED gate
+forceB 0 φ              = false   (must be false at the root)
+
+consumable as:  FinCM.not_provable_of_check (M := M) (w := w) (C := φ) (by decide)
+SVG by PLLND.Diagram.toSvg (autoPos/autoSize/hasseRi) → docs/frjo-q6q10q14-left.svg
+  world labels: w0: ⊮ all  |  w1: q10, q14  |  w2: q6, q14  |  w3: q6, q10, q14  |  w4: q10  |  w5: q10, q14  |  w6: q6, q10, q14  |  w7: q6, q10, q14  |  w8: q6, q10, q14
+
+════════ RIGHT association: q6 ∨ (q10 ∨ q14) ════════

@@ -1,4 +1,5 @@
 import wip.postui
+import Meta.Audit
 
 /-!
 # REFUTED: `CoverConj`.  The substitution-cover method fails on the `∃`-side too
@@ -448,7 +449,7 @@ theorem phiStar_to_phiMix : Deriv [phiStar] phiMix := by
     (Deriv.andElim1 (Deriv.iden (.tail _ (.head _)))) hp)
 
 /-- `φ★ ⊬ ◯⊥` — the root of `M4` forces `φ★` and not `◯⊥`. -/
-theorem phiStar_not_oBot : ¬ Deriv [phiStar] oBot := by
+theorem phiStar_not_oBot : [phiStar] ⊬ oBot := by
   rintro ⟨d⟩
   refine M4_not_oBot_zero (soundness d M4 0 ?_)
   intro ψ hψ
@@ -460,7 +461,7 @@ theorem phiStar_not_oBot : ¬ Deriv [phiStar] oBot := by
   exact M4_force_phiStar
 
 /-- `φ★` is consistent. -/
-theorem phiStar_consistent : ¬ Deriv [phiStar] PLLFormula.falsePLL := by
+theorem phiStar_consistent : [phiStar] ⊬ PLLFormula.falsePLL := by
   rintro ⟨d⟩
   have hs := soundness d M4 0 (fun ψ hψ => by
     have e : ψ = phiStar := by
@@ -615,9 +616,13 @@ theorem postInterpPhiStarIsNNBox_iff :
 #guard_msgs in
 #print axioms force_inst_bot
 
-/-- info: 'PLLND.RNEmbed.M4_swap' depends on axioms: [propext] -/
-#guard_msgs in
-#print axioms M4_swap
+-- A BOUND, not a transcript (2026-09-04).  `M4_swap` measured
+-- `[propext]` when it was written and measures `[propext, Quot.sound]`
+-- now; the extra axiom arrives from `Fin 4`, which indexes `M4`'s
+-- worlds, and is innocuous for this refutation.  Recording the bound
+-- rather than re-indexing `M4` on a bare inductive: what this pin is
+-- for is catching a crossing into `Classical.choice` or `sorryAx`.
+#axioms_within M4_swap [propext, Quot.sound]
 
 /-- info: 'PLLND.RNEmbed.M4_force_phiStar' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in

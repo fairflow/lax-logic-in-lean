@@ -58,14 +58,14 @@ Spelled out, the underivable formula is
 and it is an instance of the PCLL axiom, so PCLL ⊋ PLL already on
 formulas built from two rungs. -/
 theorem distr_4_3_not_derivable :
-    ¬ Deriv [] (distrAx (rnSub 4) (rnSub 3)) :=
+    [] ⊬ distrAx (rnSub 4) (rnSub 3) :=
   FinCM.not_provable_of_check (M := Msep) (w := 0) (by decide)
 
 /-- The same in its reduced form: `q12 ⊬ q9`, the cell that
 `wip/rnDict.lean` records as OPEN (`cImp_12_9`, sorried, "candidates
 [1, 11, 13] neither proved nor refuted (exhaustive ≤4-world
 battery)").  It is settled here, negatively. -/
-theorem q12_not_derives_q9 : ¬ Deriv [q12] q9 :=
+theorem q12_not_derives_q9 : [q12] ⊬ q9 :=
   FinCM.not_provable_of_check (M := Msep) (w := 0) (by decide)
 
 /-- The converse direction does hold, so `q9 < q12` strictly. -/

@@ -329,7 +329,7 @@ theorem gap_meet_not_attained {χ : PLLFormula}
 `k ≥ K`. -/
 theorem no_lower_bound_above_odd_rungs {χ : PLLFormula}
     (h : ∀ k : Nat, 1 ≤ k → Deriv [χ] (gap k)) :
-    ∃ K : Nat, ∀ k : Nat, K ≤ k → ¬ Deriv [rnSub (2 * k + 1)] χ := by
+    ∃ K : Nat, ∀ k : Nat, K ≤ k → [rnSub (2 * k + 1)] ⊬ χ := by
   obtain ⟨B, hB⟩ := L_bounded h
   refine ⟨B, fun k hk hd => ?_⟩
   obtain ⟨d⟩ := hd

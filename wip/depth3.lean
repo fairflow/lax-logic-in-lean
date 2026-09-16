@@ -178,7 +178,7 @@ theorem not_derivU_box_atom :
 
 /-- The same refutation in PLL. -/
 theorem not_deriv_box_atom :
-    ¬ Deriv [(PLLFormula.prop "p").somehow] ((PLLFormula.prop "p").or oBot) :=
+    [(PLLFormula.prop "p").somehow] ⊬ (PLLFormula.prop "p").or oBot :=
   fun h => not_derivU_box_atom (h.elim fun d => .of_nd d)
 
 /-! ## `M4` — a confluent model where the ladder does NOT degenerate -/
@@ -330,7 +330,7 @@ theorem not_derivU_box_rnSub_two :
   exact Bool.noConfusion this
 
 /-- And in PLL. -/
-theorem not_deriv_chain_one_rnSub_three : ¬ Deriv [RNEmbed.chainF 1] (rnSub 3) :=
+theorem not_deriv_chain_one_rnSub_three : [RNEmbed.chainF 1] ⊬ rnSub 3 :=
   fun h => not_derivU_chain_one_rnSub_three (h.elim fun d => .of_nd d)
 
 /-! ## The surviving fold-back law: `◯t4 ⊣⊢ t4` -/

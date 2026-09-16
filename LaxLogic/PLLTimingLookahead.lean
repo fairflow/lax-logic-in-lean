@@ -1,4 +1,8 @@
 import LaxLogic.PLLTimingRipple
+-- Explicit since 2026-09-03: uses Mathlib order/algebra lemmas and ℕ notation; the foundation modules no longer
+-- re-export Mathlib.  OUTSIDE the runtime closure of `lake exe pll`, so
+-- this costs the decider nothing.
+import Mathlib
 
 /-!
 # Carry-lookahead vs ripple: proof restructuring is circuit speed-up

@@ -50,41 +50,41 @@ def M₂ : FinCM := ⟨2, [(0,1)], [(0,1)], [1], []⟩
 /-! ## The six underivabilities -/
 
 /-- `¬◯⊥ ⊬ ⊥` — the infallible model forces `¬◯⊥` and not `⊥`. -/
-theorem nb_not_bot : ¬ Nonempty (LaxND [nb] falsePLL) :=
+theorem nb_not_bot : [nb] ⊬ falsePLL :=
   FinCM.not_provable_of_check (M := M₁) (w := 0) (by decide)
 
 /-- `⊬ ¬¬◯⊥` — infallible models invalidate it. -/
-theorem not_nnb : ¬ Nonempty (LaxND [] nnb) :=
+theorem not_nnb : [] ⊬ nnb :=
   FinCM.not_provable_of_check (M := M₁) (w := 0) (by decide)
 
 /-- `¬◯⊥ ⊬ ¬¬◯⊥`, directly. -/
-theorem nb_not_nnb : ¬ Nonempty (LaxND [nb] nnb) :=
+theorem nb_not_nnb : [nb] ⊬ nnb :=
   FinCM.not_provable_of_check (M := M₁) (w := 0) (by decide)
 
 /-- `⊬ ⊥` — consistency. -/
-theorem not_bot : ¬ Nonempty (LaxND [] falsePLL) :=
+theorem not_bot : [] ⊬ falsePLL :=
   FinCM.not_provable_of_check (M := M₁) (w := 0) (by decide)
 
 /-- `⊬ ¬◯⊥` — F&M's "no D axiom", here from the fallible model. -/
-theorem not_nb : ¬ Nonempty (LaxND [] nb) :=
+theorem not_nb : [] ⊬ nb :=
   FinCM.not_provable_of_check (M := M₂) (w := 0) (by decide)
 
 /-- `¬¬◯⊥ ⊬ ⊥` — the fallible model forces `¬¬◯⊥` and not `⊥`. -/
-theorem nnb_not_bot : ¬ Nonempty (LaxND [nnb] falsePLL) :=
+theorem nnb_not_bot : [nnb] ⊬ falsePLL :=
   FinCM.not_provable_of_check (M := M₂) (w := 0) (by decide)
 
 /-! ## The `⊤`-side versions, so every pair is stated the same way -/
 
 /-- `⊤ ⊬ ⊥`. -/
-theorem top_not_bot : ¬ Nonempty (LaxND [truePLL] falsePLL) :=
+theorem top_not_bot : [truePLL] ⊬ falsePLL :=
   FinCM.not_provable_of_check (M := M₁) (w := 0) (by decide)
 
 /-- `⊤ ⊬ ¬¬◯⊥`. -/
-theorem top_not_nnb : ¬ Nonempty (LaxND [truePLL] nnb) :=
+theorem top_not_nnb : [truePLL] ⊬ nnb :=
   FinCM.not_provable_of_check (M := M₁) (w := 0) (by decide)
 
 /-- `⊤ ⊬ ¬◯⊥`. -/
-theorem top_not_nb : ¬ Nonempty (LaxND [truePLL] nb) :=
+theorem top_not_nb : [truePLL] ⊬ nb :=
   FinCM.not_provable_of_check (M := M₂) (w := 0) (by decide)
 
 /-! ## The classification, assembled -/

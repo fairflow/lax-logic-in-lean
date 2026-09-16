@@ -174,7 +174,7 @@ theorem arbiter_denies_g2 : FinCM.forceB arbiterM 0 (somehow g2) = false := by d
 /-- **The arbiter refutes `◯`-distribution over `∨`**, through the verified
 checker: believing that *a* grant occurs does not amount to believing, of some
 particular grant, that it occurs. -/
-theorem arbiter_no_distribution : ¬ Nonempty (LaxND [Ogrant] OgOrOg) :=
+theorem arbiter_no_distribution : [Ogrant] ⊬ OgOrOg :=
   FinCM.not_provable_of_check (M := arbiterM) (w := 0) (by decide)
 
 /-! ### Why: mutual exclusion is non-confluence -/

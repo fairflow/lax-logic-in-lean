@@ -177,7 +177,7 @@ theorem thm6_soundness (C : StdCtx) {φ : PLLFormula}
 /-- Contrapositive, the form used to refute PLL-entailments: if some standard
 constraint `C` makes `φ^C` IPL-**un**provable, then `φ` is not a PLL theorem. -/
 theorem not_provable_of_subC (C : StdCtx) {φ : PLLFormula}
-    (h : ¬ Nonempty (LaxND [] (subC C φ))) : ¬ Nonempty (LaxND [] φ) :=
+    (h : [] ⊬ subC C φ) : [] ⊬ φ :=
   fun hp => h (thm6_soundness C hp)
 
 /-! ## `φ^C` is genuinely IPL (◯-free) when `C` is
@@ -861,7 +861,7 @@ theorem chi_not_forced : ∀ m, ¬ (Mmod m).force 0 (chi m) := by
         exact ih ((bisim m (chi m) 0).mp h2)
 
 /-- **Lemma 9.**  `χ_m` is refuted by the model `M_m`, hence is not a PLL theorem. -/
-theorem lemma9 (m : ℕ) : ¬ Nonempty (LaxND [] (chi m)) := by
+theorem lemma9 (m : ℕ) : [] ⊬ chi m := by
   intro hp
   exact chi_not_forced m (valid_iff_provable.mpr hp (Mmod m) 0)
 
@@ -980,10 +980,72 @@ depth in `𝔻` — that every `C ∈ 𝔻` expands to an IPL theorem `φ^C`, ye
 PLL theorem. -/
 theorem corollary10 (𝔻 : Finset StdCtx) :
     ∃ φ : PLLFormula,
-      (∀ C ∈ 𝔻, Nonempty (LaxND [] (subC C φ))) ∧ ¬ Nonempty (LaxND [] φ) := by
+      (∀ C ∈ 𝔻, Nonempty (LaxND [] (subC C φ))) ∧ [] ⊬ φ := by
   refine ⟨chi (𝔻.sup List.length), ?_, lemma9 _⟩
   intro C hC
   exact lemma8 C (𝔻.sup List.length) (Finset.le_sup hC)
+
+/-! ### The frame side: unboundedly many modal endpoints are needed
+
+Corollary 10 bounds the *constraints*.  Lemma 7 turns that bound into one on the
+*models*: the constraint `C0` a finite model determines has exactly one basic
+conjunct per `Rm`-stable world, so a model with at most `m` stable worlds
+validates `χ_m`.  As `χ_m` is not a PLL theorem (Lemma 9), no bound on the number
+of stable worlds gives a complete class of models. -/
+
+open Classical in
+/-- The **modal width** of a finite model: the number of `Rm`-stable worlds, i.e.
+of worlds lying in an `Rm`-maximal cluster (`Stab`). -/
+noncomputable def stabCard (M : ConstraintModel) [Fintype M.W] : ℕ :=
+  (Finset.univ.filter (Stab M)).card
+
+open Classical in
+/-- `C0` has one basic constraint per stable world, so its depth is the modal
+width — this is the bridge from Corollary 10's depth bound to a frame bound. -/
+theorem length_C0 (M : ConstraintModel) [Fintype M.W] (φ₀ : PLLFormula) :
+    (C0 M φ₀).length = stabCard M := by
+  rw [C0, List.length_map, Finset.length_toList, stabCard]
+
+/-- **Bounded modal width validates the ladder.**  A finite model with at most
+`m` `Rm`-stable worlds forces `χ_m` at every world. -/
+theorem chi_valid_of_stabCard {M : ConstraintModel} [Fintype M.W] {m : ℕ}
+    (h : stabCard M ≤ m) (w : M.W) : M.force w (chi m) :=
+  (force_coincide M (chi m) (chi m) (fun u => nm_fresh M (chi m) u) w).mp
+    ((force_subC_C0 M (chi m) (chi m) w).mp
+      (lemma8_valid m (C0 M (chi m)) (by rw [length_C0]; exact h) (Mstar M (chi m)) w))
+
+/-- **No bound on modal width is complete.**  For every `m`, `χ_m` is valid on
+every finite model of modal width `≤ m`, yet `χ_m` is not a PLL theorem.  So the
+class of models whose `Rm` has at most `m` stable worlds is *not* complete for
+PLL: completeness demands `Rm`-relations with unboundedly many maximal clusters,
+and in particular no finite family of modal accessibility shapes suffices. -/
+theorem stabCard_bounded_incomplete (m : ℕ) :
+    (∀ (M : ConstraintModel) [Fintype M.W], stabCard M ≤ m → ∀ w : M.W, M.force w (chi m))
+      ∧ [] ⊬ chi m :=
+  ⟨fun _ _ h w => chi_valid_of_stabCard h w, lemma9 m⟩
+
+open Classical in
+/-- The modal width of a nonempty finite model is at least `1` (every `Rm`-cone
+meets a maximal cluster), so the `m = 0` rung of the ladder is vacuous. -/
+theorem stabCard_pos {M : ConstraintModel} [Fintype M.W] (w : M.W) : 0 < stabCard M := by
+  obtain ⟨u, -, hu⟩ :=
+    exists_max_cluster M.Rm M.refl_m (fun hab hbc => M.trans_m hab hbc) w
+  refine Finset.card_pos.mpr ⟨u, ?_⟩
+  simpa [Stab] using hu
+
+open Classical in
+/-- **The bound is on modal structure, not on size.**  Any model with an
+`Rm`-greatest world `t` whose cluster is trivial has modal width exactly `1`,
+whatever its cardinality — for instance an `≤`-chain of any length with
+`Rm = Ri`.  So each class `stabCard ≤ m` contains models of every finite size,
+and `stabCard_bounded_incomplete` is not vacuous. -/
+theorem stabCard_eq_one_of_top {M : ConstraintModel} [Fintype M.W] (t : M.W)
+    (htop : ∀ w, M.Rm w t) (hcl : ∀ u, M.Rm t u → u = t) : stabCard M = 1 := by
+  have hiff : ∀ u : M.W, Stab M u ↔ u = t := fun u =>
+    ⟨fun hs => hcl u (hs t (htop u)), fun h => by rw [h]; intro s hs; rw [hcl s hs]; exact M.refl_m t⟩
+  have : (Finset.univ.filter (Stab M)) = {t} := by
+    ext u; simp [hiff u]
+  rw [stabCard, this, Finset.card_singleton]
 
 /-! ============================================================================
 # Section F — Theorem 2: the Boolean algebra of standard constraints
@@ -1720,14 +1782,14 @@ example : (⊥ : CQuot) = CQuot.mk Cbot := rfl
 example (C : StdCtx) : CQuot.mk C ⊓ (CQuot.mk C)ᶜ = ⊥ := inf_compl_eq_bot
 
 -- Lemma 9 at `m = 0,1,2`: `χ₀, χ₁, χ₂` are concrete PLL non-theorems.
-example : ¬ Nonempty (LaxND [] (chi 0)) := lemma9 0
-example : ¬ Nonempty (LaxND [] (chi 1)) := lemma9 1
-example : ¬ Nonempty (LaxND [] (chi 2)) := lemma9 2
+example : [] ⊬ chi 0 := lemma9 0
+example : [] ⊬ chi 1 := lemma9 1
+example : [] ⊬ chi 2 := lemma9 2
 
 -- Corollary 10 on a concrete finite constraint set `{⊤, ⊥}`.
 example : ∃ φ : PLLFormula,
     (∀ C ∈ ({[], [(truePLL, falsePLL)]} : Finset StdCtx),
-      Nonempty (LaxND [] (subC C φ))) ∧ ¬ Nonempty (LaxND [] φ) :=
+      Nonempty (LaxND [] (subC C φ))) ∧ [] ⊬ φ :=
   corollary10 {[], [(truePLL, falsePLL)]}
 
 end Ctx
@@ -1736,6 +1798,10 @@ end PLLND
 #print axioms PLLND.Ctx.lemma9
 #print axioms PLLND.Ctx.lemma8
 #print axioms PLLND.Ctx.corollary10
+#print axioms PLLND.Ctx.chi_valid_of_stabCard
+#print axioms PLLND.Ctx.stabCard_bounded_incomplete
+#print axioms PLLND.Ctx.stabCard_pos
+#print axioms PLLND.Ctx.stabCard_eq_one_of_top
 #print axioms PLLND.Ctx.thm2_bounded_distributive_lattice
 #print axioms PLLND.Ctx.thm2_boolean_algebra
 #print axioms PLLND.Ctx.compl_inf

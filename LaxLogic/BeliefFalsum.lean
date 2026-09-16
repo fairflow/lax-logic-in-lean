@@ -29,12 +29,12 @@ namespace BeliefLax
 
 /-- **No consistency axiom (`D`).**  `¬◯⊥` is not a theorem of PLL: a believer
 may believe the absurd.  (F&M's fallible countermodel, `PLLFrames`.) -/
-theorem belief_no_D : ¬ Nonempty (LaxND [] (notPLL (somehow falsePLL))) :=
+theorem belief_no_D : [] ⊬ notPLL (somehow falsePLL) :=
   not_provable_not_somehow_false
 
 /-- **`◯⊥` is not valid**, so `◯⊥ ≠ ⊤`: believing the absurd is not forced.
 Soundness against an `F = ∅` constraint model, where `◯⊥` fails at the root. -/
-theorem belief_bot_not_provable : ¬ Nonempty (LaxND [] (somehow falsePLL)) := by
+theorem belief_bot_not_provable : [] ⊬ somehow falsePLL := by
   rintro ⟨p⟩
   exact absurd (soundness_valid p modelOrSplit .r) (by decide)
 

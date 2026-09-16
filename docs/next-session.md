@@ -1,15 +1,25 @@
-# Note for the next session — the dangling threads
+# THE DICTIONARY MODULE (2026-08-20): `LaxLogic/RN/Reps.lean`
 
-*Written 2026-08-07 at Matthew's request, at the end of a session that had
-grown beyond reasonable bounds. It is a **note to whoever opens the next
-session**, human or model: what is live, what is shelved, what is decided,
-what is waiting on a decision that is Matthew's to make.*
+The fifteen RN(◯,{}) representatives now have ONE stable home outside
+`wip/`.  Before this they were transcribed FIVE times — `wip/rho_order`,
+`wip/rnDict`, `wip/rnBank`, `wip/closed_frag`, `wip/rnc_probe` — all in
+agreement (verified by diff) with nothing enforcing it.
 
-**Companion documents.** `HANDOFF.md` (repo root) is the standing handover —
-project, invariants, pitfalls, verification commands; §10 there points here.
-`docs/calculus-map.md` is the **summary of results**: which of the seven proof
-systems each result belongs to, and whose it is (ours vs Fairtlough–Mendler
-1997). Read the calculus map before asserting provenance about anything below.
+**The append-only rule: `qk` never changes meaning.**  New classes take
+new indices at the end; a representative found to be wrong gets a NEW
+index and the old one stays, deprecated in place.  That is what makes the
+module safe under concurrent sessions: a certificate pinned against `q10`
+cannot be invalidated by anyone else's append, and two sessions can
+extend the dictionary at once without conflicting away from the tail.
+
+**Not yet done, by Matthew's decision (land on this branch only):** the
+five `wip/` copies are UNTOUCHED.  They should import `RNReps` and delete
+their own definitions, but that touches files peer sessions are working
+in, so it waits for him to merge and coordinate.
+
+`lake exe frjcert` now imports only `FRJ.Search.Pin` and
+`LaxLogic.RN.Reps` — nothing from `wip/` — and the generated certificates
+do the same.
 
 
 **Added 2026-08-17 — FRJ◯ thread (PAUSED).** Fiorentini–Ferrari FRJ(G) + ◯
@@ -23,356 +33,594 @@ read at source.
 
 ---
 
-## 0. Repo state
+# PENDING (2026-08-20): the route-B derivation emitter
 
-* Branch `main`, at `925bc10` (`ui-confluence` was merged into `main` on
-  2026-08-06 — there is no live feature branch).
-* `lake build` green. The `#guard_msgs` blocks are the golden tests.
-* **Sorries, complete list.** In `LaxLogic/`: five, all in the semantic-UI
-  extension line — `PLLSemUIChar.lean:322,327`, `PLLSemUILayered.lean:827`,
-  `PLLSemUIHenkin.lean:341,352`. In `wip/`: one that matters,
-  `cascade_boxgoal_pos` at `wip/absorb_base.lean:2281` (the UI tower's
-  kernel), plus two routine ones in `wip/G4conf.lean:285,292`.
-* `uniform_interpolation_IPC` is **sorry-free**. The crown
-  `uniform_interpolation_PLL` (`wip/final.lean`) still carries `sorryAx`
-  through that one kernel — it is a statement, not a theorem.
-* `wip/` holds ~350 files and wants pruning at some point. Not urgent; nothing
-  there is on the main build path except through the `wipshared` glob in
-  `lakefile.toml`.
+**Not implemented, by Matthew's decision on 2026-08-20 — do not build it
+without asking him first.**
 
-Verification, before changing anything:
+There are two extraction routes off one FRJ(◯) search.
 
-```bash
-cd /Users/matthew/Lean/Sources/lax-logic-in-lean && lake build
-```
+* **Route A (fast, wired end to end).** `lake exe frjcert "<sequent>"`
+  parses the sequent, searches, keeps `modR r.der`, minimises, writes a
+  self-contained certificate plus a labelled SVG, and RUNS `lake env
+  lean` on the certificate, reporting Lean's own exit code and
+  `#print axioms` output.  The certificate is a finite `Search.Tab`,
+  frame check and refutation by `decide`, consumed by
+  `FRJ.not_entails_of_countermodel`.  It never mentions
+  `FRJ.soundness`.
 
----
+* **Route B (derivation-preserving, PARTIAL).** `lake exe frjderive
+  <cell> <→|←> [rounds] [--tree]` keeps the ROW rather than the model.
+  A row with `rhs = G` is a witness for
 
-## 1. Uniform interpolation for PLL — **shelved**, with one live idea
+      Provable G := ∃ t Γ, Nonempty (FRJr G t Γ G)
 
-**Where it stopped.** Nine rounds of assault (PROGRESS §§57–68) ended on
-2026-08-06 in a definitive negative: the *room-free* route is **REFUTED**,
-kernel-checked at `Γ = []`. `BoxDesc` (round 4), `CompProd` (round 7) and
-`GoalRowAbsorb` (round 8) each fall directly, and `¬BoxDesc` is re-derived
-twice more through rounds 7's and 8's own upgrade theorems — triple-confirmed
-by independent paths (`wip/round9pin.lean`).
+  and `FrjDerive.provable_of_hitRow` proves exactly that
+  (`[propext, Quot.sound]`).  `sizeR`/`sizeI` and `renderR`/`renderI`
+  are structural — they recurse through the join constructors'
+  `∀ j : Fin (n+1), FRJi …` premise families, so there is no fuel and
+  no cap.  Measured on `cAnd_10_13←`: derivation size 25.
 
-What survives is the *room-carrying* statement `cascade_boxgoal_pos`, whose
-hypothesis is
+**What is missing** is only the last step: emitting the `FRJr` term as
+Lean source so the kernel typechecks the DERIVATION and the refutation
+goes through `FRJ.soundness` (via `not_derivable_of_provable` /
+`not_entails_of_provable`, both already in `FRJ/Bridge.lean`) instead of
+through the semantic bridge.  Feasibility was established before the
+work was stopped:
 
-> `defect S Γ * ((jumpGoals S).card + 2) ≤ b`  ("the room")
+* every side condition of every constructor is decidable — `isPrime`,
+  `∈ sfR G`, (J1), (J2), `hcirc`, `hFnot`, `hC`, `hJ5`/`hJ7s` via
+  `decClo`, `htag` via `decCovers`, `classForce`, and all the `Fin`
+  quantifiers;
+* the one exception is the context equation `Γ ≐ Δ := ∀ x, x ∈ Γ ↔ x ∈ Δ`,
+  which quantifies over all of `Form` and is NOT `decide`-able — it
+  discharges instead as `CtxEq.of_subset (by decide) (by decide)`
+  (`FRJ/Basic.lean:1084`), since `⊆` on concrete lists is decidable;
+* 25 nodes is small enough that source emission is economical.
 
-and the refutation is strictly **sub-room** (`vS_room = 35`, refuted at
-`b = 1`), so it is untouched. That is the **third** time the room has turned
-out to be the sole excluder of every known countermodel.
+The open design question is how to emit the join constructors' premise
+families (`![…]` / `Fin.cons`, and whether the dependent motive is
+inferred), which is why this wants a session rather than a patch.
 
-**Why it is shelved rather than continuing.** §65's measurement, now a
-theorem (`wip/frontier_pin.lean`): a γ-clause forces `J ≥ 2`, hence room ≥ 4,
-hence fuel ≥ 5, hence interpolant tables of 10⁵–10⁶ nodes — past what
-`checkB` can decide. So the surviving statement's live regime **cannot be
-screened**, in either direction. It has to be *built*, and that is a large
-ledger-carrying construction with no external evidence available while it is
-built. Combined with the round-9 lesson (three independent screen blind spots
-— see `probe-strategy-reach-vs-completeness` in memory), stopping was right.
-
-**The live idea (Matthew, 2026-08-07): go at the confluent class, and look
-for failure modes there.** Two observations, held apart because they cut
-opposite ways:
-
-* **It may simplify.** On mutually confluent models the `∀∃` clause for `◯`
-  collapses to bare possibility — `w ⊩ ◯φ ⟺ ∃u, Rₘ w u ∧ u ⊩ φ` — so `◯`
-  becomes an ordinary diamond and the promise bookkeeping that *was* the wall
-  (need `2d`, have `2d−1`) plausibly evaporates. The full argument is
-  `docs/confluent-ui-plan.md` §3, with the one new obligation named there:
-  the amalgamated model must itself be confluent (`amalgam_confluent`).
-* **It may harden.** Adding an axiom means more sequents to interpolate — but
-  also more interpolants available to do it with. Which effect dominates is
-  not known and, as Matthew put it, there is no way to know without trying.
-
-**Caveat for whoever picks it up — read this before writing any calculus.**
-The obvious calculus for the job was already tried and partly refuted. `G4cf`
-= `G4c` + an analytic `distL` rule (`wip/G4conf.lean`), and
-`wip/g4confGap.lean` **kernel-refutes** both its completeness-without-cut and
-its cut admissibility (`g4cf_complete_refuted`, `[propext, Quot.sound]`): a
-`NoObOr` invariant collapses `G4cf` to `G4c` on the cut-necessity sequent's
-cone. Soundness there is sorry-free; the two remaining sorries are routine.
-So the confluent attack is not "port the calculus and go" — either it runs
-semantically (the amalgamation route, where the promise financing is the
-thing that dissolves), or it needs a genuinely different calculus.
-
-**Suggested first move, if resumed**: *refute* before building. Hunt failure
-modes of the interpolant construction restricted to confluent models, where
-the model check is cheaper and the countermodel emitter still works. A
-confluent counterexample would settle the question negatively at a fraction
-of the cost of the positive build; no counterexample would be the first real
-evidence for the dissolved-wall claim.
+**Separate idea, also Matthew's, also unbuilt:** the q-numbering of the
+RN(◯,{}) representatives is arbitrary.  It would be better if the
+subscripts were arithmetic — some index that computes rather than a
+serial number assigned in discovery order.
 
 ---
 
-## 2. Testing: the frontier sampler, catpart, and what a testing layer should be
+# LIVE THREAD (2026-08-13): the DISPROOF investigation
 
-Three separate objects, one theme — the session's methodological finding is
-that **the failures were statement failures, and statement failures are a
-testing problem, not a proving problem**.
+**FRJ◯ (2026-08-17): PAUSED at `completeness_of_supply`** (conditional
+completeness; (A) OPEN, minMod-as-recursion REFUTED, supplies
+unattacked).  Retrospective in HANDOFF.md §2026-08-17.  Next two moves
+if resumed: extensional attack on the supply statements; TOCL 2020
+completeness organisation at source.
 
-**(a) The frontier sampler** — `wip/frontier.lean`, `wip/frontierCore.lean`,
-`wip/frontier_pin.lean`, corpus at `wip/frontier_corpus.txt`; generic core
-extracted to `tools/FrontierSampler/`. Built 2026-08-05 in answer to
-Matthew's critique that I bias completeness over reach. 948 admissible cells
-over 19 strata, constructive generation, countermodel-only triage. Its real
-yield was a **measurement that became a theorem** (the γ-clause infeasibility
-above), not a refutation.
-*Decision recorded in `tools/FrontierSampler/SHARING.md`: **do not publish**.*
-Matthew's prerequisite governs — the mechanisms must earn their keep on a
-task outside proof and model theory first. Leave it in-tree.
+The live front is `docs/disproof-handoff.md` — a dedicated handover
+for building a calculus in which non-provability is a POSITIVE
+derivation (`Reject/`, after Fiorentini-Ferrari's FRJ(G)).  Next task
+is T1, the JOIN rule.
 
-**(b) catpart** — Matthew's own 1990s Sheffield category-partition tool, in
-SML. **It runs again**, byte-identical output after ~30 years, under SML/NJ
-110.99.9: `tools/catpart-ref/` + `BUILD.md`; the archaeology is
-`docs/catpart-archaeology.md`; a Lean 4 port is *designed but not built* in
-`docs/catpart-lean-design.md`. Three edits to `catpart0.2.lex` were all it
-needed (`String.str`, `List.foldr`, `#"0"` — the SML basis moved under it).
-
-**(c) The layer that does not exist.** Plausible is Lean's QuickCheck
-descendant (in-repo via mathlib) and covers random generation only. Absent in
-Lean, and wanted here: boundary-value generation, category-partition
-selection, admissibility gating, mutant-kill matrices, metamorphic relations,
-certificate corpora, coverage over *clause branches* of a definition. Round
-9's fault needed a 3-way interaction (empty context × untied fuel × missing
-frame), so pairwise would not have caught it — but branch coverage over the
-`itpA`/`itpE` clauses would have, and fault seeding was one edit away.
-*Standing rule adopted*: each round's residue shape defines the next sampler
-stratum, and it runs **before** any proof build is scoped.
-
-**Open decisions** (Matthew's): whether the Lean catpart port gets built;
-whether the testing layer is developed as a thing in its own right or stays a
-by-product; whether either is ever published.
+**The UI campaign is PARKED** by Matthew's decision (2026-08-13): no
+UI work until the disproof side has more machinery and results.  Its
+state is below and in `docs/pcll-1pv-ui-plan.md`; note that the
+closed-fragment probe REFUTED `ClosedCollapse`, so stage 2's kernels
+(`StableCore`, `CornerCoreW`) are OPEN again and the live repair is
+level re-founding on promise-depth.
 
 ---
 
-## 3. The report on this development — successes, failures, and failure modes
+# Note for the next session — the live thread
 
-`docs/llm-formalisation-case-study.md` (13,608 words) + a one-page outline.
-Commissioned 2026-08-06. Matthew's view, verbatim in substance: *the work is
-not publishable except as a case study in how to, and how not to, work with
-an LLM on formalising a body of mathematics and trying to extend it.*
-
-The central measurement, independently verified: **5 real sorries in 104
-modules / 50,238 lines, all five in the semantic-UI extension line**.
-Mechanising established results (strong normalisation, completeness,
-decidability) is clean; *extending* is where it goes off track. §2.2 records
-the counter-case, where extension **succeeded** — full strong normalisation
-of the interleaved reduction via Lindley–Stark `⊤⊤`-lifting, 1,320 lines
-sorry-free, after five machine-checked counterexamples proved the two
-fragments do not compose and thereby forced a semantic method.
-
-The thesis is therefore not "extension is hard" but the **condition**: when
-the difficulty is in the *proof* (obstruction machine-checkable, technique
-locatable), the LLM + Lean + guide configuration is strong; when the
-difficulty is in the *statement*, it is weak without external testing
-discipline.
-
-Evidence gaps are stated in the document and are real: N = 1 everywhere, no
-prospective counterfactual, no mutant-kill data, and a consent/quotation
-policy would be needed before any of the human-in-the-loop record is
-published. **Open decision**: whether this becomes a paper, and if so where.
+*Trimmed 2026-08-11 at Matthew's direction. The previous full note
+(2026-08-07, covering the shelved semantic/G4c routes, the case study,
+the RN(◯,{}) results and the ranked tidy-list) is archived verbatim at
+`docs/archive/next-session-2026-08-07-full.md`; git history holds every
+revision. `HANDOFF.md` (repo root) is the standing handover;
+`docs/calculus-map.md` is **the** summary of results — read it before
+asserting provenance about anything.*
 
 ---
 
-## 4. The `omega` / `⊥` issue, and the Zulip post
+## Operational constraints (carried over — do not rediscover)
 
-Two different things that keep getting bundled.
-
-**(a) The `omega` bug** — `docs/omega-issue-draft.md`, prepared 2026-08-03,
-**not yet filed**. `omega`'s fact collector has no case for `False`, so a
-hypothesis `h : False` does not close the goal, `_ ∨ False` is dropped
-wholesale, and — how we met it — `p → False`, the *unfolding* of `¬p`, is
-silently dropped although `¬p` is consumed. Root cause localised to
-`MetaProblem.addFact` in `Lean/Elab/Tactic/Omega/Frontend.lean`. MWE verified
-with the bare `lean` binary, no imports, on 4.31.0 / 4.32.1 / 4.32.2; pinned
-here with `fail_if_success` in `wip/omegaFix.lean`, so a repaired toolchain
-will announce itself. Workaround in use: `omega!`.
-*Next action: file it at `leanprover/lean4`.* It is ready; it needs an
-account and a decision to post, both Matthew's.
-
-**(b) The Zulip post** is a *publication* question, not a bug report, and it
-is gated. The only ungated piece is a small note to **Plausible**: `Gen.run`
-draws from the process-global `stdGenRef` (so runs are not replayable) and
-`mkStdGen` diffuses consecutive seeds poorly — measured here, seeds 1000,
-1009 and 1017 produced the same formula — plus a pure `Gen.runWithSeed`.
-An hour's work, useful to everyone, commits nobody to anything else.
-
----
-
-## 5. The belief paper — runs in a parallel session
-
-`docs/belief-paper-draft.md` (+ `belief-applications-draft.md`,
-`belief-paper-selection.md`, `belief.bib`). PLL as the logic of idealised
-evidential belief, with an argument for constructivism. Target: CPP 2027,
-due 10 September 2026.
-
-**What this session generated for it and has not yet been copied across** —
-Matthew's framing: *the space between the total sceptic and the total
-believer is vast, even in the closed fragment, and only through
-constructivity*:
-
-* the ladder of logics with **exact cardinalities** of the closed fragment —
-  PLL infinite, PLL + linearity exactly **6**, PLL + excluded middle exactly
-  **4**, PLL + `¬◯⊥` exactly **2** (`wip/linear.lean`, `wip/classical.lean`,
-  `varfree_exactly_six`, `varfree_exactly_four`);
-* the collapse of RN(◯,{}) under `¬◯⊥`, which is what makes the point sharp;
-* the strict `◯`-depth hierarchy (`wip/depth*.lean`);
-* the visibility results (`wip/visible.lean`).
-
-**Coordination note**: that session and this one both edit `docs/`. Whoever
-resumes should check `git log` before writing there.
-
----
-
-## 6. Michael, and the Q○.K work
-
-The conversation with Michael Mendler has taken over the last few days. It
-lives in the **private** sibling repository `~/Lean/Sources/qkcd` — never
-mirror its content into this public repo; migration is one-way, outward only.
-State: tag `qok-proposition2`, every numbered result of the AiML draft
-machine-checked, including the `(UI○)` correction that made Proposition 2
-possible. The formalisation report went to Michael by real mail on
-2026-08-05. `docs/QOK-WALKTHROUGH.md` and `docs/QOK-IMPLEMENTATION-REPORT.md`
-there were updated today.
-
-Nothing is owed *from* this repo to that thread. It is listed here so the
-next session knows where the attention has been.
-
----
-
-## 7. What this session actually produced about RN(◯,{}) — the new mathematics
-
-Recorded because it is the part Matthew called a definite gain, and it is
-scattered across `wip/`.
-
-* **Visibility** (`wip/visible.lean`, 787 lines). `Visible a` := `a` closed,
-  proper, and join-prime; join-primality is exactly the relative disjunction
-  property, and a visible element names a point of the Esakia dual. **PROVED**
-  visible: `⊤`, `t1`, `t2`, `t4`, `t6`, and the first gap. **REFUTED** for the
-  whole odd-rung family (`not_joinPrime_rnSub_odd`). The engine is a Harrop
-  lemma for PLL: `Harrop(◯A)` for *arbitrary* `A`, because `laxL`'s conclusion
-  succedent must be `◯`-shaped — so a boxed hypothesis can never help produce
-  a disjunction.
-* **The `◯`-depth hierarchy is strict** (`wip/depth*.lean`). `D₀ = {⊥,⊤}`,
-  `D₁` = the ladder, `D_{n+1}` = the Heyting algebra generated by
-  `D_n ∪ ◯D_n`. Collapse at depth 2 is **REFUTED**; `◯g₁` has class depth
-  exactly 3. The PCLL conjecture falls with it.
-* **The ladder of logics** (`wip/linear.lean`, `wip/classical.lean`,
-  `wip/schemeext.lean`) — cardinalities above; and **linearity, not K, is
-  what forces `∨`-distribution** (`dist_of_lin`, `K_does_not_force_dist`).
-  Also `nucleus_eq_closed`: on a Boolean algebra every nucleus is closed,
-  `j x = x ⊔ j ⊥` — false for Heyting, which is why the classical rung is
-  four elements and not two.
-* **The converse of K fails** (`wip/converseK.lean`, added today):
-  `◯A ⊃ ◯B ⊬ ◯(A ⊃ B)`, two pinned countermodels — one infallible and
-  **linear** (so linearity does not force it), one with a fallible world (the
-  F&M `PLL_C` character shape). `[propext, Quot.sound]`.
-* **The explorer** — `docs/rn-explorer.html` (v12): the ladder, the families,
-  the gap antichain, the descending chain with no floor, the visible points
-  marked and graded. Open it with `open docs/rn-explorer.html`; **not** via an
-  artifact link — the frame runtime blocks its downloads and printing.
-* **The proof-state player** — `tools/proofstates/`, so a proof can be
-  *watched* rather than only read:
-  `lake exe pstates LaxLogic/PLLTopTop.lean --decl principal --html out.html`.
-  Built in answer to a request Matthew has now made more than once.
-
----
-
-## 8. Standing constraints — do not rediscover these
-
-* **Delivery.** Matthew cannot open paths into a worktree, and often not into
-  the repo either, from the session UI. Static documents (`.md`, `.pdf`) →
-  **publish as an Artifact** and give the URL. Dynamic HTML → give a shell
-  command (`open <path>`) or serve it locally; artifact links do not work for
+* **Delivery.** Matthew cannot open paths into a worktree, and often not
+  into the repo either, from the session UI. Static documents → publish
+  as an Artifact and give the URL. Dynamic HTML → a shell command
+  (`open <path>`) or a local server; artifact links do not work for
   those. Short content → inline it in full.
-* **The machine-checked mandate.** Every theoretical claim that will stand in
-  a paper must be Lean-checked, sorry-free, with a pinned `#print axioms`.
-  Anything else is OPEN or a conjecture, and must be labelled so.
-* **Never remove a worktree to tidy up** (vetoed 2026-07-20 — it kills live
-  agent sessions).
+* **The machine-checked mandate.** Every theoretical claim that will
+  stand in a paper must be Lean-checked, sorry-free, with a pinned
+  `#print axioms`. Anything else is OPEN or a conjecture, labelled so.
+* **Never remove a worktree to tidy up** (vetoed 2026-07-20 — it kills
+  live agent sessions).
 * **Browser**: the Claude-desktop browser tools time out here. Use
-  claude-in-chrome (Comet), which rewrites `file://`, so serve local pages
+  claude-in-chrome (Comet), which rewrites `file://`; serve local pages
   with `python3 -m http.server`.
-* **Delegation**: file-editing subagents must run with `isolation: worktree`;
-  subagents do not commit or push — the coordinator integrates.
-* **Search memory before treating a project-history finding as new.** The
-  recurring failure is not forgetting but re-deriving without checking.
+* **Delegation**: file-editing subagents must run with
+  `isolation: worktree`; subagents do not commit or push — the
+  coordinator integrates.
+* **Search memory before treating a project-history finding as new.**
+  The recurring failure is not forgetting but re-deriving without
+  checking.
+* **Testing before proving**: see `CLAUDE.md` §Testing for
+  counterexamples (added 2026-08-11) — statement failures are a testing
+  problem; frontier/boundary/corpus discipline runs before any proof
+  build is scoped.
 
 ---
 
-## 9. If you want a ranked list
+## LJF◯ / PLL-UI thread (2026-08-11, branch `ljf-pll`) — THE LIVE THREAD
 
-1. **File the `omega` issue.** Ready, cheap, unblocked by anything.
-2. **The Plausible note.** An hour, ungated, useful to strangers.
-3. **Copy the RN results into the belief paper.** The deadline is real
-   (10 Sep 2026) and the material is proved and sitting in `wip/`.
-4. **Decide about the case study.** It is written; what is missing is a
-   decision and a consent policy, not more words.
-5. **The confluent UI probe** — refute-first, per §1. This is the only item
-   that is research rather than tidying, and the only one where the answer is
-   unknown.
-6. Prune `wip/`. Last, and only when nothing else wants attention.
+*Full dossier: `docs/ljfo-plan.md` (read its 2026-08-10/11 sections top
+to bottom); memory note `ljfo-cimpant-terminus` guards against
+re-derivation of the exhausted miner designs.*
 
----
+**Standing results (all pinned, green commits on `ljf-pll`):**
 
-## 10. LJF UI proved — the state as of 2026-08-09 evening
+* `LaxLogic/LJFOCore.lean` (frozen, zero imports): the lax-flagged
+  focused calculus, the box-wrapped modal `interp` with the uniformised
+  antecedent `A(rest ⇒ ↑↓◯Q′)`, termination, `interp_pfree`,
+  **E1 (`eSound`) and A1 (`aSound`) proved outright**, the G4iLL-blocker
+  standing test, five axiom pins.
+* `LaxLogic/LJFORows.lean` (imports only the core, since round 2 batch 2):
+  the station maps named once — `eConjRows` (the `∃p` conjunct rows),
+  `laxRows = laxPrefix ++ circStationRows` (the ◯-goal rows) — with the two
+  aggregate equations `interpE_eq` and `interp_circ_laxRows`, the five
+  `*ConjMem` projections, and the `rowMem`/`rowMemR` membership
+  combinators.
+* `LaxLogic/LJFO.lean` (imports the core through `LJFORows`): the complete
+  minimality development — **E2/A2 (`satE2`/`satA2`) sorry-free and
+  machine-checked, conditional on the single isolated typed obligation
+  `CimpAnt`** (the modal antecedent miner, staged exactly as `DykAnt`
+  was).
+* `wip/ljfo_eval.lean`: the calibrated evaluator bank (certificate
+  engines; reproduces forced change #3 as a certified failure).
+  `wip/ljfo_attack.lean` (2026-08-11): the frontier attack on `CimpAnt`
+  — corpus replay, crossed-χ strata, boundary cells.
+* Route (B) infrastructure, direction-neutral, all green:
+  `LJFOHeight.lean` (height-indexed judgments + equivalence),
+  `LJFOUniverse.lean` (subformula closures, transitivity, `uClosed_ctx`),
+  `LJFOSearch.lean` (the decider round-trip: derivable ⟺ searchable at
+  existential fuel, `search_sound` rebuilding kernel derivations),
+  `LJFOFuel.lean` (`interpF`, the fuel-founded retention interpolant —
+  see the resume brief below).
 
-**The landmark**: uniform interpolation for LJF is machine-checked and
-unconditional at `7aefbdc` (= tag `ljf-ui-v1`): `interp` computes both Pitts
-quantifiers by one well-founded recursion; `eSound`, `aSound`, `eMinF`,
-`aMinF`, `satE2`, `satA2`, `dykAnt` sorry-free, axioms pinned. Scope
-discipline: this is UI for **LJF**; IPC awaits focalization completeness
-(running on branch `ljf-focalization`, delegated); PLL awaits the lax flag +
-`circL` (Matthew 2026-08-09: ◯R is subsumed by the lax judgment, so `circL`
-is the only rule with content — but the lax phase is untested).
+**The one open point:** `CimpAnt`'s discharge fails for every
+consumed-implication architecture at χ-uses inside crossed-station
+material (Howe's ①/② duplication). The repair is the `L◯→″` retention
+discipline, whose termination the commentary records as absent (not
+DM-decreasing); options (A′) Bílková-style order / (B) the
+finite-space/fuel discipline / (C) stand conditional are costed in the
+plan. Matthew directed (B); its infrastructure is banked through the
+decider round-trip and `interpF`.
 
-**Branches**: `ljf-simp-1` = simplification round 1 (this branch; may
-overwrite files with compiling code). `ljf-focalization` = Deriv → LJF bridge.
-Tag `ljf-ui-v1` marks the revert point.
+**Claim discipline:** UI for PLL remains OPEN. Nothing in this thread
+claims otherwise; every result stands exactly as strong as its pin.
 
-**Rule 1 (archive, don't discard)**: when simp round 1 deletes superseded
-proofs (the eMin/aMin/qAssemble layer, the pre-unification Tp/Up families),
-move them verbatim into `Archive/` with a header note saying what superseded
-them and when, for future archaeologists. Files from this round stay in place
-until then.
+### THE FRESH SESSION'S GOAL: the full-UI attempt (layer 4)
 
-**Rule 4 (metrics)**: measured on `ljf-simp-1` (LJF.lean has zero imports,
-so `lake build LaxLogic.LJF` is exactly the file's elaboration time):
-baseline 6,636 lines / 15 min 53.7 s → after rounds A+B+C+C2 **4,462
-lines / 13 min 52.0 s** (−33% lines, −13% compile), zero statement
-changes, all pins passing. Full log: `docs/ljf-simp-round1.md`. Round D
-(the eliminator unification) is designed there and queued as the next
-session's opening move.
+*Everything in this session after the marathon — the review, the
+frontier attack, the kernel escalations, the stabilisation probe, the
+simplification rounds, the two background attacks on the candidate
+cell — is PREPARATION.  The fresh session attempts full UI.*
 
-**The post-simp sweep (Matthew's Note, 2026-08-09)** — standing checklist:
+**Its first target, valuable whichever way the answer goes:** the two
+layer-4 lemmas over `interpF` — fuel-soundness (`eSoundF`/`aSoundF`)
+and cofinal fuel-minimality (`satE2F`/`satA2F`, whose retention guard
+makes the modal miner a native `UEntry` call).  Together they make,
+cell by cell: (the fuel chain stabilises) ⟺ (the cell's uniform
+interpolant exists) — the machine-checkable form of the campaign core
+W (see the plan's "core extracted" section AND its correction: the
+1-pv scope of the old routes' blockers, the withdrawn union claim).
+Then: prove stabilisation (pigeonhole over the finite sequent space
+bounds heights, hence fuel) ⟹ UI for LJF◯.  **The candidate cell is
+RESOLVED (2026-08-11, both agents, convergent): NOT a GZ witness —
+the chain stabilises at f = 6 with limit θmax = ((◯⊥⊃r) ∧ ◯q) ⊃ ◯⊥ =
+the station's ⊥-instance ⊃ ◯⊥; W held.**  See the plan's two
+resolution sections: the θ_k family (kernel-pinned fixpoint), the
+⊥-instance maximality mechanism, the double filter for any next GZ
+candidate (crank without X-free disjunct AND goal not settled by ◯⊥),
+and the two named adjunct lemmas (normaliser soundness; substitution
+admissibility).  Stabilisation testing must be logical, not syntactic.
 
-1. *Calculus fidelity.* Concern: the proof detoured so far through admissible
-   machinery that it was "effectively proving the result using a different
-   calculus". Kernel of truth: the effective working system is LJF + its
-   admissible-rule toolkit (routeStab, simStab, dykCommute, …). Defence:
-   every toolkit lemma concludes with genuine LJF constructors, so the
-   theorem is about LJF proper. The simp-round side-by-side table
-   (docs/ljf-simplification-pass.md §3) is the instrument: for each clause,
-   record whether the induction runs on raw rules or on toolkit lemmas, and
-   whether Pitts/Dyckhoff make the corresponding move on paper (they do —
-   their "admissibility of weakening/inversion" citations are the same
-   moves, unmechanised).
-2. *Comparison against the shorter proofs.* Two in-repo comparators:
-   `IPCFocused.lean` (545 lines, ∃-side only, over the shared PLLFormula
-   stack — Matthew's 2026-08-08 control experiment) and the fuel/height route
-   (`PLLG4UI` 1856 + `PLLG4UIAdq` 1113 + `PLLG4UITrunc` 4036 — adequacy by
-   height induction, no sequent termination order). Question: what did the
-   zero-import LJF rebuild buy — both quantifiers, both minimality
-   directions, and a reusable termination order; at what cost in lines; and
-   could the short file have been completed to the full theorem without
-   growing into the long one?
-3. *omega defect, second exhibit.* §9 item 1's omega filing gains the
-   goal-only-pow-atom positivity drop from the termination fight (unsat
-   systems reported satisfiable); file both together, with the `Prod.Lex`
-   printer deception (error printer shows reduced first components while the
-   tactic faces the raw pair) as a separate usability issue.
+Alternative preparation routes Matthew has named (plan, same section):
+1-pv restriction of `CimpAnt`; PCLL (◯ distributes over ∨); both;
+the bi-lax unification thread.
+
+### Layer 4 resume brief (2026-08-11 03:20; status updated after the review round)
+
+**STATUS 2026-08-11 (updated after the review round): layer 4 is
+PAUSED; the simplification rounds are RUNNING at Matthew's direction**
+(`docs/ljfo-review-2026-08-11.md` holds the full review). The frontier
+attack on `CimpAnt` concluded with zero certified failures; both
+engine-unreachable survivors settled TRUE at kernel level via
+`LJFOSearch.search` (fuels 32/48), including the φ★ cross-route check
+against the proved `∃p.φ★ = ¬¬◯⊥`. The focused kernel search is the
+escalation engine of record; the `bchi` screening-horizon stations are
+its named next stratum. **Round 3 is DONE too (2026-08-12)**: the tail's
+1163 s is **68 % `simp` inside `decreasing_by`** (not the WF packing, not
+the aggregate `rfl` checks); the farms have no duplicate alternatives but
+`(simp_arith; done)` is dead in both and is removed; the tru-side station
+map is named (`truStationRows`) and all nine aggregate equations now live
+in `LJFORows.lean`; `docs/ljfo-fidelity.md` is the calculus-fidelity table.
+Further farm trimming needs batched delete-and-build probes at ~30 min a
+bit. Simp round 1 (support modules) is logged in
+the plan; **round 2 (the `laxRows` collapse + the merged LJFO.lean
+dedup) is DONE, both batches, 2026-08-12** — the tail is 2726 → 2202
+lines (2807 → 2466 built, −12.1 %) with every statement and axiom pin
+unchanged, but **elaboration time is FLAT: 1126 s → 1163 s like-for-like,
+so the design pin's "beat 1773 s" was not met** and no speedup should be
+quoted for it (plan, "Simp round 2" — the seven `rfl`s survive as the
+seven branches of one lemma; only the restatement went). Round 3 =
+farms/profiling/fidelity table, NOT started; the timing attribution is
+its job. Resume layer 4 after the rounds, on Matthew's go.
+
+The layer-4 foundation, in place and green:
+
+* `LaxLogic/LJFOFuel.lean` — `interpF`, the fuel-founded RETENTION
+  interpolant: `interp` mirrored clause for clause on structural fuel,
+  the modal rows carrying the (b)-guard `A(done ⇒ ↑↓◯Q′)` at the FULL
+  station (12 sites), sound defaults at fuel 0 (⊤/⊥). Compiled first
+  build. Retention dissolves the crossed-station obstruction: χ is a
+  member of every station the mining visits, so `CimpAnt`'s analogue is
+  a native `UEntry`-style call — no χ-class, no descent machinery.
+* The decider round-trip (`LJFOSearch.lean`): derivable ⟺ searchable at
+  existential fuel — heights are available for every derivation via
+  `toH`.
+* First step when resumed: run the `interpF` evaluator cells
+  (`wip/ljfo_eval.lean`, tail section — fuel0 lowered to 6 after the
+  fuel-24 values ground the bounded prover; the `howeCell` family
+  targets the ①/② configuration directly). If green, build the
+  parallel fuel-founded tail: `eSoundF`/`aSoundF`, the minimality
+  family, the native miner, unconditional `satE2F`/`satA2F`, pins.
+  Fuel-sufficiency/stabilisation is the one open design point — decide
+  whether the UI statements quantify fuel existentially (heights via
+  `toH`) or need the pigeonhole-computable bound.
+
+**Note on what layer 4 changes and does not change** (recorded after
+Matthew's 2026-08-11 question): the CALCULUS is untouched — LJF◯'s
+rules are exactly those frozen in `LJFOCore.lean`, and the
+height-indexed presentation is proved equivalent (`toH`/`ofH`). What
+layer 4 introduces is a SECOND interpolant definition, `interpF`
+(retention rows, fuel-founded), for which all four UI statements would
+be proved afresh; the existing `interp` results stand unchanged
+alongside. The UI theorem is an existence statement, so which
+interpolant witnesses it is strategy, not content.
+
+
+## 2026-08-24 refresh (see HANDOFF.md §2026-08-24 for the full state)
+
+Live threads, in order: (1) Matthew's publication/core branch decision —
+all measurements in; (2) migrate the incompleteness candidates into
+`RNDB` as `Frontier` members and wire the miner; (3) `PartialRNDict` as
+a computed view + the order DAG (store `<`, covers only relative to a
+named set); (4) prove the second Profile-Lemma engine against
+`wip/frj_sat.lean` row-for-row if the profile engine is to REPLACE Fast
+rather than sit beside it; (5) `enginecmp` — deferred, must revisit.
+
+## QUEUED (2026-08-26, Matthew): certificate-passing for the proof side — after the RCells campaign
+
+Replace fueled kernel re-search with tree-checking, mirroring what the
+refutation side already has (`Reject.certifies` needs no fuel):
+
+1. A concrete derivation-tree datatype for LJF◯ (the rule table already
+   exists — `LSeq.search_sound` rebuilds derivations from search wins).
+2. `partial def emitTree` — the emitter runs COMPILED and is UNTRUSTED:
+   no termination proof, no correctness proof.  It does not have to be
+   proven correct, because nothing rests on it (G4c fix pattern).
+3. `checkDeriv : Tree → LSeq → Bool` — structural, fuel-free — plus the
+   ONE soundness theorem `provable_of_checkDeriv : checkDeriv t s = true
+   → provable s`.  Built once; works in every later campaign.
+4. Campaign theorems become `laxND_of_checkDeriv (by decide)` on a tree
+   literal: `decide` cost linear in tree size, fuel eliminated from the
+   statement entirely, no failing-branch blowup anywhere.
+
+Rationale (Matthew): unnecessary fuel is what hurt G4c search; the
+fueled `decide` gate in the current RCells campaign is fail-closed and
+minimal-fuel-metered, so it is safe — but the tree route removes the
+fuel question permanently for the one-time price of a checker soundness
+proof.
+
+## CAMPAIGN (2026-08-26, Matthew): FRJV completeness via model-to-tree
+
+The architecture, agreed without further spelling out:
+
+    [] ⊬ φ  ⟹  Built-class TREE countermodel   (not_laxND_iff_built;
+                                                the G4c/classical side)
+            ⟹  FRJVr derivation of ofPLL φ     (THE NEW LEMMA: the hand
+                                                recipe as a recursion
+                                                over the tree)
+            ⟹  ProvableV (ofPLL φ)             — completeness of FRJV.
+
+The new lemma formalises METHOD.md Appendix A: structural recursion
+over the finite tree model, one world per join, with two sub-lemmas
+carrying the content: (i) kept-link adoptability = RefAt-vs-truth
+alignment at each world (which implications true at a world are
+KeptChain-adoptable); (ii) premise-row existence for every cone-false
+formula (the induction hypothesis).  This is the W4 progress lemma in
+semantic clothing.  Interactive skill base: the five hand witnesses +
+`wip/frjv_interactive_114.lean` (goal-first, rules-only, trace_state
+proofviews; the ProvableV metavariable pattern solves the context by
+unification).  Next skill step before scoping the recursion: run the
+interactive construction on 3–5 more banked ⊬ cells of DIFFERENT
+shapes (a promise-join cell, an axIC/vacuous cell, a 2-premise orI
+cell) to force the remaining rule families through the same discipline.
+
+UPDATE (same date, Matthew's question answered YES): the completeness
+recursion should consume `Reject/`'s Built-class trees (`Tab`), not the
+general `Kripke` structure — they are concrete inductive data the
+calculus side already constructs and checks, `not_laxND_iff_built`
+guarantees one for every underivable sequent, and tree shape is what
+world-per-join transcription wants.  Caveat carried: that existence
+theorem uses Classical.choice, so the composed completeness statement is
+Prop-level; the recursion itself stays constructive over the tree.
+
+TACTIC KIT (from the interactive corpus): `frjv_side`
+(wip/frjv_interactive_94.lean) — eight closed moves covering every side
+condition in all seven witnesses; a rule application is
+`refine Rule (…premises…) <;> all_goals frjv_side`, one line per node.
+Second exercise file covers the remaining rule families: joinOrP
+(promise) and axIC (vacuous cone), first-pass.  For the GENERAL lemma
+the decide arms die (side conditions no longer closed) — but each arm
+names exactly one helper obligation of the recursion: keptOf_ok and
+CtxEq.refl are already generic; zoneSplit generalises with one
+membership lemma; hJ2/hJ5's Boolean checks become carried invariants of
+the tree; `cloB_iff.mp ∘ decide` becomes the truth-vs-Clo alignment
+lemma.  The witness corpus's decide-sites are a SPECIFICATION of the
+completeness proof's helper list.
+
+CORRECTIONS (Matthew, 2026-08-26 evening):
+1. The countermodel-existence side can be CHOICE-FREE: the G4c
+   decidability/completeness chain ([propext, Quot.sound], the
+   axiom-hygiene campaign's result) constructs a finite countermodel on
+   the refutation branch.  So the source-model class is a DESIGN CHOICE
+   with three candidates, none yet committed: (a) the G4c decider's
+   finite models (choice-free, but not tree-shaped); (b) Reject/ Built
+   trees (tree-shaped, matching the recipe, but existence via choice,
+   and Matthew doubts the simple constructions match FRJV); (c) FRJV's
+   own modR-image class (self-normal-form).  Pick whichever makes the
+   two sub-lemmas provable; that pick is the first task of the campaign.
+2. NON-DETERMINISM CONCERN (Matthew): FRJV may be too non-deterministic
+   for a completeness recursion.  Assessment from the hand corpus: the
+   saturation engine is already the canonical deterministic strategy
+   (maximal Θ, full row closure — the hand witnesses' choices were
+   shortcuts through that space, not essential creativity), so the
+   determinism question reduces to the W4 AllMet progress question.
+   The two REAL risks, both measured: join ARITY growth (jmax 3→4
+   needed on six cells; unbounded arity kills any bounded-family
+   recursion — the syntactic none_ex question), and the UN-REPAIRED
+   PROMISE JOINS (paper-strict; the hand work needed the Υ-enrichment
+   trick exactly to get hypotheses through the promise restriction — a
+   completeness proof must show the trick always suffices, and if it
+   does not, the next refinement cycle relaxes the promise joins as
+   RefAt relaxed the barren ones).
+3. PARKING CRITERION (Matthew's decision rule): if neither this
+   semantic route nor the peer session's W4 route succeeds, FRJV is
+   PARKED as an instructive failed extension of Fiorentini–Ferrari's
+   IPC refutation calculus to PLL — keeping soundnessV, the ρ12⊬ρ15
+   settlement, the witness corpus, and the method lessons.
+
+STEP 0 (Matthew, 2026-08-26 late): before attempting the FRJV
+completeness recursion, RUN THE METHOD ON THE ◯-FREE FRAGMENT — FRJV
+restricted to ◯-free goals is essentially Fiorentini–Ferrari's FRJ(G),
+whose IPC completeness is PROVED on paper (TOCL 2020).  So the fragment
+is a CONTROL with a known answer: if the method fails there, the fault
+is our formalisation or the method's Lean shape, not the calculus — and
+it certainly fails for full FRJV (the fragment's rules are a subset in
+action).  If it succeeds, the entire risk mass is isolated in the
+◯-delta: the promise joins and join arity.  The paper's own
+completeness proof is the scaffold for the recursion's shape.
+
+FAMILY COVERAGE COMPLETE (interactive III, wip/frjv_interactive_92_90.lean):
+[ρ9]⊬ρ2 forces joinCircP and [ρ9]⊬ρ0 forces joinAtP (the final ⊃∈
+needs b in context; only the promise formers carry a ◯-formula; the
+conclusions rule out joinOrP).  Both four-node trees, first-pass, via
+the hoisted kit.  Every join family of FRJV has now been driven
+goal-first at least once.  KIT HOISTED: FRJ/WitnessKit.lean (generic
+helpers + frjv_side), answering the review point that the helpers were
+stranded in WitnessV1215's namespace.
+
+ROUND 1 OF THE ◯-DELTA LANDED (2026-08-26 22:02): `wip/minmodv.lean`
+extends `minMod` past `.circ` on the template (Matthew's method
+directive: existing proofs as firm templates, never a fresh strategy —
+now also a section of the calculus-adoption skill).  `minModV` +
+`completenessV_of_supply` compile FIRST PASS, pins
+`[propext, Quot.sound]` guarded.  Hypotheses of round 1: `hloc`
+(world-wise circ-free Λ*), global infallibility, and `CircSupplyV`
+(the §9 sole-candidate corner as a named supply).  Regular `◯`-goals
+need no float (Rm reflexivity); irregular `◯`-demands float on height
+or hit the supply.  Smoke test `wip/minmodv_test.lean`: Peirce cell
+end-to-end on `Kripke.point`, supply discharged by `Ax^I◯`.  NEXT:
+(1) discharge `CircSupplyV` (four W4 §11 routes + the NEW V-lever —
+kept chains turn stuck-member retention into decidable `RefAt`);
+(2) lift `hloc` = promise-join port with `PledgeSupplyV`;
+(3) `hinf` → root-only infallibility (per-wit `wfal`).  Parking
+criterion unchanged: if neither this nor the peer W4 route closes,
+FRJV parks as an instructive failure.
+
+ROUND 2 DONE (2026-08-26 22:12): `CircSupplyV` DISCHARGED on
+cone-grounded frames (`circSupplyV_of_coneGrounded`: corner →
+cone-trivial → maximal → generalised `Ax^I◯`, embedded by `toVi`), and
+`completenessV_of_endpoints` gives FRJV completeness UNCONDITIONAL over
+endpoint-seeing models (no hloc/inf/supply) by composing the peer's
+`completeness_of_endpoints` with the embedding.  Chosen-valuation route
+landed as `circWitV_of_ats` (decidable per world; blocked exactly on
+`Λ*_a ⊨_cl Z`).  Peer refutation absorbed: no supply-form organisation
+of the promise side is possible (`V.PledgeSupply` FALSE; kept members
+are implications only) — the corner supply is unaffected (its world is
+provably circ-free).  REMAINING FRONTIER: (a) non-endpoint frames —
+where #80/#81 live and FRJV must exceed FRJ; the open kernel is the
+cone-trivial non-maximal corner with a poisoned Λ*-implication, V-lever
+= kept chains on the circNotIn premise row; (b) the hloc-lift by
+instance-wise promise families (hand-witness pattern), NOT a supply;
+(c) hinf → root-only infallibility for the minModV route (the
+endpoint route already needs neither).
+
+RESIDUE ATTACKED (2026-08-26 22:24, wip/minmodv_residue.lean): the
+cone-trivial non-maximal corner is REALISED (KR: a<b, Rm=id; GR =
+(A⊃w)⊃◯w, A = p∨(p⊃q)); route 3 (chosen valuation) REFUTED by
+certificate (`route3_blocked`, A is a classForce-tautology); the corner
+SERVED anyway by the Υ-enrichment wit (paper second zone; RefAt not
+needed); `provableV_residue` runs minModV end-to-end on the instance.
+NEXT CONCRETE STEP for the unconditional discharge: the
+seen-parametrised minModV — measure (ht, |sfR|−|seen|, t, |C|), corner
+branch BUILDS the Υ-enriched join instead of consuming CircSupplyV.
+
+ROUND 3 DONE (2026-08-27 07:38, wip/minmodv_seen.lean): the
+seen-mechanism is BUILT (minModS, measure (ht, |sfR|−|seen|, t, |C|);
+push drops budget, floats reset).  The flight analysis pinned the true
+kernel: I(◯Z) re-arises inside its own row ONLY through upsPrime; under
+the decidable guard "left-implication antecedents hereditarily ◯-free"
+(guardB) the flight branch is unreachable and
+`completenessV_of_circAnteFree` gives SUPPLY-FREE, FRAME-UNCONDITIONAL
+FRJV completeness (pins [propext, Quot.sound]).  The residue cell is
+re-closed supply-free (provableV_residue_guarded).  REMAINING KERNEL
+(sharp): unguarded goals where a fat ⊃∈ⁱ premise stabilises (◯Z⊃W) —
+closures on file: support-restricted Lemma 6.5 (thin the fat cells), or
+calculus round 3 relaxing hJ2 to RefAt (soundness = the refAt_refutes
+vacuity the kept clause already uses).
+
+CALCULUS ROUND 3 DONE (2026-08-27 08:18): barren (J2) relaxed to RefAt
+(divergence V5, docs/refat-plan.md); soundnessV re-proved FIRST PASS via
+the sf-bounded refAt_refutes_sf/clo_forces_sf (all certificate leaves
+are subformulas of the target — the size induction survives); whole
+stack green (8915 jobs), pins hold, TOOLS row updated.  Demo:
+wip/minmodv_round3_demo.lean — the flight-shaped, guard-violating
+(◯w⊃q)⊃◯w in four nodes; M_kept (RefAt-kept) vs M_not_ups_kept (paper
+zone cannot).  BOTH obstructions to guard-free completeness are now
+cleared (measure: seen-mechanism; calculus: round 3); the remaining
+work is the flight-branch corner-join CONSTRUCTION in minModS (thin
+premises; kept-completeness by antecedent-size induction; the
+support-restricted Lemma 6.5).  Screening step first: hunt the
+poison+flight discriminating cell (round-2-FRJV vs round-3-FRJV).
+
+ROUND 3 REVERTED (2026-08-28, option B executed): the relaxation was
+UNWITNESSED — its own demo's (J2) was vacuous (the V1 kept chain did
+the work), and the revert rebuilt the ENTIRE stack green (8906 jobs) =
+corpus-level conservativity verified.  Strict (J2) stands; the
+sf-bounded lemmas (clo_forces_sf, refAt_refutes_sf, sf_sub_*) stay in
+FRJ/RefAt.lean; licence discipline in refat-plan V5: barren-(J2)
+relaxation re-enters only with a kernel-checked separating cell.  THE
+CONSTRUCTION PATH (no calculus change): close minModS's flight branch
+in the round-2 calculus via thin premise families (empty stable zones →
+(J2) vacuous) + the stratified kept chain.  First bricks:
+(1) keptOf_saturated — the greedy kept chain is a fixpoint (anything
+RefAt-addable over base++kept is already kept);
+(2) the corner coverage induction at cone-trivial worlds (forced →
+Clo(base++kept); refuted → RefAt), plain size induction since every
+Clo/RefAt leaf is a subformula (the refAt_refutes_sf observation);
+(3) assemble as the flight-branch join in minModS, dropping the guard.
+
+FLIGHT BRICKS PROVED (2026-08-28 19:45, commit cf82e83):
+(1) `keptOf_saturated` (FRJ/RefAt.lean) — the greedy kept chain is a
+FIXPOINT: kept membership = RefAt-derivability over base ++ keptOf;
+(2) `corner_coverage` (wip/minmodv_flight.lean) — at cone-trivial
+infallible worlds with a `CornerSupply`-adequate Υ/base/pool, forced
+sfL-members are Clo-derivable and refuted sfR-members RefAt-refutable
+(one plain size induction; brick 1 cuts the retention knot); corollary
+`corner_lamStar_clo` = the ◯∉ cell's hTh obligation.  Pins
+[propext, Quot.sound] guarded.  Hygiene: omega on CONJUNCTION goals
+pulls Classical.propDecidable (De Morgan) — split before omega
+(#choice_path found it; banked in memory).  NEXT (the assembly): in
+minModS's flight branch, build the thin premise family discharging
+CornerSupply (Ax^I rows for refuted atoms; ⊃∉ floats for imps refuted
+only above — NB the float needs a regular row at e > a, ht-drop legal;
+fresh-◯ pushes on the seen budget), take the barren join over it
+(St = [] everywhere → strict (J2) vacuous → hJ1 trivial), close with
+◯∉ via corner_lamStar_clo, and DROP THE GUARD from
+completenessV_of_circAnteFree.  Watch: the join's conclusion context
+must ALSO serve the outer cov (Λ*-coverage of the IrrWitV) — that is
+corner_lamStar_clo again through circNotIn's hTh.
+
+THE ASSEMBLY COMPLETE (2026-08-28 21:14, commit 166e7ac,
+wip/minmodv_assembly.lean): `completenessV : hloc → K.Infallible →
+¬K.valid G → ProvableV G` — supply-free, guard-free, frame-free, strict
+round-2 calculus, round-1 measure, pins [propext, Quot.sound] guarded.
+The corner fell to two semantic vacuities (refuted imp → refuted
+consequent; refuted ◯ → refuted body: no ◯-cell is ever demanded, seen
+machinery retired) + the thin family (axI rows for refuted primes, ⊃∉
+floats strictly above with filtered good Θ-zones) + the two bricks.
+Instances re-derived with nothing supplied: residue cell + Peirce cell.
+REMAINING for full (A): (1) lift hloc — the promise-join port at
+circ-carrying worlds (instance-wise families, NOT a supply-form
+hypothesis — peer's refutation stands); (2) K.Infallible → root-only
+(per-wit wfal + fallible joins), needed before the fallible ρ-cell
+countermodels can feed the recursion.  ALSO: hoist the assembly chain
+(minmodv → flight → assembly) to library level once Matthew reviews;
+consider retiring minModS/the guard route as superseded (run the
+supersession check — the guard theorem is now a corollary).
+
+HLOC-LIFT ROUND 1 (2026-08-28 21:41, wip/minmodv_lift.lean): the
+design pass mapped the lift's three hloc-consumption points, and the
+first — the regular (n+1, ◯Z)-case — is CLOSED hloc-free:
+`circRegWit : Infallible → ◯Z ∈ sfR G → ¬force a ◯Z →
+(∀ b ≥ a, IFloat K G b) → RegWitV K G a ◯Z` (pins [propext,
+Quot.sound]).  Route: minZeta (a cone above a refuting Z) →
+maxRmAbove (cone-trivial m INSIDE that cone, still refuting Z since
+cone-refutation transports along Rm) → ONE barren ⋈^◯ with
+(R)-coverage concludes ◯Z there, NO Z-row, NO descent, tag barren for
+free; `corner_lamStar_mem` upgrades corner coverage from Clo to
+LITERAL membership (Λ*-atoms in the joint atom zone; Λ*-imps all have
+refuted antecedents by forceStar, so keptOf_saturated adopts them;
+Λ*-circs impossible at cone-trivial worlds), which is RegWitV.cov.
+Pledge-existence is moot on this route: cone-refuted Z never has
+◯Z ∈ Λ*_m, and barren joins pledge nothing — the peer's
+not_pledgeFam obstruction cannot arise.
+
+THE REFINED MAP (what remains, in dependency order):
+(i) free-grade prime/or at circ-carrying worlds: template-copy of
+    regPrimeV_join/regOrV_join with joinAtF/joinOrF, SAME Λ*-thick
+    premises — the Λ*-circs ride through the fallible modal zone
+    (each premise's IrrWit invariant puts ◯Y in st ++ th, so ◯Y lands
+    in ∪circPart(stab) or ∩circPart(th) either way); hcirc is not a
+    field of the F-joins.  Believed mechanical; blocked-tagged output.
+(ii) EVERYTHING FUNNELS INTO ONE RESIDUAL: tagged Z-rows at
+    arbitrary (possibly circ-carrying) worlds, demanded by ◯∉'s
+    premise in (0, ◯Z)-cells (reachable via upsPrime ◯-antecedents
+    and or-disjunct descents).  The pledged promise-join route
+    (family = tagged rows at proper Rm-successors, pledging the goal,
+    htag per-row = RegWitV.tOK verbatim; hJ5 via the cone's own
+    Rm-witnesses for Λ*-circ-bodies) works EXACTLY where the goal is
+    cone-refuted at its anchor — but structural descent through
+    ∧/⊃ loses cone-refutation (a cone refuting Z₁∧Z₂ splits per
+    world), so prime/or LEAVES without cone-refutation at
+    circ-carrying anchors remain — the §8 corner's V-form, genuinely
+    open.  REFUTE-FIRST next: hunt a model+goal realising that
+    configuration before scoping any build; if none exists in the
+    6-cell residue's models, the funnel may be vacuous in practice.
+(iii) integration: swap circRegWit into minModF's (n+1,◯)-case (needs
+    ht antitone lemma ht_le for the ifl measure: float at e > b ≥ a
+    gives ht e < ht b ≤ ht a); only worth doing together with (i).
+
+THE LIFT LANDED (2026-08-28 22:24, wip/minmodv_port.lean +
+wip/minmodv_liftmain.lean, four staged commits):
+`completenessV_lift : TagLeafV K G → K.Infallible → ¬K.valid G →
+ProvableV G` — hloc GONE from the statement, replaced by the ONE named
+interface TagLeafV (tagged prime/or wit at a circ-carrying world where
+the goal is refuted but forced at some proper Rm-successor), vacuous
+under hloc (completenessV_of_hloc = the supersession gate, instance
+cells re-validated).  Machinery: FreeWitV free grade (fallible joins,
+Λ*-thick premises, C :: upsPrime family with axIWitV head);
+tagPrimeP_join/tagOrP_join (pledged promise joins for cone-refuted
+goals, family = tagged rows at ALL proper Rm-successors, (J5) via each
+Λ*-circ's own Rm-witness); minModL on (ht, grade, size) with
+ht_le/ht_lt_of_le; (0,◯Z) via minZeta/maxRmAbove/corner-in-place.
+Probe (frjvprobe): strata ≤7 = 16696 refuted, 1027 circ-carrying
+targets, ZERO V-engine misses; size-8 stratum COMPLETE (2026-08-29
+00:05-ish, 6-model battery): 86957 refuted, 9277 circ-carrying
+targets, ZERO misses — (LIFT) unrefuted through four strata.
+
+NEXT for full (A):
+(1) TagLeafV-freeness: prove reached interface instances are always
+    constructible, or find the kernel-checked separating cell (next
+    calculus-round licence).  Probe evidence: zero misses anywhere.
+(2) Root-only infallibility (per-wit wfal + fallible joins) — after
+    which the fallible ρ-cell countermodels can feed the recursion.
+(3) A hand end-to-end instance on a circ-carrying model (M2-style)
+    with tl supplied — the missing validation stratum.
+(4) Curation: hoist the chain (minmodv → flight → assembly → port →
+    lift → liftmain) to library level; register frjvprobe in TOOLS.md;
+    run the supersession check on minModS/guard (already
+    superseded-in-effect) — all pending Matthew's review.

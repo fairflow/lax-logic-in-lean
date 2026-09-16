@@ -122,7 +122,7 @@
   table.grid td { text-align:center; padding: 3px 5px; border:1px solid var(--rule);
                   cursor: pointer; min-width: 30px; }
   td.cert { background: var(--green-fill); color: var(--green-text); }
-  td.pcll { background: var(--rust-fill); color: var(--rust); font-weight:700; }
+  td.esc  { background: var(--rust-fill); color: var(--rust); font-weight:700; }
   td.open { background: transparent; color: var(--ink-soft); }
   td.none { background: var(--slate-fill); color: transparent; cursor: default; }
   .swl { width:22px; flex:none; margin-top:9px; border-top:1.6px solid var(--slate); }
@@ -211,23 +211,80 @@
 </style>
 
 <div class="wrap">
-<h2 class="sr-only">Interactive Hasse diagrams for the Rieger–Nishimura ladder embedded in the variable-free fragment of propositional lax logic, and for the fifteen known classes of that fragment.</h2>
+<h2 class="sr-only">Interactive Hasse diagrams for the Rieger–Nishimura ladder embedded in the variable-free fragment of propositional lax logic, and for a finite dictionary of classes of that fragment, which is proved never to close.</h2>
 
 <header>
   <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
   <h1>RN(◯,{}) — the ladder and the dictionary</h1>
-  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v12 · 2026-08-06 · six points PROVED visible (wip/visible.lean), odd-rung refutation general in k</p>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v17 · 2026-08-19 · every table and every diagram on this page is PLL and kernel-certified; no cover relation of RN(◯,{}) is proved, so every ⋖ claim is dictionary-relative</p>
+
+  <div style="border:1px solid var(--rust);background:var(--rust-fill);border-radius:6px;padding:14px 16px;margin:0 0 16px">
+    <p style="font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);margin:0 0 9px">Correction · 2026-08-19</p>
+
+    <p style="margin:0 0 10px;font-size:14px"><strong>RN(◯,{}) is infinite — proved.</strong>
+    <code>closed_lax_infinite</code> (<code>LaxLogic/PLLLaxInfinite.lean</code>, sorry-free,
+    <span class="fml">[propext, Classical.choice, Quot.sound]</span>): the ⊣⊢-quotient of the
+    closed fragment has infinitely many classes, because <span class="fml">p ↦ ◯⊥</span> embeds
+    the free Heyting algebra on one generator. Infinite in three independent ways —
+    <em>height</em> (<code>exists_escaping_rungs</code>), <em>width</em>
+    (<code>width_infinite</code>) and <em>depth</em> (<code>Gmeet_desc_strict</code>,
+    <code>gap_no_glb</code>, <code>L_no_greatest</code>: no floor, so RN(◯,{}) is not a complete
+    lattice).</p>
+
+    <p style="margin:0 0 10px;font-size:14px"><strong>Therefore no finite dictionary can ever
+    close</strong>, and the earlier framing of this page — fifteen classes, closed under the
+    operations — was never going to work. Round 1 (15 representatives) and round 2 (16) both
+    fail: round 2 carries <strong>58 certified escapes</strong>, and <strong>83 of its 784
+    operation-table entries are certified false</strong>.</p>
+
+    <p style="margin:0 0 10px;font-size:14px"><strong>No cover relation of RN(◯,{}) is
+    proved.</strong> Not <span class="fml">⊥ ⋖ ◯⊥</span>, not
+    <span class="fml">⊥ ⋖ ¬◯⊥</span>, none. Writing <span class="fml">a ⋖ b</span> requires
+    ruling out <em>every</em> intermediate <span class="fml">χ ∈ RN(◯,{})</span> — an infinite
+    set. Countermodel search can refute a cover claim by exhibiting one strict interpolant; it
+    can never confirm one. What the diagrams below draw is therefore a
+    <strong>D-cover</strong>: <span class="fml">φ ⊢ ψ</span> certified, and no class of the
+    <em>current dictionary D</em> strictly between. A D-cover is relative to D and is destroyed
+    by enlarging it — placing eight further classes destroyed seven of twenty-one.</p>
+
+    <p style="margin:0;font-size:14px"><strong>Everything drawn here is PLL and certified.</strong>
+    The operation tables are built from the sorry-free <span class="fml">Interd</span> theorems
+    only: 561 of the 690 cells over the fifteen representatives — 236 by a named cell theorem,
+    201 by a structural law general in φ, 110 by commutativity from the transpose, 14 by
+    definition — each one <code>#print axioms</code>'d to
+    <span class="fml">[propext, Quot.sound]</span> or cleaner.
+    The unproved cells are drawn as unsettled and are never used to compute anything else on this
+    page. The earlier layer computed in <code>DerivU</code> has been removed; it is recoverable
+    at git tag <code>frozen-but-incorrect</code>. Plan for the rebuild:
+    <code>docs/rn-dictionary-plan.md</code>.</p>
+  </div>
   <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
   <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
-  The <strong>dictionary</strong> is the fifteen classes found by closing under ∧, ∨, ⊃, ◯ —
-  where the ladder is only part of the picture.</p>
+  The <strong>dictionary</strong> <span class="fml">D</span> is a finite set of classes obtained
+  by closing under ∧, ∨, ⊃, ◯ as far as it goes — which, since RN(◯,{}) is infinite, is never all
+  the way. It is an atlas of the bottom of the lattice, not a presentation of it.</p>
+  <p class="note" style="margin:10px 0 0;border-left:3px solid var(--red,#c0392b);padding-left:10px">
+  <strong>The fifteen classes do not actually close</strong> (recorded 2026-08-14).
+  The closure record <code>rnDict15</code> is certified at 561 of its 690 cells.
+  The 129 remaining are the reach of the 87 cell theorems that still carry a
+  <span class="fml">sorry</span> — 87 cells blocked directly, 42 more as their
+  commutativity transpose. Of those, <strong>four are REFUTED</strong> (five cells,
+  counting one transpose) — certified ≤4-world countermodels eliminate every
+  candidate representative, so each of
+  <span class="fml">q8 ∧ q10</span>, <span class="fml">q9 ⊃ q4</span>,
+  <span class="fml">q12 ⊃ q4</span> and <span class="fml">q14 ⊃ q4</span> is a
+  <em>new</em> class and the table genuinely fails there. The other 124 are open.
+  This is the expected shape, not a surprise: the variable-free fragment does not
+  collapse at any crank ≤ 7, so no finite dictionary can close it — the four cells
+  are simply where this one breaks. Detail:
+  <code>docs/rn-dictionary-status.md</code>.</p>
 </header>
 
 <div class="tabs" role="tablist">
   <button class="tab" id="tab-ladder" role="tab" aria-selected="true" aria-controls="p-ladder">Ladder — image of h</button>
-  <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — 15 classes + the ◯-chain</button>
+  <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — D, 15 classes + the ◯-chain</button>
   <button class="tab" id="tab-fam" role="tab" aria-selected="false" aria-controls="p-fam">Families — the combs</button>
-  <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — 347 cells</button>
+  <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — PLL, certified</button>
 </div>
 
 <p class="note" style="margin:-6px 0 14px;font-size:12.5px">Labels across the tabs: all three
@@ -241,9 +298,9 @@ named by a family letter carrying a level index <span class="fml">k ≥ 1</span>
 <span class="fml">r k = t(2k+4) ⊃ c k</span> (antichain),
 <span class="fml">◯g k</span> (antichain),
 <span class="fml">w k = g k ∧ t(2k+4)</span> (zigzag; <span class="fml">w1</span> was
-<span class="fml">w15</span>); and the sixteenth class the operation tables
-discovered is the meet <span class="fml">g1 ∧ t6</span> — which is exactly
-<span class="fml">w1</span>.
+<span class="fml">q8 ∧ q10</span>); that meet is <em>proved</em> to lie outside the fifteen
+(<code>refute_cAnd_8_10</code>: interderivable with no class of D at all), which is why it
+appears in the operation tables as an <span class="fml">∉D</span> cell.
 Old names are shown as "was qN" throughout; the Lean source keeps the old q-names, bridged by
 theorems <code>sC_one_q9</code>, <code>rC_one_q14</code>, <code>bg_one_q13</code>,
 <code>gap_one_q8</code>, <code>chainF_one_q5</code>, <code>q10_rn6</code>,
@@ -272,7 +329,7 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         <h2>Computed</h2>
         <dl class="stats">
           <dt>elements</dt><dd id="s-n">9</dd>
-          <dt>covers</dt><dd id="s-cov">11</dd>
+          <dt>rung-covers</dt><dd id="s-cov">11</dd>
           <dt>comparable pairs</dt><dd id="s-cmp">–</dd>
           <dt>widest antichain</dt><dd id="s-w">–</dd>
           <dt>compute time</dt><dd id="s-ms">–</dd>
@@ -307,6 +364,31 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
           <div class="lrow"><span class="sw jpp"></span><span><strong>join-prime, PROVED</strong> — <span class="fml">t 1, t 2, t 4, t 6</span>, by two mechanisms (see below)</span></div>
           <div class="lrow"><span class="sw jpv"></span><span><strong>join-prime</strong>, verified against the shown rungs — a <em>visible point</em> of the dual (a ring)</span></div>
           <div class="lrow"><span class="sw jpr"></span><span><strong>join-reducible</strong>, REFUTED by a witnessing pair — not a point of the dual (a dot); every odd rung from <span class="fml">t 3</span> up is REFUTED by a single theorem general in <span class="fml">k</span></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>What the edges mean</h2>
+        <div style="color:var(--ink-soft);font-size:12.5px">
+        <p style="margin:0 0 8px">Every edge is a certified <span class="fml">⊢</span>: the rung
+        order is decidable <em>arithmetic</em>, not search — <code>rnSub_order i j ↔ rungLe i j</code>
+        reduces <span class="fml">rnSub i ⊢ rnSub j</span> to truth-set inclusion for
+        <span class="fml">rn 0 = ∅</span>, <span class="fml">rn (2k+1) = {w ≤ k}</span>,
+        <span class="fml">rn (2k+2) = {w &lt; k} ∪ {k+1}</span> (<code>wip/ladder8.lean</code>).</p>
+        <p style="margin:0 0 8px">The edges drawn are <strong>rung-covers</strong>:
+        <code>covers9_eq</code> is proved <em>axiom-free</em>, and <code>covers9_stable</code>
+        widens the "nothing strictly between" search from rungs &lt; 9 out to rungs &lt; 24 and
+        gets the same eleven — so the picture is not an artefact of where the table was cut.</p>
+        <p style="margin:0"><strong>A rung-cover is not a cover of RN(◯,{}).</strong> Both
+        theorems quantify over <em>rungs</em>. RN(◯,{}) contains classes off the rung image — the
+        gap family, the ◯-chain — and whether any of them lies strictly inside a rung interval is
+        open. In particular <span class="fml">⊥ ⋖ ◯⊥</span> and
+        <span class="fml">⊥ ⋖ ¬◯⊥</span> are <strong>OPEN</strong>. What is known about a strict
+        interpolant <span class="fml">χ</span> with <span class="fml">⊥ &lt; χ &lt; ◯⊥</span>:
+        it cannot be interderivable with any ◯-headed formula, since ◯ is monotone and
+        <span class="fml">⊥ ⊢ ψ</span> put every ◯-formula above ◯⊥
+        (<code>oBot_le_box</code>, <span class="fml">[propext]</span>); and it cannot be ◯-free,
+        since the ◯-free closed IPC fragment collapses to <span class="fml">{⊥, ⊤}</span>. So it
+        would have to contain ◯ while being headed by ∧, ∨ or ⊃.</p>
         </div>
       </div>
       <div class="card">
@@ -390,12 +472,12 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
           <div class="lrow"><span class="sw c"></span><span>Chain family — infinitely many, totally ordered: <span class="fml">c k</span>, <span class="fml">s k</span></span></div>
           <div class="lrow"><span class="sw a"></span><span>Antichain family — infinitely many, pairwise incomparable: <span class="fml">g k</span>, <span class="fml">r k</span>, <span class="fml">◯g k</span></span></div>
           <div class="lrow"><span class="sw o"></span><span>Outside the rungs — the top class <span class="fml">⊤</span></span></div>
-          <div class="lrow"><span class="swl"></span><span>Certified cover</span></div>
-          <div class="lrow"><span class="swl d"></span><span>Relation certified; whether anything sits strictly between depends on one of the 2 remaining open cells</span></div>
+          <div class="lrow"><span class="swl"></span><span><strong>D-cover</strong> — <span class="fml">φ ⊢ ψ</span> certified, and no class of the current dictionary <span class="fml">D</span> strictly between. <em>Not</em> a cover of RN(◯,{}): no such cover is proved.</span></div>
+          <div class="lrow"><span class="swl d"></span><span id="d-openline">Relation certified; whether anything of <span class="fml">D</span> sits strictly between is undecided here</span></div>
           <div class="lrow"><span class="swl x"></span><span>Where distribution fails</span></div>
           <div class="lrow"><span class="swl" style="border-top:2px dashed var(--green)"></span><span>The ◯-chain: infinitely many further classes, strict at every step, all below ⊤ — not covers</span></div>
           <div class="lrow"><span class="sw jpp"></span><span><strong>join-prime, PROVED</strong> — <span class="fml">⊤, t1, t2, t4, t6</span> (<code>visible_top</code>, <code>visible_rnSub_{one,two,four,six}</code>, <code>wip/visible.lean</code>): visible points</span></div>
-          <div class="lrow"><span class="sw jpv"></span><span><strong>join-prime, verified in scope</strong> — no counterexample found among the 14 classes with a certified operation table</span></div>
+          <div class="lrow"><span class="sw jpv"></span><span><strong>join-prime, verified in scope</strong> — no counterexample found among the fifteen classes, using certified cells only</span></div>
           <div class="lrow"><span class="sw jpr"></span><span><strong>join-reducible, REFUTED</strong> — witnessing pair found; click for it</span></div>
           <div class="lrow"><span class="swl" style="opacity:.4"></span><span>No ring/dot at all — not tested: no certified join table reaches this class</span></div>
         </div>
@@ -403,15 +485,24 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
       <div class="card">
         <h2>State of the order</h2>
         <dl class="stats">
-          <dt>classes</dt><dd>15 + ∞ (chain)</dd>
-          <dt>order cells</dt><dd>225</dd>
+          <dt>classes</dt><dd>infinitely many ✓</dd>
+          <dt>this dictionary D</dt><dd>15 (round 1)</dd>
+          <dt>D closed under ∧∨⊃◯?</dt><dd>no — and no finite D can be</dd>
+          <dt>order cells within D</dt><dd>225</dd>
           <dt>settled</dt><dd id="d-set">223</dd>
           <dt>unsettled</dt><dd id="d-unk">2</dd>
           <dt>in image of h</dt><dd>8</dd>
           <dt>im h</dt><dd>= rungs ∪ {⊤} ✓</dd>
           <dt>width</dt><dd>∞ (gap family) ✓</dd>
           <dt>floor</dt><dd>none (gap meets) ✓</dd>
+          <dt>covers of RN(◯,{})</dt><dd>none proved</dd>
         </dl>
+        <p style="font-size:12px;margin:9px 0 0;color:var(--ink-soft)">Round 2
+        (<code>wip/rnDict2.lean</code>) adds a sixteenth class and still does not close: it carries
+        <strong>58 certified escapes</strong>, witnessed sorry-free in
+        <code>wip/rnDictRefute2.lean</code> in the strong form
+        <span class="fml">∀ k, ¬ Interd (q<sub>i</sub> ∘ q<sub>j</sub>) (rep2 k)</span>. The ✓ rows
+        are theorems about RN(◯,{}); the rest are relative to <span class="fml">D</span>.</p>
         <label class="opctl" style="margin:10px 0 0"><input type="checkbox" id="tog-jp-dict">
           <span>Show only join-prime (visible) classes</span></label>
         <p class="scopeline" id="jp-scope-dict"></p>
@@ -424,11 +515,23 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         meets of the gap family, <span class="fml">Gmeet n = g1 ∧ g2 ∧ … ∧ g(n+1)</span>, form a
         chain that <strong>descends strictly forever</strong>
         (<code>Gmeet_le</code>, <code>Gmeet_desc_strict</code>, <code>wip/uiObstruct.lean</code>)
-        with <strong>no floor</strong> — no formula sits below every <span class="fml">g k</span>,
-        in PLL or even restricted to variable-free formulas
-        (<code>gap_no_glb</code>, <code>L_no_greatest</code>, <code>wip/floor.lean</code>).
+        with <strong>no floor</strong> — the gap family has lower bounds
+        (<span class="fml">⊥</span> for one) but no <em>greatest</em> lower bound, in PLL or even
+        restricted to variable-free formulas (<code>gap_no_glb</code>,
+        <code>L_no_greatest</code>, <code>wip/floor.lean</code>).
         RN(◯,{}) is not a complete lattice. Drawn as a new column in the
-        <strong>Families</strong> tab, below <span class="fml">g1</span>.</div>
+        <strong>Families</strong> tab, below <span class="fml">g1</span>.
+        <p style="font-size:12.5px;margin:10px 0 0"><strong>This descent says nothing about
+        <span class="fml">[⊥, ◯⊥]</span>.</strong> The whole gap antichain sits <em>above</em>
+        <span class="fml">t3 = ◯⊥ ∨ ¬◯⊥</span> (<code>t3_below_gap</code>), and
+        <span class="fml">◯⊥</span>, <span class="fml">¬◯⊥</span> both lie below
+        <span class="fml">t3</span> in the rung order, so each absorbs every partial meet:
+        <span class="fml">◯⊥ ∧ Gmeet n ⊣⊢ ◯⊥</span> and
+        <span class="fml">¬◯⊥ ∧ Gmeet n ⊣⊢ ¬◯⊥</span> for <em>every</em> n — constant, not
+        eventually constant (<code>oBot_meet_Gmeet</code>, <code>nBot_meet_Gmeet</code>,
+        <code>wip/atomProbe.lean</code>, sorry-free). The infinite strict descent happens entirely
+        strictly above <span class="fml">t3</span>, so it cannot be used to break the atom
+        claims.</p></div>
       </div>
       <div class="card">
         <h2>The invisible points</h2>
@@ -565,6 +668,18 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
   <span class="fml">◯(t3 ∨ t4) = c2</span> while
   <span class="fml">◯t3 ∨ ◯t4 = s1</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
+
+  <div style="margin-top:26px;border-top:1px solid var(--rule,#ddd);padding-top:18px">
+  <h2>Why a cover read off a dictionary is provisional</h2>
+  <p class="note" style="border-left:3px solid var(--rust);padding-left:10px">
+  An earlier revision of this page drew an order over 22 closed-fragment classes, and recorded
+  that placing eight newly discovered classes <strong>destroyed seven of the twenty-one covering
+  relations</strong> that had held among the previous fourteen. That observation is the clearest
+  evidence on this page for the rule stated at the top: a cover read off a finite dictionary is
+  a D-cover, and enlarging D can only destroy it. The diagram itself is gone — it was computed
+  in <code>DerivU</code> rather than in PLL — and is recoverable at git tag
+  <code>frozen-but-incorrect</code>.</p>
+  </div>
 </section>
 
 <!-- ──────────────────────── FAMILIES ──────────────────────── -->
@@ -681,8 +796,8 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         chain, the mirror image of the ascending <span class="fml">◯</span>-chain in the
         Dictionary tab.</p>
         <p style="font-size:13px;margin:0;color:var(--ink-soft)">
-        It has <strong>no floor</strong>: no formula lies below every
-        <span class="fml">Gmeet n</span>, in the whole of PLL, let alone variable-free
+        It has <strong>no floor</strong>: its lower bounds have no <em>greatest</em> element, in
+        the whole of PLL, let alone variable-free
         (<span style="font-family:var(--mono);font-size:11px">gap_no_glb</span>,
         <span style="font-family:var(--mono);font-size:11px">L_no_greatest</span>,
         <code>wip/floor.lean</code>) — so RN(◯,{}) is <strong>not a complete lattice</strong>,
@@ -692,6 +807,16 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         — <span style="font-family:var(--mono);font-size:11px">gap_two_le_one</span> — is why the
         antichain proper is drawn from <span class="fml">k = 2</span>: <span class="fml">g1</span>
         is strictly above it.)</p>
+        <p style="font-size:12.5px;margin:8px 0 0;color:var(--ink-soft)"><strong>The descent is
+        blind to <span class="fml">[⊥, ◯⊥]</span>.</strong> Because
+        <span class="fml">t3</span> is below every gap, and <span class="fml">◯⊥</span> and
+        <span class="fml">¬◯⊥</span> are below <span class="fml">t3</span>, each absorbs every
+        <span class="fml">Gmeet n</span>: <span class="fml">◯⊥ ∧ Gmeet n ⊣⊢ ◯⊥</span> for every
+        n (<span style="font-family:var(--mono);font-size:11px">oBot_meet_Gmeet</span>,
+        <span style="font-family:var(--mono);font-size:11px">nBot_meet_Gmeet</span>,
+        <code>wip/atomProbe.lean</code>). So the whole descent lies strictly above
+        <span class="fml">t3</span> and says nothing about whether
+        <span class="fml">◯⊥</span> is an atom.</p>
         <p style="font-size:12.5px;margin:8px 0 0;color:var(--ink-soft)">What this misses is a
         <em>point</em> of the Esakia dual, not just a formula — see "The invisible points" in the
         Dictionary tab: the closed set <span class="fml">⋂ₖ φ(g k)</span> is nonempty by
@@ -747,19 +872,20 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
       <div class="card">
         <h2>Status of the table</h2>
         <div class="legend">
-          <div class="lrow"><span class="sw g"></span><span><strong id="t-cert">345</strong> certified — a kernel-checked <span class="fml">InterdU</span> in <code>rncCells.lean</code></span></div>
-          <div class="lrow"><span class="sw p"></span><span><strong>2</strong> hold in PCLL only — no PLL proof exists, and one of them is refuted in PLL</span></div>
-          <div class="lrow"><span class="sw g"></span><span id="t-unitline"></span></div>
+          <div class="lrow"><span class="sw g"></span><span id="t-certline"></span></div>
+          <div class="lrow"><span class="sw g"></span><span id="t-commline"></span></div>
+          <div class="lrow"><span class="sw g"></span><span id="t-defline"></span></div>
+          <div class="lrow"><span class="sw p"></span><span id="t-escline"></span></div>
           <div class="lrow"><span class="sw u"></span><span id="t-openline"></span></div>
-          <div class="lrow"><span class="sw o"></span><span id="t-noneline"></span></div>
         </div>
-        <p style="font-size:12px;margin:9px 0 0;color:var(--ink-soft)">"Open" (pale <span class="fml">?</span>)
-        does <strong>not</strong> mean not attempted: the probe ran on every one of those cells and
-        came back with neither a proof nor a refutation, bounded by a search budget
-        (<code>Config.findBudget</code> in the <code>PLLSearch</code> harness — the pass that turns
-        settled cells into kernel proofs alone used <span class="fml">findBudget = 50000</span>,
-        <code>wip/rncHarvest.lean</code>); a bigger budget could in principle still settle some of
-        them. The blank <span class="fml">·</span> cells are a different thing again — see below.</p>
+        <p style="font-size:12px;margin:9px 0 0;color:var(--ink-soft)">"Unsettled" (pale <span class="fml">?</span>)
+        does <strong>not</strong> mean not attempted: each of those cells is <em>stated</em> in
+        <code>wip/rnDict.lean</code> with a conjectured value and left carrying a
+        <span class="fml">sorry</span>, because the search that would settle it did not close
+        within its budget (<code>Config.findBudget</code>, the <code>PLLSearch</code> harness). A
+        conjectured value is not evidence: four such conjectures turned out to be
+        <em>false</em>, which is how the <span class="fml">∉D</span> cells were found. The blank
+        <span class="fml">·</span> cells are a different thing again — see below.</p>
       </div>
       <div class="card">
         <h2>Reading it</h2>
@@ -768,18 +894,29 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         representatives are labeled <span class="fml">t</span>/<span class="fml">c</span>/<span
         class="fml">g</span>/<span class="fml">s</span>/<span class="fml">r</span> exactly as in
         the glossary at the top. The quotient has 15 of them:
-        <span class="fml">c2</span> (was <span class="fml">q12</span>) is absent because PCLL
-        identifies it with <span class="fml">s1</span> (was <span class="fml">q9</span>) — which
-        is exactly the distribution collapse. The extra header
-        <span class="fml">g1∧t6</span> (was <span class="fml">w15</span>) is a
-        <em>sixteenth</em> class the harvest itself discovered — that meet lands outside the
-        fifteen (<code>def w15 : PLLFormula := q8.and q10</code>, wip/rncCells.lean). The Lean
-        certificates in <code>wip/rncCells.lean</code> use the old q-names. Click
-        any header or cell for the full formulas.</p>
+        all fifteen, <span class="fml">t0</span> … <span class="fml">r1</span>, are shown —
+        including <span class="fml">c2</span> (was <span class="fml">q12</span>), which PLL keeps
+        distinct from <span class="fml">s1</span>. The Lean certificates in
+        <code>wip/rnDict.lean</code> use the old q-names, so the readout gives both. Click any
+        header or cell for the full formulas.</p>
       </div>
     </div>
     <div>
-      <h2 class="print-tab-title">Operation tables — 347 cells</h2>
+      <h2 class="print-tab-title">Operation tables — PLL, certified</h2>
+      <p class="note" style="border-left:3px solid var(--green);padding-left:10px;margin-top:0">
+      <strong>PLL, and partial by necessity.</strong> Every filled cell below is a kernel-checked
+      <span class="fml">Interd</span> — interderivability in PLL itself, not in the confluent
+      extension. The table is <em>partial</em> and always will be: RN(◯,{}) is infinite
+      (<code>closed_lax_infinite</code>), so an operation on fifteen representatives cannot be
+      total, and the five <span class="fml">∉D</span> cells are the proof of it — pairs whose
+      value is certified to lie outside D. Nothing here is read from a stored table: the
+      certified entries come from the sorry-free theorems of <code>wip/rnDict.lean</code>,
+      <code>wip/gap2.lean</code> and <code>wip/rnDictBase.lean</code>, the escapes from
+      <code>wip/rnDictRefute.lean</code>. The 124 unsettled cells carry a
+      <span class="fml">sorry</span> and are used for nothing. Note in particular that
+      <code>rnDict15</code> and <code>rnDict16</code>, which instantiate <code>RNDict</code> from
+      those sorried cells, carry <span class="fml">sorryAx</span> and are not used by this page.
+      Plan: <code>docs/rn-dictionary-plan.md</code>.</p>
       <div class="stage-wrap" id="wrap-tab">
         <div class="toolbar no-print">
           <button class="chip" type="button" id="fs-tab">Full screen</button>
@@ -790,11 +927,26 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
       <p class="readout" id="read-tab"><span class="muted">Click a cell for the equation it records.</span></p>
     </div>
   </div>
-  <p class="note">These 347 cells were probe output until they were re-derived and pinned: each
-  certified cell is now a proof term the kernel checks. The two PCLL-only cells are
-  <span class="fml">◯t5 ≡ s1</span> (was <span class="fml">◯q7 ≡ q9</span>) and
-  <span class="fml">◯s1 ≡ s1</span> (was <span class="fml">◯q9 ≡ q9</span>) — the harvester found
-  them by failing, without being told where to look.</p>
+  <p class="note" style="border-left:3px solid var(--accent,#2d7dd2);padding-left:10px">
+  <strong>These tables are now also a simplifier.</strong> Every certified cell is an
+  oriented rewrite rule <span class="fml">qi ⊙ qj ⟶ qk</span>, so the whole table can be
+  run as a normaliser on any closed goal — congruence closure over facts already paid for.
+  The PLL simpset (<code>Rewrite/</code>) carries <strong>236</strong> kernel-checked cells
+  from the separate 15-representative record <code>rnDict15</code>; canonicalising both the
+  goal and the rules, then alternating rewriting and re-canonicalising to a fixpoint, it
+  rewrites 89% of flat cells for a 34% <span class="fml">crank</span> cut and collapses
+  3,996 nested ∧/∨ trees to 25 distinct forms — against a floor of 15, the number of
+  classes. What it cannot do is <em>extend</em> the tables: tested against all 87 unproved
+  cells, it settles <strong>none</strong> of them, because rewriting only reaches what the
+  banked equations already connect. The open cells need search or countermodels, not
+  recombination.</p>
+  <p class="note">Every certified cell above was probe output until it was re-derived and pinned:
+  it is now a proof term the kernel checks, and the pin is what licenses its use as a rewrite
+  rule. The distinction the table keeps is exactly the one that matters for that use — a cell is
+  drawn green only when a sorry-free theorem exists, because a simpset built from sorried cells
+  carries <span class="fml">sorryAx</span> and can rewrite a formula to a non-interderivable one.
+  That happened: the first cut of the simpset took all 323 stated cells by name, and four of them
+  were false.</p>
 </section>
 </div>
 
@@ -892,7 +1044,7 @@ function renderLadder(N) {
   const box = document.getElementById("selfcheck");
   if (c9 === CERTIFIED_COVERS_9.split(",").sort().join(",")) {
     box.className = "check";
-    box.innerHTML = "The eleven covers computed here for t 0…t 8 match <strong>covers9_eq</strong>, "
+    box.innerHTML = "The eleven RUNG-covers computed here for t 0…t 8 match <strong>covers9_eq</strong>, "
       + "the Lean theorem proved by <code>decide</code>.";
   } else {
     box.className = "check bad";
@@ -940,20 +1092,27 @@ function renderLadder(N) {
   for (let n = 0; n <= N; n++) {
     const [cx, cy] = pos[n];
     const g = el("g", { class: "node", tabindex: "0",
-      "aria-label": `t ${n} — rung ${n}, textbook form rn ${n}, truth set ${sets[n].join(" ") || "empty"}` });
-    const w = 54, h = 26;
+      "aria-label": `t ${n} — rung ${n}, textbook form rn ${n}, truth set ${sets[n].length ? "{" + sets[n].join(", ") + "}" : "empty"}` });
+    const w = 66, h = 30;
     g.appendChild(el("rect", {
       x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: 6,
       fill: n <= 7 ? "var(--green-fill)" : "none",
       stroke: "var(--green)", "stroke-width": n <= 7 ? 1.4 : 1.2,
       "stroke-dasharray": n <= 7 ? "" : "3 2"
     }));
-    const label = el("text", {
-      x: cx, y: cy + 4, "text-anchor": "middle",
+    const tm = TMIN[n];
+    g.appendChild(el("text", {
+      x: cx, y: tm ? cy - 1 : cy + 4, "text-anchor": "middle",
       "font-family": "var(--mono)", "font-size": "12.5",
       fill: "var(--green-text)"
-    }, "t " + n);
-    g.appendChild(label);
+    }, "t " + n));
+    /* the formula the index names — a rung is a JOIN or an IMPLICATION and the
+       diagram should say which without a click. */
+    if (tm) g.appendChild(el("text", {
+      x: cx, y: cy + 10.5, "text-anchor": "middle",
+      "font-family": "var(--serif)", "font-size": "8.5",
+      fill: "var(--green-text)"
+    }, tm[0]));
     const v = jp[n];
     addPrimeGlyph(g, cx, cy, w / 2, h / 2, v);
     const show = () => {
@@ -984,8 +1143,8 @@ function renderLadder(N) {
             ? ` &nbsp;·&nbsp; = ${DICT[DICT_OF_RUNG[n]].f} <span class="muted">(dictionary node, was q${DICT_OF_RUNG[n]})</span>`
             : "")
         + `<br><span class="muted">${n === 0 ? "the bottom of the lattice"
-            : n % 2 === 1 ? "odd rung — a join; two upper covers"
-                          : "even rung — an implication; one upper cover"}`
+            : n % 2 === 1 ? "odd rung — a join; two upper rung-covers"
+                          : "even rung — an implication; one upper rung-cover"}`
         + (n > 7 ? " · <strong>beyond the dictionary</strong> — no dictionary class names it"
                  : " · in the dictionary") + `</span>`
         + `<br>` + jpVerdictHtml("t " + n, v, jpNameOf, jpFormOf)
@@ -1049,7 +1208,8 @@ const DICT = [
 const RUNG_OF_DICT = { 0:0, 2:1, 3:2, 4:3, 6:4, 7:5, 10:6, 11:7 };
 const DICT_OF_RUNG = { 0:0, 1:2, 2:3, 3:4, 4:6, 5:7, 6:10, 7:11 };
 
-/* [from, to, style] — "s" certified cover, "d" cover depends on an open cell, "x" distribution failure */
+/* [from, to, style] — "s" D-cover (certified <, nothing of D strictly between; NOT a cover
+   of RN(◯,{})), "d" D-cover depends on an open cell, "x" distribution failure */
 const DICT_EDGES = [
   [0,2,"s"],[0,3,"s"],[2,4,"s"],[2,6,"s"],[3,4,"s"],[4,5,"s"],[4,7,"s"],
   [6,7,"s"],[5,9,"s"],[5,10,"s"],[7,9,"s"],[7,8,"s"],[9,11,"d"],[9,12,"x"],
@@ -1059,11 +1219,11 @@ const DICT_EDGES = [
 ];
 
 function renderDict() {
-  /* join-primality over the 14 classes with a full certified table, merged with
+  /* join-primality over the fifteen classes, using certified cells only, merged with
      exact truth-set arithmetic over t0..t7 (the rungs this tab draws) — the same
-     merge the Families tab uses, and for the same reason: the RNC/PCLL table has
-     open cells the DICTIONARY's own certified covers already settle (e.g.
-     t7 ⊃ t6 is open in the harvested table, but t6 < t7 is a certified cover), so
+     merge the Families tab uses, and for the same reason: the certified table has
+     open cells the DICTIONARY's own D-covers already settle (e.g.
+     t7 ⊃ t6 may be unsettled as a cell, but t6 < t7 is a certified <), so
      table-only would under-report and could even disagree with the Families tab
      for the very same class. ⊤ (index 1) is forced to PROVED regardless — its
      join-primality is the disjunction property, true of the whole infinite
@@ -1231,8 +1391,8 @@ const FAMN = [], FAMBY = {};
     add({ id, name: id, x, y, w, h, fam: "t", grp: "t", form, old,
           kind: "im h — ladder rung " + n
                 + (n === 0 ? " (the bottom, ⊥)"
-                   : n % 2 ? " (a join — two upper covers)"
-                           : " (an implication — one upper cover)")
+                   : n % 2 ? " (a join — two upper rung-covers)"
+                           : " (an implication — one upper rung-cover)")
                 + (n === 4 || n === 6 ? " · ◯-fixed: ◯t" + n + " = t" + n : "") });
   });
   add({ id: "top", name: "⊤", x: 340, y: 32, w: 48, h: 26,
@@ -1259,7 +1419,7 @@ const FAMN = [], FAMBY = {};
           fam: "zig",   grp: "w", form: "g" + k + " ∧ t" + (o + 3),
           sub: "g" + k + " ∧ t" + (o + 3),
           exp: "(◯t" + o + " ⊃ t" + o + ") ∧ t" + (o + 3),
-          old: k === 1 ? "w15" : "" });
+          old: "" });
   }
   /* the descending meet-chain below g1: Gmeet 0 = g1 itself (already drawn), then the
      partial meets that never reach the next gap (Gmeet_strict) and so descend forever
@@ -1731,23 +1891,43 @@ const PINNED = {
   9: {above:["⊤"], below:["c1","s1"], nle:["c2"], open:["g1","◯g1","r1"]}
 };
 
-/* ── PCLL operation tables, harvested from wip/rnc_c_out.txt ──
-   cells: [op, i, j, k, pcllOnly]   open: [op, i, j]
-   op 0 ∧, 1 ∨, 2 ⊃, 3 ◯ (j unused)                                   */
-const RNC = {"cells":[[0,0,0,0,0],[1,0,0,0,0],[2,0,0,1,0],[0,0,1,0,0],[1,0,1,1,0],[2,0,1,1,0],[0,0,2,0,0],[1,0,2,2,0],[2,0,2,1,0],[0,0,3,0,0],[1,0,3,3,0],[2,0,3,1,0],[0,0,4,0,0],[1,0,4,4,0],[2,0,4,1,0],[0,0,5,0,0],[1,0,5,5,0],[2,0,5,1,0],[0,0,6,0,0],[1,0,6,6,0],[2,0,6,1,0],[0,0,7,0,0],[1,0,7,7,0],[2,0,7,1,0],[0,0,8,0,0],[1,0,8,8,0],[2,0,8,1,0],[0,0,9,0,0],[1,0,9,9,0],[2,0,9,1,0],[0,0,10,0,0],[1,0,10,10,0],[2,0,10,1,0],[0,0,11,0,0],[1,0,11,11,0],[2,0,11,1,0],[0,0,13,0,0],[2,0,13,1,0],[0,0,14,0,0],[2,0,14,1,0],[0,0,15,0,0],[2,0,15,1,0],[2,1,0,0,0],[0,1,1,1,0],[1,1,1,1,0],[2,1,1,1,0],[0,1,2,2,0],[1,1,2,1,0],[2,1,2,2,0],[0,1,3,3,0],[1,1,3,1,0],[2,1,3,3,0],[0,1,4,4,0],[1,1,4,1,0],[2,1,4,4,0],[0,1,5,5,0],[1,1,5,1,0],[2,1,5,5,0],[0,1,6,6,0],[1,1,6,1,0],[2,1,6,6,0],[0,1,7,7,0],[1,1,7,1,0],[2,1,7,7,0],[0,1,8,8,0],[1,1,8,1,0],[2,1,8,8,0],[0,1,9,9,0],[1,1,9,1,0],[2,1,9,9,0],[0,1,10,10,0],[1,1,10,1,0],[2,1,10,10,0],[0,1,11,11,0],[1,1,11,1,0],[2,1,11,11,0],[1,1,13,1,0],[1,1,14,1,0],[1,1,15,1,0],[2,2,0,3,0],[2,2,1,1,0],[0,2,2,2,0],[1,2,2,2,0],[2,2,2,1,0],[0,2,3,0,0],[1,2,3,4,0],[2,2,3,3,0],[0,2,4,2,0],[1,2,4,4,0],[2,2,4,1,0],[0,2,5,2,0],[1,2,5,5,0],[2,2,5,1,0],[0,2,6,2,0],[1,2,6,6,0],[2,2,6,1,0],[0,2,7,2,0],[1,2,7,7,0],[2,2,7,1,0],[0,2,8,2,0],[1,2,8,8,0],[2,2,8,1,0],[0,2,9,2,0],[1,2,9,9,0],[2,2,9,1,0],[0,2,10,2,0],[1,2,10,10,0],[2,2,10,1,0],[0,2,11,2,0],[1,2,11,11,0],[2,2,11,1,0],[0,2,13,2,0],[2,2,13,1,0],[0,2,14,2,0],[2,2,14,1,0],[0,2,15,2,0],[2,2,15,1,0],[2,3,0,6,0],[2,3,1,1,0],[2,3,2,6,0],[0,3,3,3,0],[1,3,3,3,0],[2,3,3,1,0],[0,3,4,3,0],[1,3,4,4,0],[2,3,4,1,0],[0,3,5,3,0],[1,3,5,5,0],[2,3,5,1,0],[0,3,6,0,0],[1,3,6,7,0],[2,3,6,6,0],[0,3,7,3,0],[1,3,7,7,0],[2,3,7,1,0],[0,3,8,3,0],[1,3,8,8,0],[2,3,8,1,0],[0,3,9,3,0],[1,3,9,9,0],[2,3,9,1,0],[0,3,10,3,0],[1,3,10,10,0],[2,3,10,1,0],[0,3,11,3,0],[1,3,11,11,0],[2,3,11,1,0],[0,3,13,3,0],[2,3,13,1,0],[0,3,14,3,0],[2,3,14,1,0],[0,3,15,3,0],[2,3,15,1,0],[2,4,0,0,0],[2,4,1,1,0],[2,4,2,6,0],[2,4,3,3,0],[0,4,4,4,0],[1,4,4,4,0],[2,4,4,1,0],[0,4,5,4,0],[1,4,5,5,0],[2,4,5,1,0],[0,4,6,2,0],[1,4,6,7,0],[2,4,6,6,0],[0,4,7,4,0],[1,4,7,7,0],[2,4,7,1,0],[0,4,8,4,0],[1,4,8,8,0],[2,4,8,1,0],[0,4,9,4,0],[1,4,9,9,0],[2,4,9,1,0],[0,4,10,4,0],[1,4,10,10,0],[2,4,10,1,0],[0,4,11,4,0],[1,4,11,11,0],[2,4,11,1,0],[0,4,13,4,0],[2,4,13,1,0],[0,4,14,4,0],[2,4,14,1,0],[0,4,15,4,0],[2,4,15,1,0],[2,5,0,0,0],[2,5,1,1,0],[2,5,2,6,0],[2,5,3,3,0],[2,5,4,8,0],[0,5,5,5,0],[1,5,5,5,0],[2,5,5,1,0],[0,5,6,2,0],[1,5,6,9,0],[2,5,6,6,0],[0,5,7,4,0],[1,5,7,9,0],[2,5,7,8,0],[0,5,8,4,0],[0,5,9,5,0],[1,5,9,9,0],[2,5,9,1,0],[0,5,10,5,0],[1,5,10,10,0],[2,5,10,1,0],[0,5,11,5,0],[1,5,11,11,0],[2,5,11,1,0],[0,5,13,5,0],[2,5,13,1,0],[0,5,14,5,0],[2,5,14,1,0],[2,6,0,3,0],[2,6,1,1,0],[2,6,2,10,0],[2,6,3,3,0],[2,6,4,10,0],[2,6,5,10,0],[0,6,6,6,0],[1,6,6,6,0],[2,6,6,1,0],[0,6,7,6,0],[1,6,7,7,0],[2,6,7,1,0],[0,6,8,6,0],[2,6,8,1,0],[0,6,9,6,0],[1,6,9,9,0],[2,6,9,1,0],[0,6,10,2,0],[1,6,10,11,0],[2,6,10,10,0],[0,6,11,6,0],[1,6,11,11,0],[2,6,11,1,0],[0,6,13,6,0],[2,6,13,1,0],[0,6,14,6,0],[2,6,14,1,0],[0,6,15,2,0],[2,7,0,0,0],[2,7,1,1,0],[2,7,2,2,0],[2,7,3,3,0],[2,7,4,10,0],[2,7,5,10,0],[2,7,6,6,0],[0,7,7,7,0],[1,7,7,7,0],[2,7,7,1,0],[0,7,8,7,0],[2,7,8,1,0],[0,7,9,7,0],[1,7,9,9,0],[2,7,9,1,0],[0,7,10,4,0],[1,7,10,11,0],[2,7,10,10,0],[0,7,11,7,0],[1,7,11,11,0],[2,7,11,1,0],[0,7,13,7,0],[2,7,13,1,0],[0,7,14,7,0],[2,7,14,1,0],[2,8,0,0,0],[2,8,1,1,0],[2,8,2,2,0],[2,8,3,3,0],[2,8,6,6,0],[0,8,8,8,0],[1,8,8,8,0],[2,8,8,1,0],[0,8,9,7,0],[0,8,10,15,0],[0,8,13,8,0],[2,8,13,1,0],[2,9,0,0,0],[2,9,1,1,0],[2,9,2,2,0],[2,9,3,3,0],[2,9,5,10,0],[2,9,6,6,0],[0,9,9,9,0],[1,9,9,9,0],[2,9,9,1,0],[0,9,10,5,0],[1,9,10,11,0],[2,9,10,10,0],[0,9,11,9,0],[2,9,11,1,0],[0,9,13,9,0],[2,9,13,1,0],[0,9,14,9,0],[2,9,14,1,0],[2,10,0,0,0],[2,10,1,1,0],[2,10,2,6,0],[2,10,3,3,0],[2,10,6,6,0],[0,10,10,10,0],[1,10,10,10,0],[2,10,10,1,0],[0,10,11,10,0],[1,10,11,11,0],[2,10,11,1,0],[2,11,0,0,0],[2,11,1,1,0],[2,11,2,2,0],[2,11,3,3,0],[2,11,6,6,0],[0,11,11,11,0],[1,11,11,11,0],[2,11,11,1,0],[2,13,0,0,0],[2,13,1,1,0],[2,13,2,2,0],[2,13,3,3,0],[2,13,6,6,0],[2,13,13,1,0],[2,14,0,0,0],[2,14,1,1,0],[2,14,2,2,0],[2,14,3,3,0],[2,14,6,6,0],[2,15,0,0,0],[2,15,1,1,0],[2,15,2,6,0],[2,15,3,3,0],[2,15,6,6,0],[2,15,10,1,0],[2,15,11,1,0],[2,15,15,1,0],[3,0,0,2,0],[3,1,0,1,0],[3,2,0,2,0],[3,3,0,5,0],[3,4,0,5,0],[3,5,0,5,0],[3,6,0,6,0],[3,7,0,9,1],[3,8,0,13,0],[3,9,0,9,1],[3,10,0,10,0]],"open":[[1,0,13],[1,0,14],[1,0,15],[0,1,13],[2,1,13],[0,1,14],[2,1,14],[0,1,15],[2,1,15],[1,2,13],[1,2,14],[1,2,15],[1,3,13],[1,3,14],[1,3,15],[1,4,13],[1,4,14],[1,4,15],[1,5,8],[2,5,8],[1,5,13],[1,5,14],[0,5,15],[2,5,15],[1,6,8],[1,6,13],[1,6,14],[2,6,15],[1,7,8],[1,7,13],[1,7,14],[0,7,15],[2,7,15],[1,8,9],[1,8,10],[2,8,10],[1,8,11],[2,8,11],[1,8,13],[1,8,14],[0,8,15],[1,8,15],[2,8,15],[2,9,4],[2,9,7],[2,9,8],[1,9,11],[1,9,13],[1,9,14],[0,9,15],[2,9,15],[2,10,5],[2,10,8],[2,10,9],[1,10,13],[2,10,13],[0,10,14],[1,10,14],[2,10,14],[0,10,15],[1,10,15],[2,10,15],[2,11,4],[2,11,5],[2,11,8],[2,11,9],[2,11,10],[1,11,13],[2,11,13],[0,11,14],[1,11,14],[2,11,14],[0,11,15],[1,11,15],[2,11,15],[2,13,4],[2,13,7],[2,13,8],[2,13,10],[2,13,11],[0,13,13],[1,13,13],[0,13,14],[1,13,14],[0,13,15],[1,13,15],[2,13,15],[2,14,4],[2,14,5],[2,14,8],[2,14,9],[2,14,10],[2,14,11],[2,14,13],[0,14,14],[1,14,14],[2,14,14],[0,14,15],[1,14,15],[2,14,15],[2,15,8],[2,15,13],[0,15,15],[1,15,15],[3,11,0],[3,13,0],[3,14,0]]};
-const REPS = [0,1,2,3,4,5,6,7,8,9,10,11,13,14,15];
-/* table index 15 is the harvested meet w15 = q8 ∧ q10 = g1 ∧ t6 — not the DICT
-   node 15 (which is the chain class c3), so it is named separately here          */
-const RNAME  = i => i === 15 ? "g1∧t6" : NEWNAME[i];
-const OLDNAME = i => i === 15 ? "w15" : "q" + i;
-const KINDOF  = i => i === 15 ? "meet g1 ∧ t6" : KIND[i];
-/* full formula of class i — the dictionary's own strings, plus w15 = q8 ∧ q10 */
-const QFORM = i => i === 15
-  ? "(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)) ∧ (¬¬◯⊥ ⊃ ◯⊥)"
-  : DICT[i].f;
+/* GENERATED from wip/rnDict.lean, wip/rnDictBase.lean, wip/gap2.lean and
+   wip/rnDictRefute.lean by reading the sorry-free theorems only.  Every
+   entry below is backed by a kernel-checked `Interd` (PLL interderivability)
+   theorem; each was #print axioms'd to [propext, Quot.sound] or cleaner.
+   how: 0 = the named cell theorem, 1 = a structural law general in φ
+             (rnDictBase.lean), 2 = the transpose, via and_comm_i / or_comm_i
+             and Interd.trans, 3 = definitional — q1..q14 are each DEFINED by
+             one operation on earlier representatives, so that one cell of the
+             table is closed by Interd.refl, both sides being the same formula. */
+const PLLCELLS = [[0,0,0,0,1,"bot_and_i"],[0,0,1,0,1,"bot_and_i"],[0,0,2,0,1,"bot_and_i"],[0,0,3,0,1,"bot_and_i"],[0,0,4,0,1,"bot_and_i"],[0,0,5,0,1,"bot_and_i"],[0,0,6,0,1,"bot_and_i"],[0,0,7,0,1,"bot_and_i"],[0,0,8,0,1,"bot_and_i"],[0,0,9,0,1,"bot_and_i"],[0,0,10,0,1,"bot_and_i"],[0,0,11,0,1,"bot_and_i"],[0,0,12,0,1,"bot_and_i"],[0,0,13,0,1,"bot_and_i"],[0,0,14,0,1,"bot_and_i"],[0,1,0,0,1,"and_comm_i, bot_and_i"],[0,1,1,1,1,"top_and_i"],[0,1,2,2,1,"top_and_i"],[0,1,3,3,1,"top_and_i"],[0,1,4,4,1,"top_and_i"],[0,1,5,5,1,"top_and_i"],[0,1,6,6,1,"top_and_i"],[0,1,7,7,1,"top_and_i"],[0,1,8,8,1,"top_and_i"],[0,1,9,9,1,"top_and_i"],[0,1,10,10,1,"top_and_i"],[0,1,11,11,1,"top_and_i"],[0,1,12,12,1,"top_and_i"],[0,1,13,13,1,"top_and_i"],[0,1,14,14,1,"top_and_i"],[0,2,0,0,1,"and_comm_i, bot_and_i"],[0,2,1,2,1,"and_comm_i, top_and_i"],[0,2,2,2,1,"and_idem_i"],[0,2,3,0,0,"cAnd_2_3"],[0,2,4,2,0,"cAnd_2_4"],[0,2,5,2,0,"cAnd_2_5"],[0,2,6,2,0,"cAnd_2_6"],[0,2,7,2,0,"cAnd_2_7"],[0,2,8,2,0,"cAnd_2_8"],[0,2,9,2,0,"cAnd_2_9"],[0,2,10,2,0,"cAnd_2_10"],[0,2,11,2,0,"cAnd_2_11"],[0,2,12,2,0,"cAnd_2_12"],[0,2,13,2,0,"cAnd_2_13"],[0,2,14,2,0,"cAnd_2_14"],[0,3,0,0,1,"and_comm_i, bot_and_i"],[0,3,1,3,1,"and_comm_i, top_and_i"],[0,3,2,0,2,"cAnd_2_3"],[0,3,3,3,1,"and_idem_i"],[0,3,4,3,0,"cAnd_3_4"],[0,3,5,3,0,"cAnd_3_5"],[0,3,6,0,0,"cAnd_3_6"],[0,3,7,3,0,"cAnd_3_7"],[0,3,8,3,0,"cAnd_3_8"],[0,3,9,3,0,"cAnd_3_9"],[0,3,10,3,0,"cAnd_3_10"],[0,3,11,3,0,"cAnd_3_11"],[0,3,12,3,0,"cAnd_3_12"],[0,3,13,3,0,"cAnd_3_13"],[0,3,14,3,0,"cAnd_3_14"],[0,4,0,0,1,"and_comm_i, bot_and_i"],[0,4,1,4,1,"and_comm_i, top_and_i"],[0,4,2,2,2,"cAnd_2_4"],[0,4,3,3,2,"cAnd_3_4"],[0,4,4,4,1,"and_idem_i"],[0,4,5,4,0,"cAnd_4_5"],[0,4,6,2,0,"cAnd_4_6"],[0,4,7,4,0,"cAnd_4_7"],[0,4,8,4,0,"cAnd_4_8"],[0,4,9,4,0,"cAnd_4_9"],[0,4,10,4,0,"cAnd_4_10"],[0,4,11,4,0,"cAnd_4_11"],[0,4,12,4,0,"cAnd_4_12"],[0,4,13,4,0,"cAnd_4_13"],[0,5,0,0,1,"and_comm_i, bot_and_i"],[0,5,1,5,1,"and_comm_i, top_and_i"],[0,5,2,2,2,"cAnd_2_5"],[0,5,3,3,2,"cAnd_3_5"],[0,5,4,4,2,"cAnd_4_5"],[0,5,5,5,1,"and_idem_i"],[0,5,6,2,0,"cAnd_5_6"],[0,5,7,4,0,"cAnd_5_7"],[0,5,8,4,0,"cAnd_5_8"],[0,5,9,5,0,"cAnd_5_9"],[0,5,10,5,0,"cAnd_5_10"],[0,5,11,5,0,"cAnd_5_11"],[0,5,12,5,0,"cAnd_5_12"],[0,5,13,5,0,"cAnd_5_13"],[0,5,14,5,0,"cAnd_5_14"],[0,6,0,0,1,"and_comm_i, bot_and_i"],[0,6,1,6,1,"and_comm_i, top_and_i"],[0,6,2,2,2,"cAnd_2_6"],[0,6,3,0,2,"cAnd_3_6"],[0,6,4,2,2,"cAnd_4_6"],[0,6,5,2,2,"cAnd_5_6"],[0,6,6,6,1,"and_idem_i"],[0,6,7,6,0,"cAnd_6_7"],[0,6,8,6,0,"cAnd_6_8"],[0,6,9,6,0,"cAnd_6_9"],[0,6,10,2,0,"cAnd_6_10"],[0,6,11,6,0,"cAnd_6_11"],[0,6,12,6,0,"cAnd_6_12"],[0,6,13,6,0,"cAnd_6_13"],[0,6,14,6,0,"cAnd_6_14"],[0,7,0,0,1,"and_comm_i, bot_and_i"],[0,7,1,7,1,"and_comm_i, top_and_i"],[0,7,2,2,2,"cAnd_2_7"],[0,7,3,3,2,"cAnd_3_7"],[0,7,4,4,2,"cAnd_4_7"],[0,7,5,4,2,"cAnd_5_7"],[0,7,6,6,2,"cAnd_6_7"],[0,7,7,7,1,"and_idem_i"],[0,7,8,7,0,"cAnd_7_8"],[0,7,9,7,0,"cAnd_7_9"],[0,7,10,4,0,"cAnd_7_10"],[0,7,11,7,0,"cAnd_7_11"],[0,7,12,7,0,"cAnd_7_12"],[0,7,13,7,0,"cAnd_7_13"],[0,7,14,7,0,"cAnd_7_14"],[0,8,0,0,1,"and_comm_i, bot_and_i"],[0,8,1,8,1,"and_comm_i, top_and_i"],[0,8,2,2,2,"cAnd_2_8"],[0,8,3,3,2,"cAnd_3_8"],[0,8,4,4,2,"cAnd_4_8"],[0,8,5,4,2,"cAnd_5_8"],[0,8,6,6,2,"cAnd_6_8"],[0,8,7,7,2,"cAnd_7_8"],[0,8,8,8,1,"and_idem_i"],[0,8,9,7,0,"cAnd_8_9"],[0,8,13,8,0,"cAnd_8_13"],[0,9,0,0,1,"and_comm_i, bot_and_i"],[0,9,1,9,1,"and_comm_i, top_and_i"],[0,9,2,2,2,"cAnd_2_9"],[0,9,3,3,2,"cAnd_3_9"],[0,9,4,4,2,"cAnd_4_9"],[0,9,5,5,2,"cAnd_5_9"],[0,9,6,6,2,"cAnd_6_9"],[0,9,7,7,2,"cAnd_7_9"],[0,9,8,7,2,"cAnd_8_9"],[0,9,9,9,1,"and_idem_i"],[0,9,10,5,0,"cAnd_9_10"],[0,9,11,9,0,"cAnd_9_11"],[0,9,12,9,0,"cAnd_9_12"],[0,10,0,0,1,"and_comm_i, bot_and_i"],[0,10,1,10,1,"and_comm_i, top_and_i"],[0,10,2,2,2,"cAnd_2_10"],[0,10,3,3,2,"cAnd_3_10"],[0,10,4,4,2,"cAnd_4_10"],[0,10,5,5,2,"cAnd_5_10"],[0,10,6,2,2,"cAnd_6_10"],[0,10,7,4,2,"cAnd_7_10"],[0,10,9,5,2,"cAnd_9_10"],[0,10,10,10,1,"and_idem_i"],[0,10,11,10,0,"cAnd_10_11"],[0,10,12,5,0,"cAnd_10_12"],[0,11,0,0,1,"and_comm_i, bot_and_i"],[0,11,1,11,1,"and_comm_i, top_and_i"],[0,11,2,2,2,"cAnd_2_11"],[0,11,3,3,2,"cAnd_3_11"],[0,11,4,4,2,"cAnd_4_11"],[0,11,5,5,2,"cAnd_5_11"],[0,11,6,6,2,"cAnd_6_11"],[0,11,7,7,2,"cAnd_7_11"],[0,11,9,9,2,"cAnd_9_11"],[0,11,10,10,2,"cAnd_10_11"],[0,11,11,11,1,"and_idem_i"],[0,11,12,9,0,"cAnd_11_12"],[0,12,0,0,1,"and_comm_i, bot_and_i"],[0,12,1,12,1,"and_comm_i, top_and_i"],[0,12,2,2,2,"cAnd_2_12"],[0,12,3,3,2,"cAnd_3_12"],[0,12,4,4,2,"cAnd_4_12"],[0,12,5,5,2,"cAnd_5_12"],[0,12,6,6,2,"cAnd_6_12"],[0,12,7,7,2,"cAnd_7_12"],[0,12,9,9,2,"cAnd_9_12"],[0,12,10,5,2,"cAnd_10_12"],[0,12,11,9,2,"cAnd_11_12"],[0,12,12,12,1,"and_idem_i"],[0,13,0,0,1,"and_comm_i, bot_and_i"],[0,13,1,13,1,"and_comm_i, top_and_i"],[0,13,2,2,2,"cAnd_2_13"],[0,13,3,3,2,"cAnd_3_13"],[0,13,4,4,2,"cAnd_4_13"],[0,13,5,5,2,"cAnd_5_13"],[0,13,6,6,2,"cAnd_6_13"],[0,13,7,7,2,"cAnd_7_13"],[0,13,8,8,2,"cAnd_8_13"],[0,13,13,13,1,"and_idem_i"],[0,14,0,0,1,"and_comm_i, bot_and_i"],[0,14,1,14,1,"and_comm_i, top_and_i"],[0,14,2,2,2,"cAnd_2_14"],[0,14,3,3,2,"cAnd_3_14"],[0,14,5,5,2,"cAnd_5_14"],[0,14,6,6,2,"cAnd_6_14"],[0,14,7,7,2,"cAnd_7_14"],[0,14,14,14,1,"and_idem_i"],[1,0,0,0,1,"bot_or_i"],[1,0,1,1,1,"bot_or_i"],[1,0,2,2,1,"bot_or_i"],[1,0,3,3,1,"bot_or_i"],[1,0,4,4,1,"bot_or_i"],[1,0,5,5,1,"bot_or_i"],[1,0,6,6,1,"bot_or_i"],[1,0,7,7,1,"bot_or_i"],[1,0,8,8,1,"bot_or_i"],[1,0,9,9,1,"bot_or_i"],[1,0,10,10,1,"bot_or_i"],[1,0,11,11,1,"bot_or_i"],[1,0,12,12,1,"bot_or_i"],[1,0,13,13,1,"bot_or_i"],[1,0,14,14,1,"bot_or_i"],[1,1,0,1,1,"or_comm_i, bot_or_i"],[1,1,1,1,1,"top_or_i"],[1,1,2,1,1,"top_or_i"],[1,1,3,1,1,"top_or_i"],[1,1,4,1,1,"top_or_i"],[1,1,5,1,1,"top_or_i"],[1,1,6,1,1,"top_or_i"],[1,1,7,1,1,"top_or_i"],[1,1,8,1,1,"top_or_i"],[1,1,9,1,1,"top_or_i"],[1,1,10,1,1,"top_or_i"],[1,1,11,1,1,"top_or_i"],[1,1,12,1,1,"top_or_i"],[1,1,13,1,1,"top_or_i"],[1,1,14,1,1,"top_or_i"],[1,2,0,2,1,"or_comm_i, bot_or_i"],[1,2,1,1,1,"or_comm_i, top_or_i"],[1,2,2,2,1,"or_idem_i"],[1,2,3,4,3,"Interd.refl"],[1,2,4,4,0,"cOr_2_4"],[1,2,5,5,0,"cOr_2_5"],[1,2,6,6,0,"cOr_2_6"],[1,2,7,7,0,"cOr_2_7"],[1,2,8,8,0,"cOr_2_8"],[1,2,9,9,0,"cOr_2_9"],[1,2,10,10,0,"cOr_2_10"],[1,2,11,11,0,"cOr_2_11"],[1,2,12,12,0,"cOr_2_12"],[1,3,0,3,1,"or_comm_i, bot_or_i"],[1,3,1,1,1,"or_comm_i, top_or_i"],[1,3,2,4,1,"or_comm_i"],[1,3,3,3,1,"or_idem_i"],[1,3,4,4,0,"cOr_3_4"],[1,3,5,5,0,"cOr_3_5"],[1,3,6,7,3,"Interd.refl"],[1,3,7,7,0,"cOr_3_7"],[1,3,8,8,0,"cOr_3_8"],[1,3,9,9,0,"cOr_3_9"],[1,3,10,10,0,"cOr_3_10"],[1,3,11,11,0,"cOr_3_11"],[1,3,12,12,0,"cOr_3_12"],[1,4,0,4,1,"or_comm_i, bot_or_i"],[1,4,1,1,1,"or_comm_i, top_or_i"],[1,4,2,4,2,"cOr_2_4"],[1,4,3,4,2,"cOr_3_4"],[1,4,4,4,1,"or_idem_i"],[1,4,5,5,0,"cOr_4_5"],[1,4,6,7,0,"cOr_4_6"],[1,4,7,7,0,"cOr_4_7"],[1,4,8,8,0,"cOr_4_8"],[1,4,9,9,0,"cOr_4_9"],[1,4,10,10,0,"cOr_4_10"],[1,4,11,11,0,"cOr_4_11"],[1,4,12,12,0,"cOr_4_12"],[1,4,13,13,0,"cOr_4_13"],[1,5,0,5,1,"or_comm_i, bot_or_i"],[1,5,1,1,1,"or_comm_i, top_or_i"],[1,5,2,5,2,"cOr_2_5"],[1,5,3,5,2,"cOr_3_5"],[1,5,4,5,2,"cOr_4_5"],[1,5,5,5,1,"or_idem_i"],[1,5,6,9,3,"Interd.refl"],[1,5,7,9,0,"cOr_5_7"],[1,5,9,9,0,"cOr_5_9"],[1,5,10,10,0,"cOr_5_10"],[1,5,11,11,0,"cOr_5_11"],[1,5,12,12,0,"cOr_5_12"],[1,5,13,13,0,"cOr_5_13"],[1,6,0,6,1,"or_comm_i, bot_or_i"],[1,6,1,1,1,"or_comm_i, top_or_i"],[1,6,2,6,2,"cOr_2_6"],[1,6,3,7,1,"or_comm_i"],[1,6,4,7,2,"cOr_4_6"],[1,6,5,9,1,"or_comm_i"],[1,6,6,6,1,"or_idem_i"],[1,6,7,7,0,"cOr_6_7"],[1,6,8,8,0,"cOr_6_8"],[1,6,9,9,0,"cOr_6_9"],[1,6,10,11,3,"Interd.refl"],[1,6,11,11,0,"cOr_6_11"],[1,6,12,12,0,"cOr_6_12"],[1,7,0,7,1,"or_comm_i, bot_or_i"],[1,7,1,1,1,"or_comm_i, top_or_i"],[1,7,2,7,2,"cOr_2_7"],[1,7,3,7,2,"cOr_3_7"],[1,7,4,7,2,"cOr_4_7"],[1,7,5,9,2,"cOr_5_7"],[1,7,6,7,2,"cOr_6_7"],[1,7,7,7,1,"or_idem_i"],[1,7,8,8,0,"cOr_7_8"],[1,7,9,9,0,"cOr_7_9"],[1,7,10,11,0,"cOr_7_10"],[1,7,11,11,0,"cOr_7_11"],[1,7,12,12,0,"cOr_7_12"],[1,8,0,8,1,"or_comm_i, bot_or_i"],[1,8,1,1,1,"or_comm_i, top_or_i"],[1,8,2,8,2,"cOr_2_8"],[1,8,3,8,2,"cOr_3_8"],[1,8,4,8,2,"cOr_4_8"],[1,8,6,8,2,"cOr_6_8"],[1,8,7,8,2,"cOr_7_8"],[1,8,8,8,1,"or_idem_i"],[1,9,0,9,1,"or_comm_i, bot_or_i"],[1,9,1,1,1,"or_comm_i, top_or_i"],[1,9,2,9,2,"cOr_2_9"],[1,9,3,9,2,"cOr_3_9"],[1,9,4,9,2,"cOr_4_9"],[1,9,5,9,2,"cOr_5_9"],[1,9,6,9,2,"cOr_6_9"],[1,9,7,9,2,"cOr_7_9"],[1,9,9,9,1,"or_idem_i"],[1,9,10,11,0,"cOr_9_10"],[1,9,11,11,0,"cOr_9_11"],[1,9,12,12,0,"cOr_9_12"],[1,10,0,10,1,"or_comm_i, bot_or_i"],[1,10,1,1,1,"or_comm_i, top_or_i"],[1,10,2,10,2,"cOr_2_10"],[1,10,3,10,2,"cOr_3_10"],[1,10,4,10,2,"cOr_4_10"],[1,10,5,10,2,"cOr_5_10"],[1,10,6,11,1,"or_comm_i"],[1,10,7,11,2,"cOr_7_10"],[1,10,9,11,2,"cOr_9_10"],[1,10,10,10,1,"or_idem_i"],[1,10,11,11,0,"cOr_10_11"],[1,11,0,11,1,"or_comm_i, bot_or_i"],[1,11,1,1,1,"or_comm_i, top_or_i"],[1,11,2,11,2,"cOr_2_11"],[1,11,3,11,2,"cOr_3_11"],[1,11,4,11,2,"cOr_4_11"],[1,11,5,11,2,"cOr_5_11"],[1,11,6,11,2,"cOr_6_11"],[1,11,7,11,2,"cOr_7_11"],[1,11,9,11,2,"cOr_9_11"],[1,11,10,11,2,"cOr_10_11"],[1,11,11,11,1,"or_idem_i"],[1,12,0,12,1,"or_comm_i, bot_or_i"],[1,12,1,1,1,"or_comm_i, top_or_i"],[1,12,2,12,2,"cOr_2_12"],[1,12,3,12,2,"cOr_3_12"],[1,12,4,12,2,"cOr_4_12"],[1,12,5,12,2,"cOr_5_12"],[1,12,6,12,2,"cOr_6_12"],[1,12,7,12,2,"cOr_7_12"],[1,12,9,12,2,"cOr_9_12"],[1,12,12,12,1,"or_idem_i"],[1,13,0,13,1,"or_comm_i, bot_or_i"],[1,13,1,1,1,"or_comm_i, top_or_i"],[1,13,4,13,2,"cOr_4_13"],[1,13,5,13,2,"cOr_5_13"],[1,13,13,13,1,"or_idem_i"],[1,14,0,14,1,"or_comm_i, bot_or_i"],[1,14,1,1,1,"or_comm_i, top_or_i"],[1,14,14,14,1,"or_idem_i"],[2,0,0,1,3,"Interd.refl"],[2,0,1,1,1,"bot_imp_i"],[2,0,2,1,1,"bot_imp_i"],[2,0,3,1,1,"bot_imp_i"],[2,0,4,1,1,"bot_imp_i"],[2,0,5,1,1,"bot_imp_i"],[2,0,6,1,1,"bot_imp_i"],[2,0,7,1,1,"bot_imp_i"],[2,0,8,1,1,"bot_imp_i"],[2,0,9,1,1,"bot_imp_i"],[2,0,10,1,1,"bot_imp_i"],[2,0,11,1,1,"bot_imp_i"],[2,0,12,1,1,"bot_imp_i"],[2,0,13,1,1,"bot_imp_i"],[2,0,14,1,1,"bot_imp_i"],[2,1,0,0,1,"top_imp_i"],[2,1,1,1,1,"top_imp_i"],[2,1,2,2,1,"top_imp_i"],[2,1,3,3,1,"top_imp_i"],[2,1,4,4,1,"top_imp_i"],[2,1,5,5,1,"top_imp_i"],[2,1,6,6,1,"top_imp_i"],[2,1,7,7,1,"top_imp_i"],[2,1,8,8,1,"top_imp_i"],[2,1,9,9,1,"top_imp_i"],[2,1,10,10,1,"top_imp_i"],[2,1,11,11,1,"top_imp_i"],[2,1,12,12,1,"top_imp_i"],[2,1,13,13,1,"top_imp_i"],[2,1,14,14,1,"top_imp_i"],[2,2,0,3,3,"Interd.refl"],[2,2,1,1,1,"imp_top_i"],[2,2,2,1,1,"imp_self_i"],[2,2,3,3,0,"cImp_2_3"],[2,2,4,1,0,"cImp_2_4"],[2,2,5,1,0,"cImp_2_5"],[2,2,6,1,0,"cImp_2_6"],[2,2,7,1,0,"cImp_2_7"],[2,2,8,1,0,"cImp_2_8"],[2,2,9,1,0,"cImp_2_9"],[2,2,10,1,0,"cImp_2_10"],[2,2,11,1,0,"cImp_2_11"],[2,2,12,1,0,"cImp_2_12"],[2,2,13,1,0,"cImp_2_13"],[2,2,14,1,0,"cImp_2_14"],[2,3,0,6,3,"Interd.refl"],[2,3,1,1,1,"imp_top_i"],[2,3,2,6,0,"cImp_3_2"],[2,3,3,1,1,"imp_self_i"],[2,3,4,1,0,"cImp_3_4"],[2,3,5,1,0,"cImp_3_5"],[2,3,6,6,0,"cImp_3_6"],[2,3,7,1,0,"cImp_3_7"],[2,3,8,1,0,"cImp_3_8"],[2,3,9,1,0,"cImp_3_9"],[2,3,10,1,0,"cImp_3_10"],[2,3,11,1,0,"cImp_3_11"],[2,3,12,1,0,"cImp_3_12"],[2,3,13,1,0,"cImp_3_13"],[2,3,14,1,0,"cImp_3_14"],[2,4,0,0,0,"cImp_4_0"],[2,4,1,1,1,"imp_top_i"],[2,4,2,6,0,"cImp_4_2"],[2,4,3,3,0,"cImp_4_3"],[2,4,4,1,1,"imp_self_i"],[2,4,5,1,0,"cImp_4_5"],[2,4,6,6,0,"cImp_4_6"],[2,4,7,1,0,"cImp_4_7"],[2,4,8,1,0,"cImp_4_8"],[2,4,9,1,0,"cImp_4_9"],[2,4,10,1,0,"cImp_4_10"],[2,4,11,1,0,"cImp_4_11"],[2,4,12,1,0,"cImp_4_12"],[2,4,13,1,0,"cImp_4_13"],[2,4,14,1,0,"cImp_4_14"],[2,5,0,0,0,"cImp_5_0"],[2,5,1,1,1,"imp_top_i"],[2,5,2,6,0,"cImp_5_2"],[2,5,3,3,0,"cImp_5_3"],[2,5,4,8,3,"Interd.refl"],[2,5,5,1,1,"imp_self_i"],[2,5,6,6,0,"cImp_5_6"],[2,5,7,8,0,"cImp_5_7"],[2,5,8,8,0,"cImp_5_8"],[2,5,9,1,0,"cImp_5_9"],[2,5,10,1,0,"cImp_5_10"],[2,5,11,1,0,"cImp_5_11"],[2,5,12,1,0,"cImp_5_12"],[2,5,13,1,0,"cImp_5_13"],[2,5,14,1,0,"cImp_5_14"],[2,6,0,3,0,"cImp_6_0"],[2,6,1,1,1,"imp_top_i"],[2,6,2,10,3,"Interd.refl"],[2,6,3,3,0,"cImp_6_3"],[2,6,4,10,0,"cImp_6_4"],[2,6,5,10,0,"cImp_6_5"],[2,6,6,1,1,"imp_self_i"],[2,6,7,1,0,"cImp_6_7"],[2,6,8,1,0,"cImp_6_8"],[2,6,9,1,0,"cImp_6_9"],[2,6,10,10,0,"cImp_6_10"],[2,6,11,1,0,"cImp_6_11"],[2,6,12,1,0,"cImp_6_12"],[2,6,13,1,0,"cImp_6_13"],[2,6,14,1,0,"cImp_6_14"],[2,7,0,0,0,"cImp_7_0"],[2,7,1,1,1,"imp_top_i"],[2,7,2,2,0,"cImp_7_2"],[2,7,3,3,0,"cImp_7_3"],[2,7,4,10,0,"cImp_7_4"],[2,7,5,10,0,"cImp_7_5"],[2,7,6,6,0,"cImp_7_6"],[2,7,7,1,1,"imp_self_i"],[2,7,8,1,0,"cImp_7_8"],[2,7,9,1,0,"cImp_7_9"],[2,7,10,10,0,"cImp_7_10"],[2,7,11,1,0,"cImp_7_11"],[2,7,12,1,0,"cImp_7_12"],[2,7,13,1,0,"cImp_7_13"],[2,7,14,1,0,"cImp_7_14"],[2,8,0,0,0,"cImp_8_0"],[2,8,1,1,1,"imp_top_i"],[2,8,2,2,0,"cImp_8_2"],[2,8,3,3,0,"cImp_8_3"],[2,8,6,6,0,"cImp_8_6"],[2,8,8,1,1,"imp_self_i"],[2,8,13,1,0,"cImp_8_13"],[2,9,0,0,0,"cImp_9_0"],[2,9,1,1,1,"imp_top_i"],[2,9,2,2,0,"cImp_9_2"],[2,9,3,3,0,"cImp_9_3"],[2,9,5,10,0,"cImp_9_5"],[2,9,6,6,0,"cImp_9_6"],[2,9,7,8,0,"cImp_9_7"],[2,9,9,1,1,"imp_self_i"],[2,9,10,10,0,"cImp_9_10"],[2,9,11,1,0,"cImp_9_11"],[2,9,12,1,0,"cImp_9_12"],[2,9,13,1,0,"cImp_9_13"],[2,9,14,1,0,"cImp_9_14"],[2,10,0,0,0,"cImp_10_0"],[2,10,1,1,1,"imp_top_i"],[2,10,2,6,0,"cImp_10_2"],[2,10,3,3,0,"cImp_10_3"],[2,10,5,14,3,"Interd.refl"],[2,10,6,6,0,"cImp_10_6"],[2,10,10,1,1,"imp_self_i"],[2,10,11,1,0,"cImp_10_11"],[2,11,0,0,0,"cImp_11_0"],[2,11,1,1,1,"imp_top_i"],[2,11,2,2,0,"cImp_11_2"],[2,11,3,3,0,"cImp_11_3"],[2,11,5,5,0,"cImp_11_5"],[2,11,6,6,0,"cImp_11_6"],[2,11,10,10,0,"cImp_11_10"],[2,11,11,1,1,"imp_self_i"],[2,12,0,0,0,"cImp_12_0"],[2,12,1,1,1,"imp_top_i"],[2,12,2,2,0,"cImp_12_2"],[2,12,3,3,0,"cImp_12_3"],[2,12,5,10,0,"cImp_12_5"],[2,12,6,6,0,"cImp_12_6"],[2,12,10,10,0,"cImp_12_10"],[2,12,12,1,1,"imp_self_i"],[2,12,13,1,0,"cImp_12_13"],[2,12,14,1,0,"cImp_12_14"],[2,13,0,0,0,"cImp_13_0"],[2,13,1,1,1,"imp_top_i"],[2,13,2,2,0,"cImp_13_2"],[2,13,3,3,0,"cImp_13_3"],[2,13,4,4,0,"cImp_13_4"],[2,13,6,6,0,"cImp_13_6"],[2,13,7,7,0,"cImp_13_7"],[2,13,10,10,0,"cImp_13_10"],[2,13,13,1,1,"imp_self_i"],[2,14,0,0,0,"cImp_14_0"],[2,14,1,1,1,"imp_top_i"],[2,14,2,2,0,"cImp_14_2"],[2,14,3,3,0,"cImp_14_3"],[2,14,6,6,0,"cImp_14_6"],[2,14,10,10,0,"cImp_14_10"],[2,14,14,1,1,"imp_self_i"],[3,0,0,2,3,"Interd.refl"],[3,1,0,1,0,"cBox_1"],[3,2,0,2,1,"box_idem_i"],[3,3,0,5,3,"Interd.refl"],[3,4,0,5,0,"cBox_4"],[3,5,0,5,1,"box_idem_i"],[3,6,0,6,0,"cBox_6"],[3,7,0,12,3,"Interd.refl"],[3,8,0,13,3,"Interd.refl"],[3,9,0,12,0,"cBox_9"],[3,10,0,10,0,"cBox_10"],[3,12,0,12,1,"box_idem_i"],[3,13,0,13,1,"box_idem_i"]];
+const PLLESCAPE = [[0,8,10,"refute_cAnd_8_10"],[0,10,8,"refute_cAnd_8_10 (transpose)"],[2,9,4,"refute_cImp_9_4"],[2,12,4,"refute_cImp_12_4"],[2,14,4,"refute_cImp_14_4"]];
+const PLLOPEN = [[0,4,14,"cAnd_4_14",0],[0,8,11,"cAnd_8_11",0],[0,8,12,"cAnd_8_12",0],[0,8,14,"cAnd_8_14",0],[0,9,13,"cAnd_9_13",0],[0,9,14,"cAnd_9_14",0],[0,10,13,"cAnd_10_13",0],[0,10,14,"cAnd_10_14",0],[0,11,8,"cAnd_8_11",1],[0,11,13,"cAnd_11_13",0],[0,11,14,"cAnd_11_14",0],[0,12,8,"cAnd_8_12",1],[0,12,13,"cAnd_12_13",0],[0,12,14,"cAnd_12_14",0],[0,13,9,"cAnd_9_13",1],[0,13,10,"cAnd_10_13",1],[0,13,11,"cAnd_11_13",1],[0,13,12,"cAnd_12_13",1],[0,13,14,"cAnd_13_14",0],[0,14,4,"cAnd_4_14",1],[0,14,8,"cAnd_8_14",1],[0,14,9,"cAnd_9_14",1],[0,14,10,"cAnd_10_14",1],[0,14,11,"cAnd_11_14",1],[0,14,12,"cAnd_12_14",1],[0,14,13,"cAnd_13_14",1],[1,2,13,"cOr_2_13",0],[1,2,14,"cOr_2_14",0],[1,3,13,"cOr_3_13",0],[1,3,14,"cOr_3_14",0],[1,4,14,"cOr_4_14",0],[1,5,8,"cOr_5_8",0],[1,5,14,"cOr_5_14",0],[1,6,13,"cOr_6_13",0],[1,6,14,"cOr_6_14",0],[1,7,13,"cOr_7_13",0],[1,7,14,"cOr_7_14",0],[1,8,5,"cOr_5_8",1],[1,8,9,"cOr_8_9",0],[1,8,10,"cOr_8_10",0],[1,8,11,"cOr_8_11",0],[1,8,12,"cOr_8_12",0],[1,8,13,"cOr_8_13",0],[1,8,14,"cOr_8_14",0],[1,9,8,"cOr_8_9",1],[1,9,13,"cOr_9_13",0],[1,9,14,"cOr_9_14",0],[1,10,8,"cOr_8_10",1],[1,10,12,"cOr_10_12",0],[1,10,13,"cOr_10_13",0],[1,10,14,"cOr_10_14",0],[1,11,8,"cOr_8_11",1],[1,11,12,"cOr_11_12",0],[1,11,13,"cOr_11_13",0],[1,11,14,"cOr_11_14",0],[1,12,8,"cOr_8_12",1],[1,12,10,"cOr_10_12",1],[1,12,11,"cOr_11_12",1],[1,12,13,"cOr_12_13",0],[1,12,14,"cOr_12_14",0],[1,13,2,"cOr_2_13",1],[1,13,3,"cOr_3_13",1],[1,13,6,"cOr_6_13",1],[1,13,7,"cOr_7_13",1],[1,13,8,"cOr_8_13",1],[1,13,9,"cOr_9_13",1],[1,13,10,"cOr_10_13",1],[1,13,11,"cOr_11_13",1],[1,13,12,"cOr_12_13",1],[1,13,14,"cOr_13_14",0],[1,14,2,"cOr_2_14",1],[1,14,3,"cOr_3_14",1],[1,14,4,"cOr_4_14",1],[1,14,5,"cOr_5_14",1],[1,14,6,"cOr_6_14",1],[1,14,7,"cOr_7_14",1],[1,14,8,"cOr_8_14",1],[1,14,9,"cOr_9_14",1],[1,14,10,"cOr_10_14",1],[1,14,11,"cOr_11_14",1],[1,14,12,"cOr_12_14",1],[1,14,13,"cOr_13_14",1],[2,8,4,"cImp_8_4",0],[2,8,5,"cImp_8_5",0],[2,8,7,"cImp_8_7",0],[2,8,9,"cImp_8_9",0],[2,8,10,"cImp_8_10",0],[2,8,11,"cImp_8_11",0],[2,8,12,"cImp_8_12",0],[2,8,14,"cImp_8_14",0],[2,9,8,"cImp_9_8",0],[2,10,4,"cImp_10_4",0],[2,10,7,"cImp_10_7",0],[2,10,8,"cImp_10_8",0],[2,10,9,"cImp_10_9",0],[2,10,12,"cImp_10_12",0],[2,10,13,"cImp_10_13",0],[2,10,14,"cImp_10_14",0],[2,11,4,"cImp_11_4",0],[2,11,7,"cImp_11_7",0],[2,11,8,"cImp_11_8",0],[2,11,9,"cImp_11_9",0],[2,11,12,"cImp_11_12",0],[2,11,13,"cImp_11_13",0],[2,11,14,"cImp_11_14",0],[2,12,7,"cImp_12_7",0],[2,12,8,"cImp_12_8",0],[2,12,9,"cImp_12_9",0],[2,12,11,"cImp_12_11",0],[2,13,5,"cImp_13_5",0],[2,13,8,"cImp_13_8",0],[2,13,9,"cImp_13_9",0],[2,13,11,"cImp_13_11",0],[2,13,12,"cImp_13_12",0],[2,13,14,"cImp_13_14",0],[2,14,5,"cImp_14_5",0],[2,14,7,"cImp_14_7",0],[2,14,8,"cImp_14_8",0],[2,14,9,"cImp_14_9",0],[2,14,11,"cImp_14_11",0],[2,14,12,"cImp_14_12",0],[2,14,13,"cImp_14_13",0],[3,11,0,"cBox_11",0],[3,14,0,"cBox_14",0]];
+/* the fifteen representatives of the round-1 dictionary, q0 … q14 — the index set
+   the certified PLL cells above are stated over (rep15, wip/rnDictBase.lean)      */
+const REPS = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14];
+const RNAME  = i => NEWNAME[i];
+const OLDNAME = i => "q" + i;
+const KINDOF  = i => KIND[i];
+const QFORM = i => DICT[i].f;
 const OPSYM = ["∧","∨","⊃","◯"];
-const CELLMAP = {}; RNC.cells.forEach(c => CELLMAP[c[0]+","+c[1]+","+c[2]] = c);
-const OPENSET = new Set(RNC.open.map(c => c[0]+","+c[1]+","+c[2]));
+const CELLMAP = {}; PLLCELLS.forEach(c => CELLMAP[c[0]+","+c[1]+","+c[2]] = c);
+const ESCMAP  = {}; PLLESCAPE.forEach(c => ESCMAP[c[0]+","+c[1]+","+c[2]] = c);
+const OPENSET = new Set(PLLOPEN.map(c => c[0]+","+c[1]+","+c[2]));
+const OPENMAP = {}; PLLOPEN.forEach(c => OPENMAP[c[0]+","+c[1]+","+c[2]] = c);
+/* how a certified cell was obtained: 0 the named theorem, 1 a general unit law,
+   2 the transpose via and_comm_i / or_comm_i and Interd.trans                     */
+const HOWTXT = [
+  "certified — the named cell theorem in <code>wip/rnDict.lean</code>, kernel-checked",
+  "certified by a <strong>structural law</strong> — general in φ, so it holds for every "
+    + "class whatever, present or future (<code>wip/rnDictBase.lean</code>, sorry-free; "
+    + "every lemma <code>#print axioms</code>'d clean)",
+  "certified by <strong>commutativity</strong> — the transpose cell, composed with "
+    + "<code>and_comm_i</code> / <code>or_comm_i</code> and <code>Interd.trans</code>",
+  "certified <strong>definitionally</strong> — this cell <em>is</em> the defining equation "
+    + "of the class in its result column (<code>wip/rnDict.lean</code>), so the two sides are "
+    + "literally the same formula and <code>Interd.refl</code> closes it"
+];
 
 /* ── unit laws ──
    ⊤ and ⊥ decide their whole row and column for every class whatever, so
@@ -1770,22 +1950,18 @@ function unitLaw(op, i, j) {
   }
   return null;
 }
-const UNIT_CLOSED = RNC.open.filter(c => unitLaw(c[0], c[1], c[2]) !== null).length;
-/* how many drawn cells the unit laws decide that carry no Lean certificate */
-let UNIT_CELLS = 0;
-[0, 1, 2].forEach(op => REPS.forEach(i => REPS.forEach(j => {
-  if (!CELLMAP[op + "," + i + "," + j] && unitLaw(op, i, j) !== null) UNIT_CELLS++;
-})));
-/* the blank "·" cells: neither a certificate, a unit law, nor a probe verdict — see
-   the "Status of the table" card. Computed the same way renderTable decides td.none,
-   so the legend count can never drift out of step with what is actually drawn.      */
-let NONE_CELLS = 0;
-[0, 1, 2].forEach(op => REPS.forEach(i => REPS.forEach(j => {
-  const key = op + "," + i + "," + j;
-  if (!CELLMAP[key] && unitLaw(op, i, j) === null && !OPENSET.has(key)) NONE_CELLS++;
-})));
-REPS.forEach(i => { const key = "3," + i + ",0";
-  if (!CELLMAP[key] && !OPENSET.has(key)) NONE_CELLS++; });
+const CERT_DIRECT = PLLCELLS.filter(c => c[4] === 0).length;
+const UNIT_CELLS  = PLLCELLS.filter(c => c[4] === 1).length;
+const COMM_CELLS  = PLLCELLS.filter(c => c[4] === 2).length;
+const DEF_CELLS   = PLLCELLS.filter(c => c[4] === 3).length;
+const ESC_CELLS   = PLLESCAPE.length;
+const OPEN_CELLS  = PLLOPEN.length;
+const TOTAL_CELLS = REPS.length * REPS.length * 3 + REPS.length;
+const CERT_CELLS  = CERT_DIRECT + UNIT_CELLS + COMM_CELLS + DEF_CELLS;
+/* the four closure theorems of wip/rnDict.lean name a proof term for every one of
+   the 690 cells, so the classification below is exhaustive by construction        */
+console.assert(CERT_CELLS + ESC_CELLS + OPEN_CELLS === TOTAL_CELLS,
+               "cell classification is not exhaustive");
 
 /* ── join-primality: which points of the Esakia dual are visible ──
    a ↦ ↑a = {x : a ≤ x} is always a filter, proper iff a ≠ ⊥; it is PRIME —
@@ -1797,15 +1973,15 @@ REPS.forEach(i => { const key = "3," + i + ",0";
    they actually decide:
      · t-rungs: truth-set arithmetic (rungMem/truthSet, live in N) — the
        same order predicate as rnSub_order. No missing data.
-     · the 14 classes with a full certified operation table — t0..t7, ⊤,
-       c1, g1, s1, r1, ◯g1 (REPS minus c2 and the harvested w15) — using the
+     · the fifteen classes of the round-1 dictionary, t0..t7, ⊤, c1, c2, g1,
+       s1, r1, ◯g1 — using only the certified cells of the table above, i.e. the
        kernel-checked ∧/∨/⊃ cells (RNC above) plus the unit laws. Open cells
-       and the 2 PCLL-only cells are UNKNOWN: never evidence either way.
+       Open, escaping and blank cells are UNKNOWN: never evidence either way.
    Every other drawn class (c2, c3, c4, the general ◯-chain, and every
    family class at level k ≥ 2, plus w and Gmeet) has no join arithmetic the
    page holds at all — reported NOT TESTED, which is a different thing from
    "verified": there is no data to look for a counterexample in.            */
-const REPS_SCOPE = [0,1,2,3,4,5,6,7,8,9,10,11,13,14]; // DICT indices with a full ⊃/∨ table
+const REPS_SCOPE = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]; // all fifteen; uncertified cells read as UNKNOWN
 const REPS_RUNG  = {0:0,2:1,3:2,4:3,6:4,7:5,10:6,11:7}; // -> rung number, for the 8 that overlap
 
 function tableLe(a, b) {                 // a ≤ b, from the ⊃ table: a ⊃ b ≡ ⊤
@@ -1813,15 +1989,19 @@ function tableLe(a, b) {                 // a ≤ b, from the ⊃ table: a ⊃ b
   const u = unitLaw(2, a, b);
   if (u !== null) return u === 1;
   const c = CELLMAP["2," + a + "," + b];
-  if (c && !c[4]) return c[3] === 1;      // certified, non-PCLL-only
-  return null;                            // open, blank, or PCLL-only: unknown
+  if (c) return c[3] === 1;               // every cell in CELLMAP is certified PLL
+  /* a certified escape settles this NEGATIVELY: the refutation says a ⊃ b is
+     interderivable with NO class of D, and ⊤ (= t1) is a class of D, so a ⊃ b
+     is not ≡ ⊤, i.e. a ≰ b.                                                  */
+  if (ESCMAP["2," + a + "," + b]) return false;
+  return null;                            // open: unknown
 }
 function tableJoin(a, b) {               // a ∨ b, from the ∨ table (commutative: try both orders)
   if (a === b) return a;
   const u = unitLaw(1, a, b);
   if (u !== null) return u;
   const c = CELLMAP["1," + a + "," + b] || CELLMAP["1," + b + "," + a];
-  if (c && !c[4]) return c[3];
+  if (c) return c[3];
   return null;
 }
 
@@ -1861,7 +2041,7 @@ function sweepLadderJoinPrime(rungs, setsOf, le) {
   }
   return out;
 }
-/* certified-table sweep over REPS_SCOPE — open/PCLL-only cells contribute to
+/* certified-table sweep over REPS_SCOPE — open and escaping cells contribute to
    `skipped`, never to a verdict.                                          */
 function sweepTableJoinPrime(ids) {
   const out = {};
@@ -1974,7 +2154,7 @@ function jpVerdictHtml(name, v, nameOf, formOf) {
       + `genuinely open beyond what's shown.</span>`;
     return `<span class="muted"><strong>join-prime — verified against the displayed elements</strong> `
       + `(no counterexample among ${v.pairs} pair${v.pairs === 1 ? "" : "s"} tested`
-      + (v.skipped ? `, ${v.skipped} left undetermined by open/PCLL-only cells` : "") + `). `
+      + (v.skipped ? `, ${v.skipped} left undetermined by uncertified cells` : "") + `). `
       + `Evidence, not a proof — an element outside this page could still refute it.</span>` + extra;
   }
   const [x, y] = v.witness;
@@ -2011,31 +2191,38 @@ function renderTable(op) {
       const jj = op===3 ? 0 : j;
       const key = op+","+i+","+jj;
       const c = CELLMAP[key];
-      const u = c ? null : unitLaw(op, i, jj);
+      const e = ESCMAP[key];
       const td = tr.insertCell();
-      if (c) { td.className = c[4] ? "pcll" : "cert"; td.textContent = RNAME(c[3]); }
-      else if (u !== null) { td.className = "cert"; td.textContent = RNAME(u); }
+      if (c)       { td.className = "cert"; td.textContent = RNAME(c[3]); }
+      else if (e)  { td.className = "esc";  td.textContent = "∉D"; }
       else if (OPENSET.has(key)) { td.className = "open"; td.textContent = "?"; }
-      else { td.className = "none"; td.textContent = "·"; }
-      if (c || u !== null || OPENSET.has(key)) td.addEventListener("click", () => {
+      else         { td.className = "none"; td.textContent = "·"; }
+      if (c || e || OPENSET.has(key)) td.addEventListener("click", () => {
         const lhs = op===3 ? `◯${RNAME(i)}` : `${RNAME(i)} ${OPSYM[op]} ${RNAME(j)}`;
         const oldLhs = op===3 ? `◯${OLDNAME(i)}` : `${OLDNAME(i)} ${OPSYM[op]} ${OLDNAME(j)}`;
-        const res = c ? c[3] : u;
+        const res = c ? c[3] : null;
         const parts = op===3 ? [i] : [i, j];
         if (res !== null && !parts.includes(res)) parts.push(res);
         const forms = parts.map(n =>
           `<span class="fml">${RNAME(n)}</span> = ${QFORM(n)}`).join(" &nbsp;·&nbsp; ");
         document.getElementById("read-tab").innerHTML = (c
           ? `<strong>${lhs} ≡ ${RNAME(c[3])}</strong><br><span class="muted">`
-            + (c[4] ? "holds in PCLL only — no PLL proof; this is where distribution does the work"
-                    : "certified: <code>InterdU</code> in wip/rncCells.lean, kernel-checked")
-            + "</span>"
-          : u !== null
-          ? `<strong>${lhs} ≡ ${RNAME(u)}</strong><br><span class="muted">`
-            + "by unit law (⊤ ∧ φ ≡ φ etc.) — holds for every class; Lean: "
-            + "<code>top_and_interd</code> / <code>bot_or_interd</code> family in wip/gap2.lean"
-            + "</span>"
-          : `<strong>${lhs} ≡ ?</strong><br><span class="muted">unsettled — the probe ran on this pair and derived neither direction within its search budget; not a proof, not a refutation, not skipped</span>`)
+            + HOWTXT[c[4]] + (c[5] ? ` &nbsp;·&nbsp; <code>${c[5]}</code>` : "") + "</span>"
+          : e
+          ? `<strong>${lhs} ∉ D</strong><br><span class="muted">`
+            + "<strong>escapes the dictionary</strong> — kernel-certified to be interderivable "
+            + "with <em>no</em> class of D at all: <span class=\"fml\">∀ k : Fin 15, ¬ Interd …</span>, "
+            + `<code>${e[3]}</code> in wip/rnDictRefute.lean. Not an unsettled cell: a proved `
+            + "one, whose content is that the operation leaves D.</span>"
+          : (() => { const o = OPENMAP[key];
+              return `<strong>${lhs} ≡ ?</strong><br><span class="muted">unsettled — `
+              + (o && o[4]
+                 ? `this cell is routed by <code>and_comm_i</code> / <code>or_comm_i</code> to its `
+                   + `transpose, and the transpose `
+                 : "the cell ")
+              + `is stated in <code>wip/rnDict.lean</code> as `
+              + `<code>${o ? o[3] : "?"}</code>, carrying a <span class="fml">sorry</span>: `
+              + "neither proved nor refuted. Never harvested into a simpset.</span>"; })())
           + `<br><span style="font-size:12px">${forms}</span>`
           + `<br><span class="muted" style="font-size:12px">was: ${oldLhs} ≡ `
           + (res !== null ? `${OLDNAME(res)} &nbsp;·&nbsp; ${KINDOF(res)}` : "?")
@@ -2050,23 +2237,56 @@ document.querySelectorAll(".opb").forEach(b => b.addEventListener("click", () =>
   renderTable(parseInt(b.dataset.op, 10));
 }));
 
-/* the ⊤ and ⊥ rows and columns are no longer shown as open: the unit laws settle
-   them for every class, so the count actually drawn as "open" (pale, "?") is lower
-   than the raw probe output — computed the same way renderTable decides td.open,
-   so this line and the table can never disagree with each other.                 */
+/* Every count below is computed from the same arrays renderTable draws from, so
+   the legend and the table can never drift out of step with each other.        */
+document.getElementById("t-certline").innerHTML =
+  `<strong>${CERT_CELLS} of ${TOTAL_CELLS}</strong> cells are kernel-certified, of which `
+  + `<strong>${CERT_DIRECT}</strong> by a <strong>named cell theorem</strong> — a sorry-free `
+  + `<span class="fml">Interd</span> in <code>wip/rnDict.lean</code>. Every one was `
+  + `<code>#print axioms</code>'d: all <span class="fml">[propext, Quot.sound]</span>, none `
+  + `<span class="fml">sorryAx</span>.`;
+document.getElementById("t-commline").innerHTML =
+  `<strong>${UNIT_CELLS}</strong> more by a <strong>structural law</strong> general in φ `
+  + `(⊤ ∧ φ ≡ φ and its siblings, φ ∧ φ ≡ φ, φ ⊃ φ ≡ ⊤; <code>wip/rnDictBase.lean</code>) and `
+  + `<strong>${COMM_CELLS}</strong> by <strong>commutativity</strong> from the transpose. `
+  + `Same green; click any cell and the readout names which route it took.`;
+document.getElementById("t-defline").innerHTML =
+  `<strong>${DEF_CELLS}</strong> hold <strong>definitionally</strong>. Each of `
+  + `<span class="fml">t1 … t14</span> is defined in <code>wip/rnDict.lean</code> by one `
+  + `operation on earlier representatives (<span class="fml">t4 = t2 ∨ t3</span>, `
+  + `<span class="fml">t12 = ◯t7</span>, …), so its defining equation occupies exactly one `
+  + `cell, where both sides are the same formula — 14 cells, one per generated class.`;
+document.getElementById("t-escline").innerHTML =
+  `<strong>${ESC_CELLS}</strong> <span class="fml">∉D</span> — <strong>proved to escape the `
+  + `dictionary</strong>: interderivable with no class of D at all `
+  + `(<code>wip/rnDictRefute.lean</code>). A result, not a gap.`;
 document.getElementById("t-openline").innerHTML =
-  `<strong>${RNC.open.length - UNIT_CLOSED}</strong> unsettled — the probe <em>ran</em> on every `
-  + `one of these (the ⊤/⊥ rows are closed by unit law instead) and came back with neither a `
-  + `proof nor a refutation, within its search budget. Not proved, not refuted, not skipped.`;
-document.getElementById("t-unitline").innerHTML =
-  `<strong>${UNIT_CELLS}</strong> more by <strong>unit law</strong> — the ⊤ and ⊥ row and column, `
-  + `where ⊤ ∧ φ ≡ φ and its siblings decide the cell for every class whatever. Same green, but the `
-  + `readout says which it is.`;
-document.getElementById("t-noneline").innerHTML =
-  `<strong>${NONE_CELLS}</strong> blank (<span class="fml">·</span>) — combinations the probe run `
-  + `never recorded at all: some are the commutative mirror of a pair already shown the other way `
-  + `round (<span class="fml">∧</span>, <span class="fml">∨</span> only), the rest are genuinely `
-  + `outside what this run covered. Different from "unsettled" above — these were not run.`;
+  `<strong>${OPEN_CELLS}</strong> unsettled (<span class="fml">?</span>) — routed through one `
+  + `of the <strong>87</strong> cell theorems of <code>wip/rnDict.lean</code> that carry a `
+  + `<span class="fml">sorry</span>: neither proved nor refuted. 87 blocked directly, 42 more `
+  + `as their commutativity transpose. These are exactly the cells that must never be `
+  + `harvested into a simpset.`;
+
+/* how many open cells actually leave the dashed D-cover edges undecided — computed,
+   never asserted, so it cannot drift from the certified table again              */
+(() => {
+  const blocking = new Set();
+  DICT_EDGES.filter(e => e[2] === "d").forEach(([a, b]) => {
+    for (let x = 0; x < 15; x++) {
+      if (x === a || x === b) continue;
+      const ax = tableLe(a, x), xb = tableLe(x, b);
+      if (ax === false || xb === false) continue;      /* settled: x is not between */
+      if (ax === null) blocking.add("2," + a + "," + x);
+      if (xb === null) blocking.add("2," + x + "," + b);
+    }
+  });
+  const nEdge = DICT_EDGES.filter(e => e[2] === "d").length;
+  document.getElementById("d-openline").innerHTML =
+    `Relation certified; whether anything of <span class="fml">D</span> sits strictly `
+    + `between is left undecided by the <strong>${blocking.size}</strong> unsettled `
+    + `<span class="fml">⊃</span> cells these <strong>${nEdge}</strong> edges depend on. `
+    + `Settle those and each edge becomes either a D-cover or not.`;
+})();
 
 renderLadder(9);
 renderDict();

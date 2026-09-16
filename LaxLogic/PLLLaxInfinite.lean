@@ -115,7 +115,7 @@ instance (φ : PLLFormula) (w : MC.W) : Decidable (MC.force w φ) := MC.decForce
 
 /-- If a model forces `a` and refutes `b` at some world, then `a ⊬ b`. -/
 theorem not_entails_of_force {C : ConstraintModel} (w : C.W) {a b : PLLFormula}
-    (ha : C.force w a) (hb : ¬ C.force w b) : ¬ Nonempty (LaxND [a] b) := by
+    (ha : C.force w a) (hb : ¬ C.force w b) : [a] ⊬ b := by
   rintro ⟨p⟩
   refine hb (soundness p C w ?_)
   intro ψ hψ

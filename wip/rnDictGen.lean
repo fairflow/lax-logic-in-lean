@@ -479,6 +479,7 @@ def resolveBox (i : Nat) : IO Cell := do
 def header : String :=
 "import wip.stabilise
 import wip.rnDictBase
+import LaxLogic.RN.Reps
 
 /-!
 # The certified RN(◯,{}) dictionary: `rnDict15 : RNDict`
@@ -515,8 +516,16 @@ def main : IO Unit := do
   let mut out : Array String := #[header]
   -- representatives
   out := out.push "/-! ## The fifteen representatives (probe order) -/\n"
-  for i in List.range 15 do
-    out := out.push s!"def q{i} : PLLFormula := {ppFN i (reps.getD i .falsePLL)}"
+  -- The representatives themselves live in the SHARED dictionary module
+  -- `LaxLogic/RN/Reps.lean` (append-only: `qk` never changes meaning).
+  -- Emit an `export`, not fifteen `def`s: re-exporting the same constants
+  -- keeps every downstream reference working with no second copy.
+  out := out.push ("/-! The fifteen RN(◯,{}) representatives, from the shared dictionary\n"
+    ++ "`LaxLogic/RN/Reps.lean` (append-only: `qk` never changes meaning).  This\n"
+    ++ "`export` re-exports the SAME constants under this namespace, so every\n"
+    ++ "existing reference keeps working and there is no second copy. -/")
+  let expList := String.intercalate " " ((List.range 15).map (s!"q{·}"))
+  out := out.push s!"export RNReps ({expList})"
   let repList := String.intercalate ", " ((List.range 15).map (s!"q{·}"))
   out := out.push s!"\ndef repsL : List PLLFormula := [{repList}]"
   out := out.push "\ndef rep15 : Fin 15 → PLLFormula := fun i => repsL.getD i.val .falsePLL"

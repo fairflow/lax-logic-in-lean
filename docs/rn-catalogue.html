@@ -1,0 +1,1764 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RN(◯,{}) catalogue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ground:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f5;
+  --ink:#151a20; --ink-2:#525d6b; --ink-3:#7d8896;
+  --line:#d3dae2; --line-soft:#e5eaef;
+  --accent:#2f5d9e; --accent-soft:#e4ecf7; --accent-ink:#1f4174;
+  --ok:#1c6a46;   --ok-soft:#dcefe4;
+  --no:#a13f24;   --no-soft:#f8e3db;
+  --op:#8a6712;   --op-soft:#f6ecd3;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0e1216; --surface:#161b21; --surface-2:#1e242c;
+    --ink:#e6eaef; --ink-2:#a0acba; --ink-3:#7d8896;
+    --line:#2b333d; --line-soft:#222a32;
+    --accent:#7ba7e0; --accent-soft:#182533; --accent-ink:#a8c6ec;
+    --ok:#63b98c; --ok-soft:#152a20;
+    --no:#e08a68; --no-soft:#2e1a13;
+    --op:#d7ae55; --op-soft:#2b2313;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0e1216; --surface:#161b21; --surface-2:#1e242c;
+  --ink:#e6eaef; --ink-2:#a0acba; --ink-3:#7d8896;
+  --line:#2b333d; --line-soft:#222a32;
+  --accent:#7ba7e0; --accent-soft:#182533; --accent-ink:#a8c6ec;
+  --ok:#63b98c; --ok-soft:#152a20;
+  --no:#e08a68; --no-soft:#2e1a13;
+  --op:#d7ae55; --op-soft:#2b2313;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+     font-family:var(--sans);font-size:15px;line-height:1.6;
+     -webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 22px 80px;
+      display:flex;flex-direction:column;gap:26px}
+
+header{display:flex;flex-direction:column;gap:10px;
+       border-bottom:1px solid var(--line);padding-bottom:20px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+         text-transform:uppercase;color:var(--accent);margin:0}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.2vw,38px);
+   line-height:1.12;margin:0;letter-spacing:-.015em;text-wrap:balance}
+.standfirst{font-family:var(--serif);font-size:17px;color:var(--ink-2);
+            margin:0;max-width:64ch}
+.buildline{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin:0;
+           display:flex;flex-wrap:wrap;gap:6px 16px}
+.buildline b{color:var(--ink-2);font-weight:500}
+
+nav.tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--line);
+         position:sticky;top:0;background:var(--ground);z-index:20;
+         padding-top:2px;margin-top:-2px}
+nav.tabs button{appearance:none;background:none;border:0;cursor:pointer;
+   font-family:var(--sans);font-size:13.5px;color:var(--ink-2);
+   padding:10px 13px;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);font-weight:600;
+   border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px;border-radius:3px}
+
+section[hidden]{display:none}
+section{display:flex;flex-direction:column;gap:22px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+       padding:20px 22px;display:flex;flex-direction:column;gap:13px}
+.panel > h2{font-family:var(--serif);font-size:21px;font-weight:600;margin:0;
+            letter-spacing:-.01em;text-wrap:balance}
+.panel > h3{font-family:var(--sans);font-size:12px;font-weight:600;margin:0;
+            letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.panel p{margin:0;max-width:70ch}
+.panel ul,.panel ol{margin:0;padding-left:1.25em;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.src{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin:0;
+     border-top:1px solid var(--line-soft);padding-top:9px}
+.src b{color:var(--ink-2);font-weight:500}
+
+.disp{font-family:var(--serif);font-size:17px;line-height:1.9;
+      background:var(--surface-2);border-left:2px solid var(--accent);
+      padding:13px 18px;overflow-x:auto;white-space:pre}
+.disp .tag{font-family:var(--mono);font-size:11px;color:var(--ink-3);
+           padding-left:12px;white-space:pre}
+.f{font-family:var(--serif);font-style:normal}
+code,.m{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);
+        padding:1px 5px;border-radius:3px;color:var(--ink-2)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);
+      font-size:11px;letter-spacing:.04em;padding:1px 7px;border-radius:3px;
+      border:1px solid;white-space:nowrap}
+.chip.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.chip.no{color:var(--no);border-color:var(--no);background:var(--no-soft)}
+.chip.op{color:var(--op);border-color:var(--op);background:var(--op-soft)}
+
+.scroll{overflow-x:auto;max-width:100%;border:1px solid var(--line-soft);
+        border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{text-align:left;padding:7px 11px;border-bottom:1px solid var(--line-soft);
+      vertical-align:top}
+th{font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+   color:var(--ink-2);font-weight:600;background:var(--surface-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+td .f{font-size:14.5px}
+
+.grid{border-collapse:collapse;font-family:var(--mono);font-size:11px;
+      font-variant-numeric:tabular-nums;width:auto}
+.grid th{padding:3px 5px;background:none;text-transform:none;letter-spacing:0;
+         font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:0;
+         text-align:center;font-weight:500}
+.grid th.rh{text-align:right;padding-right:7px}
+.grid td{padding:0;border:1px solid var(--line-soft);text-align:center;
+         min-width:30px;height:24px;cursor:pointer}
+.grid td span{display:block;line-height:24px}
+.grid td.c-k{background:var(--ok-soft);color:var(--ok)}
+.grid td.c-d{background:var(--surface-2);color:var(--ink-3)}
+.grid td.c-x{background:var(--no-soft);color:var(--no);font-weight:500}
+.grid td.c-q{background:var(--op-soft);color:var(--op)}
+.grid td.sel{outline:2px solid var(--accent);outline-offset:-2px}
+.grid td:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.seg button{appearance:none;background:var(--surface);border:0;cursor:pointer;
+   font-family:var(--mono);font-size:12.5px;color:var(--ink-2);padding:5px 13px;
+   border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:500}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+.readout{font-family:var(--serif);font-size:15.5px;min-height:3.4em;
+         background:var(--surface-2);border-radius:3px;padding:11px 14px;
+         overflow-x:auto}
+.readout .muted{font-family:var(--sans);font-size:13px;color:var(--ink-3)}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12.5px;color:var(--ink-2)}
+.legend span.k{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:13px;height:13px;border-radius:2px;display:inline-block;border:1px solid}
+.legend i.k{background:var(--ok-soft);border-color:var(--ok)}
+.legend i.d{background:var(--surface-2);border-color:var(--line)}
+.legend i.x{background:var(--no-soft);border-color:var(--no)}
+.legend i.q{background:var(--op-soft);border-color:var(--op)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;
+       background:var(--line-soft);border:1px solid var(--line-soft);border-radius:3px}
+.stat{background:var(--surface);padding:11px 13px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--mono);font-size:20px;font-weight:500;
+        font-variant-numeric:tabular-nums;color:var(--ink);line-height:1.15}
+.stat span{font-size:11.5px;color:var(--ink-3);line-height:1.35}
+
+.call{border:1px solid var(--no);background:var(--no-soft);border-radius:3px;
+      padding:14px 17px;display:flex;flex-direction:column;gap:9px}
+.call h3{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+         text-transform:uppercase;color:var(--no)}
+.call p{margin:0;max-width:70ch}
+.call ul{margin:0;padding-left:1.25em;display:flex;flex-direction:column;gap:5px;max-width:70ch}
+.call.note{border-color:var(--accent);background:var(--accent-soft)}
+.call.note h3{color:var(--accent-ink)}
+
+.hasse-wrap{overflow-x:auto;border:1px solid var(--line-soft);border-radius:3px;
+            background:var(--surface)}
+.hasse-wrap svg{display:block;min-width:900px;width:100%;height:auto}
+.hasse-wrap svg [fill="#ffffff"]{fill:var(--surface)}
+.hasse-wrap svg [fill="#111"]{fill:var(--ink)}
+.hasse-wrap svg [fill="#16305e"]{fill:var(--accent-ink)}
+.hasse-wrap svg [fill="#333"]{fill:var(--ink-2)}
+.hasse-wrap svg [fill="#666"],.hasse-wrap svg [fill="#888"]{fill:var(--ink-3)}
+.hasse-wrap svg [stroke="#3556a8"]{stroke:var(--accent)}
+.hasse-wrap svg [stroke="#999"]{stroke:var(--ink-3)}
+
+/* Figures that carry their own ground: shown as authored in both themes. */
+.figure{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:#ffffff}
+.figure svg{display:block;width:100%;height:auto}
+.figure.wide svg{min-width:1340px}
+.figure.tall svg{min-width:520px;max-width:620px;margin:0 auto}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+         clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){
+  .wrap{padding:22px 14px 60px}
+  .panel{padding:16px 15px}
+}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Propositional lax logic · the variable-free fragment</p>
+  <h1>RN(◯,{}) catalogue</h1>
+  <p class="standfirst">A working reference for the closed fragment of PLL. The reference set
+  is the ρ-catalogue <span class="f">R</span>: twenty-two pairwise-distinct classes, its order
+  now total, its operation tables computed cell by cell, and open-ended by construction.</p>
+  <p class="buildline">
+    <span><b>v27</b>, successor of v26 and of rn-explorer v17</span>
+    <span>built 2026-08-26</span>
+    <span>branch <b>claude/frj-redevelopment-69005f</b> @ d224201</span>
+    <span>if the version above reads lower than the one you were told, force-reload (⇧ + reload)</span>
+  </p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button role="tab" id="t-def"   aria-controls="p-def"   aria-selected="true">Definitions</button>
+  <button role="tab" id="t-op"    aria-controls="p-op"    aria-selected="false">R operation tables</button>
+  <button role="tab" id="t-rho"   aria-controls="p-rho"   aria-selected="false">The ρ-order</button>
+  <button role="tab" id="t-out"   aria-controls="p-out"   aria-selected="false">Beyond R</button>
+  <button role="tab" id="t-struct" aria-controls="p-struct" aria-selected="false">Large-scale structure</button>
+  <button role="tab" id="t-cube"  aria-controls="p-cube"  aria-selected="false">Hypercubes</button>
+  <button role="tab" id="t-lad"   aria-controls="p-lad"   aria-selected="false">RN ladder</button>
+  <button role="tab" id="t-fam"   aria-controls="p-fam"   aria-selected="false">Families</button>
+  <button role="tab" id="t-simp"  aria-controls="p-simp"  aria-selected="false">Simplifier</button>
+</nav>
+
+<!-- ═══════════════════════ DEFINITIONS ═══════════════════════ -->
+<section id="p-def" role="tabpanel" aria-labelledby="t-def">
+
+  <div class="panel">
+    <h2>The fragment</h2>
+    <p>RN(◯,{}) is the set of <em>closed</em> (atom-free) PLL formulas, quotiented by
+    interderivability in <span class="f">LaxND</span>. Write <span class="f">Γ ⊢ φ</span> for
+    PLL derivability and <span class="f">Γ ⊬ φ</span> for its refutation.</p>
+    <div class="disp">Interd φ ψ  :=  [φ] ⊢ ψ  and  [ψ] ⊢ φ<span class="tag">LaxLogic/Interd.lean:27</span></div>
+    <p>The order on classes is <span class="f">[φ] ≤ [ψ] ⟺ [φ] ⊢ ψ</span>; strict order
+    <span class="f">&lt;</span>, covering relation <span class="f">⋖</span>. The covering
+    relation is written <strong>only in scoped form</strong>, <span class="f">a ⋖[K] b</span>
+    relative to a named finite set <span class="f">K</span>:</p>
+    <div class="disp">a ⋖[K] b  :=  a &lt; b  and  ∀ c ∈ K.  ¬(a &lt; c &lt; b)</div>
+    <p>An <strong>unscoped (genuine) cover</strong> cannot be settled by search:
+    RN(◯,{}) is <strong>infinite</strong>, so ruling out every interposer is a statement about
+    an infinite set — a proof obligation, not a test. The first genuine covers are now
+    kernel-proved: <span class="f">⊥ ⋖ ◯⊥</span> and <span class="f">⊥ ⋖ ¬◯⊥</span>
+    (<span class="m">bot_coversVF_obot</span>, <span class="m">bot_coversVF_nbot</span>).
+    A scoped cover is destroyed by enlarging <span class="f">K</span>; a genuine cover is
+    permanent.</p>
+    <p>RN(◯,{}) is a <strong>bounded distributive lattice</strong> (meet/join the lifted
+    <span class="f">∧</span>/<span class="f">∨</span>; <span class="f">⊥</span> and
+    <span class="f">⊤ = ⊥ ⊃ ⊥</span> are classes of the fragment itself), and genuine covers
+    buy algebra: for any finite set <span class="f">U</span> of genuine covers of
+    <span class="f">n</span>, the map <span class="f">S ⊆ U ⟼ n ∨ ⋁S</span> order-embeds the
+    Boolean lattice <span class="f">2^U</span> — the cube above <span class="f">n</span> is
+    free. The first full instance is proved: the <strong>bottom diamond</strong>
+    <span class="f">{⊥, ◯⊥, ¬◯⊥, ◯⊥ ∨ ¬◯⊥} ≅ 2²</span>
+    (<span class="m">bottom_diamond</span>, with the top corner identified as ρ4 —
+    <span class="m">cube_bottomU_eq_rho4</span>), via the bridge lemma
+    <span class="m">covBy_of_coversVF</span> transferring formula-level covers to
+    class-level <span class="f">⋖</span>.</p>
+    <p class="src"><b>closed_lax_infinite</b> — LaxLogic/PLLLaxInfinite.lean:616 ·
+    <b>bot_coversVF_obot/nbot</b> — RNDB/Order.lean, <span class="m">[propext, Quot.sound]</span> ·
+    <b>CubeEmbedding.cube_le_iff</b> — LaxLogic/CubeEmbedding.lean ·
+    <b>DistribLattice/BoundedOrder instances</b> — LaxLogic/ClosedFragmentLattice.lean
+    (<span class="m">rn_cube_le_iff</span>) ·
+    <b>covBy_of_coversVF, bottom_diamond, cube_bottomU_eq_rho4</b> — RNDB/Diamond.lean,
+    all sorry-free, <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
+  </div>
+
+  <div class="panel">
+    <h2>◯-depth</h2>
+    <p>The syntactic ◯-depth of a formula is the maximal nesting of
+    <span class="f">◯</span>:</p>
+    <div class="disp">boxDepth ⊥ = 0        boxDepth (A ∧ B) = boxDepth (A ∨ B) = boxDepth (A ⊃ B)
+                                    = max (boxDepth A) (boxDepth B)
+boxDepth (◯A) = boxDepth A + 1<span class="tag">wip/depth.lean</span></div>
+    <p>Classes take the <em>minimum</em> over their members — class depth, not syntactic
+    depth, is the invariant:</p>
+    <div class="disp">DepthLe n A  :=  ∃ B.  Interd A B  ∧  boxDepth B ≤ n</div>
+    <p>The depth-reducing laws (Families tab, last panel) collapse most constructions;
+    the only depth-raising ones are <span class="f">◯</span> over <span class="f">∨</span> and
+    <span class="f">◯</span> over an implication whose consequent is not already boxed.</p>
+  </div>
+
+  <div class="panel">
+    <h2>R, and membership in it</h2>
+    <p><span class="f">R</span> is the ρ-catalogue: twenty-two closed formulas
+    <span class="f">ρ0 … ρ21</span>, held as data (formulas and a numbering, nothing asserted),
+    with their pairwise distinctness certified separately. It is the reference set for
+    everything on this page, and it is <strong>open-ended</strong>: RN(◯,{}) is infinite, so no
+    finite <span class="f">R</span> can be closed under the operations, and the tables locate
+    where the current one runs out rather than pretending it does not.</p>
+    <div class="disp">φ ∈ R   ⟺   ∃ k &lt; 22.  Interd φ (ρ k)
+φ ∉ R   ⟺   ∀ k &lt; 22.  ¬ Interd φ (ρ k)</div>
+    <p>The second is the statement the tables mark <span class="chip no">∉R</span>: for
+    <em>every</em> class of <span class="f">R</span>, at least one direction of the would-be
+    collapse is refuted. An <span class="f">∉R</span> cell is therefore a located new class,
+    not a gap, and it is a statement about <span class="f">R</span>, not about the formula:
+    enlarging <span class="f">R</span> can turn an <span class="f">∉R</span> verdict into a
+    named class, and never the other way.</p>
+    <p class="src"><b>LaxLogic/RN/Rho.lean</b> (the catalogue as data) ·
+    <b>LaxLogic/Interd.lean</b></p>
+  </div>
+
+  <div class="panel">
+    <h2>The twenty-two classes</h2>
+    <p>Writing <span class="f">a := ◯⊥</span> and <span class="f">b := ◯¬◯⊥</span>: every
+    representative is a Heyting term over <span class="f">{a, b}</span> alone, so exactly two
+    applications of <span class="f">◯</span> occur in the whole catalogue.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>ρ</th><th>formula</th><th>short form</th><th>note</th></tr></thead>
+      <tbody id="repsbody"></tbody>
+    </table></div>
+    <p class="src"><b>LaxLogic/RN/Rho.lean</b> · labels emitted by
+    <span class="m">lake exe rhocover</span> (<b>wip/rhocover_out.txt</b>, LABEL lines)</p>
+  </div>
+
+  <div class="panel">
+    <h2>Verdict vocabulary</h2>
+    <p>Three verdicts, kept rigidly apart everywhere on this page.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>verdict</th><th>meaning</th><th>evidence</th></tr></thead>
+      <tbody>
+        <tr><td><span class="chip ok">ρk</span></td>
+            <td>the combination is interderivable with <span class="f">ρk</span></td>
+            <td>both directions certified</td></tr>
+        <tr><td><span class="chip no">∉R</span></td>
+            <td>interderivable with no class of <span class="f">R</span></td>
+            <td>for every <span class="f">k</span>, one direction certified refuted</td></tr>
+        <tr><td><span class="chip op">?</span></td>
+            <td>open at the stated budgets</td>
+            <td>none; flagged, never dropped. A <span class="f">sorry</span> ASSERTS, so open
+                status lives in data, never in a declaration.</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Kernel-pinned and engine-certified are different things.</strong> On the ρ-order
+    every <span class="f">⊬</span> cell is a kernel theorem with pinned axioms; the
+    <span class="f">⊢</span> cells are engine-certified (the G4c oracle and the LJF◯ ladder,
+    both sound for PLL) and kernel-escalatable, but a verdict is a computation until it is
+    banked. Each table below says which it is.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ R OPERATION TABLES ═══════════════════════ -->
+<section id="p-op" role="tabpanel" aria-labelledby="t-op" hidden>
+
+  <div class="panel">
+    <h2>Operation tables over R</h2>
+    <p>For every pair of classes and each operation, the cell holds the class of the
+    combination. Nothing is blank and nothing is guessed. <span class="f">∧</span> and
+    <span class="f">∨</span> are symmetric and were computed on the upper triangle;
+    the full grids are shown.</p>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Operation">
+        <button class="opb" data-op="and" aria-pressed="true">ρi ∧ ρj</button>
+        <button class="opb" data-op="or"  aria-pressed="false">ρi ∨ ρj</button>
+        <button class="opb" data-op="imp" aria-pressed="false">ρi ⊃ ρj</button>
+        <button class="opb" data-op="box" aria-pressed="false">◯ρi</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="k"><i class="k"></i> class certified, off the diagonal</span>
+      <span class="k"><i class="d"></i> class certified, degenerate cell (⊥, ⊤, idempotence, self)</span>
+      <span class="k"><i class="x"></i> ∉R — certified outside every class of R</span>
+      <span class="k"><i class="q"></i> ? — open at budget, flagged</span>
+    </div>
+    <div class="scroll" style="padding:10px"><div id="opgrid"></div></div>
+    <p class="readout" id="opread"><span class="muted">Click a cell for its statement and its
+    verdict.</span></p>
+    <div class="stats" id="opstats"></div>
+    <p class="src"><b>Run of record: wip/rtable_out.txt</b>
+    (<span class="m">lake exe rhocover rtable</span>), 1012 <span class="m">RTAB</span> lines,
+    re-parsed for this page on 2026-08-25 · rendered reference version
+    <b>docs/rho-optables.html</b>. Budgets: battery separation, then the G4c oracle at
+    2·10⁴, then the LJF◯ ladder at fuel ≤ 24 on the residual. Verdicts on these tables are
+    <strong>engine-certified</strong>; the underlying 462-cell order matrix they consume is
+    total, with all 304 <span class="f">⊬</span> cells kernel-pinned.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Census, counted from the run</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>table</th><th class="num">cells</th><th class="num">class certified</th>
+        <th class="num">∉R</th><th class="num">open</th></tr></thead>
+      <tbody>
+        <tr><td><span class="f">∧</span> (upper triangle, 22·23/2)</td><td class="num">253</td>
+            <td class="num">233</td><td class="num">4</td><td class="num">16</td></tr>
+        <tr><td><span class="f">∨</span> (upper triangle)</td><td class="num">253</td>
+            <td class="num">204</td><td class="num">12</td><td class="num">37</td></tr>
+        <tr><td><span class="f">⊃</span> (full 22²)</td><td class="num">484</td>
+            <td class="num">348</td><td class="num">0</td><td class="num">136</td></tr>
+        <tr><td><span class="f">◯</span> (22 classes)</td><td class="num">22</td>
+            <td class="num">10</td><td class="num">0</td><td class="num">12</td></tr>
+        <tr><td><strong>total</strong></td><td class="num"><strong>1012</strong></td>
+            <td class="num"><strong>795</strong></td><td class="num"><strong>16</strong></td>
+            <td class="num"><strong>201</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p>The shape of the residue is itself information. <span class="f">∧</span> is nearly
+    settled and <span class="f">∨</span> nearly so; the open cells concentrate in
+    <span class="f">⊃</span> (136 of 201) and in <span class="f">◯</span>, where 12 of 22
+    classes have no settled image. Implication and the modality are where the search effort
+    belongs.</p>
+  </div>
+
+  <div class="panel">
+    <h2>The sixteen ∉R cells</h2>
+    <p>Every cell whose value provably leaves <span class="f">R</span>. Four are meets, twelve
+    are joins, and they cluster on one flank of the order: fourteen of the sixteen involve
+    <span class="f">ρ12</span> or <span class="f">ρ20</span>. The two exceptions are the meets
+    <span class="f">ρ10 ∧ ρ21</span> and <span class="f">ρ15 ∧ ρ21</span>, which reach the same
+    flank through <span class="f">ρ21</span>, the upper cover of both
+    <span class="f">ρ12</span> and <span class="f">ρ20</span>.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>kind</th><th>cells</th></tr></thead>
+      <tbody>
+        <tr><td>meets</td>
+            <td class="f">ρ10 ∧ ρ20 &nbsp; ρ10 ∧ ρ21 &nbsp; ρ12 ∧ ρ15 &nbsp; ρ15 ∧ ρ21</td></tr>
+        <tr><td>joins on <span class="f">ρ12</span></td>
+            <td class="f">ρ11 ∨ ρ12 &nbsp; ρ12 ∨ ρ14 &nbsp; ρ12 ∨ ρ15 &nbsp; ρ12 ∨ ρ16 &nbsp;
+                ρ12 ∨ ρ17 &nbsp; ρ12 ∨ ρ18</td></tr>
+        <tr><td>joins on <span class="f">ρ20</span></td>
+            <td class="f">ρ8 ∨ ρ20 &nbsp; ρ10 ∨ ρ20 &nbsp; ρ14 ∨ ρ20 &nbsp; ρ16 ∨ ρ20 &nbsp;
+                ρ17 ∨ ρ20 &nbsp; ρ18 ∨ ρ20</td></tr>
+      </tbody>
+    </table></div>
+    <div class="call note">
+      <h3>What sixteen ∉R cells do and do not say</h3>
+      <ul>
+        <li>Each is a <strong>located new class</strong>: the combination is interderivable
+            with no <span class="f">ρk</span>, and the verdict rests on 22 refutations, one per
+            candidate.</li>
+        <li>They are <strong>not sixteen distinct classes</strong>. Whether two
+            <span class="f">∉R</span> cells name the same class is a separate question, settled
+            for only a few pairs; see <em>Beyond R</em>.</li>
+        <li>Nothing here says <span class="f">R</span> is nearly closed. 201 cells are open, and
+            an open cell may yet turn out to leave <span class="f">R</span> too.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ THE ρ-ORDER ═══════════════════════ -->
+<section id="p-rho" role="tabpanel" aria-labelledby="t-rho" hidden>
+
+  <div class="panel">
+    <h2>The order is total</h2>
+    <p>All 462 ordered cells of <span class="f">R</span> are settled. The last open cell,
+    <span class="f">ρ12 ⊢? ρ15</span>, fell on 2026-08-25, negatively, and the frontier list
+    is now empty.</p>
+    <div class="stats">
+      <div class="stat"><b>462</b><span>ordered cells (22 × 21)</span></div>
+      <div class="stat"><b>158</b><span>⊢ engine-certified</span></div>
+      <div class="stat"><b>304</b><span>⊬ certified, every one kernel-pinned</span></div>
+      <div class="stat"><b>0</b><span>open cells — frontierOrder = []</span></div>
+      <div class="stat"><b>1874</b><span>RNDB entries</span></div>
+      <div class="stat"><b>37</b><span>scoped cover edges ⋖[R]</span></div>
+    </div>
+    <p class="src"><b>RNDB/Order.lean</b> (<span class="m">frontierOrder : Frontier := []</span>) ·
+    <b>RNDB/DB.lean</b> (<span class="m">allEntries_length = 1874</span>,
+    <span class="m">[propext, Quot.sound]</span>) ·
+    <b>Certified/RhoSeparations.lean</b> (95 battery separations,
+    <span class="m">sepU_*</span> + <span class="m">rho_*_nle_*</span>, 0 sorries) ·
+    <b>wip/rhocover_out.txt</b></p>
+  </div>
+
+  <div class="panel">
+    <h2>ρ12 ⊬ ρ15, through the repaired calculus</h2>
+    <p>The cell resisted the battery and both searchers. It was settled through
+    <span class="f">FRJV</span>, the repaired refutation calculus: a hand-built, kernel-checked
+    derivation of the refutation sequent, composed with the calculus's proved soundness.</p>
+    <div class="disp">derivation in FRJV  +  soundnessV  ⟹  ¬ Deriv [ρi] ρj
+
+rho12_nle_rho15 : [ρ12] ⊬ ρ15<span class="tag">Certified/RhoFRJV.lean, [propext, Quot.sound]</span></div>
+    <p>The witness is <span class="m">FRJ.WitnessV1215.provableV_1215</span>
+    (<span class="m">FRJ/WitnessV1215.lean</span>), transported by
+    <span class="m">FRJ.not_entails_of_provableV</span>. It is banked as RNDB entry
+    <span class="m">ord-0003</span>, <span class="m">Engine.frjv</span>, with an 11-world
+    extracted model. Its converse <span class="f">ρ15 ⊬ ρ12</span> was already
+    battery-settled, so:</p>
+    <ul>
+      <li><span class="f">{ρ12, ρ15}</span> is <strong>incomparable</strong>;</li>
+      <li><strong>no Hasse edge moves</strong> — the 37 scoped covers stand exactly as drawn;</li>
+      <li><span class="f">class(ρ12 ∨ ρ18)</span> is now <strong>unconditionally</strong>
+          outside <span class="f">R</span>, its last conditioning cell having been removed.</li>
+    </ul>
+    <p><strong>FRJ and FRJV.</strong> The paper calculus FRJ(◯) is incomplete:
+    <span class="m">Certified.CompletenessFRJ</span> is REFUTED by witness #80
+    (<span class="m">FRJ80.not_CompletenessFRJ</span>, <span class="m">wip/frj80_noprov.lean</span>,
+    <span class="m">[propext, Quot.sound]</span>), with a second witness #81 alongside. The
+    repaired calculus FRJV has its soundness PROVED
+    (<span class="m">FRJ.soundnessV</span>, <span class="m">FRJ/SoundV.lean</span>, same pin),
+    which is what licenses reading its derivations as underivability in PLL. FRJV completeness
+    is OPEN.</p>
+    <p class="src"><b>Certified/RhoFRJV.lean</b> · <b>FRJ/WitnessV1215.lean</b> ·
+    <b>FRJ/SoundV.lean</b> · <b>RNDB/Order.lean:209-230</b> · <b>wip/frj80_noprov.lean</b></p>
+  </div>
+
+  <div class="panel">
+    <h2>PLL Hasse diagram, scoped to R</h2>
+    <p>Solid edges are <span class="f">a ⋖[R] b</span>: every candidate interposer among the 22
+    is excluded by a settled cell.</p>
+    <div class="hasse-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 900" font-family="Helvetica, Arial, sans-serif">
+<rect width="1240" height="900" fill="#ffffff"/>
+<text x="20" y="30" font-size="17" fill="#111">RN(◯,{}) — PLL Hasse diagram over R, scoped covers (37 edges)</text>
+<text x="20" y="882" font-size="12" fill="#666">solid: a ⋖[R] b, every interposer excluded by settled cells · the 462-cell order is total, so there are no open cells</text>
+<line x1="620" y1="804" x2="413" y2="734" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="620" y1="804" x2="827" y2="734" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="413" y1="694" x2="827" y2="624" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="413" y1="694" x2="413" y2="624" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="827" y1="694" x2="827" y2="624" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="827" y1="584" x2="310" y2="514" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="827" y1="584" x2="620" y2="514" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="827" y1="584" x2="930" y2="514" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="413" y1="584" x2="310" y2="514" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="310" y1="474" x2="413" y2="404" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="310" y1="474" x2="207" y2="404" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="310" y1="474" x2="620" y2="404" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="620" y1="474" x2="413" y2="404" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="620" y1="474" x2="1033" y2="404" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="620" y1="474" x2="827" y2="404" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="1033" y1="254" x2="930" y2="184" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="413" y1="364" x2="207" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="413" y1="364" x2="827" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="413" y1="364" x2="413" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="930" y1="144" x2="620" y2="74" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="620" y1="254" x2="620" y2="184" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="207" y1="254" x2="310" y2="184" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="207" y1="364" x2="620" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="207" y1="364" x2="207" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="930" y1="474" x2="1033" y2="404" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="930" y1="474" x2="620" y2="404" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="620" y1="144" x2="620" y2="74" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="1033" y1="364" x2="1033" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="1033" y1="364" x2="827" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="620" y1="364" x2="620" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="620" y1="364" x2="827" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="827" y1="254" x2="930" y2="184" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="827" y1="254" x2="620" y2="184" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="827" y1="364" x2="1033" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="827" y1="364" x2="413" y2="294" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="413" y1="254" x2="310" y2="184" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="310" y1="144" x2="620" y2="74" stroke="#3556a8" stroke-width="1.4"/>
+<circle cx="620" cy="830" r="4" fill="#16305e"/>
+<text x="620" y="818" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ0</text>
+<text x="620" y="850" font-size="11.5" fill="#333" text-anchor="middle">⊥</text>
+<circle cx="413" cy="720" r="4" fill="#16305e"/>
+<text x="413" y="708" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ2</text>
+<text x="413" y="740" font-size="11.5" fill="#333" text-anchor="middle">◯⊥</text>
+<circle cx="827" cy="720" r="4" fill="#16305e"/>
+<text x="827" y="708" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ3</text>
+<text x="827" y="740" font-size="11.5" fill="#333" text-anchor="middle">¬◯⊥</text>
+<circle cx="413" cy="610" r="4" fill="#16305e"/>
+<text x="413" y="598" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ5</text>
+<text x="413" y="630" font-size="11.5" fill="#333" text-anchor="middle">¬(¬◯⊥)</text>
+<circle cx="827" cy="610" r="4" fill="#16305e"/>
+<text x="827" y="598" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ4</text>
+<text x="827" y="630" font-size="11.5" fill="#333" text-anchor="middle">◯⊥ ∨ (¬◯⊥)</text>
+<circle cx="310" cy="500" r="4" fill="#16305e"/>
+<text x="310" y="488" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ6</text>
+<text x="310" y="520" font-size="11.5" fill="#333" text-anchor="middle">(¬◯⊥) ∨ (¬(¬◯⊥))</text>
+<circle cx="620" cy="500" r="4" fill="#16305e"/>
+<text x="620" y="488" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ7</text>
+<text x="620" y="520" font-size="11.5" fill="#333" text-anchor="middle">◯(¬◯⊥)</text>
+<circle cx="930" cy="500" r="4" fill="#16305e"/>
+<text x="930" y="488" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ14</text>
+<text x="930" y="520" font-size="11.5" fill="#333" text-anchor="middle">(◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))</text>
+<circle cx="207" cy="390" r="4" fill="#16305e"/>
+<text x="207" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ13</text>
+<text x="207" y="410" font-size="11.5" fill="#333" text-anchor="middle">((¬(¬◯⊥)) ⊃ ◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))</text>
+<circle cx="413" cy="390" r="4" fill="#16305e"/>
+<text x="413" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ9</text>
+<text x="413" y="410" font-size="11.5" fill="#333" text-anchor="middle">◯(¬◯⊥) ∨ (¬(¬◯⊥))</text>
+<circle cx="620" cy="390" r="4" fill="#16305e"/>
+<text x="620" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ17</text>
+<text x="620" y="410" font-size="11.5" fill="#333" text-anchor="middle">(¬(¬◯⊥)) ∨ ((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥)))</text>
+<circle cx="827" cy="390" r="4" fill="#16305e"/>
+<text x="827" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ19</text>
+<text x="827" y="410" font-size="11.5" fill="#333" text-anchor="middle">(◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ◯(¬◯⊥)</text>
+<circle cx="1033" cy="390" r="4" fill="#16305e"/>
+<text x="1033" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ16</text>
+<text x="1033" y="410" font-size="11.5" fill="#333" text-anchor="middle">((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ ◯(¬◯⊥)</text>
+<circle cx="207" cy="280" r="4" fill="#16305e"/>
+<text x="207" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ12</text>
+<text x="207" y="300" font-size="11.5" fill="#333" text-anchor="middle">((¬(¬◯⊥)) ⊃ ◯⊥) ⊃ ◯(¬◯⊥)</text>
+<circle cx="413" cy="280" r="4" fill="#16305e"/>
+<text x="413" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ20</text>
+<text x="413" y="300" font-size="11.5" fill="#333" text-anchor="middle">(◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ((¬◯⊥) ∨ (¬(¬◯⊥)))</text>
+<circle cx="620" cy="280" r="4" fill="#16305e"/>
+<text x="620" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ11</text>
+<text x="620" y="300" font-size="11.5" fill="#333" text-anchor="middle">◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))</text>
+<circle cx="827" cy="280" r="4" fill="#16305e"/>
+<text x="827" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ18</text>
+<text x="827" y="300" font-size="11.5" fill="#333" text-anchor="middle">((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ (◯(¬◯⊥) ∨ (¬(¬◯⊥)))</text>
+<circle cx="1033" cy="280" r="4" fill="#16305e"/>
+<text x="1033" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ8</text>
+<text x="1033" y="300" font-size="11.5" fill="#333" text-anchor="middle">(¬(¬◯⊥)) ⊃ ◯⊥</text>
+<circle cx="310" cy="170" r="4" fill="#16305e"/>
+<text x="310" y="158" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ21</text>
+<text x="310" y="190" font-size="11.5" fill="#333" text-anchor="middle">((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ◯(¬◯⊥)</text>
+<circle cx="620" cy="170" r="4" fill="#16305e"/>
+<text x="620" y="158" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ15</text>
+<text x="620" y="190" font-size="11.5" fill="#333" text-anchor="middle">(◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ ◯(¬◯⊥)</text>
+<circle cx="930" cy="170" r="4" fill="#16305e"/>
+<text x="930" y="158" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ10</text>
+<text x="930" y="190" font-size="11.5" fill="#333" text-anchor="middle">(¬(¬◯⊥)) ∨ ((¬(¬◯⊥)) ⊃ ◯⊥)</text>
+<circle cx="620" cy="60" r="4" fill="#16305e"/>
+<text x="620" y="48" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ1</text>
+<text x="620" y="80" font-size="11.5" fill="#333" text-anchor="middle">⊤</text>
+</svg></div>
+    <p class="src"><b>docs/rho-hasse-pll.svg</b>, emitted by
+    <span class="m">lake exe rhocover</span> (37 covers, 121 blocked, 0 open cover questions;
+    control: <span class="f">ρ6 &lt; ρ12</span> comes out BLOCKED by <span class="f">ρ9</span>,
+    matching the kernel theorem <span class="m">RNDB.not_covers_rho6_rho12</span>).
+    <b>One edit to the embedded copy:</b> the source file still carries a dashed grey line for
+    the then-open cell <span class="f">ρ12 ⊢? ρ15</span>, and its caption still explains one.
+    That cell is now settled <span class="f">⊬</span>, so there is no edge; the line, its
+    <span class="f">?</span> marker and the caption clause are removed here. The file itself is the tool's output and is unchanged.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Regularities of the order</h3>
+    <ul>
+      <li><strong>Graded.</strong> Every cover edge spans one rank; rank profile
+          <span class="m">1-2-2-3-5-5-3-1</span>, height 7.</li>
+      <li><strong>Ten poset-join-irreducibles</strong>:
+          <span class="f">ρ0, ρ2, ρ3, ρ5, ρ7, ρ12, ρ13, ρ14, ρ19, ρ20</span>. Every one that is
+          not a rail atom is an implication.</li>
+      <li><strong>Two stacked cubes.</strong> The interval <span class="f">[ρ4, ρ18]</span> is
+          exactly 2³ on atoms <span class="f">{ρ6, ρ7, ρ14}</span>. The R tables confirm its
+          identities: <span class="f">ρ6 ∧ ρ7 ≡ ρ7 ∧ ρ14 ≡ ρ6 ∧ ρ14 ≡ ρ4</span> and
+          <span class="f">ρ9 ∨ ρ16 ≡ ρ9 ∨ ρ17 ≡ ρ16 ∨ ρ17 ≡ ρ18</span>.</li>
+      <li><strong>Two rails.</strong> The Rieger–Nishimura ladder at <span class="f">p := ◯⊥</span>
+          is the left rail; the modal rail starts at <span class="f">b = ◯¬◯⊥ = ρ7</span> and
+          meets it through the joins and the five <span class="f">⊃</span>-classes.</li>
+      <li><strong>Local disjunction property.</strong> For <span class="f">x &lt; u</span> and
+          <span class="f">y &lt; u</span>, <span class="f">u ⊢ x ∨ y ⟺ u ≡ x ∨ y</span>. Every
+          "is this join a new class?" is therefore one identity cell, which is exactly what the
+          <span class="f">∨</span> table now answers.</li>
+    </ul>
+    <p><em>Poset lub is weaker than the class of the syntactic join.</em> Whether
+    <span class="f">v ≡ ⋁(lower covers of v)</span> is a separate question per node, and the
+    <span class="f">∨</span> table settles it node by node.</p>
+    <p class="src"><b>docs/rho-structure.md</b> §1 (verified regularities), §2 (construction
+    conjectures C1–C4, labelled as conjectures there and here) · <b>docs/rho-order.md</b></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ BEYOND R ═══════════════════════ -->
+<section id="p-out" role="tabpanel" aria-labelledby="t-out" hidden>
+
+  <div class="panel">
+    <h2>What lies just outside R</h2>
+    <p>Two independent sources locate classes beyond the 22: the <span class="f">∉R</span> cells
+    of the operation tables, and the catalogue-extension probe, which orders composite
+    candidates (including ternary joins and <span class="f">◯</span>-shifts, which the binary
+    tables do not reach) against all 22.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>candidate</th><th>same class as</th><th>verdict in the R tables</th></tr></thead>
+      <tbody id="probebody"></tbody>
+    </table></div>
+    <p class="src"><b>tools/Cover.lean</b> (<span class="m">lake exe rhocover probe</span>) ·
+    <b>wip/rhoprobe_out.txt</b>, <b>wip/rhoprobe2_out.txt</b> · cross-referenced against
+    <b>wip/rtable_out.txt</b> for this page on 2026-08-25</p>
+  </div>
+
+  <div class="call note">
+    <h3>Exactly what is certified</h3>
+    <ul>
+      <li>The <strong>22</strong> classes of <span class="f">R</span> are pairwise distinct,
+          kernel-backed.</li>
+      <li>The <strong>16 ∉R cells</strong> are each certified outside <span class="f">R</span>,
+          on 22 refutations apiece.</li>
+      <li>The probe's <strong>17</strong> candidate classes are a count
+          <em>modulo the open cells recorded against each</em>, and they are pairwise distinct
+          only up to 22 open candidate-pairs. It is an upper bound: if an open pair collapses,
+          the count falls.</li>
+      <li>How many distinct classes the 16 <span class="f">∉R</span> cells and the 17 candidates
+          amount to <em>together</em> is OPEN. Only a few identifications are certified: the
+          probe certified <span class="f">ρ7∨ρ13 ≡ ρ9∨ρ13 ≡ ρ12∧ρ15</span>,
+          <span class="f">ρ9∨ρ19 ≡ ρ5∨ρ19 ≡ ρ6∨ρ19</span>, and
+          <span class="f">◯ρ6 ≡ ◯ρ9</span>.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h3>What the tables do to the probe's list</h3>
+    <p>The two sources overlap, and putting them side by side settles some of what the probe
+    left open. <strong>Eight of the seventeen candidate classes are now certified outside
+    <span class="f">R</span></strong>: seven read <span class="f">∉R</span> directly off the
+    tables, and one more transports across a certified identity —
+    <span class="f">ρ12 ∧ ρ15</span> is <span class="f">∉R</span> and the probe certified
+    <span class="f">ρ7∨ρ13 ≡ ρ9∨ρ13 ≡ ρ12∧ρ15</span>, so all three presentations are outside
+    <span class="f">R</span> even though the <span class="f">∨</span> table flags
+    <span class="f">ρ7 ∨ ρ13</span> itself as open.</p>
+    <p>The traffic runs the other way too. Eight of the sixteen <span class="f">∉R</span> cells
+    — <span class="f">ρ10∨ρ20</span>, <span class="f">ρ12∨ρ14</span>,
+    <span class="f">ρ12∨ρ15</span>, <span class="f">ρ12∨ρ16</span>,
+    <span class="f">ρ12∨ρ17</span>, <span class="f">ρ14∨ρ20</span>,
+    <span class="f">ρ16∨ρ20</span>, <span class="f">ρ17∨ρ20</span> — are cells the probe never
+    asked about. The tables are the wider net; the probe reaches shapes the binary tables
+    cannot (ternary joins, <span class="f">◯</span>-shifts).</p>
+    <p>Nine candidate classes remain unsettled against <span class="f">R</span>: the
+    <span class="f">ρ19</span>-join class (three presentations), <span class="f">ρ16∨ρ19</span>,
+    <span class="f">ρ10∨ρ15</span>, <span class="f">ρ12∧ρ20</span>,
+    <span class="f">◯ρ6 (≡ ◯ρ9)</span>, <span class="f">◯ρ11</span>, and the three ternary
+    joins, which no binary table reaches.</p>
+    <p class="src">Cross-reference computed for this page from <b>wip/rtable_out.txt</b> and
+    <b>wip/rhoprobe2_out.txt</b>, 2026-08-25. The transport step is sound but inherits the tier
+    of its inputs: both the identity and the <span class="f">∉R</span> verdict are
+    engine-certified, so the conclusion is too.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Open candidate-pairs</h3>
+    <p>Neither direction settled at budget. Until these fall, the candidate count is an upper
+    bound.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>X</th><th>Y</th><th>X ⊢ Y</th><th>Y ⊢ X</th></tr></thead>
+      <tbody id="openbody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    <h3>The ◯-identities, and where they came from</h3>
+    <p>Four <span class="f">◯</span>-collapses are sometimes reported as recent probe findings.
+    They are not new: all four were already kernel-proved, and all four are already rules of the
+    certified simpset.</p>
+    <div class="disp">◯ρ4 ≡ ρ7        cBox_4    wip/rnDict.lean   ∈ rndSet
+◯ρ5 ≡ ρ5        cBox_6    wip/rnDict.lean   ∈ rndSet
+◯ρ8 ≡ ρ8        cBox_10   wip/rnDict.lean   ∈ rndSet
+◯ρ9 ≡ ◯ρ6       cBox_9    wip/rnDict.lean   ∈ rndSet</div>
+    <p>Each carries an explicit G4iLL″ proof term bridged to <span class="m">LaxND</span>, and
+    the five <span class="f">◯</span>-rules of the simpset are exactly
+    <span class="m">cBox_1, cBox_4, cBox_6, cBox_9, cBox_10</span>. Two further independent
+    proofs exist: <span class="m">RNEmbed.boxq9_q12</span> (<span class="m">wip/seeds.lean</span>)
+    and <span class="m">DepthPCLL.box_rnSub_four</span>
+    (<span class="m">wip/depth3.lean</span>), the latter as an instance of the proved nucleus law
+    <span class="m">Depth.box_imp_box</span>. The probe agreeing with them is a cross-validation
+    of the engines, and worth having as that.</p>
+    <p>The <span class="f">◯</span> row of the R tables adds two more fixed points that follow
+    the same nucleus law: <span class="f">◯ρ12 ≡ ρ12</span> and
+    <span class="f">◯ρ19 ≡ ρ19</span>, both of the form <span class="f">X ⊃ b</span> with
+    <span class="f">b = ◯¬◯⊥</span> already <span class="f">◯</span>-fixed.
+    <span class="m">cBox_14 : Interd (◯ρ12) ρ12</span> is now kernel-proved in
+    <span class="m">wip/rnDict2.lean</span>.</p>
+    <p class="src"><b>wip/rnDict.lean</b> · <b>wip/rnDict2.lean</b> ·
+    <b>Rewrite/Catalogue.lean</b> · <b>wip/depth.lean</b> (<span class="m">box_imp_box</span>,
+    no axioms)</p>
+  </div>
+
+  <div class="panel">
+    <h3>Banking discipline</h3>
+    <p>An identity may not enter the simpset until it is kernel-proved: an unproved
+    <span class="m">RwRule.ok</span> voids <span class="m">norm_interd</span> silently. The
+    probe's hub-join and co-hub-meet identities (<span class="f">ρ9∨ρ17 ≡ ρ18</span>,
+    <span class="f">ρ8∨ρ18 ≡ ρ10</span>, <span class="f">ρ11∨ρ18 ≡ ρ15</span>,
+    <span class="f">ρ6∧ρ7 ≡ ρ4</span>, <span class="f">ρ16∧ρ19 ≡ ρ7</span>,
+    <span class="f">ρ13∧ρ17 ≡ ρ6</span>, <span class="f">ρ9∧ρ13 ≡ ρ6</span>,
+    <span class="f">ρ7∧ρ14 ≡ ρ4</span>, <span class="f">ρ6∧ρ14 ≡ ρ4</span>,
+    <span class="f">ρ8∧ρ18 ≡ ρ16</span>) are <strong>engine-certified only</strong> and are
+    awaiting kernel proof. Nothing engine-only has been added to the simpset.</p>
+    <p class="src">The standing loop after any banking: re-measure with
+    <span class="m">lake exe rwscreen</span>, re-test reach, promote what closes, re-transcribe
+    the axiom pins.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ LARGE-SCALE STRUCTURE ═══════════════════════ -->
+<section id="p-struct" role="tabpanel" aria-labelledby="t-struct" hidden>
+
+  <div class="panel">
+    <h2>The large-scale structure</h2>
+    <p><span class="f">R</span> is a finite atlas of the bottom of an infinite lattice. This is
+    what surrounds it: the embedded ladder, two ascending chains, three antichains, and one
+    descending ladder with no floor, drawn from the theorems that establish each.</p>
+    <div class="figure wide"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1340 1040" font-family="Helvetica,Arial,sans-serif">
+<rect width="1340" height="1040" fill="#ffffff"/>
+<text x="24" y="36" font-size="19" fill="#16233a">RN(◯,∅) — the large-scale structure (verified families, 2026-08-26)</text>
+<text x="24" y="56" font-size="12" fill="#8a93a6">a = ◯⊥.  Solid edges: strict &lt;.  Dotted rows: pairwise-incomparable antichains.  Dashes: proved infinite continuation.  All theorems PLL, sorry-free, pinned.</text>
+<circle cx="670" cy="975" r="4" fill="#3556a8"/><text x="670" y="966" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">⊥</text><text x="670" y="995" font-size="10.5" fill="#8a93a6" text-anchor="middle">ρ0</text>
+<circle cx="670" cy="90" r="4" fill="#3556a8"/><text x="670" y="81" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">⊤</text><text x="670" y="110" font-size="10.5" fill="#8a93a6" text-anchor="middle">ρ1</text>
+<line x1="240" y1="900" x2="170" y2="830" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="900" x2="310" y2="830" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="170" y1="830" x2="240" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="170" y1="830" x2="110" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="310" y1="830" x2="240" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="760" x2="190" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="760" x2="340" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="110" y1="760" x2="190" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="190" y1="690" x2="265" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="190" y1="690" x2="120" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="340" y1="690" x2="265" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="670" y1="975" x2="240" y2="900" stroke="#8a93a6" stroke-width="1.0"/>
+<line x1="265" y1="620" x2="200" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="120" y1="620" x2="200" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="265" y1="620" x2="330" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<circle cx="240" cy="900" r="3.5" fill="#3556a8"/><text x="240" y="891" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₀=⊥</text>
+<circle cx="170" cy="830" r="3.5" fill="#3556a8"/><text x="170" y="821" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">a</text>
+<circle cx="310" cy="830" r="3.5" fill="#3556a8"/><text x="310" y="821" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬a</text>
+<circle cx="240" cy="760" r="3.5" fill="#3556a8"/><text x="240" y="751" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">a∨¬a</text>
+<circle cx="110" cy="760" r="3.5" fill="#3556a8"/><text x="110" y="751" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬¬a</text>
+<circle cx="190" cy="690" r="3.5" fill="#3556a8"/><text x="190" y="681" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₅</text>
+<circle cx="340" cy="690" r="3.5" fill="#3556a8"/><text x="340" y="681" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬¬a⊃a</text>
+<circle cx="265" cy="620" r="3.5" fill="#3556a8"/><text x="265" y="611" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₇</text>
+<circle cx="120" cy="620" r="3.5" fill="#3556a8"/><text x="120" y="611" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₈</text>
+<circle cx="200" cy="550" r="3.5" fill="#8a93a6"/>
+<circle cx="330" cy="550" r="3.5" fill="#8a93a6"/>
+<text x="265" y="520" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="235" y="470" font-size="12.5" fill="#16233a" text-anchor="middle">RN({p})-embedding ladder (zigzag)</text>
+<text x="235" y="486" font-size="10.5" fill="#8a93a6" text-anchor="middle">rnEmbed (15 pins) · rnSub_order · covers9_stable</text>
+<rect x="560" y="700" width="220" height="200" rx="10" fill="#eef2f8" stroke="#8a93a6"/>
+<circle cx="670" cy="885" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="861" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="861" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="837" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="837" r="2.5" fill="#8a93a6"/>
+<circle cx="622" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="718" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="607" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="733" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="607" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="733" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="622" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="718" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="717" r="2.5" fill="#8a93a6"/>
+<text x="670" y="723" font-size="12.5" fill="#16233a" text-anchor="middle">R — the certified catalogue</text>
+<text x="670" y="738" font-size="10.5" fill="#8a93a6" text-anchor="middle">22 classes · height 7 · matrix total</text>
+<text x="670" y="752" font-size="10.5" fill="#8a93a6" text-anchor="middle">(detail: rho-hasse-pll.svg, rho-optables.html)</text>
+<line x1="670" y1="975" x2="670" y2="900" stroke="#8a93a6" stroke-width="1.0"/>
+<circle cx="970" cy="820" r="4" fill="#3556a8"/><text x="970" y="811" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₁ = ◯(a∨¬a)</text><text x="970" y="840" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ7</text>
+<circle cx="970" cy="730" r="4" fill="#3556a8"/><text x="970" y="721" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₂ = ◯rn₅</text><text x="970" y="750" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ◯ρ6, ∉R cand.</text>
+<line x1="970" y1="820" x2="970" y2="736" stroke="#3556a8" stroke-width="1.4"/>
+<circle cx="970" cy="640" r="4" fill="#3556a8"/><text x="970" y="631" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₃ = ◯rn₇</text>
+<line x1="970" y1="730" x2="970" y2="646" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="970" y1="640" x2="970" y2="560" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="970" y="545" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="970" y="862" font-size="12.5" fill="#16233a" text-anchor="middle">ascending chain c_k = ◯ rn₂ₖ₊₁</text>
+<text x="970" y="877" font-size="10.5" fill="#8a93a6" text-anchor="middle">chain_lt_strict · chain_pairwise (wip/chainStrict.lean)</text>
+<circle cx="1180" cy="820" r="4" fill="#3556a8"/><text x="1180" y="811" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₁</text><text x="1180" y="840" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ9</text>
+<circle cx="1180" cy="730" r="4" fill="#3556a8"/><text x="1180" y="721" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₂</text>
+<line x1="1180" y1="820" x2="1180" y2="736" stroke="#3556a8" stroke-width="1.4"/>
+<circle cx="1180" cy="640" r="4" fill="#3556a8"/><text x="1180" y="631" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₃</text>
+<line x1="1180" y1="730" x2="1180" y2="646" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="1180" y1="640" x2="1180" y2="560" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="1180" y="545" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="1180" y="862" font-size="12.5" fill="#16233a" text-anchor="middle">ascending chain sC_k = c_k ∨ rn₂ₖ₊₂</text>
+<text x="1180" y="877" font-size="10.5" fill="#8a93a6" text-anchor="middle">sC_le · sC_strict (wip/families.lean)</text>
+<circle cx="840" cy="180" r="4" fill="#3556a8"/><text x="840" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₂</text>
+<circle cx="950" cy="180" r="4" fill="#3556a8"/><text x="950" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₃</text>
+<line x1="858" y1="180" x2="932" y2="180" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="180" r="4" fill="#3556a8"/><text x="1060" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₄</text>
+<line x1="968" y1="180" x2="1042" y2="180" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="184" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="154" font-size="12.5" fill="#16233a">antichain ◯(g_k) — ONE infinite antichain (k ≥ 2)</text>
+<text x="838" y="214" font-size="10.5" fill="#8a93a6">bg_incomparable · bg_pairwise (wip/families.lean)  ·  ◯g₁ ≡ ◯ρ11: membership OPEN</text>
+<circle cx="840" cy="300" r="4" fill="#3556a8"/><text x="840" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₁</text><text x="840" y="320" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ12</text>
+<circle cx="950" cy="300" r="4" fill="#3556a8"/><text x="950" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₂</text>
+<line x1="858" y1="300" x2="932" y2="300" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="300" r="4" fill="#3556a8"/><text x="1060" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₃</text>
+<line x1="968" y1="300" x2="1042" y2="300" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="304" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="274" font-size="12.5" fill="#16233a">antichain r_k = rn₂ₖ₊₄ ⊃ c_k — all j ≠ k ≥ 1</text>
+<text x="838" y="334" font-size="10.5" fill="#8a93a6">rC_incomparable · rC_pairwise (wip/families.lean)</text>
+<circle cx="840" cy="420" r="4" fill="#3556a8"/><text x="840" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₁</text><text x="840" y="440" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ11</text>
+<circle cx="950" cy="420" r="4" fill="#3556a8"/><text x="950" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₂</text>
+<line x1="858" y1="420" x2="932" y2="420" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="420" r="4" fill="#3556a8"/><text x="1060" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₃</text>
+<line x1="968" y1="420" x2="1042" y2="420" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="424" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="394" font-size="12.5" fill="#16233a">antichain g_k = c_k ⊃ rn₂ₖ₊₁ (k ≥ 2; g₁ anchors)</text>
+<text x="838" y="454" font-size="10.5" fill="#8a93a6">gap_incomparable (wip/gapWidth.lean)</text>
+<line x1="950" y1="414" x2="950" y2="192" stroke="#8a93a6" stroke-width="1" stroke-dasharray="1,3"/>
+<text x="957" y="305" font-size="10" fill="#8a93a6" transform="rotate(-90 957 305)">g_k ≤ ◯g_k (unit)</text>
+<circle cx="520" cy="470" r="4" fill="#3556a8"/><text x="520" y="461" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₀ = g₁</text><text x="520" y="490" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ11</text>
+<circle cx="520" cy="570" r="4" fill="#3556a8"/><text x="520" y="561" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₁ = g₁∧g₂</text>
+<circle cx="520" cy="670" r="4" fill="#3556a8"/><text x="520" y="661" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₂ = g₁∧g₂∧g₃</text>
+<line x1="520" y1="476" x2="520" y2="560" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="520" y1="576" x2="520" y2="660" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="520" y1="676" x2="520" y2="800" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="520" y="825" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="520" y="855" font-size="11" fill="#b3402e" text-anchor="middle">strictly descending, NO FLOOR — never reaches ⊥</text>
+<text x="520" y="440" font-size="12.5" fill="#16233a" text-anchor="middle">descending ladder Gmeet n = g₁ ∧ … ∧ g_{n+1}</text>
+<text x="520" y="425" font-size="10.5" fill="#8a93a6" text-anchor="middle">Gmeet_strict · no_least_consequence (wip/hunts.lean)</text>
+<text x="24" y="1000" font-size="12" fill="#16233a">RN(◯,∅) is INFINITE three ways — height (the ladder and both chains), width (the three antichains), depth (Gmeet, no floor):</text>
+<text x="24" y="1016" font-size="12" fill="#16233a">closed_lax_infinite, LaxLogic/PLLLaxInfinite.lean, pinned [propext, Classical.choice, Quot.sound].  Anchors ≡ ρk are certified identities; nothing else is asserted between families.</text>
+</svg></div>
+    <p class="src"><b>docs/rn-large-structure.svg</b>. The figure carries its own ground and is
+    shown as authored in both themes. Anchors <span class="f">≡ ρk</span> and every theorem name
+    on it were checked against the Lean sources before embedding; the checks are recorded in the
+    sections that follow.</p>
+  </div>
+
+  <div class="panel">
+    <h2>The embedded zigzag</h2>
+    <p>The left rail in close-up: the Rieger–Nishimura ladder under
+    <span class="f">p ≔ ◯⊥</span>, with its cover relation computed rather than drawn by hand.
+    Odd rungs have two upper covers, even rungs one.</p>
+    <div class="figure tall"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 960" font-family="Helvetica,Arial,sans-serif">
+<rect width="620" height="960" fill="#ffffff"/>
+<text x="20" y="34" font-size="17" fill="#16233a">RN({p}) ↪ RN(◯,∅) under p ≔ a = ◯⊥ — the embedded zigzag ladder</text>
+<text x="20" y="54" font-size="11.5" fill="#8a93a6">Embedding PROVED (wip/rnEmbed.lean, 15 pins); rung order decidable arithmetic (rnSub_order, wip/ladder8.lean);</text>
+<text x="20" y="68" font-size="11.5" fill="#8a93a6">covers below = covers9_eq, stable widening the search to rung 24 (covers9_stable, axiom-free).</text>
+<line x1="300" y1="860" x2="200" y2="770" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="300" y1="860" x2="400" y2="770" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="200" y1="770" x2="300" y2="680" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="200" y1="770" x2="120" y2="680" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="400" y1="770" x2="300" y2="680" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="300" y1="680" x2="230" y2="590" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="300" y1="680" x2="440" y2="590" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="120" y1="680" x2="230" y2="590" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="230" y1="590" x2="340" y2="500" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="230" y1="590" x2="140" y2="500" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="440" y1="590" x2="340" y2="500" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="340" y1="500" x2="250" y2="410" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="140" y1="500" x2="250" y2="410" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="340" y1="500" x2="430" y2="410" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<circle cx="300" cy="860" r="4" fill="#3556a8"/><text x="300" y="851" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₀ = ⊥</text><text x="300" y="880" font-size="10.5" fill="#8a93a6" text-anchor="middle">= ⊥ (ρ0)</text>
+<circle cx="200" cy="770" r="4" fill="#3556a8"/><text x="200" y="761" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₁ = a</text><text x="200" y="790" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ2</text>
+<circle cx="400" cy="770" r="4" fill="#3556a8"/><text x="400" y="761" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₂ = ¬a</text><text x="400" y="790" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ3</text>
+<circle cx="300" cy="680" r="4" fill="#3556a8"/><text x="300" y="671" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₃ = a∨¬a</text><text x="300" y="700" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ4</text>
+<circle cx="120" cy="680" r="4" fill="#3556a8"/><text x="120" y="671" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₄ = ¬¬a</text><text x="120" y="700" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ5</text>
+<circle cx="230" cy="590" r="4" fill="#3556a8"/><text x="230" y="581" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₅</text><text x="230" y="610" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ6</text>
+<circle cx="440" cy="590" r="4" fill="#3556a8"/><text x="440" y="581" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₆ = ¬¬a⊃a</text><text x="440" y="610" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ8</text>
+<circle cx="340" cy="500" r="4" fill="#3556a8"/><text x="340" y="491" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₇</text><text x="340" y="520" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ10</text>
+<circle cx="140" cy="500" r="4" fill="#3556a8"/><text x="140" y="491" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₈</text><text x="140" y="520" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ13 </text>
+<circle cx="250" cy="410" r="4" fill="#8a93a6"/><text x="250" y="401" font-size="12" fill="#8a93a6" text-anchor="middle">rn₉</text>
+<circle cx="430" cy="410" r="4" fill="#8a93a6"/><text x="430" y="401" font-size="12" fill="#8a93a6" text-anchor="middle">rn₁₀</text>
+<text x="310" y="330" font-size="20" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="310" y="300" font-size="12" fill="#8a93a6" text-anchor="middle">infinite — every rung a distinct class of RN(◯,∅)</text>
+<text x="20" y="905" font-size="11.5" fill="#8a93a6">Zigzag: odd rungs have two upper covers, even rungs one.  Rungs rn₀…rn₈ land on catalogue classes (labels);</text>
+<text x="20" y="920" font-size="11.5" fill="#8a93a6">rn₈ ≡ ρ13 was a sweep DISCOVERY the ladder predicts.  From rn₉ up the rungs leave the current 22-class catalogue R.</text>
+</svg></div>
+    <p class="src"><b>docs/rn-embed-ladder.svg</b>. The eleven covers are
+    <span class="m">covers9_eq</span>, and <span class="m">covers9_stable</span> shows they do
+    not depend on where the table was cut: widening the interposer search from rungs &lt; 9 to
+    rungs &lt; 24 returns the same eleven. Both are pinned <em>axiom-free</em>
+    (<span class="m">wip/ladder8.lean</span>).</p>
+  </div>
+
+  <div class="call note">
+    <h3>Two notes on the figures</h3>
+    <ul>
+      <li><span class="f">rn₈ ≡ ρ13</span>, as both figures label it.
+          <span class="m">docs/rho-structure.md</span> R5 calls the same class
+          <span class="f">rn₉</span>; its own rail list
+          (<span class="f">ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ8, ρ10, ρ13</span>) is nine entries long and
+          therefore ends at <span class="f">rn₈</span>, so the parenthetical there is off by
+          one. The rung's truth set on the ladder frame is
+          <span class="f">{0, 1, 2, 4}</span>, and so is
+          <span class="f">ρ13 = ρ8 ⊃ ρ4</span>'s.</li>
+      <li><span class="f">c₂ = ◯ρ6</span> is marked "∉R cand." because it is exactly that: the
+          extension probe places it outside <span class="f">R</span> up to five open cells, and
+          the <span class="f">◯</span> row of the R tables flags it
+          <span class="chip op">?</span>. It is not certified <span class="f">∉R</span>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════ LADDER ═══════════════════════ -->
+<section id="p-cube" role="tabpanel" aria-labelledby="t-cube" hidden>
+
+  <div class="panel">
+    <h2>Directed hypercubes</h2>
+    <p>A hypercube here is always <strong>directed</strong>: vertices are the joins
+    <span class="f">n ∨ ⋁S</span> for <span class="f">S ⊆ U</span>, <span class="f">U</span> a
+    finite set of covers of <span class="f">n</span>, and every arrow points up the derivability
+    order — <span class="f">a ⟶ b</span> means <span class="f">[a] ⊢ b</span> (and, along a
+    cube edge, that the step adds exactly one generator). The cube-embedding theorem
+    (<span class="m">CubeEmbedding.cube_le_iff</span>) makes all <span class="f">2^|U|</span>
+    vertices distinct and the arrows exactly the subset order — <em>when the covers are
+    genuine</em>. With scoped covers <span class="f">⋖[R]</span> the same picture is assembled
+    empirically, cell by table cell.</p>
+  </div>
+
+  <div class="panel">
+    <h3>2² — the bottom diamond <span class="chip ok">PROVED · genuine covers</span></h3>
+    <p>The first full instance, kernel-proved end to end: both covers genuine
+    (<span class="m">bot_coversVF_obot/nbot</span>), transferred to classes by the bridge lemma
+    (<span class="m">covBy_of_coversVF</span>), embedding by
+    <span class="m">bottom_diamond</span>, top corner identified as ρ4
+    (<span class="m">cube_bottomU_eq_rho4</span>).</p>
+    <svg viewBox="0 0 360 310" style="max-width:360px;display:block;margin:0 auto" font-family="inherit">
+      <defs>
+        <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <g stroke="var(--accent)" stroke-width="1.6">
+        <line x1="171" y1="245" x2="94" y2="172" marker-end="url(#arrA)"/>
+        <line x1="189" y1="245" x2="266" y2="172" marker-end="url(#arrA)"/>
+        <line x1="94" y1="138" x2="171" y2="65" marker-end="url(#arrA)"/>
+        <line x1="266" y1="138" x2="189" y2="65" marker-end="url(#arrA)"/>
+      </g>
+      <g text-anchor="middle" font-size="15" fill="var(--ink)">
+        <text x="180" y="265">⊥ <tspan fill="var(--ink-3)" font-size="12">ρ0</tspan></text>
+        <text x="80" y="160">◯⊥ <tspan fill="var(--ink-3)" font-size="12">ρ2</tspan></text>
+        <text x="284" y="160">¬◯⊥ <tspan fill="var(--ink-3)" font-size="12">ρ3</tspan></text>
+        <text x="180" y="50">◯⊥ ∨ ¬◯⊥ <tspan fill="var(--ink-3)" font-size="12">ρ4</tspan></text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="panel">
+    <h3>2³ — the cube [ρ4, ρ18] on {ρ6, ρ7, ρ14} <span class="chip op">scoped covers · complete inside R</span></h3>
+    <p>All eight vertices land in R and every identity is table-certified:
+    <span class="f">ρ6∨ρ7 ≡ ρ9</span>, <span class="f">ρ6∨ρ14 ≡ ρ17</span>,
+    <span class="f">ρ7∨ρ14 ≡ ρ16</span>, and all three mid-layer joins collapse to
+    <span class="f">ρ18</span>. The three atoms are covers of ρ4 <em>scoped to R</em>; per-edge
+    upgrade to genuine covers is the open programme.</p>
+    <svg viewBox="0 0 560 470" style="max-width:560px;display:block;margin:0 auto" font-family="inherit">
+      <g stroke="var(--accent)" stroke-width="1.5">
+        <line x1="266" y1="425" x2="130" y2="322" marker-end="url(#arrA)"/>
+        <line x1="280" y1="420" x2="280" y2="322" marker-end="url(#arrA)"/>
+        <line x1="294" y1="425" x2="430" y2="322" marker-end="url(#arrA)"/>
+        <line x1="120" y1="298" x2="120" y2="202" marker-end="url(#arrA)"/>
+        <line x1="132" y1="298" x2="268" y2="202" marker-end="url(#arrA)"/>
+        <line x1="270" y1="298" x2="132" y2="202" marker-end="url(#arrA)"/>
+        <line x1="290" y1="298" x2="428" y2="202" marker-end="url(#arrA)"/>
+        <line x1="428" y1="298" x2="292" y2="202" marker-end="url(#arrA)"/>
+        <line x1="440" y1="298" x2="440" y2="202" marker-end="url(#arrA)"/>
+        <line x1="130" y1="178" x2="266" y2="82" marker-end="url(#arrA)"/>
+        <line x1="280" y1="172" x2="280" y2="82" marker-end="url(#arrA)"/>
+        <line x1="430" y1="178" x2="294" y2="82" marker-end="url(#arrA)"/>
+      </g>
+      <g text-anchor="middle" font-size="14" fill="var(--ink)">
+        <text x="280" y="445">ρ4</text>
+        <text x="120" y="315">ρ6</text>
+        <text x="280" y="315">ρ7</text>
+        <text x="440" y="315">ρ14</text>
+        <text x="120" y="195">ρ9 <tspan fill="var(--ink-3)" font-size="11">= ρ6∨ρ7</tspan></text>
+        <text x="280" y="195">ρ17 <tspan fill="var(--ink-3)" font-size="11">= ρ6∨ρ14</tspan></text>
+        <text x="440" y="195">ρ16 <tspan fill="var(--ink-3)" font-size="11">= ρ7∨ρ14</tspan></text>
+        <text x="280" y="66">ρ18</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="panel">
+    <h3>2³ — the cube over ρ9 on {ρ12, ρ18, ρ20} <span class="chip no">reaches beyond R</span></h3>
+    <p>Three vertices are <strong>certified new classes</strong> (∉R):
+    <span class="f">X₄ = ρ12∨ρ18</span>, <span class="f">X₃ = ρ18∨ρ20</span>,
+    <span class="f">X₅ = ρ12∨ρ18∨ρ20</span>. The fourth mid vertex
+    <span class="f">ρ12∨ρ20</span> has poset-lub ρ21, but the class identity
+    <span class="f">ρ21 ≡? ρ12∨ρ20</span> is <strong>OPEN</strong> (hardened: no battery
+    separation in 10,534 frames, LJF◯ capped) — drawn dashed. This cube is where R
+    demonstrably runs out: the catalogue's next classes are its vertices.</p>
+    <svg viewBox="0 0 560 470" style="max-width:560px;display:block;margin:0 auto" font-family="inherit">
+      <defs>
+        <marker id="arrN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--no)"/>
+        </marker>
+        <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--op)"/>
+        </marker>
+      </defs>
+      <g stroke="var(--accent)" stroke-width="1.5">
+        <line x1="266" y1="425" x2="130" y2="322" marker-end="url(#arrA)"/>
+        <line x1="280" y1="420" x2="280" y2="322" marker-end="url(#arrA)"/>
+        <line x1="294" y1="425" x2="430" y2="322" marker-end="url(#arrA)"/>
+      </g>
+      <g stroke="var(--no)" stroke-width="1.5">
+        <line x1="120" y1="298" x2="120" y2="202" marker-end="url(#arrN)"/>
+        <line x1="270" y1="298" x2="132" y2="202" marker-end="url(#arrN)"/>
+        <line x1="428" y1="298" x2="292" y2="202" marker-end="url(#arrN)"/>
+        <line x1="440" y1="298" x2="440" y2="202" marker-end="url(#arrN)"/>
+        <line x1="130" y1="178" x2="266" y2="82" marker-end="url(#arrN)"/>
+        <line x1="280" y1="172" x2="280" y2="82" marker-end="url(#arrN)"/>
+        <line x1="430" y1="178" x2="294" y2="82" marker-end="url(#arrN)"/>
+      </g>
+      <g stroke="var(--op)" stroke-width="1.5" stroke-dasharray="6 4">
+        <line x1="132" y1="298" x2="268" y2="202" marker-end="url(#arrO)"/>
+        <line x1="290" y1="298" x2="428" y2="202" marker-end="url(#arrO)"/>
+      </g>
+      <g text-anchor="middle" font-size="14" fill="var(--ink)">
+        <text x="280" y="445">ρ9</text>
+        <text x="120" y="315">ρ12</text>
+        <text x="280" y="315">ρ18</text>
+        <text x="440" y="315">ρ20</text>
+        <text x="120" y="195" fill="var(--no)">X₄ <tspan font-size="11">= ρ12∨ρ18 ∉R</tspan></text>
+        <text x="280" y="195" fill="var(--op)">ρ12∨ρ20 <tspan font-size="11">≡? ρ21 OPEN</tspan></text>
+        <text x="440" y="195" fill="var(--no)">X₃ <tspan font-size="11">= ρ18∨ρ20 ∉R</tspan></text>
+        <text x="280" y="66" fill="var(--no)">X₅ <tspan font-size="11">= ρ12∨ρ18∨ρ20 ∉R</tspan></text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="panel">
+    <h3>How many cubes? Count by choosing covers, not by counting nodes</h3>
+    <p>A node with <span class="f">m</span> upper covers spawns
+    <span class="f">C(m,k)</span> candidate <span class="f">2^k</span> cubes — one per
+    <span class="f">k</span>-subset of its cover set — so the census is
+    <span class="f">Σ_n C(m_n, k)</span> over the Hasse diagram, not any simple function of the
+    node count. Candidate means: the covers are scoped (⋖[R]); the cube is <em>certified</em>
+    once its join identities are table-settled, and <em>theorem-grade</em> once its covers are
+    proved genuine (today only ⊥'s two are).</p>
+    <div class="scroll"><table>
+      <thead><tr><th>hub n</th><th>scoped covers of n</th><th class="num">m</th>
+        <th class="num">C(m,2)</th><th class="num">C(m,3)</th></tr></thead>
+      <tbody>
+        <tr><td class="f">ρ0 = ⊥</td><td class="f">ρ2, ρ3</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ2</td><td class="f">ρ4, ρ5</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ4</td><td class="f">ρ6, ρ7, ρ14</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+        <tr><td class="f">ρ6</td><td class="f">ρ9, ρ13, ρ17</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+        <tr><td class="f">ρ7</td><td class="f">ρ9, ρ16, ρ19</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+        <tr><td class="f">ρ9</td><td class="f">ρ12, ρ18, ρ20</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+        <tr><td class="f">ρ13</td><td class="f">ρ11, ρ12</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ14</td><td class="f">ρ16, ρ17</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ16</td><td class="f">ρ8, ρ18</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ17</td><td class="f">ρ11, ρ18</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ18</td><td class="f">ρ10, ρ15</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ19</td><td class="f">ρ8, ρ20</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+      </tbody>
+    </table></div>
+    <p>Totals over the 37-edge Hasse (2026-08-25 sweep; the ρ12/ρ15 banking makes that pair
+    incomparable, which changes no cover edge): <strong>20 candidate squares</strong> and
+    <strong>4 candidate 2³ cubes</strong> — hubs ρ4, ρ6, ρ7, ρ9, one each
+    (<span class="f">C(3,3) = 1</span>). Verified: ρ4's is complete inside R; ρ9's reaches
+    beyond R (above); ρ6's and ρ7's are provisional (below).</p>
+  </div>
+
+
+  <div class="panel">
+    <h3>The other two 2³ candidates — hubs ρ6 and ρ7 <span class="chip op">provisional</span></h3>
+    <p>Both hubs have exactly three scoped covers, so each spawns one candidate cube. One mid
+    join of each is table-settled; the rest are open cells — the hypothetical
+    <span class="f">&lt;</span> arrows are dotted.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>hub</th><th>atoms</th><th>settled joins</th><th>open joins (dotted)</th></tr></thead>
+      <tbody>
+        <tr><td class="f">ρ6</td><td class="f">ρ9, ρ13, ρ17</td>
+            <td class="f">ρ9∨ρ17 ≡ ρ18</td>
+            <td class="f">ρ9∨ρ13, ρ13∨ρ17, ρ9∨ρ13∨ρ17</td></tr>
+        <tr><td class="f">ρ7</td><td class="f">ρ9, ρ16, ρ19</td>
+            <td class="f">ρ9∨ρ16 ≡ ρ18</td>
+            <td class="f">ρ9∨ρ19, ρ16∨ρ19, ρ9∨ρ16∨ρ19</td></tr>
+      </tbody>
+    </table></div>
+    <svg viewBox="0 0 560 470" style="max-width:560px;display:block;margin:0 auto" font-family="inherit">
+      <g stroke="var(--accent)" stroke-width="1.5">
+        <line x1="266" y1="425" x2="130" y2="322" marker-end="url(#arrA)"/>
+        <line x1="280" y1="420" x2="280" y2="322" marker-end="url(#arrA)"/>
+        <line x1="294" y1="425" x2="430" y2="322" marker-end="url(#arrA)"/>
+        <line x1="270" y1="298" x2="132" y2="202" marker-end="url(#arrA)"/>
+        <line x1="120" y1="298" x2="120" y2="202" marker-end="url(#arrA)"/>
+      </g>
+      <g stroke="var(--op)" stroke-width="1.5" stroke-dasharray="6 4">
+        <line x1="132" y1="298" x2="268" y2="202" marker-end="url(#arrO)"/>
+        <line x1="290" y1="298" x2="428" y2="202" marker-end="url(#arrO)"/>
+        <line x1="428" y1="298" x2="292" y2="202" marker-end="url(#arrO)"/>
+        <line x1="440" y1="298" x2="440" y2="202" marker-end="url(#arrO)"/>
+        <line x1="130" y1="178" x2="266" y2="82" marker-end="url(#arrO)"/>
+        <line x1="280" y1="172" x2="280" y2="82" marker-end="url(#arrO)"/>
+        <line x1="430" y1="178" x2="294" y2="82" marker-end="url(#arrO)"/>
+      </g>
+      <g text-anchor="middle" font-size="14" fill="var(--ink)">
+        <text x="280" y="445">ρ6</text>
+        <text x="120" y="315">ρ9</text>
+        <text x="280" y="315">ρ13</text>
+        <text x="440" y="315">ρ17</text>
+        <text x="120" y="195">ρ18 <tspan fill="var(--ink-3)" font-size="11">= ρ9∨ρ17</tspan></text>
+        <text x="280" y="195" fill="var(--op)">ρ9∨ρ13 <tspan font-size="11">?</tspan></text>
+        <text x="440" y="195" fill="var(--op)">ρ13∨ρ17 <tspan font-size="11">?</tspan></text>
+        <text x="280" y="66" fill="var(--op)">ρ9∨ρ13∨ρ17 <tspan font-size="11">?</tspan></text>
+      </g>
+      <text x="280" y="462" text-anchor="middle" font-size="11" fill="var(--ink-3)">hub ρ6 drawn; hub ρ7 is the same shape with {ρ9, ρ16, ρ19} and ρ9∨ρ16 ≡ ρ18</text>
+    </svg>
+  </div>
+
+</section>
+
+
+<section id="p-lad" role="tabpanel" aria-labelledby="t-lad" hidden>
+
+  <div class="panel">
+    <h2>The Rieger–Nishimura embedding</h2>
+    <p>The substitution <span class="f">p ↦ ◯⊥</span> carries the one-variable
+    Rieger–Nishimura rungs to pairwise non-interderivable closed formulas, in PLL and in
+    PCLL, for <em>every</em> pair of rungs, not a finite initial segment.</p>
+    <div class="disp">rn 0 = ⊥,   rn 1 = p,   rn 2 = ¬p
+rn (2k+3) = rn (2k+1) ∨ rn (2k+2)
+rn (2k+4) = rn (2k+3) ⊃ rn (2k+1)
+t n := rn n [p := ◯⊥]<span class="tag">wip/rnEmbed.lean:427-439</span></div>
+    <div class="disp">rn_pairwise_pll  : i ≠ j → ¬ Interd (t i) (t j)
+rnSub_deriv_iff  : t i ⊢ t j  ⟺  T(i) ⊆ T(j)  on the RN ladder frame<span class="tag">an order-isomorphism onto its image</span></div>
+    <p>Two consequences worth keeping apart. The embedding proves
+    <strong>RN(◯,{}) has infinite height</strong>. And it is an order-isomorphism onto its
+    image, with the <em>same</em> image order in PLL and PCLL: distribution's collapses do not
+    touch the embedded ladder's arrows.</p>
+    <p class="src"><b>wip/rnEmbed.lean</b> — 15 <span class="m">#guard_msgs</span>-pinned axiom
+    audits: <span class="m">Skel.transfer</span> [propext],
+    <span class="m">Skel.cm_confluent</span> (no axioms),
+    <span class="m">rn_transfer_pcll/pll</span> [propext],
+    <span class="m">rn_pairwise_pcll/pll</span>,
+    <span class="m">varfree_no_finite_cover_pcll/pll</span>,
+    <span class="m">rank_escape_pcll/pll</span>, <span class="m">rnSub_deriv_iff</span>,
+    <span class="m">rnSub_derivU_iff</span>, <span class="m">rnSub_derivU_iff_deriv</span>
+    [propext, Classical.choice, Quot.sound], <span class="m">rnSub_four_interd</span>
+    (no axioms), <span class="m">interd_substP</span> [propext, Quot.sound]</p>
+  </div>
+
+  <div class="panel">
+    <h2>The ladder image inside R</h2>
+    <p>The image of the embedding is the left rail of the ρ-order. Nine of the 22 classes are
+    rungs, and the ladder <em>predicts</em> <span class="f">ρ13</span>, which the closure sweep
+    found independently as a new shape.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>rung</th><th>class</th><th>ρ</th><th>bridge</th></tr></thead>
+      <tbody>
+        <tr><td class="f">t0</td><td class="f">⊥</td><td class="f">ρ0</td><td class="m">rfl</td></tr>
+        <tr><td class="f">t1</td><td class="f">◯⊥</td><td class="f">ρ2</td><td class="m">rfl</td></tr>
+        <tr><td class="f">t2</td><td class="f">¬◯⊥</td><td class="f">ρ3</td><td class="m">rfl</td></tr>
+        <tr><td class="f">t3</td><td class="f">◯⊥ ∨ ¬◯⊥</td><td class="f">ρ4</td><td class="m">rfl</td></tr>
+        <tr><td class="f">t4</td><td class="f">¬¬◯⊥</td><td class="f">ρ5</td><td class="m">rnSub_four_interd</td></tr>
+        <tr><td class="f">t5</td><td class="f">¬◯⊥ ∨ ¬¬◯⊥</td><td class="f">ρ6</td><td class="m">q7_rn5</td></tr>
+        <tr><td class="f">t6</td><td class="f">¬¬◯⊥ ⊃ ◯⊥</td><td class="f">ρ8</td><td class="m">q10_rn6</td></tr>
+        <tr><td class="f">t7</td><td class="f">¬¬◯⊥ ∨ (¬¬◯⊥ ⊃ ◯⊥)</td><td class="f">ρ10</td><td class="m">q11_rn7</td></tr>
+        <tr><td class="f">t8</td><td class="f">(¬¬◯⊥ ⊃ ◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)</td><td class="f">ρ13 </td>
+            <td>a sweep discovery the ladder predicts</td></tr>
+      </tbody>
+    </table></div>
+    <p>The other thirteen classes of <span class="f">R</span> are off the image. The
+    classification <span class="f">im h = rungs ∪ {⊤}</span> is mechanised
+    (<span class="m">image_classification</span>), so "off the image" is decidable against the
+    rungs and <span class="f">⊤</span> alone.</p>
+    <p class="src"><b>docs/rho-order.md</b> R5 (the two rails) · <b>wip/ladder8.lean</b> (the
+    rung order and its Hasse data, computation only, no axioms) · <b>wip/seeds.lean</b>,
+    <b>wip/gapWidth.lean</b>, <b>wip/rnClassify.lean</b> (the bridges)</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FAMILIES ═══════════════════════ -->
+<section id="p-fam" role="tabpanel" aria-labelledby="t-fam" hidden>
+
+  <div class="panel">
+    <h2>The families</h2>
+    <p>The definitions behind the map in <em>Large-scale structure</em>. Each is uniform in a
+    level index <span class="f">k ≥ 1</span> and built over the embedded rungs; level 1 lands
+    inside <span class="f">R</span>.</p>
+    <div class="disp">c k = ◯t(2k+1)                    ascending chain          c 1 = ρ7
+g k = c k ⊃ t(2k+1)               antichain                g 1 = ρ11
+r k = t(2k+4) ⊃ c k               antichain, ◯-fixed       r 1 = ρ12
+◯(g k)                            antichain                ◯(g 1) ∉ R
+w k = g k ∧ t(2k+4)               zigzag                   w 1 = ρ14
+Gmeet n = g 1 ∧ … ∧ g (n+1)       strictly descending, no floor</div>
+  </div>
+
+  <div class="panel">
+    <h2>c k — the ascending chain</h2>
+    <div class="disp">chain_step_le     : c k ⊢ c (k+1)
+chain_step_strict : c (k+1) ⊬ c k
+chain_up          : j ≤ k → c j ⊢ c k
+chain_lt_strict   : j &lt; k → c k ⊬ c j
+chain_pairwise    : j ≠ k → ¬ Interd (c j) (c k)<span class="tag">wip/chainStrict.lean</span></div>
+    <p><strong>It holds good.</strong> Every step is proved and the strictness is uniform in
+    <span class="f">k</span>, not a finite check: the negative halves evaluate one infinite
+    constraint model (the abyss lift of the RN ladder skeleton) through
+    <span class="m">Skel.box_force</span> and <span class="m">Skel.transfer</span>, and land by
+    Kripke soundness.</p>
+    <p>Two of the four <span class="f">◯</span>-identities are statements about the first two
+    rungs of this very chain: <span class="f">c 1 = ◯t3 ≡ ρ7</span> is
+    <span class="m">cBox_4</span>, and <span class="f">c 2 = ◯t5 = ◯ρ6</span> with
+    <span class="f">◯ρ9 ≡ ◯ρ6</span> is <span class="m">cBox_9</span>. Far from collapsing the
+    chain, they identify its low rungs. <span class="f">c 2 = ◯ρ6</span> and
+    <span class="f">c 3 = ◯t7 = ◯ρ10</span> are both flagged <span class="f">?</span> in the
+    <span class="f">◯</span> row of the R tables: the chain is proved strict, but its members
+    above <span class="f">c 1</span> are not yet placed against
+    <span class="f">R</span>.</p>
+    <p class="src"><b>wip/chainStrict.lean</b> — <span class="m">chain_step_strict</span>,
+    <span class="m">chain_pairwise</span>, both
+    <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
+  </div>
+
+  <div class="panel">
+    <h2>g k and r k — the antichains</h2>
+    <div class="disp">gap_incomparable : k ≥ 2,  j ≠ k  →  g j ⊬ g k
+width_infinite   : i ≠ j  →  ¬ Interd (g (i+2)) (g (j+2))
+rC_incomparable  : j, k ≥ 1,  j ≠ k  →  r j ⊬ r k<span class="tag">wip/gapWidth.lean · wip/families.lean</span></div>
+    <p>Each <span class="f">g k</span> is off the image and off the chain
+    (<span class="m">gap_off_image</span>, <span class="m">gap_not_chain</span>);
+    <span class="f">g 1 ≡ ρ11</span> (<span class="m">gap_one_q8</span>).</p>
+    <p>The <span class="f">r</span>-family is an antichain with no <span class="f">k ≥ 2</span>
+    restriction, and it is <span class="f">◯</span>-fixed:
+    <span class="m">Depth.box_rC : ◯(r k) ⊣⊢ r k</span>, an instance of
+    <span class="m">box_imp_box</span> proved with no axioms at all. Its level 1 is
+    <span class="f">ρ12</span>, and the R tables' <span class="f">◯ρ12 ≡ ρ12</span> is exactly
+    that law at <span class="f">k = 1</span>.</p>
+    <p class="src"><b>wip/gapWidth.lean</b> (<span class="m">width_infinite</span>,
+    <span class="m">gap_off_image</span>, <span class="m">gap_not_chain</span>,
+    <span class="m">gap_one_q8</span> — all
+    <span class="m">[propext, Classical.choice, Quot.sound]</span>) · <b>wip/families.lean</b>
+    (<span class="m">rC_incomparable</span>, same pin) · <b>wip/depth.lean</b>
+    (<span class="m">box_rC</span>, no axioms)</p>
+  </div>
+
+  <div class="panel">
+    <h2>◯(g k) — one infinite antichain, not many small ones</h2>
+    <p>Whether <span class="f">◯(g k)</span> is "many families of size-3 antichains": it is
+    not. The record carries one theorem, uniform in the indices.</p>
+    <div class="disp">bg_incomparable : k ≥ 2,  j ≠ k  →  ◯(g j) ⊬ ◯(g k)
+bg_pairwise     : j, k ≥ 2,  j ≠ k  →  ¬ Interd (◯(g j)) (◯(g k))<span class="tag">wip/families.lean:535, 558</span></div>
+    <p>So <span class="f">{ ◯(g k) : k ≥ 2 }</span> is a <strong>single ℕ-indexed
+    antichain</strong>: infinitely many classes, pairwise incomparable, each off the image and
+    not <span class="f">⊤</span> (<span class="m">bg_off_image</span>,
+    <span class="m">bg_not_top</span>, both for <span class="f">k ≥ 2</span>). It is drawn as
+    one dotted row in <em>Large-scale structure</em>; a "size 3" reading counts the members a
+    diagram happens to draw, not the members the theorem quantifies over.</p>
+    <h3>The one place the record really is incomplete</h3>
+    <p>The uniform theorem needs <span class="f">k ≥ 2</span> on the <em>target</em> index only.
+    So for <span class="f">k ≥ 2</span> we have <span class="f">◯(g 1) ⊬ ◯(g k)</span>, but the
+    converse cells <span class="f">◯(g k) ⊢? ◯(g 1)</span> are <strong>not</strong> covered by
+    anything in the record. The certified antichain therefore starts at
+    <span class="f">k = 2</span>; whether <span class="f">◯(g 1)</span> joins it is open at
+    exactly those cells. <span class="f">◯(g 1) = ◯ρ11</span>
+    (<span class="m">bg_one_q13</span>), and the probe places it outside
+    <span class="f">R</span> up to two open cells.</p>
+    <h3>What the ◯-identities do to it: nothing</h3>
+    <p>The classes whose <span class="f">◯</span>-image collapses onto a named class are
+    <span class="f">ρ4 = t3</span>, <span class="f">ρ5 = t4</span>,
+    <span class="f">ρ8 = t6</span> (all rungs), together with
+    <span class="f">ρ6 = t5</span> and <span class="f">ρ9</span> (which collapse onto each
+    other), and the two <span class="f">◯</span>-fixed implications
+    <span class="f">ρ12, ρ19</span>. No <span class="f">g k</span> is any of them:</p>
+    <div class="disp">gap_not_rung  : ∀ k n. ¬ Interd (t n)  (g k)      → rules out t3, t4, t5, t6
+gap_not_q9    : ∀ k.   ¬ Interd (g k) ρ9           → rules out ρ9
+gap_not_chain : ∀ k i. ¬ Interd (c i)  (g k)<span class="tag">wip/gapWidth.lean · wip/families.lean</span></div>
+    <p>Nor is any <span class="f">g k</span> equal to <span class="f">r 1 = ρ12</span> or
+    <span class="f">ρ19</span>: for <span class="f">k = 1</span> that is catalogue
+    distinctness (<span class="f">g 1 = ρ11</span>), and for
+    <span class="f">k ≥ 2</span> each <span class="f">g k</span> is incomparable with
+    <span class="f">g 1</span> while <span class="f">ρ12, ρ19</span> sit at fixed places in the
+    order. So no collapse law has an instance inside the family, and the antichain stands
+    unchanged. The laws that <em>do</em> apply are the fold-backs
+    <span class="m">box_idem</span> (<span class="f">◯◯(g k) ≡ ◯(g k)</span>, so the family does
+    not iterate) and <span class="m">gap2_collapse</span>
+    (<span class="f">◯(g k) ⊃ g k ≡ g k</span>).</p>
+    <p class="src"><b>wip/families.lean</b> — <span class="m">bg_incomparable</span>,
+    <span class="m">bg_pairwise</span>, <span class="m">bg_off_image</span>,
+    <span class="m">bg_not_top</span>, <span class="m">bg_one_q13</span>,
+    <span class="m">gap_not_q9</span>; pins
+    <span class="m">[propext, Classical.choice, Quot.sound]</span> ·
+    <b>wip/gap2.lean</b> (<span class="m">gap2_collapse</span>)</p>
+  </div>
+
+  <div class="panel">
+    <h2>w k — the zigzag</h2>
+    <div class="disp">w k = g k ∧ t(2k+4)
+
+wC_le          : j + 2 ≤ k → w j ⊢ w k
+wC_strict      : j &lt; k     → w k ⊬ w j
+wC_succ_not_le : w j ⊬ w (j+1)<span class="tag">wip/seeds.lean:120-190</span></div>
+    <p><span class="f">w j ≤ w k</span> exactly when <span class="f">k ≥ j + 2</span>:
+    consecutive members are incomparable, so the family climbs by stepping over its own
+    neighbour. Level 1 is <span class="f">ρ14</span>, and the R tables read
+    <span class="f">ρ8 ∧ ρ11 ≡ ρ14</span>, the meet <span class="f">g 1 ∧ t6</span>, in place.</p>
+    <p class="src"><b>wip/seeds.lean</b> (<span class="m">wC_le</span>,
+    <span class="m">wC_strict</span>, <span class="m">wC_succ_not_le</span>,
+    <span class="m">wC_off_image</span>) · <b>wip/rnSepColl.lean</b> (four presentations of the
+    same class)</p>
+  </div>
+
+  <div class="panel">
+    <h2>Gmeet — the infinite descending ladder, and the missing floor</h2>
+    <div class="disp">Gmeet 0     = g 1
+Gmeet (n+1) = Gmeet n ∧ g (n+2)
+
+Gmeet_le     : Gmeet (n+1) ⊢ Gmeet n
+Gmeet_strict : [Gmeet n] ⊬ Gmeet (n+1)<span class="tag">wip/uiObstruct.lean:109 · wip/hunts.lean:112</span></div>
+    <p>The countermodel behind the strict descent is the
+    edged lift <span class="m">cmE (n+1)</span>, at whose edge world gaps
+    <span class="f">1 … n+1</span> are forced, hence <span class="f">Gmeet n</span>, while
+    <span class="f">g (n+2)</span> fails. Every <span class="f">Gmeet n</span> is closed and has
+    <span class="f">◯</span>-depth ≤ 2 (<span class="m">depth_Gmeet</span>).</p>
+    <p>The descent has no limit inside the logic:</p>
+    <div class="disp">gap_no_glb    : the family { g k : k ≥ 1 } has NO greatest lower bound,
+                quantified over ALL formulas
+L_no_greatest : its variable-free reading — the landing ideal has no
+                greatest element<span class="tag">wip/floor.lean:489, 507</span></div>
+    <p>So RN(◯,{}) is <strong>not a complete lattice</strong>.</p>
+    <p class="src"><b>wip/hunts.lean</b> (<span class="m">Gmeet_strict</span>) ·
+    <b>wip/depth.lean</b> (<span class="m">depth_Gmeet</span>) · <b>wip/floor.lean</b>
+    (<span class="m">gap_no_glb</span>, <span class="m">L_no_greatest</span>), all
+    <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
+  </div>
+
+  <div class="panel">
+    <h3>The depth-reducing laws, for reference</h3>
+    <p>Class depth, not syntactic depth, is the invariant:
+    <span class="f">DepthLe n A := ∃ B. Interd A B ∧ boxDepth B ≤ n</span>.</p>
+    <div class="disp">◯⊤          ⊣⊢ ⊤                box_top          no axioms
+◯◯A         ⊣⊢ ◯A               box_idem         no axioms
+◯(A ∧ B)    ⊣⊢ ◯A ∧ ◯B          box_and          [propext]
+◯(A ⊃ ◯B)   ⊣⊢ A ⊃ ◯B           box_imp_box      no axioms
+◯(◯A ∨ ◯B)  ⊣⊢ ◯(A ∨ B)         box_or_box       [propext]<span class="tag">wip/depth.lean</span></div>
+    <p>The only depth-raising constructions are <span class="f">◯</span> over a disjunction and
+    <span class="f">◯</span> over an implication whose consequent is not already boxed
+    (<span class="m">depth_raising_only_or_imp</span>). And <span class="f">◯</span> over
+    <span class="f">∨</span> genuinely escapes:
+    <span class="m">distr_4_3_not_derivable</span> refutes
+    <span class="f">◯(t3 ∨ t4) ⊢ ◯t3 ∨ ◯t4</span>.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SIMPLIFIER ═══════════════════════ -->
+<section id="p-simp" role="tabpanel" aria-labelledby="t-simp" hidden>
+
+  <div class="panel">
+    <h2>The certified rewrite set — machinery</h2>
+    <p>A certified interderivability, oriented compound → representative, is a rewrite rule.
+    Collect enough of them and the collection runs as a normaliser on any closed goal:
+    congruence closure over facts already paid for. That is what
+    <span class="m">Rewrite/</span> is.</p>
+    <div class="disp">rndSet : List RwRule   —   236 kernel-checked rules (∧ 64  ∨ 46  ⊃ 121  ◯ 5)
+rcSet  : List RwRule   —   442 kernel-checked rules, the R-increment
+                           (wip/rcells.lean, GENERATED by rcellsgen: the classed
+                            R-table cells over ρ13–ρ21, G4c-certificate route)
+rcHandSet              —   2 hand-term rules (wip/rcells_hand.lean): the
+                           searcher-resistant absorptions ρ20∧ρ21 ≡ ρ20 and
+                           ρ20∨ρ21 ≡ ρ21, both from one ND lemma ρ20 ⊢ ρ21
+fullSetC := canonSet fullSet   —   the canonicalised 681-rule set, computed once
+simplifyWith fullSetC n φ      —   alternate rewriting and re-canonicalising<span class="tag">Rewrite/Catalogue.lean · Rewrite/Canon.lean</span></div>
+    <p>Correctness does not depend on how effective it is:
+    <span class="m">simplifyWith_interd</span> is unconditional given that each rule's
+    <span class="m">ok</span> field is a proof. That is why the axiom pins below are a standing
+    build-time guard rather than a convention.</p>
+    <p><strong>The set is pegged to R.</strong> Its current extent: all of
+    <span class="f">ρ0–ρ21</span> plus the two <span class="f">◯</span>-depth-2 formulas
+    <span class="f">◯ρ6</span> and <span class="f">◯ρ11</span>. No rule rewrites to anything
+    outside <span class="f">R</span>, and no unproved rule is in the set.</p>
+    <p><strong>Standing rule:</strong> whenever <span class="f">R</span> grows, the new class's
+    kernel-proved interderivabilities (its identity cells in the R operation tables, once
+    promoted from engine verdicts to <span class="m">Interd</span> theorems) are added to the
+    set; the set never shrinks. The promotion mechanism is <span class="m">rcellsgen</span>
+    (tools/RCellsGen.lean): the untrusted compiled G4c searcher finds the derivations and
+    emits them as <span class="m">G4cTm</span> proof-term literals; the kernel's only job is
+    type-checking them; cells the searcher cannot close get hand ND terms
+    (<span class="m">wip/rcells_hand.lean</span>). <strong>Queue as of 2026-08-26: EMPTY</strong> —
+    every classed R-table cell is a kernel-checked rule.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Measurement, 2026-08-26 (the 681-rule set)</h2>
+    <p><span class="m">lake exe rwscreen</span> on this branch,
+    <span class="m">LEAN_NUM_THREADS=1</span>, using <span class="m">Rewrite.simplifyWith</span>
+    against the canonicalised set <span class="m">Rewrite.fullSetC</span>.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>corpus</th><th>metric</th><th class="num">measured</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="4">flat, 330 cells</td><td>rules in the set</td>
+            <td class="num">681 (236 + 442 + 2 from the tables)</td></tr>
+        <tr><td>rewritten, canonicalise then rewrite</td><td class="num">295 (89%)</td></tr>
+        <tr><td>crank reduction</td><td class="num">1594 → 1038 (34%)</td></tr>
+        <tr><td>distinct forms</td><td class="num">319 → 127 → 27</td></tr>
+        <tr><td rowspan="2">nested, 3,996 ∧/∨ trees</td><td>distinct forms</td>
+            <td class="num">3996 → 206 → 18</td></tr>
+        <tr><td>crank reduction</td><td class="num">19558 → 11626 (40%)</td></tr>
+        <tr><td>control: rewriting alone, no canonicalisation</td><td>rewritten / crank</td>
+            <td class="num">43 (13%) / 1594 → 1488 (6%)</td></tr>
+      </tbody>
+    </table></div>
+    <p>The nested figure is the one that matters for a sweep: 3,996 syntactically distinct
+    trees, in both associations and both argument orders, reduce to 18 forms to attack.</p>
+    <p class="src">Replay: <span class="m">lake build rwscreen &amp;&amp; .lake/build/bin/rwscreen</span>
+    (0.3 s). Source <b>wip/rw_screen.lean</b>. Verbatim: <span class="m">certified simpset: 237
+    rules (236 from the dictionary table) · orientation: 237/237 crank-oriented, 0 not · cells:
+    330 · norm ALONE: rewritten 43 (13%), crank 1594 → 1488 (6% down) · canon THEN norm:
+    rewritten 295 (89%), crank 1594 → 1038 (34% down) · NESTED corpus (3996 cells): distinct
+    forms raw 3996, after canon 206, after canon+norm 25; total crank 19558 → 11626 (40%
+    down)</span></p>
+  </div>
+
+  <div class="panel">
+    <h2>Axiom pins, verified</h2>
+    <p><span class="m">lake env lean Rewrite/Catalogue.lean</span> exits clean, so all three
+    <span class="m">#guard_msgs</span> pins match as written:</p>
+    <div class="disp">'Rewrite.rndSet'   depends on axioms: [propext, Quot.sound]
+'Rewrite.fullSet'  depends on axioms: [propext, Quot.sound]
+'Rewrite.fullSetC' depends on axioms: [propext, Classical.choice, Quot.sound]</div>
+    <p>No <span class="m">sorryAx</span>.</p>
+  </div>
+
+  <div class="call">
+    <h3>The "floor of 15" is not supported: measured bounds instead</h3>
+    <p>The nested figure has been explained by saying the floor is 15, the number of classes the
+    <span class="f">∧</span>/<span class="f">∨</span> closure cannot leave. That reasoning does
+    not survive: 15 was a representative count, not a bound, and the number that matters is the
+    number of distinct classes among the <em>corpus's own values</em>. Three measurements
+    replace it, all made on this branch.</p>
+    <p><strong>25 is a certified upper bound.</strong> The normaliser collapsing two forms
+    <em>is</em> a proof that they are interderivable
+    (<span class="m">simplifyWith_interd</span>), so the 3,996 trees carry at most 18 distinct
+    classes.</p>
+    <p><strong>14 is a certified lower bound.</strong> Running the ≤5-world mutually confluent
+    battery over the 25 residual forms separates 268 of the 300 pairs; 32 are left unresolved.
+    The maximum set of forms that are pairwise separated has size 14, computed exactly and not
+    greedily.</p>
+    <p><strong>The closure lands inside R, as far as the tables reach.</strong> The corpus's ten
+    generators are, in ρ terms, <span class="f">ρ0, ρ1, ρ2, ρ3, ρ4, ρ5, ρ7, ρ8, ρ9,
+    ρ11</span>. Closing them under the <span class="f">∧</span> and <span class="f">∨</span>
+    tables reaches exactly <strong>17</strong> classes —
+    <span class="f">ρ0–ρ11</span> together with <span class="f">ρ14, ρ15, ρ16, ρ17, ρ18</span> —
+    and <strong>no ∉R cell at all</strong>. Four join cells inside that closure are open:
+    <span class="f">ρ8 ∨ ρ11</span>, <span class="f">ρ8 ∨ ρ15</span>,
+    <span class="f">ρ10 ∨ ρ11</span>, <span class="f">ρ10 ∨ ρ15</span>. So the closure has 17
+    classes if those four are classed, and more if any of them leaves
+    <span class="f">R</span>.</p>
+    <div class="stats">
+      <div class="stat"><b>3996</b><span>nested trees</span></div>
+      <div class="stat"><b>25</b><span>residual forms = certified upper bound</span></div>
+      <div class="stat"><b>268 / 300</b><span>pairs certified distinct</span></div>
+      <div class="stat"><b>14</b><span>maximum pairwise-separated set = lower bound</span></div>
+      <div class="stat"><b>17</b><span>ρ-classes the whole ∧/∨ closure reaches</span></div>
+      <div class="stat"><b>4</b><span>open join cells inside that closure</span></div>
+    </div>
+    <p>The number of classes in the corpus therefore lies in <span class="f">[14, 25]</span>,
+    and settling it needs either a proof or a ≥6-world countermodel for each of the 32
+    unresolved pairs. It is OPEN, and 15 has no standing in it.</p>
+    <p class="src">Measured by <b>wip/floor_probe.lean</b>
+    (<span class="m">lake exe floorprobe</span>), a read-only tool added on this branch: it
+    transcribes the corpus of <span class="m">wip/rw_screen.lean</span> verbatim and reuses the
+    battery of <span class="m">wip/rho_order.lean</span>
+    (<span class="m">PLLND.RNC.CFX</span>). Separation is sound for PLL by
+    <span class="m">not_derivU_of_checkConf</span> + <span class="m">Deriv ⊆ DerivU</span>. The
+    closure computation runs over <b>wip/rtable_out.txt</b>.</p>
+  </div>
+
+  <div class="panel">
+    <h3>What rewriting cannot do</h3>
+    <p>Rewriting is congruence closure over the banked equations, so a cell outside that closure
+    is by construction out of reach: recombination cannot settle it, and only a new proof search
+    or a larger countermodel can. That is the standing reason the 201 open cells of the R tables
+    are search work, not bookkeeping. The simpset's value is throughput on the cells that
+    <em>are</em> in the closure, and there the gain is about fivefold.</p>
+  </div>
+</section>
+
+<p class="buildline" style="border-top:1px solid var(--line);padding-top:16px">
+  <span>RN(◯,{}) catalogue · v27 · 2026-08-26</span>
+  <span>every number on this page was re-derived from the sources named beside it</span>
+</p>
+</div>
+
+<script>
+"use strict";
+const RT = {"and":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[0,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],[0,3,0,3,3,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],[0,4,2,3,4,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],[0,5,2,0,2,5,5,2,2,5,5,5,5,5,2,5,2,5,5,2,5,5],[0,6,2,3,4,5,6,4,4,6,6,6,6,6,4,6,4,6,6,4,6,6],[0,7,2,3,4,2,4,7,7,7,7,4,7,4,4,7,7,4,7,7,7,7],[0,8,2,3,4,2,4,7,8,7,8,14,7,4,14,16,16,14,16,19,19,-1],[0,9,2,3,4,5,6,7,7,9,9,6,9,6,4,9,7,6,9,7,9,9],[0,10,2,3,4,5,6,7,8,9,10,17,9,6,14,18,16,17,18,19,-2,-2],[0,11,2,3,4,5,6,4,14,6,17,11,13,13,14,11,14,17,17,4,6,-1],[0,12,2,3,4,5,6,7,7,9,9,13,12,13,4,-2,7,6,-1,7,-1,12],[0,13,2,3,4,5,6,4,4,6,6,13,13,13,4,13,4,6,-1,4,-1,13],[0,14,2,3,4,2,4,4,14,4,14,14,4,4,14,14,14,14,14,4,-1,-1],[0,15,2,3,4,5,6,7,16,9,18,11,-2,13,14,15,16,17,18,7,9,-2],[0,16,2,3,4,2,4,7,16,7,16,14,7,4,14,16,16,14,16,7,-1,-1],[0,17,2,3,4,5,6,4,14,6,17,17,6,6,14,17,14,17,17,-1,-1,-1],[0,18,2,3,4,5,6,7,16,9,18,17,-1,-1,14,18,16,17,18,-1,-1,-1],[0,19,2,3,4,2,4,7,19,7,19,4,7,4,4,7,7,-1,-1,19,19,19],[0,20,2,3,4,5,6,7,19,9,-2,6,-1,-1,-1,9,-1,-1,-1,19,20,20],[0,21,2,3,4,5,6,7,-1,9,-2,-1,12,13,-1,-2,-1,-1,-1,19,20,21]],"or":[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[2,1,2,4,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[3,1,4,3,4,6,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[4,1,4,4,4,6,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[5,1,5,6,6,5,6,9,10,9,10,11,12,13,17,15,18,17,18,-1,20,21],[6,1,6,6,6,6,6,9,10,9,10,11,12,13,17,15,18,17,18,-1,20,21],[7,1,7,7,7,9,9,7,8,9,10,15,12,-1,16,15,16,18,18,19,20,21],[8,1,8,8,8,10,10,8,8,10,10,-1,-1,-1,8,-1,8,10,10,8,-2,-1],[9,1,9,9,9,9,9,9,10,9,10,15,12,-1,18,15,18,18,18,-1,20,21],[10,1,10,10,10,10,10,10,10,10,10,-1,-1,-1,10,-1,10,10,10,10,-2,-1],[11,1,11,11,11,11,11,15,-1,15,-1,11,-2,11,11,15,15,11,15,-1,-1,-1],[12,1,12,12,12,12,12,12,-1,12,-1,-2,12,12,-2,-2,-2,-2,-2,-1,-1,21],[13,1,13,13,13,13,13,-1,-1,-1,-1,11,12,13,-1,15,-1,-1,-1,-1,-1,21],[14,1,14,14,14,17,17,16,8,18,10,11,-2,-1,14,15,16,17,18,-1,-2,-1],[15,1,15,15,15,15,15,15,-1,15,-1,15,-2,15,15,15,15,15,15,-1,-1,-1],[16,1,16,16,16,18,18,16,8,18,10,15,-2,-1,16,15,16,18,18,-1,-2,-1],[17,1,17,17,17,17,17,18,10,18,10,11,-2,-1,17,15,18,17,18,-1,-2,-1],[18,1,18,18,18,18,18,18,10,18,10,15,-2,-1,18,15,18,18,18,-1,-2,-1],[19,1,19,19,19,-1,-1,19,8,-1,10,-1,-1,-1,-1,-1,-1,-1,-1,19,20,21],[20,1,20,20,20,20,20,20,-2,20,-2,-1,-1,-1,-2,-1,-2,-2,-2,20,20,21],[21,1,21,21,21,21,21,21,-1,21,-1,-1,21,21,-1,-1,-1,-1,-1,21,21,21]],"imp":[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,-1],[3,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,1,5,1,1,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[0,1,5,3,1,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,1,8,3,8,1,1,8,8,1,1,1,1,1,8,1,8,1,1,8,1,1],[0,1,2,3,8,5,1,8,8,1,1,1,1,1,8,1,-1,1,1,-1,1,1],[0,1,5,3,11,5,11,1,1,1,1,11,1,11,11,1,1,11,1,1,1,1],[0,1,5,3,13,5,13,12,1,12,1,11,12,13,11,-1,-1,11,-1,-1,-1,-1],[0,1,2,3,14,5,11,8,8,1,1,11,1,11,14,1,-1,11,1,-1,1,1],[0,1,2,3,4,5,13,7,8,12,1,11,12,13,-1,-1,-1,11,-1,-1,-1,-1],[0,1,2,3,19,5,20,19,8,20,-1,1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1],[0,1,2,3,14,5,-1,8,8,-1,-1,11,1,11,-1,-1,-1,-1,-1,-1,-1,1],[0,1,2,3,8,5,-1,8,8,-1,-1,1,1,1,-1,1,-1,-1,-1,-1,-1,1],[0,1,5,3,-1,5,-1,-1,1,-1,1,1,-1,-1,1,1,1,1,1,-1,-1,-1],[0,1,2,3,4,5,6,19,8,-1,-1,11,-1,-1,-1,1,-1,-1,-1,-1,-1,-1],[0,1,5,3,-1,5,-1,-1,1,-1,1,11,-1,-1,-1,1,1,-1,1,-1,-1,-1],[0,1,2,3,-1,5,-1,-1,-1,-1,1,1,-1,-1,-1,1,-1,1,1,-1,-1,-1],[0,1,2,3,-1,5,-1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,1,-1,-1,-1],[0,1,5,3,11,5,11,-1,1,-1,1,11,-1,11,11,-1,-1,11,-1,1,1,1],[0,1,2,3,-1,5,11,-1,8,-1,-1,11,-1,-1,-1,-1,-1,-1,-1,-1,1,1],[0,1,2,3,-1,5,-1,-1,8,-1,-1,11,-1,-1,14,-1,-1,-1,-1,-1,-1,-1]],"box":[2,1,2,7,7,5,-1,7,8,-1,-1,-1,12,-1,-1,-1,-1,-1,-1,19,-1,-1]};
+const PROBE = {"new":[{"n":"ρ9∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ21"],"o":["ρ20"]},{"n":"ρ18∨ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ14","ρ16","ρ17","ρ18","ρ19","ρ20"],"b":["ρ1"],"o":["ρ8","ρ10"]},{"n":"ρ5∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ21"],"o":["ρ20"]},{"n":"ρ6∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ21"],"o":["ρ20"]},{"n":"ρ7∨ρ13","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13"],"b":["ρ1","ρ15","ρ21"],"o":["ρ12"]},{"n":"ρ9∨ρ13","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13"],"b":["ρ1","ρ15","ρ21"],"o":["ρ12"]},{"n":"ρ12∨ρ18","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ12","ρ13","ρ14","ρ16","ρ17","ρ18"],"b":["ρ1"],"o":["ρ11","ρ15"]},{"n":"ρ12∨ρ18∨ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ12","ρ13","ρ14","ρ16","ρ17","ρ18","ρ19","ρ20"],"b":[],"o":["ρ1","ρ8","ρ10","ρ11","ρ15","ρ21"]},{"n":"ρ10∧ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ20","ρ21"],"o":[]},{"n":"ρ10∧ρ21","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ21"],"o":["ρ20"]},{"n":"ρ12∧ρ15","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13"],"b":["ρ1","ρ15","ρ21"],"o":["ρ12"]},{"n":"ρ15∧ρ21","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13"],"b":["ρ1","ρ15","ρ21"],"o":["ρ12"]},{"n":"ρ9∨ρ13∨ρ17","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13","ρ14","ρ16","ρ17","ρ18"],"b":["ρ1"],"o":["ρ11","ρ12","ρ15"]},{"n":"ρ16∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ7","ρ14","ρ16","ρ19"],"b":["ρ1","ρ10"],"o":["ρ8"]},{"n":"ρ9∨ρ16∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ14","ρ16","ρ17","ρ18","ρ19"],"b":["ρ1"],"o":["ρ8","ρ10","ρ20"]},{"n":"ρ11∨ρ12","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ11","ρ12","ρ13","ρ14","ρ16","ρ17","ρ18"],"b":["ρ1"],"o":["ρ15"]},{"n":"ρ10∨ρ15","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ8","ρ9","ρ10","ρ11","ρ13","ρ14","ρ15","ρ16","ρ17","ρ18","ρ19"],"b":[],"o":["ρ1","ρ12","ρ20","ρ21"]},{"n":"ρ8∨ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ8","ρ9","ρ10","ρ14","ρ16","ρ17","ρ18","ρ19","ρ20"],"b":["ρ1"],"o":[]},{"n":"ρ12∧ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7"],"b":["ρ1","ρ12","ρ20","ρ21"],"o":["ρ9","ρ10","ρ15","ρ18"]},{"n":"◯ρ6","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7"],"b":["ρ1","ρ12","ρ21"],"o":["ρ9","ρ10","ρ15","ρ18","ρ20"]},{"n":"◯ρ9","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7"],"b":["ρ1","ρ12","ρ21"],"o":["ρ9","ρ10","ρ15","ρ18","ρ20"]},{"n":"◯ρ11","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ11","ρ13","ρ14","ρ16","ρ17","ρ18"],"b":["ρ1"],"o":["ρ12","ρ15"]}],"ident":["ρ9∨ρ17 ≡ ρ18","ρ9∨ρ16 ≡ ρ18","ρ16∨ρ17 ≡ ρ18","ρ8∨ρ18 ≡ ρ10","ρ11∨ρ18 ≡ ρ15","ρ6∧ρ7 ≡ ρ4","ρ16∧ρ19 ≡ ρ7","ρ13∧ρ17 ≡ ρ6","ρ9∧ρ13 ≡ ρ6","ρ7∧ρ14 ≡ ρ4","ρ6∧ρ14 ≡ ρ4","ρ8∧ρ18 ≡ ρ16","◯ρ4 ≡ ρ7","◯ρ5 ≡ ρ5","◯ρ8 ≡ ρ8"],"mutual":[["ρ9∨ρ19","ρ5∨ρ19"],["ρ9∨ρ19","ρ6∨ρ19"],["ρ5∨ρ19","ρ6∨ρ19"],["ρ7∨ρ13","ρ9∨ρ13"],["ρ7∨ρ13","ρ12∧ρ15"],["ρ9∨ρ13","ρ12∧ρ15"],["◯ρ6","◯ρ9"]],"openp":[["ρ9∨ρ19","ρ10∧ρ20","⊢","?"],["ρ9∨ρ19","ρ10∧ρ21","⊢","?"],["ρ18∨ρ20","ρ9∨ρ16∨ρ19","?","⊢"],["ρ18∨ρ20","ρ8∨ρ20","⊢","?"],["ρ5∨ρ19","ρ10∧ρ20","⊢","?"],["ρ5∨ρ19","ρ10∧ρ21","⊢","?"],["ρ6∨ρ19","ρ10∧ρ20","⊢","?"],["ρ6∨ρ19","ρ10∧ρ21","⊢","?"],["ρ7∨ρ13","ρ15∧ρ21","⊢","?"],["ρ9∨ρ13","ρ15∧ρ21","⊢","?"],["ρ12∨ρ18","ρ9∨ρ13∨ρ17","?","⊢"],["ρ12∨ρ18","ρ11∨ρ12","⊢","?"],["ρ12∨ρ18","◯ρ11","?","?"],["ρ12∨ρ18∨ρ20","ρ10∨ρ15","?","?"],["ρ10∧ρ20","ρ10∧ρ21","⊢","?"],["ρ12∧ρ15","ρ15∧ρ21","⊢","?"],["ρ9∨ρ13∨ρ17","ρ11∨ρ12","⊢","?"],["ρ9∨ρ13∨ρ17","◯ρ11","⊢","?"],["ρ9∨ρ16∨ρ19","ρ8∨ρ20","⊢","?"],["ρ11∨ρ12","◯ρ11","?","?"],["ρ12∧ρ20","◯ρ6","?","?"],["ρ12∧ρ20","◯ρ9","?","?"]],"classes":[["ρ9∨ρ19","ρ5∨ρ19","ρ6∨ρ19"],["ρ18∨ρ20"],["ρ7∨ρ13","ρ9∨ρ13","ρ12∧ρ15"],["ρ12∨ρ18"],["ρ12∨ρ18∨ρ20"],["ρ10∧ρ20"],["ρ10∧ρ21"],["ρ15∧ρ21"],["ρ9∨ρ13∨ρ17"],["ρ16∨ρ19"],["ρ9∨ρ16∨ρ19"],["ρ11∨ρ12"],["ρ10∨ρ15"],["ρ8∨ρ20"],["ρ12∧ρ20"],["◯ρ6","◯ρ9"],["◯ρ11"]]};
+const N = 22;
+
+/* ---------- the catalogue ---------- */
+const RF = [
+ "⊥","⊤","◯⊥","¬◯⊥","◯⊥ ∨ ¬◯⊥","¬¬◯⊥","¬◯⊥ ∨ ¬¬◯⊥","◯¬◯⊥",
+ "¬¬◯⊥ ⊃ ◯⊥","◯¬◯⊥ ∨ ¬¬◯⊥","¬¬◯⊥ ∨ (¬¬◯⊥ ⊃ ◯⊥)","◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)",
+ "(¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥","(¬¬◯⊥ ⊃ ◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)",
+ "(◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)","(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)) ∨ ◯¬◯⊥",
+ "((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)) ∨ ◯¬◯⊥",
+ "¬¬◯⊥ ∨ ((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥))",
+ "((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)) ∨ (◯¬◯⊥ ∨ ¬¬◯⊥)",
+ "(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)) ⊃ ◯¬◯⊥","(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)) ⊃ (¬◯⊥ ∨ ¬¬◯⊥)",
+ "((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)) ⊃ ◯¬◯⊥"];
+const RSHORT = ["⊥","⊤","a","¬a","a ∨ ¬a","¬¬a","¬a ∨ ¬¬a","b","¬¬a ⊃ a","b ∨ ¬¬a",
+ "¬¬a ∨ ρ8","b ⊃ ρ4","ρ8 ⊃ b","ρ8 ⊃ ρ4","ρ9 ⊃ ρ4","ρ11 ∨ b","ρ14 ∨ b","ρ5 ∨ ρ14",
+ "ρ14 ∨ ρ9","ρ11 ⊃ b","ρ11 ⊃ ρ6","ρ14 ⊃ b"];
+const RNOTE = ["","","rung t1","rung t2","rung t3","rung t4","rung t5",
+ "b · c 1 = ◯t3 · ◯-fixed","rung t6 · ◯-fixed","","rung t7","g 1","r 1 · ◯-fixed",
+ "rung t8 · predicted by the ladder","w 1","","","","","◯-fixed","",""];
+
+(function reps(){
+  const tb = document.getElementById("repsbody");
+  for (let i=0;i<N;i++){
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td class="f">ρ'+i+'</td>' +
+      '<td><span class="f">'+RF[i]+'</span></td>' +
+      '<td><span class="f">'+RSHORT[i]+'</span></td>' +
+      '<td>'+RNOTE[i]+'</td>';
+    tb.appendChild(tr);
+  }
+})();
+
+/* ---------- operation grids ---------- */
+let curOp = "and";
+const OPSYM = {and:"∧", or:"∨", imp:"⊃", box:"◯"};
+
+function degenerate(op,i,j){
+  if (op === "box") return false;
+  if (i === j) return true;
+  if (i === 0 || j === 0 || i === 1 || j === 1) return true;
+  return false;
+}
+function cellText(v){
+  if (v === -1) return "?";
+  if (v === -2) return "∉R";
+  return "ρ"+v;
+}
+function cellClass(op,i,j,v){
+  if (v === -1) return "c-q";
+  if (v === -2) return "c-x";
+  return degenerate(op,i,j) ? "c-d" : "c-k";
+}
+
+function drawGrid(){
+  const host = document.getElementById("opgrid");
+  host.innerHTML = "";
+  const t = document.createElement("table");
+  t.className = "grid";
+  let h = "";
+  if (curOp === "box"){
+    h += "<tr><th class='rh'>◯ρi</th>";
+    for (let i=0;i<N;i++) h += "<th>"+i+"</th>";
+    h += "</tr><tr><th class='rh'>value</th>";
+    for (let i=0;i<N;i++){
+      const v = RT.box[i];
+      h += "<td class='"+cellClass("box",i,i,v)+"' tabindex='0' data-i='"+i+
+           "' data-j='-1'><span>"+cellText(v)+"</span></td>";
+    }
+    h += "</tr>";
+  } else {
+    const g = RT[curOp];
+    h += "<tr><th class='rh'>"+OPSYM[curOp]+"</th>";
+    for (let j=0;j<N;j++) h += "<th>"+j+"</th>";
+    h += "</tr>";
+    for (let i=0;i<N;i++){
+      h += "<tr><th class='rh'>ρ"+i+"</th>";
+      for (let j=0;j<N;j++){
+        const v = g[i][j];
+        h += "<td class='"+cellClass(curOp,i,j,v)+"' tabindex='0' data-i='"+i+
+             "' data-j='"+j+"'><span>"+cellText(v)+"</span></td>";
+      }
+      h += "</tr>";
+    }
+  }
+  t.innerHTML = h;
+  host.appendChild(t);
+  t.querySelectorAll("td").forEach(td=>{
+    td.addEventListener("click", ()=>select(td));
+    td.addEventListener("keydown", e=>{
+      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); select(td); }
+    });
+  });
+  stats();
+}
+
+function select(td){
+  document.querySelectorAll("#opgrid td.sel").forEach(x=>x.classList.remove("sel"));
+  td.classList.add("sel");
+  const i = +td.dataset.i, j = +td.dataset.j;
+  const v = (curOp === "box") ? RT.box[i] : RT[curOp][i][j];
+  const lhs = (curOp === "box") ? "◯ρ"+i : "ρ"+i+" "+OPSYM[curOp]+" ρ"+j;
+  const lhsF = (curOp === "box") ? "◯("+RF[i]+")"
+             : "("+RF[i]+") "+OPSYM[curOp]+" ("+RF[j]+")";
+  let body;
+  if (v === -2){
+    body = '<span class="chip no">∉R</span> &nbsp;<span class="f">'+lhs+
+      '</span> is interderivable with no class of R: <span class="f">∀ k &lt; 22. ¬ Interd ('+
+      lhs+') ρk</span>. A located new class, on 22 refutations.';
+  } else if (v === -1){
+    body = '<span class="chip op">?</span> &nbsp;<span class="f">'+lhs+
+      '</span> — open at budget (battery, then G4c at 2·10⁴, then LJF◯ at fuel ≤ 24). ' +
+      'Flagged, never dropped. It may yet be a class of R or lie outside it.';
+  } else {
+    const sym = (curOp === "and" || curOp === "or") && i !== j
+      ? ' &nbsp;<span class="muted" style="color:var(--ink-3);font-size:12.5px">(symmetric cell; computed on the upper triangle)</span>' : '';
+    body = '<span class="chip ok">certified</span> &nbsp;<span class="f">'+lhs+' ⊣⊢ ρ'+v+
+      '</span>, both directions.' + sym;
+  }
+  document.getElementById("opread").innerHTML =
+    body + '<br><span class="muted"><span class="f">'+lhsF+'</span>' +
+    (v >= 0 ? ' &nbsp;⊣⊢&nbsp; <span class="f">'+RF[v]+'</span>' : '') + '</span>';
+}
+
+const CENSUS = {
+  and: {cells:253, cls:233, x:4, q:16, label:"upper triangle, 22·23/2"},
+  or:  {cells:253, cls:204, x:12, q:37, label:"upper triangle, 22·23/2"},
+  imp: {cells:484, cls:348, x:0, q:136, label:"full 22 × 22"},
+  box: {cells:22,  cls:10,  x:0, q:12, label:"one per class"}
+};
+function stats(){
+  const c = CENSUS[curOp];
+  document.getElementById("opstats").innerHTML =
+    '<div class="stat"><b>'+c.cells+'</b><span>cells computed ('+c.label+')</span></div>' +
+    '<div class="stat"><b>'+c.cls+'</b><span>class certified</span></div>' +
+    '<div class="stat"><b>'+c.x+'</b><span>∉R</span></div>' +
+    '<div class="stat"><b>'+c.q+'</b><span>open, flagged</span></div>';
+}
+
+document.querySelectorAll(".opb").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    curOp = b.dataset.op;
+    document.querySelectorAll(".opb").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    drawGrid();
+  });
+});
+drawGrid();
+
+/* ---------- beyond R ---------- */
+(function beyond(){
+  const byName = {};
+  PROBE.new.forEach(x => byName[x.n] = x);
+  const tb = document.getElementById("probebody");
+
+  function tableVerdict(name){
+    let m = name.match(/^ρ(\d+)([∧∨])ρ(\d+)$/);
+    if (m){
+      const op = m[2] === "∧" ? "and" : "or";
+      const v = RT[op][+m[1]][+m[3]];
+      if (v === -2) return ['<span class="chip no">∉R</span>', 'certified outside R'];
+      if (v === -1) return ['<span class="chip op">?</span>', 'open at budget'];
+      return ['<span class="chip ok">ρ'+v+'</span>', 'classed'];
+    }
+    m = name.match(/^◯ρ(\d+)$/);
+    if (m){
+      const v = RT.box[+m[1]];
+      if (v === -1) return ['<span class="chip op">?</span>', 'open at budget'];
+      if (v === -2) return ['<span class="chip no">∉R</span>', 'certified outside R'];
+      return ['<span class="chip ok">ρ'+v+'</span>', 'classed'];
+    }
+    return ['<span style="color:var(--ink-3)">—</span>',
+            'ternary; the binary tables do not reach it'];
+  }
+
+  PROBE.classes.forEach(cl=>{
+    const head = cl[0], x = byName[head];
+    const alt = cl.length > 1
+      ? cl.slice(1).map(s=>'<span class="f">'+s+'</span>').join(", ") +
+        ' <span style="color:var(--ink-3);font-size:12px">(certified mutual)</span>'
+      : '<span style="color:var(--ink-3)">—</span>';
+    const tv = tableVerdict(head);
+    const open = x.o.length
+      ? ' <span style="color:var(--ink-3);font-size:12px">probe open at ' + x.o.join(", ") + '</span>'
+      : ' <span style="color:var(--ink-3);font-size:12px">probe: no open cell against R</span>';
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td><span class="f">'+head+'</span></td><td>'+alt+'</td>' +
+                   '<td>'+tv[0]+' <span style="color:var(--ink-3);font-size:12px">'+tv[1]+
+                   '</span><br>'+open+'</td>';
+    tb.appendChild(tr);
+  });
+
+  const ob = document.getElementById("openbody");
+  PROBE.openp.forEach(p=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td class="f">'+p[0]+'</td><td class="f">'+p[1]+
+      '</td><td class="f">'+p[2]+'</td><td class="f">'+p[3]+'</td>';
+    ob.appendChild(tr);
+  });
+})();
+
+/* ---------- tabs ---------- */
+const tabs = Array.from(document.querySelectorAll('nav.tabs button'));
+function show(id){
+  tabs.forEach(t=>{
+    const on = t.id === id;
+    t.setAttribute("aria-selected", String(on));
+    document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+  });
+}
+tabs.forEach(t=>{
+  t.addEventListener("click", ()=>show(t.id));
+  t.addEventListener("keydown", e=>{
+    const i = tabs.indexOf(t);
+    if (e.key === "ArrowRight"){ const k=(i+1)%tabs.length; tabs[k].focus(); tabs[k].click(); }
+    if (e.key === "ArrowLeft"){ const k=(i-1+tabs.length)%tabs.length; tabs[k].focus(); tabs[k].click(); }
+  });
+});
+</script>

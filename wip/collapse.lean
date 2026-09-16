@@ -528,12 +528,12 @@ end Bound
 /-! ## 5. The collapse theorem -/
 
 /-- Deduction: a failed entailment yields a finite countermodel world. -/
-theorem countermodel_of_not_deriv {A B : PLLFormula} (h : ¬ Deriv [A] B) :
+theorem countermodel_of_not_deriv {A B : PLLFormula} (h : [A] ⊬ B) :
     ∃ (C : ConstraintModel) (_ : Finite C.W) (v : C.W),
       C.force v A ∧ ¬ C.force v B := by
-  have hthm : ¬ Deriv [] (A.ifThen B) := by
+  have hthm : [] ⊬ A.ifThen B := by
     intro hd
-    exact h (Deriv.impElim (hd.rename (by simp)) (Deriv.iden (.head _)))
+    exact h (Deriv.impElim (Deriv.rename (by simp) hd) (Deriv.iden (.head _)))
   have hnv : ¬ ∀ (C : ConstraintModel), Finite C.W → ∀ w : C.W,
       C.force w (A.ifThen B) := fun hv => hthm (finite_model_property.mpr hv)
   push Not at hnv
@@ -571,7 +571,7 @@ cannot be instantiated at the gap antichain.  (Companion to
 theorem post_interp_schema_vacuous {φ : PLLFormula}
     (hg : ∀ k, 1 ≤ k → Deriv [φ] (gap k)) :
     ¬ (∀ ψ, atomFree ψ = true → (∀ k, 1 ≤ k → Deriv [ψ] (gap k)) →
-        ¬ Deriv [φ] ψ) := by
+        [φ] ⊬ ψ) := by
   obtain ⟨m, hm⟩ := collapse hg
   exact rung_kills hg m hm
 
@@ -602,7 +602,7 @@ exact shape of `no_post_interp_schema`'s premisses. -/
 theorem no_post_interp_hyps {φ : PLLFormula}
     (hg : ∀ k, 1 ≤ k → Deriv [φ] (gap k))
     (hL : ∀ χ, atomFree χ = true → (∀ k, 1 ≤ k → Deriv [χ] (gap k)) →
-      ¬ Deriv [φ] χ) : False :=
+      [φ] ⊬ χ) : False :=
   post_interp_schema_vacuous hg hL
 
 /-! ## 6. Cross-check: the rung index cannot be uniform

@@ -781,7 +781,7 @@ theorem clOf_subClosed (Γ : List PLLFormula) (C : PLLFormula) :
 underivable sequent is refuted at a world of its finite canonical model —
 the hypotheses forced, the conclusion not. -/
 theorem finite_canonical_countermodel {Γ : List PLLFormula} {C : PLLFormula}
-    (h : ¬ Nonempty (LaxND Γ C)) :
+    (h : Γ ⊬ C) :
     ∃ T : (canonFin (clOf Γ C)).W,
       (∀ ψ ∈ Γ, (canonFin (clOf Γ C)).force T ψ) ∧
         ¬ (canonFin (clOf Γ C)).force T C := by
@@ -1365,7 +1365,7 @@ choice.  Composed with `realP_refutes_sequent` (`PLLEvidence.lean`),
 this closes the completeness of PLL for `⊩ᵖ`-realisability over
 decorated finite models — see `PLLRealCompleteness.lean`. -/
 theorem emitter_completeness {Γ : List PLLFormula} {C : PLLFormula}
-    (h : ¬ Nonempty (LaxND Γ C)) :
+    (h : Γ ⊬ C) :
     ∃ (M : FinCM) (w : Nat), FinCM.checkB M w Γ C = true := by
   obtain ⟨T, hΓ, hC⟩ := finite_canonical_countermodel h
   obtain ⟨lcl, -, hlcl⟩ := exists_rep (clOf Γ C)

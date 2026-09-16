@@ -1,4 +1,13 @@
 import LaxLogic.PLLNoFall
+-- Explicit since 2026-09-04.  This file used `fin_cases` and `le_total`
+-- at `Fin n`, both of which arrived transitively while the foundation
+-- modules still re-exported Mathlib wholesale.  They no longer do, and
+-- `wip.schemeext` is outside `lake build`'s default targets, so nothing
+-- caught the break.  Named directly rather than restored by a blanket
+-- `import Mathlib`.
+import Meta.Tactics              -- fin_cases
+import Mathlib.Order.Fin.Basic   -- LinearOrder (Fin n) ⟹ le_total
+import Mathlib.Data.Fintype.Basic -- Fin.fintype, which `fin_cases` needs
 
 /-!
 # Scheme extensions of PLL, and the chain-classification engine

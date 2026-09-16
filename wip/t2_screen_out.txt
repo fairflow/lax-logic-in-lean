@@ -1,0 +1,51 @@
+T2 SCREEN — height measure, and completeness of the tree class
+battery (≤3 worlds, atom p): 4414 well-formed frames
+
+== A/B  the height measure ==
+A reduced models: 2588; strict-Ri decrease fails on 0
+B reduced models: 2588; strict-Rm decrease fails on 0
+A/B pass
+A′ CONTROL non-reduced models: 1826; decrease FAILS on 1826
+A′ certificate: { n := 2, ri := [(0, 1), (1, 0)], rm := [], fall := [], val := [] }
+A′ pass (reducedness is load-bearing, not decorative)
+
+== C/D  reduced- and tree-class completeness ==
+C/D battery 30424 | reduced 18316 | trees(fal-leaves) 1430
+C reduced-class completeness: 0 gaps in 22 cells — pass
+D TREE-class completeness (T2 itself): 0 gaps in 22 cells — pass
+D′ CONTROL formulas NOT refuted at any tree root: 6 (must be > 0, else the test is vacuous): [⊤, ¬¬◯⊥∨¬◯⊥, p⊃◯p, ◯◯p⊃◯p, ◯(p∧q)⊃(◯p∧◯q), ¬◯⊥∨¬¬◯⊥]
+
+== F  are CONFLUENT trees enough (the PCLL question)? ==
+F confluent models 25171 | confluent trees 739
+F confluent-tree completeness (PCLL): 0 gaps in 22 cells
+F confluent TREES with a branching world forcing ◯p but not p: 0 (theory says 0)
+F confluent NON-trees with such a world: 0 shown
+F CERTIFICATE deepCone: wf&confluent&tree = true
+F   root cone (proper Rₘ-successors) = [1] (NON-empty)
+F   root ⊩ ◯p ∧ root ⊮ p = true;  worlds 2,3 incomparable above the root = true
+F   ⇒ a confluent tree CAN have a non-trivial modal cone at a branching root;
+F     the empty-cone theorem constrains IMMEDIATE branching only.
+
+== E  the bisimulation obstruction ==
+E model well-formed: true; reduced: false (must be false)
+E worlds 0,1 are Rᵢ-equivalent: true
+E Rₘ-cones differ: cone(0)=[0, 2], cone(1)=[1]
+E 0 ⊩ ◯p = false;  2 ⊩ ◯p = true  (differ ⇒ 0 and 2 are NOT bisimilar)
+E 0 and 1 force the same corpus formulas: true
+E pass
+
+== G  extraction cost ==
+G extraction cost on CHAINS (the worst case for the proof as written):
+G   chain n=1: proof-as-written 1, by covers 1
+G   chain n=2: proof-as-written 2, by covers 2
+G   chain n=3: proof-as-written 4, by covers 3
+G   chain n=4: proof-as-written 8, by covers 4
+G   chain n=5: proof-as-written 16, by covers 5
+G   chain n=6: proof-as-written 32, by covers 6
+G   chain n=8: proof-as-written 128, by covers 8
+G   chain n=10: proof-as-written 512, by covers 10
+G battery (2588 reduced models, ≤3 worlds): worst |T| = 4 (proof), 3 (covers); total 3866 vs 3614
+G ⇒ the extracted MODEL is exponential; the extracted DERIVATION need not be.
+
+VERDICT AB=true CD=true F=true E=true
+T2-SCREEN-DONE

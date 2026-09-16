@@ -48,16 +48,16 @@ def t13 : PLLFormula := t10.or t12
 
 theorem rung8_le_q1 : Deriv [t8] q1 :=
   ofG4 (.impR (.botL (.head _)))
-theorem q1_nle_rung8 : ¬ Deriv [q1] t8 :=
+theorem q1_nle_rung8 : [q1] ⊬ t8 :=
   FinCM.not_provable_of_check (M := { n := 4, ri := [(0, 1), (0, 2), (2, 3), (0, 3)], rm := [(2, 3)], fall := [3], val := [] }) (w := 0) (by decide)
 
-theorem rung8_nle_q5 : ¬ Deriv [t8] q5 :=
+theorem rung8_nle_q5 : [t8] ⊬ q5 :=
   FinCM.not_provable_of_check (M := { n := 3, ri := [(0, 1), (1, 2), (0, 2)], rm := [(1, 2)], fall := [2], val := [] }) (w := 0) (by decide)
 -- OPEN: q5 ⊢ t8  (search cut off; asserts nothing)
 
 theorem rung8_le_q8 : Deriv [t8] q8 :=
   ofG4 (.impR (.impLImp (.tail _ (.head _)) (.impR (.laxL (.tail _ (.tail _ (.head _))) (.laxR (.impLImp (.tail _ (.head _)) (.impR (.impLLaxLax (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.impLLaxLax (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))))) (.orL (.head _) (.orR1 (.laxL (.head _) (.botL (.head _)))) (.orR2 (.impR (.impLLaxLax (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))))))
-theorem q8_nle_rung8 : ¬ Deriv [q8] t8 :=
+theorem q8_nle_rung8 : [q8] ⊬ t8 :=
   FinCM.not_provable_of_check (M := { n := 4, ri := [(0, 1), (0, 2), (2, 3), (0, 3)], rm := [(2, 3)], fall := [3], val := [] }) (w := 0) (by decide)
 
 -- OPEN: t8 ⊢ q9  (search cut off; asserts nothing)
@@ -68,7 +68,7 @@ theorem q8_nle_rung8 : ¬ Deriv [q8] t8 :=
 
 theorem rung8_le_q13 : Deriv [t8] q13 :=
   ofG4 (.laxR (.impR (.impLImp (.tail _ (.head _)) (.impR (.laxL (.tail _ (.tail _ (.head _))) (.laxR (.impLImp (.tail _ (.head _)) (.impR (.impLLaxLax (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.impLLaxLax (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))))) (.orL (.head _) (.orR1 (.laxL (.head _) (.botL (.head _)))) (.orR2 (.impR (.impLLaxLax (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _)))))))))
-theorem q13_nle_rung8 : ¬ Deriv [q13] t8 :=
+theorem q13_nle_rung8 : [q13] ⊬ t8 :=
   FinCM.not_provable_of_check (M := { n := 4, ri := [(0, 1), (0, 2), (2, 3), (0, 3)], rm := [(2, 3)], fall := [3], val := [] }) (w := 0) (by decide)
 
 theorem rung8_le_q14 : Deriv [t8] q14 :=
@@ -81,7 +81,7 @@ theorem rung9_le_q1 : Deriv [t9] q1 :=
   ofG4 (.impR (.botL (.head _)))
 -- OPEN: q1 ⊢ t9  (search cut off; asserts nothing)
 
-theorem rung9_nle_q5 : ¬ Deriv [t9] q5 :=
+theorem rung9_nle_q5 : [t9] ⊬ q5 :=
   FinCM.not_provable_of_check (M := { n := 3, ri := [(0, 1), (1, 2), (0, 2)], rm := [(1, 2)], fall := [2], val := [] }) (w := 0) (by decide)
 theorem q5_le_rung9 : Deriv [q5] t9 :=
   ofG4 (.orR1 (.impR (.laxL (.tail _ (.head _)) (.laxR (.impLImp (.tail _ (.head _)) (.impR (.impLLaxLax (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.impLLaxLax (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))))))
@@ -89,12 +89,12 @@ theorem q5_le_rung9 : Deriv [q5] t9 :=
 -- OPEN: t9 ⊢ q8  (search cut off; asserts nothing)
 -- OPEN: q8 ⊢ t9  (search cut off; asserts nothing)
 
-theorem rung9_nle_q9 : ¬ Deriv [t9] q9 :=
+theorem rung9_nle_q9 : [t9] ⊬ q9 :=
   FinCM.not_provable_of_check (M := { n := 4, ri := [(0, 1), (0, 2), (2, 3), (0, 3)], rm := [(2, 3)], fall := [3], val := [] }) (w := 0) (by decide)
 theorem q9_le_rung9 : Deriv [q9] t9 :=
   ofG4 (.orL (.head _) (.orR1 (.impR (.laxL (.tail _ (.head _)) (.laxR (.impLImp (.tail _ (.head _)) (.impR (.impLLaxLax (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.impLLaxLax (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _)))))))) (.orR2 (.impR (.orR1 (.impLImp (.head _) (.impR (.laxR (.impLImp (.tail _ (.tail _ (.head _))) (.impLImp (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impR (.impLLaxLax (.tail _ (.tail _ (.tail _ (.head _)))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.impLLaxLax (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _)))))) (.laxL (.head _) (.botL (.head _))))))))
 
-theorem rung9_nle_q12 : ¬ Deriv [t9] q12 :=
+theorem rung9_nle_q12 : [t9] ⊬ q12 :=
   FinCM.not_provable_of_check (M := { n := 4, ri := [(0, 1), (0, 2), (2, 3), (0, 3)], rm := [(2, 3)], fall := [3], val := [] }) (w := 0) (by decide)
 -- OPEN: q12 ⊢ t9  (search cut off; asserts nothing)
 

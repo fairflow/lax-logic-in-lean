@@ -260,7 +260,7 @@ derivability, by soundness.  Everything upstream of `soundness` here is
 computation, so concrete instances discharge by `decide`. -/
 theorem not_provable_of_check {M : FinCM} {w : Nat}
     {Γ : List PLLFormula} {C : PLLFormula}
-    (h : checkB M w Γ C = true) : ¬ Nonempty (LaxND Γ C) := by
+    (h : checkB M w Γ C = true) : Γ ⊬ C := by
   simp only [checkB, Bool.and_eq_true, decide_eq_true_eq,
     List.all_eq_true, Bool.not_eq_true'] at h
   obtain ⟨⟨⟨hwb, hlt⟩, hΓ⟩, hC⟩ := h
@@ -640,7 +640,7 @@ def demoM : FinCM :=
 /-- **`◯p ⊬ p`, by an executable countermodel**: the verified checker
 validates `demoM` in the kernel. -/
 theorem somehow_p_not_p :
-    ¬ Nonempty (LaxND [(prop "p").somehow] (prop "p")) :=
+    [(prop "p").somehow] ⊬ prop "p" :=
   FinCM.not_provable_of_check (M := demoM) (w := 2) (by decide)
 
 #print axioms FinCM.not_provable_of_check

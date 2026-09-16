@@ -33,6 +33,7 @@
     "port": 8081
   },
   "exclude": [
+    "ToolkitTest",
     "wip",
     "Archive",
     "archive",

@@ -10,6 +10,7 @@ import LaxLogic.PLLFrames
 import LaxLogic.PLLHilbert
 import LaxLogic.PLLSequent
 import LaxLogic.PLLFiniteModel
+import LaxLogic.PLLSubformulaSet
 import LaxLogic.PLLTerms
 import LaxLogic.PLLConstraints
 import LaxLogic.PLLSubst
@@ -73,6 +74,8 @@ import LaxLogic.PLLDemos
 import LaxLogic.PLLExec
 import LaxLogic.PLLCtxCompleteness
 import LaxLogic.PLLLaxInfinite
+import LaxLogic.CubeEmbedding
+import LaxLogic.ClosedFragmentLattice
 import LaxLogic.BeliefCollapse
 import LaxLogic.BeliefBooleanIso
 import LaxLogic.BeliefNormality
@@ -86,6 +89,7 @@ import LaxLogic.NucleusJoin
 import LaxLogic.PLLCountermodel
 import LaxLogic.PLLSemUI
 import LaxLogic.PLLSemUICtx
+import LaxLogic.PLLInstanceBound
 import LaxLogic.PLLSemUIRes
 import LaxLogic.PLLSemUILaw
 import LaxLogic.PLLSemUISplit
@@ -96,6 +100,9 @@ import LaxLogic.PLLSemUIBox
 import LaxLogic.PLLSemUIDesc
 import LaxLogic.PLLSemUITrace
 import LaxLogic.PLLSemUILayered
+import LaxLogic.Deriv
+import LaxLogic.Interd
+import LaxLogic.RN.Rho
 import LaxLogic.PLLSemUIFrag
 import LaxLogic.PLLSemUIChar
 import LaxLogic.PLLSemUIHenkin
@@ -107,5 +114,7 @@ import LaxLogic.PLLCandOr
 import LaxLogic.PLLUIChains
 import LaxLogic.PLLCandLeast
 import LaxLogic.IPCFocused
-import LaxLogic.LJF
-import LaxLogic.LJFComplete
+
+-- LJF and LJF◯ moved to their own library `LJF/` (2026-08-22).
+-- `LaxLogic` no longer aggregates them; import `LJF` or a specific
+-- `LJF.*` module instead.  The dependency runs LJF -> LaxLogic only.

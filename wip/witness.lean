@@ -112,7 +112,7 @@ theorem t3_le_w15 : Deriv [rnSub 3] (wC 1) :=
   Deriv.andIntro (t3_below_gap (le_refl 1)) (rungD (by decide))
 
 /-- `w15 ⊬ t3`: the climb is strict (plain-lift world 3). -/
-theorem w15_not_le_t3 : ¬ Deriv [wC 1] (rnSub 3) := by
+theorem w15_not_le_t3 : [wC 1] ⊬ rnSub 3 := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some 3) (fun ψ hψ => by
     have e : ψ = wC 1 := by
@@ -211,7 +211,7 @@ theorem cmP_not_phi1 : ¬ cmP.force (some 2) phi1 := by
 
 /-- `c 2 ⊬ phi1` — so `phi1` is NOT the witness (the schema hypothesis
 `hc` fails at k = 2). -/
-theorem c2_not_le_phi1 : ¬ Deriv [chainF 2] phi1 := by
+theorem c2_not_le_phi1 : [chainF 2] ⊬ phi1 := by
   rintro ⟨d⟩
   refine cmP_not_phi1 (soundness d cmP (some 2) (fun ψ hψ => ?_))
   have e : ψ = chainF 2 := by
@@ -223,7 +223,7 @@ theorem c2_not_le_phi1 : ¬ Deriv [chainF 2] phi1 := by
     ((chainF_force_iff 2 2).mpr (le_refl 2))
 
 /-- `phi1` is not a theorem. -/
-theorem not_thm_phi1 : ¬ Deriv [] phi1 := by
+theorem not_thm_phi1 : [] ⊬ phi1 := by
   rintro ⟨d⟩
   exact cmP_not_phi1 (soundness d cmP (some 2) (fun ψ hψ => by cases hψ))
 
@@ -251,7 +251,7 @@ theorem bound_collapse {χ : PLLFormula} (ha : atomFree χ = true)
 `c 2 ⊢ c 1`, against chain strictness.  So `phi1` satisfies the `hU`
 hypothesis of `no_pre_interp_schema`; only `hc` fails for it. -/
 theorem phi1_hU : ∀ χ, atomFree χ = true →
-    (∀ k, Deriv [chainF k] χ) → ¬ Deriv [χ] phi1 := by
+    (∀ k, Deriv [chainF k] χ) → [χ] ⊬ phi1 := by
   intro χ ha hb hc
   exact chain_lt_strict (show 1 < 2 from by omega)
     (Deriv.cutHead (hb 2) (bound_collapse ha hc))
@@ -260,7 +260,7 @@ theorem phi1_hU : ∀ χ, atomFree χ = true →
 
 /-- No rung bounds the odd rungs: `O (n+1) ⊬ t n`. -/
 theorem rung_cofinal (n : Nat) :
-    ¬ Deriv [rnSub (2 * (n + 1) + 1)] (rnSub n) := by
+    [rnSub (2 * (n + 1) + 1)] ⊬ rnSub n := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some (n + 1)) (fun ψ hψ => by
     have e : ψ = rnSub (2 * (n + 1) + 1) := by

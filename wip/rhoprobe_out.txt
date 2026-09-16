@@ -1,0 +1,183 @@
+building the 22-matrix (with DB overlay)…
+=== catalogue-extension probe: 12 candidates vs the 22 (lattice laws first, search residual, LJF◯ ≤ 48) ===
+  residual search: ρ20 → ρ9∨ρ19
+NEW   ρ9∨ρ19   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ19], strictly below [ρ1, ρ10, ρ21], open cells at [ρ20]
+  residual search: ρ8 → ρ18∨ρ20
+  residual search: ρ10 → ρ18∨ρ20
+NEW   ρ18∨ρ20   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ14, ρ16, ρ17, ρ18, ρ19, ρ20], strictly below [ρ1], open cells at [ρ8, ρ10]
+  residual search: ρ6 → ρ5∨ρ19
+  residual search: ρ9 → ρ5∨ρ19
+  residual search: ρ20 → ρ5∨ρ19
+NEW   ρ5∨ρ19   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ19], strictly below [ρ1, ρ10, ρ21], open cells at [ρ20]
+  residual search: ρ9 → ρ6∨ρ19
+  residual search: ρ20 → ρ6∨ρ19
+NEW   ρ6∨ρ19   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ19], strictly below [ρ1, ρ10, ρ21], open cells at [ρ20]
+  residual search: ρ9 → ρ7∨ρ13
+  residual search: ρ12 → ρ7∨ρ13
+NEW   ρ7∨ρ13   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ13], strictly below [ρ1, ρ15, ρ21], open cells at [ρ12]
+  residual search: ρ12 → ρ9∨ρ13
+NEW   ρ9∨ρ13   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ13], strictly below [ρ1, ρ15, ρ21], open cells at [ρ12]
+  residual search: ρ11 → ρ12∨ρ18
+  residual search: ρ15 → ρ12∨ρ18
+NEW   ρ12∨ρ18   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ12, ρ13, ρ14, ρ16, ρ17, ρ18], strictly below [ρ1], open cells at [ρ11, ρ15]
+  residual search: ρ1 → ρ12∨ρ18∨ρ20
+  residual search: ρ8 → ρ12∨ρ18∨ρ20
+  residual search: ρ10 → ρ12∨ρ18∨ρ20
+  residual search: ρ11 → ρ12∨ρ18∨ρ20
+  residual search: ρ15 → ρ12∨ρ18∨ρ20
+  residual search: ρ21 → ρ12∨ρ18∨ρ20
+NEW   ρ12∨ρ18∨ρ20   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ12, ρ13, ρ14, ρ16, ρ17, ρ18, ρ19, ρ20], strictly below [], open cells at [ρ1, ρ8, ρ10, ρ11, ρ15, ρ21]
+NEW   ρ10∧ρ20   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ19], strictly below [ρ1, ρ10, ρ20, ρ21], open cells at []
+  residual search: ρ10∧ρ21 → ρ20
+NEW   ρ10∧ρ21   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ19], strictly below [ρ1, ρ10, ρ21], open cells at [ρ20]
+NEW   ρ12∧ρ15   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ13], strictly below [ρ1, ρ15, ρ21], open cells at [ρ12]
+  residual search: ρ15∧ρ21 → ρ12
+NEW   ρ15∧ρ21   strictly above [ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ7, ρ9, ρ13], strictly below [ρ1, ρ15, ρ21], open cells at [ρ12]
+
+CAND ρ9∨ρ19 → ρ18∨ρ20: ⊢
+CAND ρ9∨ρ19 → ρ5∨ρ19: ⊢
+CAND ρ9∨ρ19 → ρ6∨ρ19: ⊢
+CAND ρ9∨ρ19 → ρ7∨ρ13: ⊬
+CAND ρ9∨ρ19 → ρ9∨ρ13: ⊬
+CAND ρ9∨ρ19 → ρ12∨ρ18: ⊬
+CAND ρ9∨ρ19 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ9∨ρ19 → ρ10∧ρ20: ⊢
+CAND ρ9∨ρ19 → ρ10∧ρ21: ⊢
+CAND ρ9∨ρ19 → ρ12∧ρ15: ⊬
+CAND ρ9∨ρ19 → ρ15∧ρ21: ⊬
+CAND ρ18∨ρ20 → ρ9∨ρ19: ⊬
+CAND ρ18∨ρ20 → ρ5∨ρ19: ⊬
+CAND ρ18∨ρ20 → ρ6∨ρ19: ⊬
+CAND ρ18∨ρ20 → ρ7∨ρ13: ⊬
+CAND ρ18∨ρ20 → ρ9∨ρ13: ⊬
+CAND ρ18∨ρ20 → ρ12∨ρ18: ⊬
+CAND ρ18∨ρ20 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ18∨ρ20 → ρ10∧ρ20: ⊬
+CAND ρ18∨ρ20 → ρ10∧ρ21: ⊬
+CAND ρ18∨ρ20 → ρ12∧ρ15: ⊬
+CAND ρ18∨ρ20 → ρ15∧ρ21: ⊬
+CAND ρ5∨ρ19 → ρ9∨ρ19: ⊢
+CAND ρ5∨ρ19 → ρ18∨ρ20: ⊢
+CAND ρ5∨ρ19 → ρ6∨ρ19: ⊢
+CAND ρ5∨ρ19 → ρ7∨ρ13: ⊬
+CAND ρ5∨ρ19 → ρ9∨ρ13: ⊬
+CAND ρ5∨ρ19 → ρ12∨ρ18: ⊬
+CAND ρ5∨ρ19 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ5∨ρ19 → ρ10∧ρ20: ⊢
+CAND ρ5∨ρ19 → ρ10∧ρ21: ⊢
+CAND ρ5∨ρ19 → ρ12∧ρ15: ⊬
+CAND ρ5∨ρ19 → ρ15∧ρ21: ⊬
+CAND ρ6∨ρ19 → ρ9∨ρ19: ⊢
+CAND ρ6∨ρ19 → ρ18∨ρ20: ⊢
+CAND ρ6∨ρ19 → ρ5∨ρ19: ⊢
+CAND ρ6∨ρ19 → ρ7∨ρ13: ⊬
+CAND ρ6∨ρ19 → ρ9∨ρ13: ⊬
+CAND ρ6∨ρ19 → ρ12∨ρ18: ⊬
+CAND ρ6∨ρ19 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ6∨ρ19 → ρ10∧ρ20: ⊢
+CAND ρ6∨ρ19 → ρ10∧ρ21: ⊢
+CAND ρ6∨ρ19 → ρ12∧ρ15: ⊬
+CAND ρ6∨ρ19 → ρ15∧ρ21: ⊬
+CAND ρ7∨ρ13 → ρ9∨ρ19: ⊬
+CAND ρ7∨ρ13 → ρ18∨ρ20: ⊬
+CAND ρ7∨ρ13 → ρ5∨ρ19: ⊬
+CAND ρ7∨ρ13 → ρ6∨ρ19: ⊬
+CAND ρ7∨ρ13 → ρ9∨ρ13: ⊢
+CAND ρ7∨ρ13 → ρ12∨ρ18: ⊢
+CAND ρ7∨ρ13 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ7∨ρ13 → ρ10∧ρ20: ⊬
+CAND ρ7∨ρ13 → ρ10∧ρ21: ⊬
+CAND ρ7∨ρ13 → ρ12∧ρ15: ⊢
+CAND ρ7∨ρ13 → ρ15∧ρ21: ⊢
+CAND ρ9∨ρ13 → ρ9∨ρ19: ⊬
+CAND ρ9∨ρ13 → ρ18∨ρ20: ⊬
+CAND ρ9∨ρ13 → ρ5∨ρ19: ⊬
+CAND ρ9∨ρ13 → ρ6∨ρ19: ⊬
+CAND ρ9∨ρ13 → ρ7∨ρ13: ⊢
+CAND ρ9∨ρ13 → ρ12∨ρ18: ⊢
+CAND ρ9∨ρ13 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ9∨ρ13 → ρ10∧ρ20: ⊬
+CAND ρ9∨ρ13 → ρ10∧ρ21: ⊬
+CAND ρ9∨ρ13 → ρ12∧ρ15: ⊢
+CAND ρ9∨ρ13 → ρ15∧ρ21: ⊢
+CAND ρ12∨ρ18 → ρ9∨ρ19: ⊬
+CAND ρ12∨ρ18 → ρ18∨ρ20: ⊬
+CAND ρ12∨ρ18 → ρ5∨ρ19: ⊬
+CAND ρ12∨ρ18 → ρ6∨ρ19: ⊬
+CAND ρ12∨ρ18 → ρ7∨ρ13: ⊬
+CAND ρ12∨ρ18 → ρ9∨ρ13: ⊬
+CAND ρ12∨ρ18 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ12∨ρ18 → ρ10∧ρ20: ⊬
+CAND ρ12∨ρ18 → ρ10∧ρ21: ⊬
+CAND ρ12∨ρ18 → ρ12∧ρ15: ⊬
+CAND ρ12∨ρ18 → ρ15∧ρ21: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ9∨ρ19: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ18∨ρ20: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ5∨ρ19: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ6∨ρ19: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ7∨ρ13: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ9∨ρ13: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ12∨ρ18: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ10∧ρ20: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ10∧ρ21: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ12∧ρ15: ⊬
+CAND ρ12∨ρ18∨ρ20 → ρ15∧ρ21: ⊬
+  residual search: ρ10∧ρ20 → ρ9∨ρ19
+CAND ρ10∧ρ20 → ρ9∨ρ19: ?
+CAND ρ10∧ρ20 → ρ18∨ρ20: ⊢
+  residual search: ρ10∧ρ20 → ρ5∨ρ19
+CAND ρ10∧ρ20 → ρ5∨ρ19: ?
+  residual search: ρ10∧ρ20 → ρ6∨ρ19
+CAND ρ10∧ρ20 → ρ6∨ρ19: ?
+CAND ρ10∧ρ20 → ρ7∨ρ13: ⊬
+CAND ρ10∧ρ20 → ρ9∨ρ13: ⊬
+CAND ρ10∧ρ20 → ρ12∨ρ18: ⊬
+CAND ρ10∧ρ20 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ10∧ρ20 → ρ10∧ρ21: ⊢
+CAND ρ10∧ρ20 → ρ12∧ρ15: ⊬
+CAND ρ10∧ρ20 → ρ15∧ρ21: ⊬
+  residual search: ρ10∧ρ21 → ρ9∨ρ19
+CAND ρ10∧ρ21 → ρ9∨ρ19: ?
+  residual search: ρ10∧ρ21 → ρ18∨ρ20
+CAND ρ10∧ρ21 → ρ18∨ρ20: ?
+  residual search: ρ10∧ρ21 → ρ5∨ρ19
+CAND ρ10∧ρ21 → ρ5∨ρ19: ?
+  residual search: ρ10∧ρ21 → ρ6∨ρ19
+CAND ρ10∧ρ21 → ρ6∨ρ19: ?
+CAND ρ10∧ρ21 → ρ7∨ρ13: ⊬
+CAND ρ10∧ρ21 → ρ9∨ρ13: ⊬
+CAND ρ10∧ρ21 → ρ12∨ρ18: ⊬
+  residual search: ρ10∧ρ21 → ρ12∨ρ18∨ρ20
+CAND ρ10∧ρ21 → ρ12∨ρ18∨ρ20: ?
+CAND ρ10∧ρ21 → ρ10∧ρ20: ?
+CAND ρ10∧ρ21 → ρ12∧ρ15: ⊬
+CAND ρ10∧ρ21 → ρ15∧ρ21: ⊬
+CAND ρ12∧ρ15 → ρ9∨ρ19: ⊬
+CAND ρ12∧ρ15 → ρ18∨ρ20: ⊬
+CAND ρ12∧ρ15 → ρ5∨ρ19: ⊬
+CAND ρ12∧ρ15 → ρ6∨ρ19: ⊬
+  residual search: ρ12∧ρ15 → ρ7∨ρ13
+CAND ρ12∧ρ15 → ρ7∨ρ13: ⊢
+  residual search: ρ12∧ρ15 → ρ9∨ρ13
+CAND ρ12∧ρ15 → ρ9∨ρ13: ⊢
+CAND ρ12∧ρ15 → ρ12∨ρ18: ⊢
+CAND ρ12∧ρ15 → ρ12∨ρ18∨ρ20: ⊢
+CAND ρ12∧ρ15 → ρ10∧ρ20: ⊬
+CAND ρ12∧ρ15 → ρ10∧ρ21: ⊬
+CAND ρ12∧ρ15 → ρ15∧ρ21: ⊢
+CAND ρ15∧ρ21 → ρ9∨ρ19: ⊬
+CAND ρ15∧ρ21 → ρ18∨ρ20: ⊬
+CAND ρ15∧ρ21 → ρ5∨ρ19: ⊬
+CAND ρ15∧ρ21 → ρ6∨ρ19: ⊬
+  residual search: ρ15∧ρ21 → ρ7∨ρ13
+CAND ρ15∧ρ21 → ρ7∨ρ13: ?
+  residual search: ρ15∧ρ21 → ρ9∨ρ13
+CAND ρ15∧ρ21 → ρ9∨ρ13: ?
+  residual search: ρ15∧ρ21 → ρ12∨ρ18
+CAND ρ15∧ρ21 → ρ12∨ρ18: ?
+  residual search: ρ15∧ρ21 → ρ12∨ρ18∨ρ20
+CAND ρ15∧ρ21 → ρ12∨ρ18∨ρ20: ?
+CAND ρ15∧ρ21 → ρ10∧ρ20: ⊬
+CAND ρ15∧ρ21 → ρ10∧ρ21: ⊬
+CAND ρ15∧ρ21 → ρ12∧ρ15: ?
+PROBE-DONE

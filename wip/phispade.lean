@@ -1015,7 +1015,7 @@ theorem Cspade_nnOBot_iff (x : Fin 5) :
   · intro h v hv hvn
     exact (key x).mpr h v hv ((Cspade_nOBot_iff v).mp hvn)
 
-theorem phiSpade_not_nnbox : ¬ Deriv [phiSpade] (nt (nt oBot)) := by
+theorem phiSpade_not_nnbox : [phiSpade] ⊬ nt (nt oBot) := by
   rintro ⟨d⟩
   have hs : Cspade.force (0 : Fin 5) (nt (nt oBot)) :=
     soundness d Cspade 0 (fun ψ hψ => by
@@ -1276,8 +1276,8 @@ theorem series_needs_free_valuations :
    fun _ _ _ hχ hδ₁ hδ₂ hd₁ hd₂ => Cspade_GLo_dn_dn_fails hχ hδ₁ hδ₂ hd₁ hd₂⟩
 
 /-- The interpolant of `φ♠` is neither `⊤` nor `⊥`. -/
-theorem postInterp_phiSpade_ne_top : ¬ Deriv [] psiClub := psiClub_not_thm
-theorem postInterp_phiSpade_ne_bot : ¬ Deriv [psiClub] PLLFormula.falsePLL :=
+theorem postInterp_phiSpade_ne_top : [] ⊬ psiClub := psiClub_not_thm
+theorem postInterp_phiSpade_ne_bot : [psiClub] ⊬ PLLFormula.falsePLL :=
   psiClub_ne_bot
 
 /-- **`φ♠` and `φ♣` have the SAME uniform post-interpolant** `¬¬◯⊥ ⊃ ◯⊥`

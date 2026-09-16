@@ -141,7 +141,7 @@ def main : IO Unit := do
         hit := hit + 1
         pl s!"/-- Refuted at world {w} of a rooted five-world model \
 (mutually confluent: {RNC.confB M}). -/"
-        pl s!"theorem five_{na}_nle_{nb} : ¬ Deriv [{na}] {nb} :="
+        pl s!"theorem five_{na}_nle_{nb} : [{na}] ⊬ {nb} :="
         pl s!"  FinCM.not_provable_of_check (M := {repr M}) (w := {w}) (by decide)"
         pl ""
     | none => miss := miss ++ [s!"{na} |- {nb}"]
