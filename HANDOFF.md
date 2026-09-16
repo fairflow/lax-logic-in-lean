@@ -4454,3 +4454,51 @@ unverified modules into one is Matthew's call.
 (302 files no target builds); the `Tools/` versus `tools/` case collision, which
 builds on macOS only and is a landmine for any case-sensitive checkout; and
 whether the bare-import `wip/` chain should join a target or be archived.
+
+## 2026-09-16 (afternoon) — the estate widened, and proofs shared instead of copied
+
+Continues the ledger campaign above; branch `ledger`, merged to `main` as it
+goes. Two documents carry the detail: `docs/ledger-campaign-2026-09-16.md` and
+`docs/proof-simplification-plan-2026-09-16.md`.
+
+**The estate is now everything that builds.** Every library in `lakefile.toml`
+was built, not just the default targets: `FRJO`, `BiLax`, `Reject`, `Rewrite`,
+`Meta`, `RNDB`, `Certified`, `DecideTools`, `Tools`, `proofstates` — 570
+modules, 28,321 declarations. `FRJO` had never been built at all, which is how
+`docs/disproof-handoff.md`'s PROVED claim about `FRJO/Recon.lean` had sat
+outside every check.
+
+**Two gates were red and are green.** `Production` (the axiom sweep) came from
+the pre-merge lineage and `LaxLogic/Obligation/Examples.lean` from
+`syntax-reorg`; the demonstration module's deliberate `sorried`/`downstream` are
+now held out by module with the reason in the gate. `Experimental` was red from
+five more `wip/` files writing `Γ ⊬ A` under `∧`/`¬` at the old precedence.
+`wipshared` stays red and is documented instead: `wip/frjw_gcc.lean` names a
+`V.WCounter` lemma absent from the merged tree — the FRJW and FRJX lines meeting
+for the first time, and their mathematics, not a mechanical repair.
+
+**The ledger now refuses stale object files.** It reads `.olean`s, and a stale
+one reports a module as it was: on this day it put 63 declarations back into the
+record, carrying `sorryAx`, that commit `438cf25` had deleted months earlier.
+`scripts/ledger-run.py` fails with the `lake build` lines to run.
+
+**`FRJ/Sound.lean`, `SoundV.lean`, `SoundW.lean`: fifteen proofs became five.**
+The five join cases of soundness are now one calculus-free lemma each in
+`FRJ/SoundCore.lean`, instantiated by twelve-line wrappers. No statement
+changed. 5,832 lines → 4,829. The design point: the proofs could not be
+abstracted over the derivation, because they use `preR d` by REDUCTION, not
+through an interface; stating the core about the join pre-model itself makes
+each wrapper hold by `rfl`.
+
+**`SaturateV` said 21 things twice** — byte-identical, mentioning nothing of
+`FRJVr`, resolving to `FRJ`'s originals once removed. 291 lines. The other 34
+byte-identical declarations are NOT redundant: they mention `IrrWit`/`MRWit`/
+`FRWit`/`OWit`/`PledgeFam`, which differ in one field, `FRJr` against `FRJVr`.
+Text similarity overstates what can be shared; the number that matters is how
+many "identical" declarations mention something itself doubled.
+
+**The G4/G4H/G4P triplication (886 lines) is refused**, with reasons: four of
+the five families are eliminations, which cannot be abstracted over a record of
+operations, and the duplication is load-bearing — `G4` is the object of a
+published separation, `G4ipComplete` is the rule-8 fragment result, and
+`G4h.inv` is height-preserving where `G4.inv` has no height.

@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-16 15:23 BST from `76c34f2` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-16 16:53 BST from `f53a6ac` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**19878 declarations** in **431 modules**: 9620 theorems, 10258 definitions and data. **81 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**28241 declarations** in **570 modules**: 12946 theorems, 15295 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -16,7 +16,9 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 
 | area | decls | theorems | kernel-clean | `sorryAx` | native |
 |---|--:|--:|--:|--:|--:|
+| `BiLax` | 625 | 270 | 625 |  |  |
 | `CLPPaper` | 85 | 9 | 85 |  |  |
+| `Certified` | 1502 | 1130 | 1502 |  |  |
 | `FRJ.Basic` | 240 | 127 | 240 |  |  |
 | `FRJ.Bridge` | 15 | 12 | 15 |  |  |
 | `FRJ.BridgeV` | 2 | 2 | 2 |  |  |
@@ -39,8 +41,8 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.Profile` | 71 | 49 | 71 |  |  |
 | `FRJ.RefAt` | 65 | 27 | 65 |  |  |
 | `FRJ.Saturate` | 227 | 92 | 227 |  |  |
-| `FRJ.SaturateV` | 244 | 97 | 244 |  |  |
-| `FRJ.Search` | 326 | 43 | 326 |  |  |
+| `FRJ.SaturateV` | 164 | 65 | 164 |  |  |
+| `FRJ.Search` | 500 | 75 | 500 |  |  |
 | `FRJ.Sound` | 14 | 14 | 14 |  |  |
 | `FRJ.SoundCore` | 31 | 29 | 31 |  |  |
 | `FRJ.SoundV` | 14 | 14 | 14 |  |  |
@@ -55,6 +57,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.WitnessV2012` | 38 | 2 | 38 |  |  |
 | `FRJ.WitnessV2013` | 35 | 2 | 35 |  |  |
 | `FRJ.WitnessV2018` | 41 | 2 | 41 |  |  |
+| `FRJO` | 273 | 92 | 273 |  |  |
 | `LJF` | 1531 | 760 | 1531 |  |  |
 | `LaxBlueprint` | 10 | 0 | 10 |  |  |
 | `LaxLogic.Belief.BooleanIso` | 6 | 4 | 6 |  |  |
@@ -167,11 +170,20 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.Util.Turnstile` | 122 | 8 | 122 |  |  |
 | `LaxLogic.Util.TurnstileTests` | 1 | 1 | 1 |  |  |
 | `LaxPaper` | 10 | 0 | 10 |  |  |
-| `Meta` | 31 | 7 | 31 |  |  |
-| `tools` | 249 | 33 | 249 |  |  |
+| `Meta` | 36 | 7 | 36 |  |  |
+| `RNDB` | 2147 | 93 | 2147 |  |  |
+| `Reject` | 224 | 116 | 224 |  |  |
+| `Rewrite` | 113 | 62 | 113 |  |  |
+| `Tools` | 53 | 8 | 53 |  |  |
+| `tools` | 879 | 131 | 879 |  |  |
 | `wip.G4conf` | 51 | 7 | 49 | 2 |  |
 | `wip.ascRefute` | 25 | 10 | 25 |  |  |
 | `wip.atomForce` | 6 | 6 | 6 |  |  |
+| `wip.atomProbe` | 11 | 11 | 11 |  |  |
+| `wip.b1b2_cells` | 88 | 11 | 88 |  |  |
+| `wip.b1b2_hitting` | 10 | 7 | 10 |  |  |
+| `wip.b1b2_lemmas` | 56 | 54 | 56 |  |  |
+| `wip.b1b2_relaxed` | 10 | 10 | 10 |  |  |
 | `wip.bandM` | 13 | 11 | 13 |  |  |
 | `wip.bandRefute` | 5 | 5 | 5 |  |  |
 | `wip.bandStabilise` | 12 | 6 | 12 |  |  |
@@ -188,17 +200,24 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.cascadeBox` | 13 | 9 | 8 | 5 |  |
 | `wip.chainOff` | 9 | 7 | 9 |  |  |
 | `wip.chainStrict` | 9 | 8 | 9 |  |  |
+| `wip.check_closed` | 10 | 3 | 10 |  |  |
+| `wip.check_join` | 35 | 23 | 35 |  |  |
+| `wip.check_scan` | 33 | 17 | 33 |  |  |
 | `wip.classical` | 73 | 38 | 73 |  |  |
+| `wip.closed_frag_pins` | 57 | 57 | 57 |  |  |
 | `wip.collapse` | 36 | 29 | 36 |  |  |
 | `wip.confl_core` | 20 | 0 | 20 |  |  |
 | `wip.connect` | 14 | 14 | 14 |  |  |
 | `wip.coverfail` | 52 | 44 | 52 |  |  |
 | `wip.crankC` | 6 | 5 | 6 |  |  |
+| `wip.cutinv_cells` | 45 | 4 | 45 |  |  |
+| `wip.dbclosed_dg` | 92 | 47 | 92 |  |  |
 | `wip.depth` | 50 | 48 | 50 |  |  |
 | `wip.depth2` | 90 | 52 | 90 |  |  |
 | `wip.depth3` | 49 | 33 | 49 |  |  |
 | `wip.descent2` | 35 | 20 | 35 |  |  |
 | `wip.embedNeg` | 21 | 14 | 21 |  |  |
+| `wip.endpoint_refute` | 68 | 37 | 68 |  |  |
 | `wip.envDesc` | 12 | 11 | 12 |  |  |
 | `wip.families` | 42 | 40 | 42 |  |  |
 | `wip.fiveWorld` | 20 | 20 | 20 |  |  |
@@ -207,9 +226,14 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.floorImp` | 7 | 2 | 7 |  |  |
 | `wip.floorRefute` | 16 | 10 | 16 |  |  |
 | `wip.freshAnt` | 10 | 4 | 10 |  |  |
+| `wip.frjx` | 83 | 9 | 83 |  |  |
 | `wip.g4confGap` | 13 | 7 | 13 |  |  |
 | `wip.gap2` | 24 | 23 | 24 |  |  |
 | `wip.gapWidth` | 14 | 13 | 14 |  |  |
+| `wip.gbu_ljfo` | 97 | 56 | 97 |  |  |
+| `wip.gbu_ljfo_support` | 23 | 18 | 23 |  |  |
+| `wip.gbu_ljfo_transport` | 12 | 10 | 12 |  |  |
+| `wip.gbu_ndrules` | 4 | 0 | 4 |  |  |
 | `wip.gbu_search_circ` | 46 | 19 | 46 |  |  |
 | `wip.gbu_weakening` | 10 | 8 | 10 |  |  |
 | `wip.goalDesc` | 14 | 13 | 14 |  |  |
@@ -221,7 +245,24 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.ladderdistr` | 5 | 3 | 5 |  |  |
 | `wip.laxNeg` | 12 | 11 | 12 |  |  |
 | `wip.linear` | 87 | 48 | 87 |  |  |
+| `wip.ljfo_attack` | 107 | 8 | 107 |  |  |
+| `wip.ljfo_crosscheck` | 18 | 0 | 18 |  |  |
+| `wip.ljfo_link` | 7 | 5 | 7 |  |  |
+| `wip.ljfo_theta` | 37 | 0 | 37 |  |  |
+| `wip.ljfo_theta_certs` | 4 | 4 | 4 |  |  |
+| `wip.ljfo_theta_pinned` | 17 | 5 | 17 |  |  |
+| `wip.ljfo_unravel` | 43 | 6 | 43 |  |  |
 | `wip.mforth_probe` | 12 | 0 | 12 |  |  |
+| `wip.minmodv` | 69 | 35 | 69 |  |  |
+| `wip.minmodv_assembly` | 94 | 46 | 94 |  |  |
+| `wip.minmodv_flight` | 14 | 9 | 14 |  |  |
+| `wip.minmodv_lift` | 2 | 1 | 2 |  |  |
+| `wip.minmodv_liftmain` | 26 | 18 | 26 |  |  |
+| `wip.minmodv_port` | 26 | 6 | 26 |  |  |
+| `wip.minmodv_residue` | 28 | 9 | 28 |  |  |
+| `wip.minmodv_round3_demo` | 19 | 5 | 19 |  |  |
+| `wip.minmodv_seen` | 12 | 7 | 12 |  |  |
+| `wip.minmodv_test` | 11 | 7 | 11 |  |  |
 | `wip.mixedfail` | 45 | 38 | 45 |  |  |
 | `wip.mwit_complete` | 94 | 10 | 94 |  |  |
 | `wip.negFour` | 7 | 4 | 7 |  |  |
@@ -232,25 +273,44 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.oracle2` | 64 | 8 | 64 |  |  |
 | `wip.overlap` | 21 | 19 | 21 |  |  |
 | `wip.paramfork` | 159 | 123 | 159 |  |  |
+| `wip.pcll1pv_stage0` | 5 | 1 | 5 |  |  |
+| `wip.pcll1pv_stage1` | 6 | 5 | 6 |  |  |
+| `wip.pcll1pv_stage2` | 8 | 8 | 8 |  |  |
+| `wip.pcll1pv_stage2e` | 4 | 1 | 4 |  |  |
+| `wip.pcll1pv_stage2f` | 2 | 1 | 2 |  |  |
+| `wip.pcll1pv_stage2g` | 4 | 3 | 4 |  |  |
+| `wip.pcll1pv_stage2h` | 4 | 3 | 4 |  |  |
+| `wip.pcll1pv_stage2i` | 4 | 3 | 4 |  |  |
+| `wip.pcll1pv_stage2j` | 7 | 7 | 7 |  |  |
+| `wip.pcll1pv_stage3` | 1 | 1 | 1 |  |  |
+| `wip.pcll1pv_stage3b` | 9 | 5 | 9 |  |  |
+| `wip.pcll1pv_stage4` | 3 | 2 | 3 |  |  |
 | `wip.phispade` | 108 | 68 | 108 |  |  |
 | `wip.phistar` | 50 | 38 | 50 |  |  |
 | `wip.pinnedFacts` | 15 | 2 | 15 |  |  |
 | `wip.polarity` | 4 | 3 | 4 |  |  |
-| `wip.postui` | 127 | 107 | 127 |  |  |
+| `wip.postui` | 148 | 112 | 148 |  |  |
+| `wip.quot_cm` | 34 | 8 | 34 |  |  |
 | `wip.rankGapPoint` | 19 | 16 | 19 |  |  |
 | `wip.rankedM` | 12 | 9 | 12 |  |  |
 | `wip.rankedResidue` | 3 | 2 | 3 |  |  |
 | `wip.rbar` | 1 | 1 | 1 |  |  |
+| `wip.rcells` | 443 | 442 | 443 |  |  |
+| `wip.rcells_hand` | 3 | 2 | 3 |  |  |
 | `wip.residueGrowth` | 14 | 10 | 14 |  |  |
+| `wip.rho_engines` | 36 | 8 | 36 |  |  |
+| `wip.rho_order` | 160 | 24 | 160 |  |  |
+| `wip.rnBank` | 46 | 7 | 46 |  |  |
 | `wip.rnClass` | 42 | 13 | 42 |  |  |
 | `wip.rnClassify` | 31 | 28 | 31 |  |  |
 | `wip.rnDict` | 238 | 236 | 238 |  |  |
-| `wip.rnDict2` | 156 | 144 | 93 | 63 |  |
+| `wip.rnDict2` | 93 | 82 | 93 |  |  |
 | `wip.rnDict2Hand` | 77 | 77 | 77 |  |  |
 | `wip.rnDictBase` | 17 | 17 | 17 |  |  |
 | `wip.rnDictRefute` | 4 | 4 | 4 |  |  |
 | `wip.rnDictRefute2` | 58 | 58 | 58 |  |  |
 | `wip.rnEmbed` | 91 | 67 | 91 |  |  |
+| `wip.rnFRJCerts` | 183 | 135 | 183 |  |  |
 | `wip.rnSep` | 169 | 165 | 169 |  |  |
 | `wip.rnSepColl` | 18 | 16 | 18 |  |  |
 | `wip.rnSpawnColl` | 8 | 8 | 8 |  |  |
@@ -269,12 +329,27 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.semui_ctx_core` | 41 | 4 | 41 |  |  |
 | `wip.stabilise` | 42 | 19 | 42 |  |  |
 | `wip.starve` | 11 | 11 | 11 |  |  |
+| `wip.tagleaf_refute` | 23 | 20 | 23 |  |  |
+| `wip.task5` | 3 | 1 | 3 |  |  |
 | `wip.toweratoms` | 6 | 5 | 6 |  |  |
 | `wip.towercircle` | 8 | 8 | 8 |  |  |
 | `wip.towerkit` | 40 | 4 | 40 |  |  |
 | `wip.towerpin` | 19 | 19 | 19 |  |  |
+| `wip.two_sided` | 15 | 0 | 15 |  |  |
 | `wip.twogenStmt` | 4 | 1 | 4 |  |  |
 | `wip.uiObstruct` | 15 | 12 | 15 |  |  |
+| `wip.ui_retention_cell` | 14 | 8 | 14 |  |  |
+| `wip.ui_routeB_blueprint` | 47 | 12 | 42 | 5 |  |
+| `wip.ui_routeB_n3` | 95 | 54 | 95 |  |  |
+| `wip.ui_routeB_n3_cut` | 3 | 0 | 3 |  |  |
+| `wip.ui_routeB_n4_cells` | 33 | 22 | 33 |  |  |
+| `wip.ui_routeB_n4_lit` | 38 | 29 | 38 |  |  |
+| `wip.ui_routeB_n4q` | 26 | 14 | 26 |  |  |
+| `wip.ui_routeB_n4q_cells` | 55 | 39 | 55 |  |  |
+| `wip.ui_routeB_r_cells` | 49 | 43 | 49 |  |  |
+| `wip.ui_routeB_r_def` | 31 | 16 | 31 |  |  |
+| `wip.ui_routeB_statements` | 12 | 0 | 12 |  |  |
+| `wip.visible` | 65 | 45 | 65 |  |  |
 | `wip.witOut` | 28 | 15 | 28 |  |  |
 | `wip.witTripleC` | 51 | 27 | 51 |  |  |
 | `wip.witness` | 16 | 14 | 16 |  |  |
@@ -286,15 +361,16 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 9390 |
-| `propext` | 4339 |
-| `propext`, `Quot.sound` | 3905 |
-| `propext`, `Classical.choice`, `Quot.sound` | 2155 |
-| `sorryAx` | 66 |
-| `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 9 |
-| `propext`, `sorryAx`, `Quot.sound` | 6 |
-| `propext`, `Classical.choice` | 4 |
+| *(none — axiom-free)* | 12370 |
+| `propext`, `Quot.sound` | 8124 |
+| `propext` | 5296 |
+| `propext`, `Classical.choice`, `Quot.sound` | 2419 |
+| `sorryAx` | 8 |
+| `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
+| `propext`, `Classical.choice` | 5 |
+| `propext`, `sorryAx` | 5 |
 | `Classical.choice` | 2 |
+| `propext`, `sorryAx`, `Quot.sound` | 2 |
 | `propext`, `Classical.choice`, `Quot.sound`, `BeliefLax.boolean22_card._native.native_decide.ax_1_1` | 1 |
 | `propext`, `Classical.choice`, `Quot.sound`, `BeliefLax.chain4_card._native.native_decide.ax_1_1` | 1 |
 
@@ -320,69 +396,11 @@ Every distinct axiom set in the estate, most common first.
 | `PLLND.gammaPairFloorA_open` | `wip.cascadeBox` |
 | `PLLND.gammaPairFloorBox_open` | `wip.cascadeBox` |
 | `PLLND.jumpPairFloor_open` | `wip.cascadeBox` |
-| `PLLND.SemUI.RND2.and2_ok` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.box2_ok` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cAnd_10_13` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cAnd_11_13` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cAnd_13_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cAnd_8_11` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cAnd_8_12` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cAnd_8_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cBox_11` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cBox_15` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_10_13` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_10_4` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_10_7` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_11_13` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_11_7` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_12_11` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_12_7` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_12_9` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_13_11` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_13_12` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_13_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_13_5` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_13_9` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_14_11` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_14_12` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_14_13` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_14_7` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_14_9` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_15_12` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_15_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_15_4` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_15_5` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_15_7` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_15_9` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_8_11` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_8_12` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_8_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_8_4` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_8_5` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_8_7` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cImp_8_9` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_10_12` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_10_13` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_10_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_11_12` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_11_13` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_11_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_12_15` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_13_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_14_15` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_5_15` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_5_8` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_6_15` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_7_15` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_8_10` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_8_11` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_8_12` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_8_14` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_8_9` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.cOr_9_15` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.imp2_ok` | `wip.rnDict2` |
-| `PLLND.SemUI.RND2.or2_ok` | `wip.rnDict2` |
-| `PLLND.SemUI.rnDict16` | `wip.rnDict2` |
+| `LJFO.hasUI_of_stabilises` | `wip.ui_routeB_blueprint` |
+| `LJFO.ljfo_ui_of_stabilisation` | `wip.ui_routeB_blueprint` |
+| `LJFO.pll_ui_of_ljfo` | `wip.ui_routeB_blueprint` |
+| `LJFO.stabilisationAll` | `wip.ui_routeB_blueprint` |
+| `LJFO.stabilises_of_hasUI` | `wip.ui_routeB_blueprint` |
 
 ## `native_decide`-tainted declarations
 

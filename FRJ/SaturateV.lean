@@ -348,25 +348,37 @@ the `Ĝ_◯`-branch of cov.  The residual — the same demands at worlds
 whose `Λ*` carries `◯`-formulas, where the joins must run in promise
 mode — is the §8 corner in its final localisation. -/
 
-theorem lamStar_not_circ_loc {K : Kripke} {a : K.W} {G : Form} {X : Form}
-    (hloc : circPart (lamStar K a G) = [])
-    (hX : X ∈ lamStar K a G) (hc : X.isCirc = true) : False := by
-  have : X ∈ circPart (lamStar K a G) := List.mem_filter.mpr ⟨hX, hc⟩
-  rw [hloc] at this
-  exact List.not_mem_nil this
+/-! ### Shared with the paper calculus
 
-theorem unionAll_circPart_nil_loc {K : Kripke} {a : K.W} {G : Form} {n : Nat}
-    (hloc : circPart (lamStar K a G) = [])
-    {stab : Fin (n + 1) → List Form} (hsub : ∀ j, stab j ⊆ lamStar K a G) :
-    unionAll (fun j => circPart (stab j)) = [] := by
-  refine eq_nil_of_forall_not_mem (fun X hX => ?_)
-  obtain ⟨j, hj⟩ := mem_unionAll.mp hX
-  obtain ⟨hXs, hXc⟩ := List.mem_filter.mp hj
-  exact lamStar_not_circ_loc hloc (hsub j hXs) hXc
+21 declarations that stood here were byte-identical to their
+`FRJ` originals and mention nothing of `FRJVr`, so they said the same thing
+twice.  `FRJ.V` is nested inside `FRJ`, so every use in this file now resolves
+to the original (2026-09-16):
 
-/-- The prime regular demand at a locally circ-free world: `Ax^R` when
-`Λ*_a` is purely atomic, the barren `⋈` otherwise.  Suppliers: the full
-irregular layer at `a`. -/
+`Kripke.ConeGrounded`,
+`Kripke.Endpoints`,
+`Kripke.coneGrounded_of_discrete`,
+`Kripke.coneGrounded_of_rmFull`,
+`MaxRef`,
+`MaxSeen`,
+`MinRef`,
+`MinZetaNS`,
+`circPart_lamStar_nil_of_corner`,
+`circPart_lamStar_nil_of_sfL_circFree`,
+`clAts`,
+`clAts_subset`,
+`coneTrivial_of_corner`,
+`endpoints_of_coneGrounded`,
+`endpoints_of_rmFull`,
+`force_classForce`,
+`lamStar_not_circ_loc`,
+`maxRef_of_not_circ`,
+`minRef`,
+`minZetaNS`,
+`unionAll_circPart_nil_loc`.
+-/
+
+
 def metR_prime {K : Kripke} {G : Form} {a : K.W} {C : Form}
     (hloc : circPart (lamStar K a G) = [])
     (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force a C)
@@ -913,75 +925,8 @@ def MRWit.weaken {K : Kripke} {G : Form} {a b : K.W} {C : Form}
 
 /-- minZeta with the opposite preference: a NON-self candidate whenever
 one exists, and a soleness certificate when the pick is `a` itself. -/
-structure MinZetaNS (K : Kripke) (a : K.W) (Z : Form) : Type where
-  e : K.W
-  le : K.le a e
-  cone : ∀ v, K.Rm e v → ¬ K.force v Z
-  sole : e = a → ∀ u, K.le a u → (∀ v, K.Rm u v → ¬ K.force v Z) → u = a
 
-def minZetaNS {K : Kripke} {a : K.W} {Z : Form}
-    (h : ¬ K.force a (.circ Z)) : MinZetaNS K a Z :=
-  match hc : (zetaCand K a Z).filter (fun u => decide (¬(u = a))) with
-  | u :: _ =>
-      have hu : u ∈ (zetaCand K a Z).filter (fun u => decide (¬(u = a))) := by
-        rw [hc]; exact List.mem_cons_self
-      have hz := mem_zetaCand.mp (List.mem_filter.mp hu).1
-      { e := u, le := hz.1, cone := hz.2
-        sole := fun hea => by
-          exfalso
-          have : ¬ (u = a) := by
-            have := (List.mem_filter.mp hu).2
-            simpa using this
-          exact this hea }
-  | [] =>
-      let mz := minZeta h
-      { e := mz.e, le := mz.le, cone := mz.cone
-        sole := fun _ u hu hcone => by
-          by_contra hne
-          have hmem : u ∈ (zetaCand K a Z).filter (fun u => decide (¬(u = a))) :=
-            List.mem_filter.mpr ⟨mem_zetaCand.mpr ⟨hu, hcone⟩, by simpa using hne⟩
-          rw [hc] at hmem
-          exact List.not_mem_nil hmem }
 
-/-- A `Z`-refuting anchor above `a`, preferring a PROPER one; when the
-pick is `a` itself, a certificate that every proper extension forces
-`Z`.  (`a ⊮ ◯Z` gives `a ⊮ Z`, so `a` is always available.) -/
-structure MinRef (K : Kripke) (a : K.W) (Z : Form) : Type where
-  e : K.W
-  le : K.le a e
-  nfZ : ¬ K.force e Z
-  sole : e = a → ∀ u, K.le a u → u ≠ a → K.force u Z
-
-def minRef {K : Kripke} {a : K.W} {Z : Form}
-    (h : ¬ K.force a Z) : MinRef K a Z :=
-  match hc : K.elems.filter
-      (fun u => decide (K.le a u ∧ ¬(u = a) ∧ ¬ K.force u Z)) with
-  | u :: _ =>
-      have hu : u ∈ K.elems.filter
-          (fun u => decide (K.le a u ∧ ¬(u = a) ∧ ¬ K.force u Z)) := by
-        rw [hc]; exact List.mem_cons_self
-      have hz : K.le a u ∧ ¬(u = a) ∧ ¬ K.force u Z := by
-        have := (List.mem_filter.mp hu).2
-        simpa using this
-      { e := u, le := hz.1, nfZ := hz.2.2
-        sole := fun hea => absurd hea hz.2.1 }
-  | [] =>
-      { e := a, le := K.le_refl a, nfZ := h
-        sole := fun _ u hu hne => by
-          by_contra hnf
-          have hmem : u ∈ K.elems.filter
-              (fun u => decide (K.le a u ∧ ¬(u = a) ∧ ¬ K.force u Z)) :=
-            List.mem_filter.mpr ⟨K.complete u, by simp [hu, hne, hnf]⟩
-          rw [hc] at hmem
-          exact List.not_mem_nil hmem }
-
-/-- **The open kernel of FRJ◯ completeness**: supply for the irregular
-◯-demand at a world every proper extension of which forces the body.
-(This entails `cone(a) = {a}` and that `a` is the sole minZeta
-candidate; it is the weakest corner the visit cannot route around.)
-The `IrrWit` may be produced by any route — `metI_circ_syn` over a
-tagged grounding row, or the generalised `Ax^I◯` at maximal worlds
-(`circWit_of_maximal` below). -/
 def CircSupply (K : Kripke) (G : Form) : Type :=
   ∀ a : K.W, ∀ Z : Form, Form.circ Z ∈ sfR G → ¬ K.force a (.circ Z) →
     (∀ u, K.le a u → u ≠ a → K.force u Z) →
@@ -1138,88 +1083,7 @@ sole-candidate supply outright: the vacuous zone of the world's own
 classical theory contains `Λ*_a`, and the side condition
 `classForce ats Z = false` is exactly `a ⊮ Z`. -/
 
-/-- The classical valuation of a world: its forced `Ĝ`-atoms. -/
-def clAts (K : Kripke) (G : Form) (a : K.W) : List Form :=
-  (gAt G).filter (fun q => decide (K.force a q))
 
-theorem clAts_subset {K : Kripke} {G : Form} {a : K.W} :
-    clAts K G a ⊆ gAt G := fun _ h => (List.mem_filter.mp h).1
-
-/-- The polarity-split classical correspondence at a maximal infallible
-world. -/
-theorem force_classForce {K : Kripke} {G : Form} {a : K.W}
-    (hmax : ∀ u, K.le a u → u = a) (hinf : ¬ K.Fal a) :
-    ∀ X : Form,
-      (X ∈ sfL G → K.force a X → classForce (clAts K G a) X = true) ∧
-      (X ∈ sfR G → classForce (clAts K G a) X = true → K.force a X) := by
-  intro X
-  induction X with
-  | atom p =>
-      constructor
-      · intro hL hf
-        simp only [classForce, decide_eq_true_eq]
-        exact List.mem_filter.mpr ⟨List.mem_filter.mpr ⟨hL, rfl⟩, by
-          simpa using hf⟩
-      · intro _ hc
-        simp only [classForce, decide_eq_true_eq] at hc
-        have := (List.mem_filter.mp hc).2
-        simpa using this
-  | bot =>
-      constructor
-      · intro _ hf
-        exact absurd ((K.force_bot a).mp hf) hinf
-      · intro _ hc
-        exact Bool.noConfusion hc
-  | and A B ihA ihB =>
-      constructor
-      · intro hL hf
-        obtain ⟨h1, h2⟩ := sfL_and hL
-        simp only [classForce, Bool.and_eq_true]
-        exact ⟨ihA.1 h1 hf.1, ihB.1 h2 hf.2⟩
-      · intro hR hc
-        obtain ⟨h1, h2⟩ := sfR_and hR
-        simp only [classForce, Bool.and_eq_true] at hc
-        exact ⟨ihA.2 h1 hc.1, ihB.2 h2 hc.2⟩
-  | or A B ihA ihB =>
-      constructor
-      · intro hL hf
-        obtain ⟨h1, h2⟩ := sfL_or hL
-        simp only [classForce, Bool.or_eq_true]
-        exact hf.elim (fun h => Or.inl (ihA.1 h1 h)) (fun h => Or.inr (ihB.1 h2 h))
-      · intro hR hc
-        obtain ⟨h1, h2⟩ := sfR_or hR
-        simp only [classForce, Bool.or_eq_true] at hc
-        exact hc.elim (fun h => Or.inl (ihA.2 h1 h)) (fun h => Or.inr (ihB.2 h2 h))
-  | imp A B ihA ihB =>
-      constructor
-      · intro hL hf
-        obtain ⟨h1, h2⟩ := sfL_imp hL
-        simp only [classForce, Bool.or_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true]
-        by_cases hcA : classForce (clAts K G a) A = true
-        · exact Or.inr (ihB.1 h2 (hf a (K.le_refl a) (ihA.2 h1 hcA)))
-        · exact Or.inl (Bool.not_eq_true _ ▸ hcA)
-      · intro hR hc
-        obtain ⟨h1, h2⟩ := sfR_imp hR
-        rw [K.force_imp]
-        intro b hab hbA
-        rw [hmax b hab] at hbA ⊢
-        simp only [classForce, Bool.or_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at hc
-        rcases hc with hcA | hcB
-        · exact absurd (ihA.1 h1 hbA) (by simp [hcA])
-        · exact ihB.2 h2 hcB
-  | circ A ihA =>
-      constructor
-      · intro hL hf
-        obtain ⟨b, hab, hbA⟩ := hf a (K.le_refl a)
-        have hba : b = a := hmax b (K.sub_mi hab)
-        exact ihA.1 (sfL_circ hL) (hba ▸ hbA)
-      · intro hR hc
-        intro b hab
-        rw [hmax b hab]
-        exact ⟨a, K.rm_refl a, ihA.2 (sfR_circ hR) hc⟩
-
-/-- **The kernel discharged at maximal worlds**, by the generalised
-`Ax^I◯` over the world's classical theory. -/
 def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
     (hmax : ∀ u, K.le a u → u = a)
     (hZ : Form.circ Z ∈ sfR G) (hnf : ¬ K.force a (.circ Z)) :
@@ -1257,121 +1121,8 @@ hypothesis), and every `b ≥ a` then has a `Z`-forcing `Rm`-successor —
 `docs/frj-w4.md` §10 fact 3, and it is now a lemma rather than an
 observation. -/
 
-/-- **The corner is cone-trivial.**  No hypothesis on the modal frame. -/
-theorem coneTrivial_of_corner {K : Kripke} {a : K.W} {Z : Form}
-    (hnf : ¬ K.force a (.circ Z))
-    (hsole : ∀ u, K.le a u → u ≠ a → K.force u Z) : K.ConeTrivial a := by
-  intro c hrm
-  by_contra hne
-  refine hnf (fun b hab => ?_)
-  by_cases hba : b = a
-  · subst hba
-    exact ⟨c, hrm, hsole c (K.sub_mi hrm) hne⟩
-  · exact ⟨b, K.rm_refl b, hsole b hab hba⟩
 
-/-- Hence the corner world's `Λ*` is circ-free — the pledge machinery is
-never needed AT the world where the kernel is asked for. -/
-theorem circPart_lamStar_nil_of_corner {K : Kripke} {G : Form} {a : K.W}
-    {Z : Form} (hnf : ¬ K.force a (.circ Z))
-    (hsole : ∀ u, K.le a u → u ≠ a → K.force u Z) :
-    circPart (lamStar K a G) = [] :=
-  circPart_lamStar_nil_of_coneTrivial (coneTrivial_of_corner hnf hsole)
 
-/-! ### Discharging the kernel: cone-trivial ⇒ maximal
-
-`circWit_of_maximal` wants `≤`-maximality at the demanding world, and
-the corner supplies cone-triviality.  The gap between the two is a
-property of the FRAME alone, so name it and discharge the kernel from
-it. -/
-
-/-- **The frame condition**: every cone-trivial world is `≤`-maximal.
-Equivalently, every non-maximal world has a proper modal successor. -/
-def Kripke.ConeGrounded (K : Kripke) : Prop :=
-  ∀ a : K.W, K.ConeTrivial a → ∀ u, K.le a u → u = a
-
-/-- `Rm = ≤` is cone-grounded: there cone-triviality IS maximality.
-(`sub_mi` is the other inclusion, so `hfull` is the whole of `Rm = ≤`.) -/
-theorem Kripke.coneGrounded_of_rmFull {K : Kripke}
-    (hfull : ∀ a b : K.W, K.le a b → K.Rm a b) : K.ConeGrounded :=
-  fun _ hcone _ hu => hcone _ (hfull _ _ hu)
-
-/-- A discrete frame is cone-grounded, vacuously in the conclusion. -/
-theorem Kripke.coneGrounded_of_discrete {K : Kripke}
-    (hdisc : ∀ a u : K.W, K.le a u → u = a) : K.ConeGrounded :=
-  fun a _ u hu => hdisc a u hu
-
-/-! ## Re-founding the recursion: completeness with no supply at all
-
-The pledge supply exists because the TAGGED regular layer may be demanded
-at a world whose `Λ*` carries a `◯`, where the barren joins do not apply.
-But the tagged layer is only ever demanded UNDER a `◯`, and a refuted
-`◯Z` hands us a world whose whole modal cone refutes `Z` (`minZeta`).  So
-if that cone contains a `≤`-maximal world, run the tagged layer THERE: at
-a maximal world `Λ*` is circ-free, every `∀ u ≥ ·` collapses, and the
-irregular `◯`-demand is closed outright by the generalised `Ax^I◯`.
-
-The result is two recursions in place of one, each with a local measure,
-and NEITHER named supply is consumed.  The §9/§10 bad edge
-`I(◯Z)@a → R(Z)@a` is gone: it has become a call from one recursion into
-the other, at a strictly different world class.
-
-The hypothesis is a condition on the modal relation ALONE — every cone
-meets an endpoint — not on its shape.  `Rm = ≤` and cone-groundedness
-(hence discreteness) are instances of it, proved below in a line each;
-they are not what the theorem is about. -/
-
-/-- A `≤`-maximal world above `a` refuting `Z`. -/
-structure MaxRef (K : Kripke) (a : K.W) (Z : Form) : Type where
-  m : K.W
-  le : K.le a m
-  max : ∀ u, K.le m u → u = m
-  nfZ : ¬ K.force m Z
-
-/-- An endpoint inside the modal cone of `a`: a world `Rm`-seen from `a`
-that no proper `≤`-extension exceeds. -/
-structure MaxSeen (K : Kripke) (a : K.W) : Type where
-  m : K.W
-  rm : K.Rm a m
-  max : ∀ u, K.le m u → u = m
-
-/-- **The one frame condition the completeness proof below needs.**  Every
-modal cone contains an endpoint:
-
-    ∀ a, ∃ m, a Rm m  and  m is `≤`-maximal.
-
-Nothing else is assumed of `Rm` beyond the standing `Kripke` axioms —
-reflexive, transitive, contained in `≤`.  In particular `Rm` may be an
-arbitrary such subrelation; `Rm = ≤` is one instance
-(`endpoints_of_rmFull`) and is not the intended reading, which is that
-`◯` is witnessed at endpoints. -/
-def Kripke.Endpoints (K : Kripke) : Type := ∀ a : K.W, MaxSeen K a
-
-/-- **The routing lemma.**  `minZeta` sends a refuted `◯Z` at `a` to a
-world whose whole modal cone refutes `Z`; the frame condition supplies an
-endpoint inside that cone. -/
-def maxRef_of_not_circ {K : Kripke} (hep : K.Endpoints)
-    {a : K.W} {Z : Form} (h : ¬ K.force a (.circ Z)) : MaxRef K a Z :=
-  let mz := minZeta h
-  let ms := hep mz.e
-  ⟨ms.m, K.le_trans mz.le (K.sub_mi ms.rm), ms.max, mz.cone ms.m ms.rm⟩
-
-/-- `Rm = ≤` satisfies the condition: `maxAbove` walks up to an endpoint
-and the full relation sees it.  This is the ONLY place that special case
-is used. -/
-def endpoints_of_rmFull {K : Kripke} (hfull : ∀ x y : K.W, K.le x y → K.Rm x y) :
-    K.Endpoints :=
-  fun a => let mx := maxAbove K a; ⟨mx.m, hfull _ _ mx.le, mx.max⟩
-
-/-- **Cone-grounded frames are endpoint-seeing too.**  Walk up the modal
-cone to an `Rm`-maximal world (`maxRmAbove`); cone-groundedness turns that
-modal maximality into `≤`-maximality.  So the general theorem subsumes the
-cone-grounded case, and with it the discrete one — no separate theorem,
-no supply hypothesis, and no condition on the goal. -/
-def endpoints_of_coneGrounded {K : Kripke} (hg : K.ConeGrounded) : K.Endpoints :=
-  fun a => let r := maxRmAbove K a; ⟨r.m, r.rm, hg r.m r.cone⟩
-
-/-- `◯∈` from a `Z`-wit at a NAMED world above the demand — `metR_circ`
-with the `minZeta` choice hoisted out. -/
 def metR_circAt {K : Kripke} {G : Form} {a e : K.W} {Z : Form}
     (hC : Form.circ Z ∈ sfR G) (hle : K.le a e) (w : MRWit K G e Z) :
     MRWit K G a (.circ Z) :=
@@ -1572,18 +1323,6 @@ The pledge supply is asked for only at worlds where `Λ*` carries a
 for any completeness statement below, but it is the cheapest discharge of
 `PledgeSupply` for the `visit` route and is kept for that. -/
 
-/-- `Λ*` is circ-free at every world when `Sf^L(G)` is. -/
-theorem circPart_lamStar_nil_of_sfL_circFree {K : Kripke} {G : Form} {b : K.W}
-    (hcf : ∀ X ∈ sfL G, X.isCirc = false) :
-    circPart (lamStar K b G) = [] :=
-  eq_nil_of_forall_not_mem (fun X hX => by
-    have h1 : X ∈ lamStar K b G := circPart_subset hX
-    have h2 : X.isCirc = true := (List.mem_filter.mp hX).2
-    rw [hcf X (mem_lamStar.mp h1).1] at h2
-    exact Bool.noConfusion h2)
-
-/-- **Completeness over discrete models.**  The most degenerate instance
-of all: every world is its own endpoint. -/
 theorem completeness_of_discrete {K : Kripke} {G : Form}
     (hdisc : ∀ a u : K.W, K.le a u → u = a)
     (hK : ¬ K.valid G) : ProvableV G :=

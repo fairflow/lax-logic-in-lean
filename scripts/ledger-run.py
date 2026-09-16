@@ -74,6 +74,26 @@ def olean_exists(m):
                                        *m.split(".")) + ".olean")
 
 
+def stale_modules(mods):
+    """Modules whose `.olean` is older than their source.
+
+    The ledger reads object files, so a stale one makes it report a module as
+    it was, not as it is — on 2026-09-16 that put 63 declarations deleted by
+    commit 438cf25 back into the record, carrying `sorryAx`.  `lake` decides
+    staleness by hash; this is the cheap proxy, and it only ever asks for a
+    rebuild."""
+    out = []
+    for m in mods:
+        src = m.replace(".", os.sep) + ".lean"
+        obj = os.path.join(".lake", "build", "lib", "lean", *m.split(".")) + ".olean"
+        try:
+            if os.path.getmtime(src) > os.path.getmtime(obj):
+                out.append(m)
+        except OSError:
+            continue
+    return out
+
+
 def built_modules():
     """Every module of THIS repository that currently has an `.olean`: a module
     whose source file exists here and whose object file was built."""
@@ -106,6 +126,16 @@ def main(mods_file, out_file, built_only=False):
               f"anyway: {', '.join(unlisted[:8])}"
               + (" …" if len(unlisted) > 8 else ""))
         mods = mods + unlisted
+
+    stale = stale_modules(mods)
+    if stale:
+        print(f"ledger: {len(stale)} module(s) have a source newer than their .olean; "
+              "build them before trusting the record:", file=sys.stderr)
+        for m in stale[:20]:
+            print(f"    lake build {m}", file=sys.stderr)
+        if len(stale) > 20:
+            print(f"    … and {len(stale) - 20} more", file=sys.stderr)
+        raise SystemExit("ledger: stale object files")
 
     tmpdir = tempfile.mkdtemp(prefix="ledger-")
     graph = import_graph(mods)

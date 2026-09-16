@@ -171,6 +171,68 @@ axioms, different module — from a loss, and a move whose axioms *changed* is
 still a regression, reported as `MOVED*`. Both cases are in
 `scripts/test-ledger-diff.py`, and both were watched failing.
 
+## Stage B, done 2026-09-16: `SaturateV` said 21 things twice
+
+The survey called `FRJ/Saturate.lean` ↔ `FRJ/SaturateV.lean` 825 duplicated
+lines. Examining it declaration by declaration gives a smaller and much more
+interesting number.
+
+The two files share **72** declaration names, 55 of them byte-identical — but
+byte-identical text is not the same theorem. Five base structures (`IrrWit`,
+`MRWit`, `FRWit`, `OWit`, `PledgeFam`) differ in exactly one field, `FRJr`
+against `FRJVr`, and **34 of the 55 identical declarations mention one of
+them**, so they are genuinely different statements that happen to be spelled
+alike. Deleting those would silently retype the V layer to the paper calculus.
+
+**21 are redundant outright**: byte-identical, and nothing in their statements
+mentions a doubled name. Since `FRJ.V` is nested inside `FRJ`, every use in the
+V file resolves to the original once the copy is gone; no site anywhere refers
+to them as `FRJ.V.…`, and no axiom pin names one. Deleted — 291 lines — with a
+note in place listing what was removed and why.
+
+The lesson for the rest of this plan: **similarity measured on text overstates
+what can be shared.** The number that matters is how many of the "identical"
+declarations mention something that is itself doubled — here 34 of 55, and that
+is what the 825 collapses to 291 against.
+
+## Refused: the G4 / G4H / G4P triplication (candidate 5, 886 lines)
+
+Examined 2026-09-16 and **not attempted**. The five families (`inv`,
+`identity_mpt`, `impR_inv`, `weaken`, `toSC`) are rename-only between `G4` and
+`G4p` and genuinely different for `G4h`, and the reason they cannot be shared is
+the mirror image of what made `SoundCore` work.
+
+`SoundCore` succeeded because the proofs reduced a constructor applied to an
+object, so the lemma could be restated about the object. Here four of the five
+families are **eliminations** — they open with `induction d` — and an
+elimination cannot be abstracted over a record of operations: a record supplies
+introduction forms, and the only field that would support the induction is the
+recursor, a different dependent type for each of the three constructor sets.
+There is no underlying object to restate the lemma about, because here the
+derivation *is* the object. A single parameterised inductive type-checks on
+paper and buys nothing: every goal then carries a stuck context function, and
+the diverging lines are exactly the permutation arithmetic that re-exposes a
+formula past `[X]`, past `[F, X]`, or past nothing — the same three proofs,
+relocated.
+
+And the duplication is load-bearing, which matters more than the line count:
+
+* `G4` is the object of a published separation (`G4Gap.sc_but_not_G4`,
+  `contraction_not_admissible`), machine-checked *about Iemhoff's Figure 2.3 as
+  transcribed*. Make `G4` an instance of a parameterised family and a reader
+  checking fidelity to the paper must check the instantiation too.
+* `G4ipComplete.completeness_isIPL` is the rule-8 fragment result, and its point
+  is to locate the defect in exactly `laxL`, `impLLax`, `impLLaxLax` — the three
+  constructors an abstraction would blur.
+* `G4h.inv` is height-**preserving**; `G4.inv` has no height. They are different
+  theorems, not two copies of one.
+
+One bounded exception exists and is left for Matthew: `identity_mpt` never
+eliminates a derivation (it inducts on `Nat` and matches on the formula), so it
+would fit a record of the 17 introduction rules — about 140 lines, with the same
+"compile one instantiation first" discipline. Small, and it touches the ladder
+documents; his call, not mine.
+
 ## The rules that keep this honest
 
 1. **No statement moves.** If a refactor would change a theorem's statement, it
