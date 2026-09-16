@@ -75,11 +75,17 @@ def main(claims_path, ledger_path, out_path):
     rows = list(csv.DictReader(open(claims_path, encoding="utf-8"), delimiter="\t"))
 
     buckets = {k: [] for k in
-               ("CONTRADICTED", "DANGLING", "CONFIRMED", "STALE-OPEN", "UNCITED")}
+               ("CONTRADICTED", "DANGLING", "CONFIRMED", "STALE-OPEN", "UNCITED", "HINT")}
     for r in rows:
         cited = [d for d in (r["decls"] or "").split(",") if d]
         if not cited:
             buckets["UNCITED"].append((r, None, None))
+            continue
+        if r.get("how") == "near":
+            # a name within two lines is a HINT, not a citation: it says where a
+            # citation could go, and is never counted as confirming anything
+            hits = decls.get(cited[0], [])
+            buckets["HINT"].append((r, cited[0], hits[0] if hits else None))
             continue
         for d in cited:
             hits = decls.get(d, [])
@@ -122,6 +128,7 @@ def main(claims_path, ledger_path, out_path):
            f"| DANGLING, name is a module of the estate | {len(dangling_named)} |",
            f"| DANGLING, no such name anywhere | {len(dangling_unknown)} |",
            f"| STALE-OPEN — prose says open, ledger is clean | {len(buckets['STALE-OPEN'])} |",
+           f"| HINT — a name within two lines, not a citation | {len(buckets['HINT'])} |",
            f"| UNCITED — no declaration named | {len(buckets['UNCITED'])} |", ""]
 
     def table(title, items, note=None, limit=None):
@@ -156,6 +163,10 @@ def main(claims_path, ledger_path, out_path):
           "No declaration of that name is built. Renamed, deleted, in `wip/` "
           "(which the ledger covers only where it builds), or a paper-level "
           "name that never was a Lean declaration.", limit=60)
+    table("HINT — the claim names nothing, but a declaration is within two lines",
+          [(r, d, row) for r, d, row in buckets["HINT"]][:40],
+          "These are the cheapest citations to add: the prose already names the "
+          "theorem next door. Nothing here is a verdict.", limit=40)
     table("STALE-OPEN — prose says open, the ledger is clean",
           buckets["STALE-OPEN"],
           "Worth a look: the cited declaration is kernel-clean today.",
