@@ -514,3 +514,57 @@ permanently, never to be attributed to the S4 paper; nothing in `FRJ/`
 may cite that paper except for its existence.  Zero-cost alternative on
 the table: a reprint request to Fiorentini/Ferrari (Matthew sends if he
 wishes; draft prepared 2026-08-17).
+
+## Addendum (2026-09-01): `(Lift)`, a rule of ours
+
+`FRJVi` gained a constructor `liftI` on 2026-09-01. It has no counterpart
+in Fiorentini–Ferrari and is recorded here as a **divergence**, the first
+one that adds a rule rather than reorganising a proof.
+
+    Γ ⇒ C      Θ ⊆ Cl(Γ),  Θ ⊆ Ĝ
+    ───────────────────────────────  (Lift)
+             ∅ ; Θ → C
+
+```lean
+| liftI {t : Tag} {Γ Th : List Form} {C : Form}
+    (d : FRJVr G t Γ C)
+    (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
+    FRJVi G [] Th C
+```
+
+**Why.** `⊃∉` and `◯∉` are the only `FRJVi` rules with a regular premise,
+and both change the goal formula (`… ⇒ B ↦ · ; Θ → A ⊃ B`, `… ⇒ Z ↦
+· ; Θ → ◯Z`). A complete case analysis of the eight constructors shows no
+rule takes `Γ ⇒ C` to `∅ ; Θ → C`. The consequence was a genuine
+incompleteness of the irregular judgment: `Gcc = ◯(◯p ⊃ p)` has a regular
+FRJV disproof (`provableV_Gcc`) and had no irregular one, so a forward
+search's `∨` case could never choose that disjunct. `(Lift)` is the rule
+proposed under the name `(R^bar)` in `wip/gbu_search_circ.lean` and
+adopted here.
+
+**What it costs.** One arm in each of twelve recursions over `FRJVi`
+(`wfI`, `RegIdx`, `regIdxDecEq`, `regIdxElems`, `regIdxComplete`, `preI`,
+`preI_spec`, `preI_closed`, `lemma39I0`, `lemma39I`, plus `OccI` and
+`Step` which gain a constructor and `RuleName` a name), and one exception
+in `lhs_subset_of_step` beside `⊃∉`, `◯∉` and the three promotions.
+Nothing else in `LaxLogic`, `FRJ`, `Certified` or `wipshared` changed
+except at the sites listed in the campaign commit. `soundnessV` re-proves
+at `[propext, Quot.sound]`.
+
+**What it withdraws.** Four negative results that were true of `FRJV`
+before the change and are false or unfounded after it — all of them
+records of the very incompleteness `(Lift)` repairs:
+`no_irregular_circ_imp_self` (restated as
+`irregular_circ_imp_self_lifts`), `not_evalI_Gcc` (refuted by
+`FRJ.Gbu.evalI_Gcc`), `not_searchOkO_irr` and `residues_unsatisfiable`
+(both unfounded once `not_evalI_Gcc` goes), and `not_saturated_liftClosed`
+(refuted by `FRJ.Gbu.X.saturated_and_liftClosed`). `searchO` was retired
+on the strength of `residues_unsatisfiable`; that retirement is no longer
+justified and the question is OPEN again.
+
+**What it leaves open.** `evalI_circ_lift` in `wip/gbu_circ.lean` does not
+extend: its `(Lift)` branch needs a regular row for `◯C` from a regular
+row for `◯C'`, and no `FRJVr` rule builds one (`circIn`, the only non-join
+rule concluding a `◯` goal, consumes the body). The lemma and its four
+clients — `evalI_circ_and1`, `_and2`, `_imp`, `_circ` — now carry that
+transfer as a **named hypothesis** rather than proving it.

@@ -202,31 +202,45 @@ theorem not_clean_imp_self {G : Form} {t : Tag} {Γ : List Form} {Z : Form}
             · exact tag_cone (FRJVr.impIn d' hA hg) _ (Or.inr ⟨_, hch, .refl⟩) c hRm hc
                 (fun b hb _ => (modR d').force_mono hb hcp)
 
-/-- **`◯(◯Z ⊃ Z)` has NO irregular refutation at all**, for any `Z`.
-Only `◯∉` and `Ax^I◯` conclude a `◯` goal.  `◯∉` needs a clean regular
-refutation of `◯Z ⊃ Z`, which `not_clean_imp_self` forbids; and
-`Ax^I◯` needs `classForce ats (◯Z ⊃ Z) = false`, which is impossible —
-`◯` is transparent to `classForce`, so the body evaluates to the
-classical tautology `¬x ∨ x`. -/
-theorem no_irregular_circ_imp_self {G : Form} {Z : Form} {St Th : List Form}
-    (d : FRJVi G St Th (.circ (.imp (.circ Z) Z))) : False := by
+/-- **Every irregular disproof of `◯(◯Z ⊃ Z)` is a lift of a regular
+one**, for any `Z`.
+
+Four `FRJVi` rules could conclude a `◯` goal, and three of them are
+impossible here.  `Ax^I` needs the goal prime.  `◯∉` needs a *clean*
+regular disproof of `◯Z ⊃ Z`, which `not_clean_imp_self` forbids.
+`Ax^I◯` needs `classForce ats (◯Z ⊃ Z) = false`, impossible because `◯`
+is transparent to `classForce`, so the body evaluates to the classical
+tautology `¬x ∨ x`.  What is left is `(Lift)`, which returns its own
+regular premise.
+
+This supersedes `no_irregular_circ_imp_self` (`False` in place of the
+existential), which was true of `FRJV` before `(Lift)` was added to
+`FRJVi` on 2026-09-01 and is false of the extended calculus: `GccWitness`
+is a regular disproof of `◯(◯p ⊃ p)`, and `(Lift)` turns it into an
+irregular one.  That is the incompleteness `(Lift)` was added to repair,
+so the loss of the old statement is the point of the change, not a
+casualty of it. -/
+theorem irregular_circ_imp_self_lifts {G : Form} {Z : Form} {St Th : List Form}
+    (d : FRJVi G St Th (.circ (.imp (.circ Z) Z))) :
+    ∃ (t : Tag) (Γ : List Form), Nonempty (FRJVr G t Γ (.circ (.imp (.circ Z) Z))) := by
   cases d with
   | axI F hF hg hTh => exact Bool.noConfusion hF
-  | circNotIn dr htag hTh hg => exact not_clean_imp_self dr htag
+  | circNotIn dr htag hTh hg => exact absurd (not_clean_imp_self dr htag) not_false
   | axIC F ats hats hFf hg hTh =>
       have htaut : classForce ats (Form.imp (.circ Z) Z) = true := by
         show (!classForce ats Z || classForce ats Z) = true
         cases classForce ats Z <;> rfl
       rw [htaut] at hFf
       exact Bool.noConfusion hFf
+  | liftI dr hTh => exact ⟨_, _, ⟨dr⟩⟩
 
 /-- info: 'FRJ.V.WCounter.not_clean_imp_self' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms not_clean_imp_self
 
-/-- info: 'FRJ.V.WCounter.no_irregular_circ_imp_self' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.V.WCounter.irregular_circ_imp_self_lifts' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
-#print axioms no_irregular_circ_imp_self
+#print axioms irregular_circ_imp_self_lifts
 
 end WCounter
 end FRJ.V

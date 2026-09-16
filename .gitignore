@@ -32,3 +32,5 @@ blueprint/
 generalPapers/AiML26-Arxiv.pdf
 generalPapers/mendler-et-al-ckd.pdf
 generalPapers/qckd.pdf
+# against the toolkit; one was committed by mistake at 8faed16.
+runs/

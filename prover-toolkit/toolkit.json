@@ -14,6 +14,10 @@
         "label": "laxlogic"
       },
       {
+        "path": "../wip",
+        "label": "laxlogic"
+      },
+      {
         "path": "../FRJO",
         "label": "laxlogic"
       },
@@ -35,6 +39,11 @@
   "exclude": [
     "ToolkitTest",
     "wip",
+    "wipx",
+    "wipa",
+    "wipb",
+    "wipc",
+    "wipd",
     "Archive",
     "archive",
     ".claude",

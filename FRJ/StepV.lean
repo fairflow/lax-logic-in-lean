@@ -77,6 +77,9 @@ inductive Step (G : Form) : RuleName → Sequent → Sequent → Prop
   | circNotIn {Γ Th : List Form} {Z : Form}
       (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
       Step G .circNotIn (.reg Γ Z) (.irr [] Th (.circ Z))
+  | liftI {Γ Th : List Form} {C : Form}
+      (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
+      Step G .liftI (.reg Γ C) (.irr [] Th C)
   /-- the V-join `⋈^At`: the conclusion context is base + kept. -/
   | joinAt {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} {kept : List Form} (j : Fin (n + 1))
@@ -223,7 +226,7 @@ change world, so their conclusion's zone is contained in the premise's
 only modulo `Cl`. -/
 theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
     (h : Step G R s₁ s₂)
-    (hR : R ≠ .impNotIn) (hRc : R ≠ .circNotIn)
+    (hR : R ≠ .impNotIn) (hRc : R ≠ .circNotIn) (hRl : R ≠ .liftI)
     (hRp : R ≠ .promAt) (hRq : R ≠ .promOr) (hRr : R ≠ .promCirc) :
     s₂.lhs ⊆ s₁.lhs := by
   cases h with
@@ -259,6 +262,7 @@ theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
       · exact Or.inr ((hpre x).mpr (List.mem_append_left _ ((hTh x).mp hx)))
   | impNotIn => exact absurd rfl hR
   | circNotIn => exact absurd rfl hRc
+  | liftI hTh => exact absurd rfl hRl
   | promAt i hΓ hJ7 => exact absurd rfl hRp
   | promOr i hΓ hJ7 => exact absurd rfl hRq
   | promCirc i hΓ hJ7 => exact absurd rfl hRr
@@ -306,6 +310,12 @@ theorem lhs_clo_of_step₀ {G : Form} {s₁ s₂ : Sequent} (h : Step₀ G s₁ 
     | circNotIn hTh =>
         refine (hTh X ?_).1
         simpa using hX
+  by_cases hnameL : R = .liftI
+  · subst hnameL
+    cases hR with
+    | liftI hTh =>
+        refine (hTh X ?_).1
+        simpa using hX
   by_cases hnameP : R = .promAt
   · subst hnameP
     cases hR with
@@ -318,7 +328,7 @@ theorem lhs_clo_of_step₀ {G : Form} {s₁ s₂ : Sequent} (h : Step₀ G s₁ 
   · subst hnameR
     cases hR with
     | promCirc i hΓ hJ7 => exact hJ7 X hX
-  exact .base (lhs_subset_of_step hR hname hnameC hnameP hnameQ hnameR hX)
+  exact .base (lhs_subset_of_step hR hname hnameC hnameL hnameP hnameQ hnameR hX)
 
 /-- **Lemma 3.4(iii).**  "`σ₁ ↦* σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`."
 By (ii) along the chain, glued with (Cl6). -/
@@ -559,6 +569,9 @@ inductive OccI {G : Form} :
       {hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G}
       {hg : Form.circ Z ∈ sfR G} {s : Sequent} :
       OccR d s → OccI (FRJVi.circNotIn d htag hTh hg) s
+  | liftI {t : Tag} {Γ Th : List Form} {C : Form} {d : FRJVr G t Γ C}
+      {hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G} {s : Sequent} :
+      OccR d s → OccI (FRJVi.liftI d hTh) s
 
 end
 
@@ -618,6 +631,7 @@ theorem occI_steps {G : Form} {St Th : List Form} {C : Form}
       (occI_steps h').tail ⟨_, .impInI hd hpre hSt hTh⟩
   | .impNotIn (hTh := hTh) h' => (occR_steps h').tail ⟨_, .impNotIn hTh⟩
   | .circNotIn (hTh := hTh) h' => (occR_steps h').tail ⟨_, .circNotIn hTh⟩
+  | .liftI (hTh := hTh) h' => (occR_steps h').tail ⟨_, .liftI hTh⟩
 
 end
 
@@ -708,6 +722,10 @@ theorem wfI {G : Form} : ∀ {St Th : List Form} {C : Form},
       intro x hx
       simp only [List.nil_append] at hx
       exact (List.mem_filter.mp ((hTh x).mp hx)).1
+  | _, _, _, .liftI _ hTh => by
+      intro x hx
+      simp only [List.nil_append] at hx
+      exact (hTh x hx).2
 
 end
 

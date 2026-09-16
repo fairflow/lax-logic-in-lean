@@ -257,6 +257,31 @@ inductive FRJVi (G : Form) : List Form → List Form → Form → Type
       (hFf : classForce ats F = false) (hgoal : Form.circ F ∈ sfR G)
       {Th' : List Form} (hTh : Th' ≐ vacZoneA G ats) :
       FRJVi G [] Th' (.circ F)
+  -- **(Lift)**, added 2026-09-01.  OURS, not the paper's — divergence, see
+  -- `docs/frj-fidelity.md`.
+  --
+  --     Γ ⇒ C      Θ ⊆ Cl(Γ),  Θ ⊆ Ĝ
+  --     ───────────────────────────────  (Lift)
+  --              ∅ ; Θ → C
+  --
+  -- The missing member of the family `⊃∉` and `◯∉` already belong to —
+  -- regular premise, empty stable zone — with the formula-changing part
+  -- dropped.  Without it `FRJVi` has no rule at all taking a regular
+  -- premise to the SAME goal formula, and `◯(◯Z ⊃ Z)` is then FRJV-
+  -- underivable in the irregular judgment while being FRJV-derivable in
+  -- the regular one (`FRJ.Gbu.evalI_Gcc` is the disproof that fills that
+  -- hole; `FRJ.V.WCounter.irregular_circ_imp_self_lifts` is what survives
+  -- of the theorem that recorded it).
+  --
+  -- Soundness is the `liftI` arm of `lemma39I` and needs neither `w`'s
+  -- infallibility, nor the zone bound, nor the stable-part hypothesis:
+  -- its whole content is that a regular disproof refutes its goal at the
+  -- root of the model it extracts.  It contributes nothing to the joins:
+  -- with `Σ = ∅` the premise has `impPart [] = circPart [] = []`.
+  | liftI {t : Tag} {Γ Th : List Form} {C : Form}
+      (d : FRJVr G t Γ C)
+      (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
+      FRJVi G [] Th C
 
 end
 

@@ -1685,6 +1685,7 @@ theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ _ _ _, i, w => lemma39I0 d i w
   | _, _, _, .impNotIn d _ _ _ _, _, w => (lemma39R d).1 w
   | _, _, _, .circNotIn d _ _ _, _, w => (lemma39R d).1 w
+  | _, _, _, .liftI d _, _, w => (lemma39R d).1 w
   | _, _, _, @FRJVi.axIC _ F ats hats hFf hg _ hTh, _, w => by
       -- the mounted BARE final world (the ◯⊥-false species: no fallible
       -- Rm-access, so `◯Y ≡ Y` on its own cone) forces its zone: every
@@ -1809,6 +1810,18 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       simp only [classForce] at hcf
       rw [hFf] at hcf
       exact Bool.noConfusion hcf
+  | _, _, _, @FRJVi.liftI _ t Γ Th C d hTh,
+      P, hP, w, hw, hlbl, hroot, hforce => by
+      -- (Lift) is sound for the SCHEMA reading and for no other reason:
+      -- `w ⊩ C` would persist to the embedded component root `v`, transfer
+      -- into the component, and be refuted there by Lemma 3.9(ii).  Note
+      -- what is NOT used: the rule needs neither `w`'s infallibility, nor
+      -- the zone bound `hlbl`, nor the stable-part hypothesis `hforce`.
+      -- Its whole content is that a regular disproof refutes its goal at
+      -- the root of the model it extracts.
+      intro hcon
+      obtain ⟨v, hwv, hiff⟩ := hroot ()
+      exact (lemma39R d).2 ((hiff C).mp ((P.toKripke hP).force_mono hwv hcon))
   | _, _, _, @FRJVi.circNotIn _ t Γ Th Z d htag hTh hg,
       P, hP, w, hw, hlbl, hroot, hforce => by
       -- `w ⊩ ◯Z` persists up to the embedded premise root `v`, transfers
