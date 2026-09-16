@@ -341,7 +341,7 @@ The supporting apparatus, all of it new:
 * **`Tag`** (`FRJ/Calculus.lean:311–319`): `barren | chain (D : Form) |
   blocked`. It records what the root's modal cone is. Its semantic
   content is the canonical model's `mfal` pledge component
-  (`LaxLogic/PLLCompleteness.lean`), restricted to a single pledge.
+  (`LaxLogic/PLL/Semantics/Completeness.lean`), restricted to a single pledge.
 * **`Covers`** (`FRJ/Calculus.lean:238–243`), five clauses: a chain
   certificate for `W` transfers to every `Z` reachable from `W` by
   `◯`, `∧`-superformula, and `⊃`-superformula with `Clo Γ A`. Needed

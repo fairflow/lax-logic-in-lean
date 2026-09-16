@@ -30,8 +30,8 @@ Sections:
      worlds that force different formulas — the certificate that
      BISIMILARITY to a tree can fail while force-equivalence need not
 -/
-import LaxLogic.PLLCountermodelEmit
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Semantics.CountermodelEmit
+import LaxLogic.PLL.Search.SearchConf
 
 open PLLND PLLND.FinCM
 

@@ -22,7 +22,7 @@ handoff caught two false positives exactly there):
 Verdicts: pass / FAIL (a certificate: the frame, valuation and world)
 / skip.  One appended line per screen; counters printed always.
 -/
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 open PLLND PLLND.FinCM
 

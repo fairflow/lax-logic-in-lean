@@ -27,14 +27,14 @@ switch so I can see just minimised, i don't need both side by side)".
 **(i) "TM proof term" is `PLLND.Tm`, and the bridge to it is missing.**
 The repository has exactly one term calculus in Fairtlough--Mendler /
 Moggi notation with `val` and monadic `let`: `PLLND.Tm`, in
-`LaxLogic/PLLTerms.lean:60`.  It is intrinsically typed, so its Lax type
+`LaxLogic/PLL/ND/Terms.lean:60`.  It is intrinsically typed, so its Lax type
 is its second index and equality with the checked formula is
 definitional, not a runtime test.  It already has a printer,
-`Tm.pretty` (`LaxLogic/PLLRun.lean:50`).  What does NOT exist is any
+`Tm.pretty` (`LaxLogic/PLL/Search/Run.lean:50`).  What does NOT exist is any
 computable map into it: both routes into `Tm` land in `Nonempty`.
 
-    exists_tm   : LaxND Γ φ  → Nonempty (Tm Γ φ)      LaxLogic/PLLTerms.lean:274
-    G4cTm.toTm  : G4cTm Γ C  → Nonempty (Tm Γ C)      LaxLogic/PLLG4Term.lean:510
+    exists_tm   : LaxND Γ φ  → Nonempty (Tm Γ φ)      LaxLogic/PLL/ND/Terms.lean:274
+    G4cTm.toTm  : G4cTm Γ C  → Nonempty (Tm Γ C)      LaxLogic/PLL/G4/G4Term.lean:510
 
 The obstruction is one constructor: `LaxND.iden` carries a `Prop`-level
 membership `h : φ ∈ Γ`, which carries no occurrence data, whereas
@@ -131,8 +131,8 @@ The type given for a BUILD item is the type it must have.
 | P1 | proof → natural deduction | `FRJ.Gbu.laxOfR` | `GbuRC G Γ C → LaxND (Γ.map toPLL) (toPLL C)` | exists, `FRJ/Gbu/LaxND.lean:70` |
 | P2 | membership → variable | `varOfMem` | `φ ∈ Γ → Var Γ φ` | **BUILD** (§2.3) |
 | P3 | derivation → term | `ndToTm` | `LaxND Γ φ → Tm Γ φ` | **BUILD** (§2.3) |
-| P4 | print the term | `PLLND.Tm.pretty` | `Tm Γ φ → String` | exists, `LaxLogic/PLLRun.lean:50` |
-| P5 | normalise (optional) | `PLLND.Tm.normalize` | `Tm Γ φ → Tm Γ φ` | exists, `LaxLogic/PLLTopTop.lean:1300`, with `normalize_spec` at `:1309` |
+| P4 | print the term | `PLLND.Tm.pretty` | `Tm Γ φ → String` | exists, `LaxLogic/PLL/Search/Run.lean:50` |
+| P5 | normalise (optional) | `PLLND.Tm.normalize` | `Tm Γ φ → Tm Γ φ` | exists, `LaxLogic/PLL/Normalisation/TopTop.lean:1300`, with `normalize_spec` at `:1309` |
 | P6 | emit a re-checkable snippet | `tmSnippet` | `(name : String) → Tm [] φ → String` | **BUILD** (§2.5) |
 | C1 | disproof → model | `FRJ.W.modR` | `FRJWr G t Γ C → Kripke` | exists, `FRJ/ExtractW.lean:488` |
 | C1' | it refutes the goal | `FRJ.W.modR_countermodel` | `(d : FRJWr G t Γ G) → Countermodel (modR d) G` | PROVED, `FRJ/SoundW.lean:1864` |
@@ -166,11 +166,11 @@ Only one of them is a term calculus in the sense of the request.
 
 | family | file:line | what it is |
 |---|---|---|
-| `PLLND.Tm` | `LaxLogic/PLLTerms.lean:60` | **the computational metalanguage**: `var abort lam app pair fst snd inl inr case val bind`.  Term assignment for `LaxND`; `◯` as a strong monad, `val` for `laxIntro`, `bind` for `laxElim`. |
-| `PLLND.LaxND` | `LaxLogic/PLLNDCore.lean:72` | natural deduction, `Type`-valued, so its constructors already ARE a Curry-style term syntax -- but with `Prop`-membership at `iden`, hence no variable names or indices. |
-| `PLLND.G4cTm` | `LaxLogic/PLLG4Term.lean:56` | proof terms for the repaired sequent calculus `G4iLL″`; sixteen constructors, printed as rule trees (`(→L◯◯ (→L→ …) init)`). |
-| `PLLND.PD` | `LaxLogic/PLLJudgmental.lean:56` | Pfenning--Davies dual-judgment derivations. |
-| `PLLND.Focused.*` | `LaxLogic/PLLFocused.lean:85ff` | the focused calculus. |
+| `PLLND.Tm` | `LaxLogic/PLL/ND/Terms.lean:60` | **the computational metalanguage**: `var abort lam app pair fst snd inl inr case val bind`.  Term assignment for `LaxND`; `◯` as a strong monad, `val` for `laxIntro`, `bind` for `laxElim`. |
+| `PLLND.LaxND` | `LaxLogic/PLL/ND/NDCore.lean:72` | natural deduction, `Type`-valued, so its constructors already ARE a Curry-style term syntax -- but with `Prop`-membership at `iden`, hence no variable names or indices. |
+| `PLLND.G4cTm` | `LaxLogic/PLL/G4/G4Term.lean:56` | proof terms for the repaired sequent calculus `G4iLL″`; sixteen constructors, printed as rule trees (`(→L◯◯ (→L→ …) init)`). |
+| `PLLND.PD` | `LaxLogic/PLL/ND/Judgmental.lean:56` | Pfenning--Davies dual-judgment derivations. |
+| `PLLND.Focused.*` | `LaxLogic/PLL/Sequent/Focused.lean:85ff` | the focused calculus. |
 
 **Recommendation: `Tm`.**  Three reasons.  (a) It is the only one whose
 notation is F&M's `val`/`let`, which is what the request names.  (b) Its
@@ -178,17 +178,17 @@ type is its index, so "its Lax type should be the same as the checked
 formula" is a typing constraint discharged by the elaborator rather than
 a property to be tested.  (c) It is the object the repository's own
 metatheory is about: strong normalisation of the interleaved reduction
-(`LaxLogic/PLLTopTop.lean`), reducibility (`PLLReducibility.lean`) and
+(`LaxLogic/PLL/Normalisation/TopTop.lean`), reducibility (`PLLReducibility.lean`) and
 the equivalence
 
-    G4c.equiv_tm : G4c Γ φ ↔ Nonempty (Tm Γ φ)     LaxLogic/PLLG4HComp.lean:115
+    G4c.equiv_tm : G4c Γ φ ↔ Nonempty (Tm Γ φ)     LaxLogic/PLL/G4/G4HComp.lean:115
 
 PROVED `[propext, Quot.sound]`, are all statements about `Tm`.
 `G4cTm` is the wrong object here: it belongs to a different calculus
 from the one the decider derives in (`Gbu◯`), and its printer emits rule
 trees, not λ-terms.
 
-`Tm.pretty` writes, per `LaxLogic/PLLRun.lean:50-62`:
+`Tm.pretty` writes, per `LaxLogic/PLL/Search/Run.lean:50-62`:
 
     var v       ↦  #n                     (n = v.idx, de Bruijn)
     abort t     ↦  abort t
@@ -212,21 +212,21 @@ used.  `Tm` fixes exactly this by replacing `Prop`-membership with the
 
     inductive Var : List PLLFormula → PLLFormula → Type
       | here  {Γ φ}   : Var (φ :: Γ) φ
-      | there {Γ φ ψ} : Var Γ φ → Var (ψ :: Γ) φ    LaxLogic/PLLTerms.lean:54
+      | there {Γ φ ψ} : Var Γ φ → Var (ψ :: Γ) φ    LaxLogic/PLL/ND/Terms.lean:54
 
 and the file's own header says so (`PLLTerms.lean:12-17`).  In the
 `Tm → LaxND` direction the map is a plain `def`,
 
-    Tm.toND : Tm Γ φ → LaxND Γ φ                    LaxLogic/PLLTerms.lean:250
+    Tm.toND : Tm Γ φ → LaxND Γ φ                    LaxLogic/PLL/ND/Terms.lean:250
 
 In the other direction the repository has only
 
-    exists_tm : LaxND Γ φ → Nonempty (Tm Γ φ)       LaxLogic/PLLTerms.lean:274
+    exists_tm : LaxND Γ φ → Nonempty (Tm Γ φ)       LaxLogic/PLL/ND/Terms.lean:274
     curry_howard : Nonempty (Tm Γ φ) ↔ Nonempty (LaxND Γ φ)   :298
 
 ### 2.3 BUILD: `varOfMem` and `ndToTm`
 
-Since `PLLFormula` has `DecidableEq` (`LaxLogic/PLLFormula.lean:10`),
+Since `PLLFormula` has `DecidableEq` (`LaxLogic/PLL/Syntax/Formula.lean:10`),
 the first occurrence witnessed by a `Prop`-membership can be computed.
 
     varOfMem : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, φ ∈ Γ → Var Γ φ
@@ -280,7 +280,7 @@ re-elaboration snippet of §2.5.
 ### 2.5 BUILD: `tmSnippet`, and the two-pass Lean check
 
 The repository already has this pattern twice: `G4cTm.snippet`
-(`LaxLogic/PLLSearch.lean:980`) emits a paste-ready theorem, and
+(`LaxLogic/PLL/Search/Search.lean:980`) emits a paste-ready theorem, and
 `tools/Cert.lean` shells out to `lake env lean` on what it wrote and
 re-emits with the axiom lines Lean itself printed, under `#guard_msgs`
 (`tools/Cert.lean:404-421`).  The proof side should do the same:
@@ -299,7 +299,7 @@ theorem <name> : Nonempty (PLLND.LaxND [] (<φ as source>)) :=
 ```
 
 `srcOf : PLLFormula → String` already exists
-(`LaxLogic/PLLSearch.lean:821`) for the formula half; the term half is a
+(`LaxLogic/PLL/Search/Search.lean:821`) for the formula half; the term half is a
 second printer alongside `Tm.pretty`, since `pretty` produces `#n`
 rather than `Var` constructor chains.  BUILD: `Tm.src`, modelled on
 `G4cTm.src` (`PLLSearch.lean:946`).
@@ -310,7 +310,7 @@ pinned axiom line, not a claim in a report.
 ### 2.6 Two worked examples, BY HAND
 
 Both are HAND-WORKED from the rules of §1.4 of `docs/frjw-explainer.md`
-and of `LaxLogic/PLLTerms.lean:60`.  Neither is a machine-checked claim
+and of `LaxLogic/PLL/ND/Terms.lean:60`.  Neither is a machine-checked claim
 about what the decider emits, because `ndToTm` does not exist yet.  (The
 two terms themselves were typechecked in a scratch file, and
 `Tm.pretty` printed exactly the strings below; that is evidence about
@@ -504,7 +504,7 @@ kernel-checked reason.
       iback  : Z w w' → N.Ri w' v' → ∃ v,  M.Ri w v  ∧ Z v v'
       mforth : Z w w' → M.Rm w u  → ∃ u', N.Rm w' u' ∧ Z u u'
       mback  : Z w w' → N.Rm w' u' → ∃ u,  M.Rm w u  ∧ Z u u'
-                                                LaxLogic/PLLSemUI.lean:71
+                                                LaxLogic/PLL/SemUI/SemUI.lean:71
 
 with FOUR zigzag clauses -- `Ri` and `Rm` separately -- because the `◯`
 clause of forcing is `∀ β ≥ α, ∃ γ, Rm β γ ∧ γ ⊩ A`.  Its preservation
@@ -512,7 +512,7 @@ theorem is PROVED:
 
     force_iff_of_bisim (B : ABisim A M N) :
         (∀ a ∈ φ.atoms, A a) → B.Z w w' → (M.force w φ ↔ N.force w' φ)
-                                                LaxLogic/PLLSemUI.lean:83
+                                                LaxLogic/PLL/SemUI/SemUI.lean:83
 
 Since `Kripke.toConstraint` (`FRJ/Bridge.lean:78`) is a forgetful map
 and `force_toConstraint` (`:95`) says forcing agrees in EVERY world
@@ -536,7 +536,7 @@ so `[b]` has no `Rm`-witness class under the `∀∃` lift and refutes `◯p`
 in the quotient while `b` forces it in the model.  This is precisely why
 the `FRJ.Kripke` route to the finite model property was chosen over the
 filtration route on 2026-09-02 (`FRJ/Gbu/LaxND.lean:18-22`), and
-`LaxLogic/PLLDiagram.lean:381-383` already records the same rule for the
+`LaxLogic/PLL/Search/Diagram.lean:381-383` already records the same rule for the
 display layer: minimisation "removes the `Rᵢ`-equivalent twins by
 deletion rather than quotienting, so the minimised models are posets."
 
@@ -556,8 +556,8 @@ would mean leaving the `Kripke`/`Tab` world and giving up `okB`,
 
 **Two emitters exist, and neither is right as it stands.**
 
-`PLLND.Diagram` (`LaxLogic/PLLDiagram.lean`) consumes `PLLND.FinCM`
-(the OTHER model type, `LaxLogic/PLLCountermodelEmit.lean:44`), has
+`PLLND.Diagram` (`LaxLogic/PLL/Search/Diagram.lean`) consumes `PLLND.FinCM`
+(the OTHER model type, `LaxLogic/PLL/Semantics/CountermodelEmit.lean:44`), has
 `hasseRi` (transitive reduction, `:48`), `riLayers`/`autoPos` (longest
 chain layering, `:75,:87`) and `writeSvg` (`:247`).  Three
 disqualifications for this job: (a) `FinCM` has no root field, so the
@@ -629,7 +629,7 @@ and the command:
   is not wanted.
 
 At command level, extending the existing `#draw` grammar
-(`LaxLogic/PLLDiagramCmd.lean:73,80`):
+(`LaxLogic/PLL/Search/DiagramCmd.lean:73,80`):
 
     #decide φ to "out.svg"                  -- view = min
     #decide φ to "out.svg" view calc
@@ -887,8 +887,8 @@ the un-corrected numbers.)
 | `Kripke.decForce` | PROVED, no axioms | `FRJ/Basic.lean:399`, pin `Audit.lean:100` | -- |
 | `not_derivable_of_countermodel` | PROVED | `FRJ/Bridge.lean:136` | -- |
 | SVG renderer over `Tab` (root, `Rm`, caption, forced labels) | exists | `tools/Cert.lean:243` | -- |
-| `varOfMem`, `ndToTm` | **BUILD** (validated in scratch, `[propext]`) | `LaxLogic/PLLTerms.lean` (append) | 1--2 |
-| `Tm.src` (term as elaborable source) | **BUILD**, model `G4cTm.src` | `LaxLogic/PLLRun.lean` | 2--3 |
+| `varOfMem`, `ndToTm` | **BUILD** (validated in scratch, `[propext]`) | `LaxLogic/PLL/ND/Terms.lean` (append) | 1--2 |
+| `Tm.src` (term as elaborable source) | **BUILD**, model `G4cTm.src` | `LaxLogic/PLL/Search/Run.lean` | 2--3 |
 | `tmSnippet` + two-pass Lean re-check | **BUILD**, model `tools/Cert.lean:404-421` | `Tools/Decide.lean` | 2--3 |
 | hoist `FrjCert.toSvg` to `Tools/Svg.lean` | **BUILD** (move + generalise) | new `Tools/Svg.lean` | 2--3 |
 | `svgOfTab` extensions (Hasse layering by longest chain, `Rm` as its own edge set, fallible marker, atom labels, caption, background) | **BUILD** | `Tools/Svg.lean` | 4--6 |
@@ -929,7 +929,7 @@ real content is `varOfMem`; the composite is the direct route with the
 detour, the direct translation is a mechanical copy of `laxOfR` with
 term constructors and can be added then.
 
-**D1. Which term calculus?**  `PLLND.Tm` (`LaxLogic/PLLTerms.lean:60`),
+**D1. Which term calculus?**  `PLLND.Tm` (`LaxLogic/PLL/ND/Terms.lean:60`),
 not `G4cTm` and not raw `LaxND`.
 *Recommendation: `Tm`.*  It is the only one in `val`/`let` notation, its
 Lax type is its index so the requested agreement with the checked
@@ -966,7 +966,7 @@ rewrites committed figures on every `lake build LaxLogic`.
 beside `frjcert`; the elaboration-time command in `Tools/DecideCmd.lean`
 as `#decide φ to "out.svg" [view min|calc|both]`.*  (`#decide` is free:
 a scan of the `command` parser category in the environment reachable
-from `LaxLogic/PLLDiagramCmd.lean` finds no syntax kind containing
+from `LaxLogic/PLL/Search/DiagramCmd.lean` finds no syntax kind containing
 "decide".)  Alternative: fold it
 into `tools/Cert.lean`, which already parses sequents and shells out to
 Lean -- rejected because `frjcert` is a certificate generator for the ρ
@@ -1052,7 +1052,7 @@ smoke and gate evidence at the end.
 
 | item | where | status |
 |---|---|---|
-| `varOfMem`, `ndToTm` | `LaxLogic/PLLTerms.lean` (appended, `#guard_msgs`-pinned `[propext]`) | PROVED/BUILT |
+| `varOfMem`, `ndToTm` | `LaxLogic/PLL/ND/Terms.lean` (appended, `#guard_msgs`-pinned `[propext]`) | PROVED/BUILT |
 | `Tm.src` (as `tmSrc`, with `varSrc`) — named implicits for `app`/`fst`/`snd`/`case`/`bind` | `tools/Decide.lean` (not `PLLRun.lean`: `srcOf`-style printing needs no library rebuild) | BUILT |
 | `tmSnippet` + two-pass re-check | `tools/Decide.lean` (`twoPass`, the `frjcert` discipline) | BUILT |
 | shared SVG renderer | `tools/Svg.lean` (`PLLSvg.svgOfTab`; `FrjCert.toSvg` left in place as the ρ-certificate renderer) | BUILT |
@@ -1108,9 +1108,9 @@ fixed.
 
 | defect | measurement | cause |
 |---|---|---|
-| the Mathlib storm | closure was 80 local modules, 6 with Mathlib edges | `FRJ/Basic.lean` carried a blanket `import Mathlib` and `LaxLogic/PLLFormula.lean` an `import Mathlib.Tactic`; every FRJ and LaxLogic consumer inherited the library |
+| the Mathlib storm | closure was 80 local modules, 6 with Mathlib edges | `FRJ/Basic.lean` carried a blanket `import Mathlib` and `LaxLogic/PLL/Syntax/Formula.lean` an `import Mathlib.Tactic`; every FRJ and LaxLogic consumer inherited the library |
 | the frozen line | `lake env lean` costs **10.85 s wall warm**, of which **8.2 s is Lake overhead** (config elaboration + filesystem scan) for 1.8 s of Lean work; two passes per refutation, output captured not streamed | `--check` defaulted ON (D6) and shelled out through `lake` |
-| `PLLRun` in the closure | 80 → 55 modules on removing one import | the tool imported `LaxLogic.PLLRun` for `Tm.pretty` (20 lines), which drags `PLLTopTop` → `Mathlib.SetTheory.Ordinal.Rank` |
+| `PLLRun` in the closure | 80 → 55 modules on removing one import | the tool imported `LaxLogic.PLL.Search.Run` for `Tm.pretty` (20 lines), which drags `PLLTopTop` → `Mathlib.SetTheory.Ordinal.Rank` |
 
 ### 9.2 What was done
 
@@ -1129,7 +1129,7 @@ fixed.
   mention is a comment explaining that Finset was avoided because it
   carries `Classical.choice`); one proof needed an explicit
   `Nat.le_refl` where Mathlib's simp set had been closing `f x ≤ f x`.
-  `LaxLogic/PLLFormula.lean` is now **Mathlib-free**.
+  `LaxLogic/PLL/Syntax/Formula.lean` is now **Mathlib-free**.
 * **C2 — the def/proof split, applied where the closure needed it.**
   `PLLFormula`'s only Mathlib use was a legacy `Set`-valued island
   (`subformulasOf`, `isSomehowFree`, `SomehowFree`, `eraseSomehow`),
@@ -1160,13 +1160,13 @@ advantage, might produce a more fragile codebase anyway".  The
 measurement supports it: `Mathlib.Init` alone is 1307 of the 1309
 modules, so every entry point except `Mathlib.Tactic.Lemma` costs the
 same foundation and the last step is all-or-nothing.  Reaching zero
-would need `Set W` out of `LaxLogic/PLLKripke.lean` — 379 downstream
+would need `Set W` out of `LaxLogic/PLL/Semantics/Kripke.lean` — 379 downstream
 sites across `Reject/`, `FRJO/`, `BiLax/` — and a locally defined `Set`
 would collide with Mathlib's in any file importing both.
 
 The five remaining Mathlib edges in the closure are `FRJ.Minimal`
-(`push_neg`), `LaxLogic.PLLNDCore` (`tauto`), `FRJ.Step`
-(`Relation.ReflTransGen`), `LaxLogic.PLLKripke` (`Set`), and
+(`push_neg`), `LaxLogic.PLL.ND.NDCore` (`tauto`), `FRJ.Step`
+(`Relation.ReflTransGen`), `LaxLogic.PLL.Semantics.Kripke` (`Set`), and
 `Meta.Tactics` (imported only by `FRJ.Gbu.DB`, for `set`/`use`).
 
 **This is a policy about the runtime closure, not a ban** (Matthew,
@@ -1174,7 +1174,7 @@ The five remaining Mathlib edges in the closure are `FRJ.Minimal`
 proofs, we may find it more efficient to ask for Mathlib again: but
 nothing prevents us from doing this").  A proof module may take Mathlib
 back whenever a shorter proof is worth it; `Meta/Tactics.lean` exists so
-that asking is one auditable line.  `LaxLogic/PLLFinsetKit.lean` did
+that asking is one auditable line.  `LaxLogic/PLL/Syntax/FinsetKit.lean` did
 exactly that in this pass — it genuinely uses `Finset`, sits outside the
 closure, and so simply kept `import Mathlib` at no cost to the decider.
 

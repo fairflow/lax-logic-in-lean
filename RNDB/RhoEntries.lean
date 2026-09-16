@@ -5,7 +5,7 @@ Layer 3 begins here: each of the 185 kernel-checked refutation
 certificates of `Certified/RhoRefutations.lean` becomes one `RNDB.Entry`.
 The `ok` field consumes the certificate theorem DIRECTLY — `[ρi] ⊬ ρj`
 is `¬ Nonempty (LaxND [ρi] ρj)` by the reducible abbrev `Underivable`,
-and `Deriv Γ φ := Nonempty (LaxND Γ φ)` (LaxLogic/PLLSemUIFrag.lean:30),
+and `Deriv Γ φ := Nonempty (LaxND Γ φ)` (LaxLogic/PLL/SemUI/SemUIFrag.lean:30),
 so `Claim.Holds` for `Rel.nle` unifies with it with no glue.
 
 GENERATED 2026-08-24 from the banked certificates; regenerate rather

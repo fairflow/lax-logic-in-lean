@@ -155,14 +155,14 @@ p{margin:0 0 1rem}
   <pre><code>theorem valid_iff_provable {φ : PLLFormula} :
     (∀ (C : ConstraintModel) (w : C.W), C.force w φ) ↔
       Nonempty (LaxND [] φ)</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLCompleteness.lean:639</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/Semantics/Completeness.lean:639</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">consequence_iff_derivable</code><span class="st proved">proved</span></div>
   <p class="claim">The same at the consequence level.</p>
   <pre><code>theorem consequence_iff_derivable {Γ : List PLLFormula} {φ : PLLFormula} :
     Γ ⊨- φ ↔ Nonempty (LaxND Γ φ)</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLCompleteness.lean:634</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/Semantics/Completeness.lean:634</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">ConfluentU.derivU_iff_confluent_valid</code><span class="st proved">proved</span></div>
@@ -171,7 +171,7 @@ p{margin:0 0 1rem}
     DerivU Γ φ ↔
       ∀ (C : ConstraintModel), MutuallyConfluent C →
         ∀ w : C.W, (∀ ψ ∈ Γ, C.force w ψ) → C.force w φ</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLConfluentComplete.lean:484</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/Semantics/ConfluentComplete.lean:484</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">NoFall.derivUNoFall_iff_infallible_valid</code><span class="st proved">proved</span></div>
@@ -181,7 +181,7 @@ p{margin:0 0 1rem}
     DerivUNoFall Γ φ ↔
       ∀ (C : ConstraintModel), MutuallyConfluent C → Infallible C →
         ∀ w : C.W, (∀ ψ ∈ Γ, C.force w ψ) → C.force w φ</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLNoFall.lean:462</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/UI/NoFall.lean:462</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
 </article>
   </div>
 </section><section>
@@ -194,14 +194,14 @@ p{margin:0 0 1rem}
   <pre><code>theorem derivUNoFall_iff_IPLND {Γ : List PLLFormula} {C : PLLFormula}
     (hC : isIPL C) (hΓ : ∀ ψ ∈ Γ, isIPL ψ) :
     DerivUNoFall Γ C ↔ IPLND Γ C</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLNoFallNF.lean:328</span><span class="pin">propext, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/UI/NoFallNF.lean:328</span><span class="pin">propext, Quot.sound</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">NoFall.varfree_dichotomy</code><span class="st proved">proved</span></div>
   <p class="claim">What ¬◯⊥ actually collapses: the <em>variable-free</em> fragment becomes {⊥, ⊤} up to interderivability. In PLL and PCLL that fragment is infinite — ◯⊥ generates a Rieger–Nishimura-style ladder.</p>
   <pre><code>theorem varfree_dichotomy : ∀ {A : PLLFormula}, VarFree A →
     DerivUNoFall [] A ∨ DerivUNoFall [A] falsePLL</code></pre>
-  <p class="note">Pin not re-checked this pass.</p><div class="rfoot"><span class="loc">LaxLogic/PLLNoFall.lean:190</span></div>
+  <p class="note">Pin not re-checked this pass.</p><div class="rfoot"><span class="loc">LaxLogic/PLL/UI/NoFall.lean:190</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">G4c_iff_search</code><span class="st proved">proved</span></div>
@@ -210,7 +210,7 @@ p{margin:0 0 1rem}
     G4c Γ C ↔
     search (listWeight (C :: Γ)) (listAtoms (C :: Γ))
       (decideFuel Γ C) ∅ Γ C = true</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLG4Dec.lean:634</span><span class="pin">propext, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/G4/G4Dec.lean:634</span><span class="pin">propext, Quot.sound</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">disjunction_property</code><span class="st proved">proved</span></div>
@@ -218,7 +218,7 @@ p{margin:0 0 1rem}
   <pre><code>theorem disjunction_property {A B : PLLFormula}
     (h : Nonempty (LaxND [] (A.or B))) :
     Nonempty (LaxND [] A) ∨ Nonempty (LaxND [] B)</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLSequent.lean:630</span><span class="pin">propext, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/Sequent/Sequent.lean:630</span><span class="pin">propext, Quot.sound</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">Gbu.provableGbuC_iff_provableGbu</code><span class="st proved">proved</span></div>
@@ -271,7 +271,7 @@ p{margin:0 0 1rem}
   <p class="claim">Curry’s problem, one direction: PLL ⊢ φ implies IPL ⊢ φ<sup>C</sup> for every standard constraint C.</p>
   <pre><code>theorem thm6_soundness (C : StdCtx) {φ : PLLFormula}
     (h : Nonempty (LaxND [] φ)) : Nonempty (LaxND [] (subC C φ))</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLCtxCompleteness.lean:173</span><span class="pin">propext, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/Semantics/CtxCompleteness.lean:173</span><span class="pin">propext, Quot.sound</span></div>
 </article>
   </div>
 </section><section>
@@ -295,7 +295,7 @@ p{margin:0 0 1rem}
   <p class="claim">Curry’s problem, converse. Both directions done — do not re-scope.</p>
   <pre><code>theorem thm6_completeness {φ : PLLFormula}
     (h : ∀ C : StdCtx, Nonempty (LaxND [] (subC C φ))) : Nonempty (LaxND [] φ)</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLCtxCompleteness.lean:627</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/Semantics/CtxCompleteness.lean:627</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">Gbu.search</code><span class="st proved">proved</span></div>
@@ -382,7 +382,7 @@ p{margin:0 0 1rem}
     G4 [Ga.somehow, Fa] ((prop &quot;p&quot;).somehow) ∧
     G4 [(prop &quot;p&quot;).somehow, Ga.somehow, Fa] (prop &quot;r&quot;) ∧
     ¬ G4 [Ga.somehow, Fa] (prop &quot;r&quot;)</code></pre>
-  <div class="rfoot"><span class="loc">LaxLogic/PLLG4Gap.lean:396</span></div>
+  <div class="rfoot"><span class="loc">LaxLogic/PLL/G4/G4Gap.lean:396</span></div>
 </article>
 <article class="res">
   <div class="rhead"><code class="nm">Gbu.not_wf_stepC</code><span class="st ref">refuted</span></div>

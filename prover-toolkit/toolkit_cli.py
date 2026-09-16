@@ -17,8 +17,8 @@ and can bring judgement, repository grep, and a whole-file view that a fixed
 prompt cannot.
 
     python3 toolkit_cli.py search "nucleus lax modality"
-    python3 toolkit_cli.py goals  LaxLogic/PLLSemUIHenkin.lean
-    python3 toolkit_cli.py check  LaxLogic/PLLSemUIHenkin.lean wit_pbisim
+    python3 toolkit_cli.py goals  LaxLogic/PLL/SemUI/SemUIHenkin.lean
+    python3 toolkit_cli.py check  LaxLogic/PLL/SemUI/SemUIHenkin.lean wit_pbisim
 """
 from __future__ import annotations
 

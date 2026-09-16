@@ -36,7 +36,7 @@ cases mirror FRJ's `⊃∈` / `⊃∉`:
 Both are proved below, and `not_laxND_of_root` turns a root that
 forces `Γ` and refutes `ψ` into certified PLL-underivability.
 -/
-import LaxLogic.PLLKripke
+import LaxLogic.PLL.Semantics.Kripke
 
 namespace Reject
 

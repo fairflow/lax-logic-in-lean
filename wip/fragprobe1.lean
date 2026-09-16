@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.UI.G4UITrunc
 
 /-! Minimal-fragment stress probe (Matthew's meta-tactic, scoped).
 

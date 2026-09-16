@@ -1,5 +1,5 @@
 #!/bin/sh
-# laxrun — run the LaxLogic CLI (Main.lean → LaxLogic.PLLExec drivers).
+# laxrun — run the LaxLogic CLI (Main.lean → LaxLogic.PLL.Search.Exec drivers).
 #
 # Native path: the v4.22.0-rc3-era code-generator bug (NULL fields in
 # `Set.instBoundedOrder`'s constant closure; history in Main.lean) is fixed

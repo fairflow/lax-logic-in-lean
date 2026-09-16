@@ -48,7 +48,7 @@ sections, each with a control that must fail in the same run.
 -/
 import Reject.Build
 import Reject.Audit
-import LaxLogic.PLLConfluentComplete
+import LaxLogic.PLL.Semantics.ConfluentComplete
 
 namespace Reject
 

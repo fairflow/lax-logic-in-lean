@@ -12,7 +12,7 @@ dependent pattern matching cannot decompose the family. Computation in a
 Reproduce with:
 
     import Meta
-    import LaxLogic.PLLNDCore
+    import LaxLogic.PLL.ND.NDCore
     #slime PLLND.LaxND        -- the control: 0 of 12
 
 ## Result

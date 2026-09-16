@@ -39,9 +39,9 @@ orbits.
     rhoorder matrix    -- the 22 × 22 order (the main run)
     rhoorder pin       -- matrix, plus a pin line per certified ⊬
 -/
-import LaxLogic.PLLSearch
-import LaxLogic.PLLConfluentComplete
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Semantics.ConfluentComplete
+import LaxLogic.PLL.Search.SearchConf
 import Rewrite
 import LaxLogic.RN.Reps
 import LaxLogic.RN.Rho
@@ -67,7 +67,7 @@ namespace CFX
 an exe root; the searcher/battery toolkit below is its §§ "confluent
 battery" / "positive tiers" / "rooted 5-world battery", unchanged, in
 namespace `PLLND.RNC.CF` instead of `PLLND.RNC`.  `confB` and the
-certificate theorems come from the library, `LaxLogic/PLLSearchConf.lean`.) -/
+certificate theorems come from the library, `LaxLogic/PLL/Search/SearchConf.lean`.) -/
 
 /-! The fifteen RN(◯,{}) representatives, from the shared dictionary
 `LaxLogic/RN/Reps.lean` (append-only: `qk` never changes meaning).  This

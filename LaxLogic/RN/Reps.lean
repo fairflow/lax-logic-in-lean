@@ -31,7 +31,7 @@ information and must be looked up here.  A structural naming scheme,
 where the index is computed from the formula and needs no registry at
 all, is an open thread (`docs/next-session.md`).
 -/
-import LaxLogic.PLLNDCore
+import LaxLogic.PLL.ND.NDCore
 
 namespace RNReps
 

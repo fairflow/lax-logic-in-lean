@@ -59,14 +59,14 @@ BY MODULE so that every other declaration in `LaxLogic/` stays swept —
 widening `allowing` to admit `sorryAx` would have disabled the check for
 the whole estate, which is how a gate stops meaning anything.
 
-* `LaxLogic.BeliefExamples` — `chain4_card` and `boolean22_card` depend
+* `LaxLogic.Belief.Examples` — `chain4_card` and `boolean22_card` depend
   on `native_decide`'s generated axiom.  `native_decide` taints, and the
   mandate does not accept it as a proof: these two cardinality claims are
   not machine-checked in the sense the rest of the estate is.  Either
   re-prove by `decide`, or move them out of the library.
 
-* `LaxLogic.PLLSemUILayered`, `LaxLogic.PLLSemUIChar`,
-  `LaxLogic.PLLSemUIHenkin` — five sorried declarations from the semantic
+* `LaxLogic.PLL.SemUI.SemUILayered`, `LaxLogic.PLL.SemUI.SemUIChar`,
+  `LaxLogic.PLL.SemUI.SemUIHenkin` — five sorried declarations from the semantic
   uniform-interpolation development shelved on 2026-08-07:
   `SemUI.amalgamation`, `SemUI.layered_of_frag_agree_W`,
   `SemUI.wit_force`, `SemUI.wit_pbisim`, `SemUI.amalgamation_assembled`.
@@ -78,6 +78,6 @@ Each line here is a claim that something is not meeting the bar.  The
 list should get shorter. -/
 
 #axiom_sweep [LaxLogic, FRJ, Rewrite, LJF]
-  except [LaxLogic.BeliefExamples, LaxLogic.PLLSemUILayered,
-          LaxLogic.PLLSemUIChar, LaxLogic.PLLSemUIHenkin]
+  except [LaxLogic.Belief.Examples, LaxLogic.PLL.SemUI.SemUILayered,
+          LaxLogic.PLL.SemUI.SemUIChar, LaxLogic.PLL.SemUI.SemUIHenkin]
   allowing [propext, Classical.choice, Quot.sound]

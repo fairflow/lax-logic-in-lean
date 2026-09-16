@@ -1,8 +1,8 @@
 # The fullness obstruction: why the ⊃-clause must be presented the future
 
-Source: `LaxLogic/BeliefRealisability.lean` (promoted from `wip/` 2026-07-18), section `FullnessObstruction`
+Source: `LaxLogic/Belief/Realisability.lean` (promoted from `wip/` 2026-07-18), section `FullnessObstruction`
 (the theorem `realS_fullness_obstruction`); the frame is built with the
-checker machinery of `LaxLogic/PLLCountermodelEmit.lean`. Audit:
+checker machinery of `LaxLogic/PLL/Semantics/CountermodelEmit.lean`. Audit:
 `[propext, Quot.sound]` — no choice. Reading conventions as in
 `docs/annotated/README.md`. This is the pivot of the ⊩ᵖ programme: the
 machine-checked reason the presented clause family exists at all.
@@ -147,7 +147,7 @@ naive completeness.
 
 The repair is dictated, not chosen: the ⊃-clause must be told the world,
 exactly as the ◯-clause already is. That is the single change defining
-⊩ᵖ (`realP`, `LaxLogic/PLLEvidence.lean`):
+⊩ᵖ (`realP`, `LaxLogic/PLL/Realisability/Evidence.lean`):
 
 ```lean
 | .ifThen φ ψ, x, w =>

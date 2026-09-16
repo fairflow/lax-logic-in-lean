@@ -1399,7 +1399,7 @@ ALL `Rm`-shapes are needed — wants a Jankov–Fine characteristic formula
 `χ_M` for each finite rooted reduced constraint model, refuted by `M` and
 valid on every model not containing `M` as a p-morphic image. The
 reduction is already in `Reject/Reduce.lean` (`RmEq`, `qModel`, `qBisim`,
-`rrank`), and `lemma9` of `LaxLogic/PLLCtxCompleteness.lean` (the ℕ-model
+`rrank`), and `lemma9` of `LaxLogic/PLL/Semantics/CtxCompleteness.lean` (the ℕ-model
 plus shift bisimulation behind Corollary 10, "no FINITE set of standard
 constraints is complete") is the template for the validity half.
 
@@ -1412,7 +1412,7 @@ finite list of negative results. The quantified form Matthew asked for —
 that a good proportion of ALL subrelations `Rm ⊆ Ri` are needed — is now
 PROVED, and it did not need Jankov–Fine after all. It comes out of
 Corollary 10 of F&M's *Solution to Curry's Problem*, which is already
-mechanised in `LaxLogic/PLLCtxCompleteness.lean`, once that corollary is
+mechanised in `LaxLogic/PLL/Semantics/CtxCompleteness.lean`, once that corollary is
 read on the frame side rather than the constraint side.
 
 ### The invariant
@@ -1506,7 +1506,7 @@ class, and not any class of bounded modal width.
 
 ### Where it is
 
-`LaxLogic/PLLCtxCompleteness.lean`, after `corollary10`:
+`LaxLogic/PLL/Semantics/CtxCompleteness.lean`, after `corollary10`:
 `stabCard`, `length_C0`, `chi_valid_of_stabCard`,
 `stabCard_bounded_incomplete`, `stabCard_pos`, `stabCard_eq_one_of_top`,
 all `#print axioms`-pinned at the file's tail.

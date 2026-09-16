@@ -1,4 +1,4 @@
-import LaxLogic.PLLNoFall
+import LaxLogic.PLL.UI.NoFall
 -- Explicit since 2026-09-04.  This file used `fin_cases` and `le_total`
 -- at `Fin n`, both of which arrived transitively while the foundation
 -- modules still re-exported Mathlib wholesale.  They no longer do, and
@@ -14,7 +14,7 @@ import Mathlib.Data.Fintype.Basic -- Fin.fintype, which `fin_cases` needs
 
 Shared infrastructure for the two new rungs of the ladder of logics
 (`wip/classical.lean`, `wip/linear.lean`), built to the pattern of
-`LaxLogic/PLLNoFall.lean`.
+`LaxLogic/PLL/UI/NoFall.lean`.
 
 `PLLNoFall.lean` adds the **closed** axiom `¬◯⊥` as a persistent hypothesis
 and notes that for an axiom *with variables* the hypothesis form would be

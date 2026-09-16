@@ -765,7 +765,7 @@ bite; the first was the unary arity of the ◯-rule.
 The built tree duplicates worlds the countermodel shares between
 branches, so the two are never isomorphic. Matthew's catch: the notion
 already exists in this tree as `SemUI.ABisim`
-(`LaxLogic/PLLSemUI.lean`), built for the *semantic route to uniform
+(`LaxLogic/PLL/SemUI/SemUI.lean`), built for the *semantic route to uniform
 interpolation*, with `force_iff_of_bisim` already proved. Its zig-zag
 is already the one `◯` forces. `Reject/Bisim.lean` is therefore a thin
 adapter — `Bisim M N := ABisim (fun _ => True) M N` — and nothing is
@@ -1596,7 +1596,7 @@ side-condition table rather than in constructors. Recorded, not decided.
 derivation it consumes.  `completenessFRJO'` does not deliver that and
 cannot: the zone `recon` builds is the refuting world's THEORY, in
 general strictly larger than the context.  The missing glue is
-`LaxND.rename` (`LaxLogic/PLLNDCore.lean`), and with it the two sides
+`LaxND.rename` (`LaxLogic/PLL/ND/NDCore.lean`), and with it the two sides
 match exactly — stated as `FRJO.frjd_iff'` (`FRJO/Recon.lean`,
 `[propext, Classical.choice, Quot.sound]`):
 

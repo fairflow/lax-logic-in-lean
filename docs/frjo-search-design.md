@@ -41,15 +41,15 @@ big as the refutation needs and no bigger.
   side conditions at insertion, subsumption by tag-and-context dominance,
   caps reported not silent. **This is the semantic core to keep**; §3
   is about its cost model, not its faithfulness.
-- **`LaxLogic/PLLG4Term.lean`** — the house pattern for exactly the kind
+- **`LaxLogic/PLL/G4/G4Term.lean`** — the house pattern for exactly the kind
   of searcher proposed below: `partial def proveM` with
   `FailMemo := Std.HashMap (List PLLFormula × PLLFormula) Bool`, plus a
   budgeted twin `proveBounded`. Copy this shape, do not reinvent it.
-- **`LaxLogic/PLLSearch.lean`** — two-sided `verdict`/`countermodel`;
+- **`LaxLogic/PLL/Search/Search.lean`** — two-sided `verdict`/`countermodel`;
   the differential-testing oracle for §6.
 - **`Reject/`** — `Reject.certifies`: Built-tree countermodels as a
   `Bool` check; the independent model-side checker.
-- **`LaxLogic/PLLDecide.lean`** (`decideG4`) — the decision procedure.
+- **`LaxLogic/PLL/Search/Decide.lean`** (`decideG4`) — the decision procedure.
   Standing rule (CLAUDE.md): **never drive discovery through it**; its
   fuel bounds are infeasible. Oracle of last resort only.
 - **`FRJ/Extract.lean`** — derivation → `PreModel` → `Kripke`. The output

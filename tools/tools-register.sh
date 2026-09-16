@@ -10,10 +10,10 @@ echo
 for p in \
   Rewrite \
   wip/ljfo_link.lean \
-  LaxLogic/PLLSearch.lean \
+  LaxLogic/PLL/Search/Search.lean \
   FRJ \
-  LaxLogic/PLLCountermodelEmit.lean \
-  LaxLogic/PLLSearchConf.lean \
+  LaxLogic/PLL/Semantics/CountermodelEmit.lean \
+  LaxLogic/PLL/Search/SearchConf.lean \
   RNDB \
   tools/Cover.lean \
   tools/rho-hasse-svg.py \

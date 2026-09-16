@@ -1,6 +1,6 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLConfluentComplete
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Semantics.ConfluentComplete
+import LaxLogic.PLL.Search.SearchConf
 import LaxLogic.RN.Reps
 
 /-!
@@ -13,7 +13,7 @@ such that every `DerivU`-interderivability class with a representative
 of `crank ≤ 7` already has a representative of `crank ≤ R₀`?
 
 `crank` (restated locally as `crankL`, definitionally `SemUI.crank` of
-`LaxLogic/PLLSemUILayered.lean`): atoms/⊥ cost 0, ∧/∨ take the max,
+`LaxLogic/PLL/SemUI/SemUILayered.lean`): atoms/⊥ cost 0, ∧/∨ take the max,
 ⊃ adds 1, ◯ adds 2.
 
 ## Method
@@ -79,7 +79,7 @@ namespace CF
 an exe root; the searcher/battery toolkit below is its §§ "confluent
 battery" / "positive tiers" / "rooted 5-world battery", unchanged, in
 namespace `PLLND.RNC.CF` instead of `PLLND.RNC`.  `confB` and the
-certificate theorems come from the library, `LaxLogic/PLLSearchConf.lean`.) -/
+certificate theorems come from the library, `LaxLogic/PLL/Search/SearchConf.lean`.) -/
 
 /-! The fifteen RN(◯,{}) representatives, from the shared dictionary
 `LaxLogic/RN/Reps.lean` (append-only: `qk` never changes meaning).  This

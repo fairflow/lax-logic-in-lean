@@ -29,7 +29,7 @@ The direction of the isomorphism is deliberate: `PLLFormula` is primary,
 `Form` derived.
 -/
 import FRJ.Sound
-import LaxLogic.PLLKripke
+import LaxLogic.PLL.Semantics.Kripke
 
 namespace FRJ
 

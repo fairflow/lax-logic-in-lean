@@ -496,7 +496,7 @@ sources.
 | (J7) `ctx ⊆ Cl(Δᵢ)` | the paper's Lemma 3.5 discipline: every `↦`-edge carries `Lhs`-containment modulo `Cl`; (J7) is that condition for the promise edge, as `Θ ⊆ Cl(Γ)` is for `⊃∉` |
 | worlds = p-sequents of `D` | UNCHANGED — promise components' worlds are the p-sequents of the promise sub-derivations; the paper's `PS(D)` discipline survives the extension |
 | barren-join side condition `Σ^◯ = ∅` | forced by (†): a join keeping no modal part must not have committed modal formulas |
-| the `Tag` index on `FRJr` | OURS.  The paper reads properties off the fixed derivation `D`; an index is the mechanisation of that reading.  Its semantic content is the canonical model's `mfal` pledge component (`LaxLogic/PLLCompleteness.lean`, worlds = `(val, fal, mfal)` with `Rm = ⊆×⊆`), restricted to a single pledge |
+| the `Tag` index on `FRJr` | OURS.  The paper reads properties off the fixed derivation `D`; an index is the mechanisation of that reading.  Its semantic content is the canonical model's `mfal` pledge component (`LaxLogic/PLL/Semantics/Completeness.lean`, worlds = `(val, fal, mfal)` with `Rm = ⊆×⊆`), restricted to a single pledge |
 | the fallible join `⋈^⊥` and `leafF` | OURS, forced by the SEMANTICS: `¬◯⊥` is IPL-valid but not PLL-valid, so a calculus whose models are all infallible is incomplete (`valid_neg_circ_bot_of_infallible`); a fallible world refutes nothing, hence carries no premise — the one world of `Mod(D)` that is not a p-sequent |
 | declared `rm`/`fal` on `PreModel` | forced by W3's finding that any UNIFORM choice of `Rm` fixes a nucleus (id/¬¬/⊤) and a provable blind spot |
 
@@ -508,7 +508,7 @@ authors' pages, both institutional repositories refuse anonymous access.
 declines to purchase; the S4 paper stays unread.  Consequence for W4:
 the design is grounded ONLY in (i) the TOCL paper's §6 construction
 (model → derivation, the top-down visit), read at source, and (ii) the
-repo's machine-checked PLL completeness (`LaxLogic/PLLCompleteness.lean`
+repo's machine-checked PLL completeness (`LaxLogic/PLL/Semantics/Completeness.lean`
 canonical model).  The promise-family shape is therefore OURS
 permanently, never to be attributed to the S4 paper; nothing in `FRJ/`
 may cite that paper except for its existence.  Zero-cost alternative on

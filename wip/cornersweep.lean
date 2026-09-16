@@ -8,7 +8,7 @@ import FRJ.Search.OpsW
 import FRJ.Bridge
 import FRJ.Minimal
 import FRJ.Gbu.Circ
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 open FRJ FRJ.Search Form
 
 def pa : Form := .atom "p"

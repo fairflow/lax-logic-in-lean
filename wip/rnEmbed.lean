@@ -1,7 +1,7 @@
-import LaxLogic.PLLSemUIFrag
-import LaxLogic.PLLSemUIOFree
-import LaxLogic.PLLSemUICtx
-import LaxLogic.PLLConfluentComplete
+import LaxLogic.PLL.SemUI.SemUIFrag
+import LaxLogic.PLL.SemUI.SemUIOFree
+import LaxLogic.PLL.SemUI.SemUICtx
+import LaxLogic.PLL.Semantics.ConfluentComplete
 
 /-!
 # The Rieger–Nishimura ladder embeds in the variable-free fragments

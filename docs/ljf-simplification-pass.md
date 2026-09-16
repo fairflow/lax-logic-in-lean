@@ -9,7 +9,7 @@ as agreed, at least as valuable an output as the theorem.*
 ## 1. What the development proves
 
 For the focused calculus `LJF` (canonical-polarity Liang–Miller, built
-from zero imports in `LaxLogic/LJF.lean`), one recursion
+from zero imports in `LaxLogic/Focusing/LJF.lean`), one recursion
 
 $$\mathrm{interp}\;p\;\mathit{todo}\;\mathit{done}\;g$$
 

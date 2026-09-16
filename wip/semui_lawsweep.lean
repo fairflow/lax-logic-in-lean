@@ -1,10 +1,10 @@
 import wip.oracle2
-import LaxLogic.PLLSemUILaw
+import LaxLogic.PLL.SemUI.SemUILaw
 
 /-!
 # Certified sweep of the per-instance reconstruction law
 
-Tests the LIBRARY's law objects (`LaxLogic/PLLSemUILaw.lean`) — the
+Tests the LIBRARY's law objects (`LaxLogic/PLL/SemUI/SemUILaw.lean`) — the
 probe is faithful to the formal conjecture by construction:
 
     ∀-law:  poolAll p M  ⊢  M      (list form of [allCandP p M] ⊢ M)

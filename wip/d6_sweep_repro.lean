@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-! Reproduce the exact v2quant scan call on the stalled cell:
 `Search.decide cfgScan [D₆] ◯(◯p⊃p)` — sweep stage only, then the

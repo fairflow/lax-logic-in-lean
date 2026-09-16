@@ -171,7 +171,7 @@ Derivations are **data**, not existence claims. Judgments live in
 not assert one exists — `choose` and `Nonempty.some` are themselves
 choice, and an existence proof yields no procedure.
 
-The template is `LaxLogic/PLLNDCore.lean`. Its design rules, quoted
+The template is `LaxLogic/PLL/ND/NDCore.lean`. Its design rules, quoted
 from its own header:
 
 * Contexts are `List`, extended only by `φ :: Γ` — **every index in a

@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.Search.Search
 import wip.rnEmbed
 
 /-!
@@ -8,7 +8,7 @@ import wip.rnEmbed
 
 Two uniform-interpolation efforts live in this repository:
 
-* **the tower** (syntactic, July): `LaxLogic/PLLG4UITrunc.lean` defines the
+* **the tower** (syntactic, July): `LaxLogic/PLL/UI/G4UITrunc.lean` defines the
   computable, fuel- and budget-indexed quantifier tables `itpE`/`itpA`;
   `wip/packaging.lean` packages them as `existsP`/`forallP`, and
   `wip/final.lean` proves `uniform_interpolation_PLL` — modulo the single
@@ -49,7 +49,7 @@ astronomically large.
 What makes the experiment possible anyway is that the *conclusions transfer
 upward*, using only sorry-free lemmas:
 
-* `itp_budget_mono_le` (`LaxLogic/PLLG4UITrunc.lean`:1907, axiom-clean) —
+* `itp_budget_mono_le` (`LaxLogic/PLL/UI/G4UITrunc.lean`:1907, axiom-clean) —
   for `b ≤ b'`, `[itpE b'] ⊢ itpE b` and `[itpA b] ⊢ itpA b'`;
 * `itp_sound` (same file, axiom-clean) — `Γ ⊢ itpE b Γ` and
   `itpA b Γ C ⊢ C`, at every fuel and budget.

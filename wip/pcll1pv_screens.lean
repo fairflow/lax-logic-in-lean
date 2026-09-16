@@ -21,7 +21,7 @@ S3: every proper-region amalgam world answers every infallible M-move
 with an `RmC`-successor triple (the mforth-maintenance / `ConfResidue`
 vacuity proxy), M restricted to mutually confluent models.
 -/
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 open PLLND PLLND.FinCM
 

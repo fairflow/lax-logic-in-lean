@@ -6,11 +6,11 @@ import VersoBlueprint
 -- ordinary build graph, and it is why (lean := "...") below can render each
 -- declaration's own docstring without putting @[blueprint] attributes into
 -- LaxLogic/.
-import LaxLogic.PLLFormula
-import LaxLogic.PLLProof
-import LaxLogic.PLLNDCore
-import LaxLogic.PLLKripke
-import LaxLogic.PLLCompleteness
+import LaxLogic.PLL.Syntax.Formula
+import LaxLogic.PLL.Syntax.Proof
+import LaxLogic.PLL.ND.NDCore
+import LaxLogic.PLL.Semantics.Kripke
+import LaxLogic.PLL.Semantics.Completeness
 
 /-!
 VERSO CHEAT SHEET — everything used in this file, and nothing else.

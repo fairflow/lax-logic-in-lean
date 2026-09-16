@@ -21,7 +21,7 @@ Proof search and countermodel search: the two-sided engine.
 :::definition "search_cmds" (parent := "tools_search")
 Four commands settle a single sequent `Γ ⊢ C` and print a verdict, the
 evidence for it, and a paste-ready theorem recording it
-(`LaxLogic/PLLSearchCmd.lean`; the manual is `docs/search-manual.md`).
+(`LaxLogic/PLL/Search/SearchCmd.lean`; the manual is `docs/search-manual.md`).
 `#search Γ ⊢ C` runs the staged procedure and answers either way; `#refute
 Γ ⊢ C` looks for a countermodel and emits it as a kernel-checkable
 certificate; `#draw Γ ⊢ C to "f.svg"` searches and draws the countermodel in
@@ -56,7 +56,7 @@ re-emitted as a Lean term (a derivation, or a finite model with its
 checker call) and re-checked by the kernel, so the searcher may be partial,
 heuristic and kernel-opaque without any loss.  A countermodel found by any
 engine is escalated with `FinCM.not_provable_of_check`
-(`LaxLogic/PLLCountermodelEmit.lean`), which fixes the frame and decides
+(`LaxLogic/PLL/Semantics/CountermodelEmit.lean`), which fixes the frame and decides
 the check; a proof found by the G4c searcher is replayed as a `G4cTm`
 term.  The certificate is what enters the record; the search that found it
 is a private matter of the tool.

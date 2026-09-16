@@ -1,6 +1,6 @@
 import round7core
 import round4probe3
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # ROUND 7 — the production band's lower boundary, kernel-pinned

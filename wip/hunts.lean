@@ -1,6 +1,6 @@
-import LaxLogic.PLLUIChains
-import LaxLogic.PLLNoFall
-import LaxLogic.PLLCtxCompleteness
+import LaxLogic.PLL.UI.UIChains
+import LaxLogic.PLL.UI.NoFall
+import LaxLogic.PLL.Semantics.CtxCompleteness
 import wip.gapWidth
 import wip.uiObstruct
 import wip.collapse
@@ -10,7 +10,7 @@ import wip.wlanding
 /-!
 # The two hunts, instantiated: the chains are armed
 
-`LaxLogic/PLLUIChains.lean` proves the two refutation criteria generically.
+`LaxLogic/PLL/UI/UIChains.lean` proves the two refutation criteria generically.
 This file instantiates them with the repository's mechanised chains, so that
 each hunt is reduced to exactly its two remaining obligations about a witness
 formula `φ`.

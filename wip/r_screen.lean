@@ -34,7 +34,7 @@ Controls: the refinement must actually CHANGE something on the
 non-reduced models (else the sweep is vacuous), and the §E obstruction
 model of `t2screen` is run explicitly.
 -/
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 open PLLND PLLND.FinCM
 

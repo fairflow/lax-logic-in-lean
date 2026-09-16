@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.UI.G4UITrunc
 import absorb_base
 import adequacy
 import packaging
@@ -18,7 +18,7 @@ theorem `uniform_interpolation_PLL` with pinned axiom audits.
 
 The tower, bottom to top (file — what it contributes):
 
-* `LaxLogic/PLLG4UITrunc.lean` — base library: PLL formulas, `weight`,
+* `LaxLogic/PLL/UI/G4UITrunc.lean` — base library: PLL formulas, `weight`,
   `atoms`, the sequent calculi `G4c`/`G4s`/`G4sh` with cut
   admissibility, the `defect`/`mu` measures, the truncated quantifier
   tables `itpE`/`itpA`, p-freeness `itp_pfree`, soundness `itp_sound`.
@@ -192,7 +192,7 @@ kernel of the stabilization ladder (it feeds `cascade_boxgoal`, hence
 consumers).  Every other layer of
 the tower is axiom-clean in itself:
 
-* `LaxLogic/PLLG4UITrunc.lean` — clean (see the `existsP_sound` audit
+* `LaxLogic/PLL/UI/G4UITrunc.lean` — clean (see the `existsP_sound` audit
   below, whose cone is library + packaging only);
 * `wip/adequacy.lean` — sorry-free in itself (its `itp_adequate`
   audit there pins the same inherited axiom list as here);

@@ -1,4 +1,4 @@
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 -- Explicit since 2026-09-04: `Std.HashMap` is in Lean core and stopped
 -- arriving transitively when the foundation modules dropped their
 -- blanket Mathlib re-export.

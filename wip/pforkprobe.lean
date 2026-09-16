@@ -1,4 +1,4 @@
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 
 /-!
 # `ParamForkMixedConj` probe: does the JOIN of the guarded stretch

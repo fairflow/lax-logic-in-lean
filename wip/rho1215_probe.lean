@@ -8,7 +8,7 @@ battery + constructive CounterEmit stage at raised caps.
 
   lake env lean --run wip/rho1215_probe.lean [emitcap] [budget]
 -/
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import LaxLogic.RN.Rho
 
 open PLLND RhoOrder

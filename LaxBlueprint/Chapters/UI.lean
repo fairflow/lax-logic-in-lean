@@ -1,7 +1,7 @@
 import Verso
 import VersoManual
 import VersoBlueprint
-import LaxLogic.PLLCraig
+import LaxLogic.PLL.Sequent.Craig
 
 open Verso.Genre
 open Verso.Genre.Manual

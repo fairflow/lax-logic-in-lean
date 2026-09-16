@@ -1,5 +1,5 @@
 import wip.boxedS1b
-import LaxLogic.PLLSearchPin
+import LaxLogic.PLL.Search.SearchPin
 
 /-!
 # The boxed floor branch at the goal the descent actually reaches

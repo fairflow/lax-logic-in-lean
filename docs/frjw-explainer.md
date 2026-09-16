@@ -2371,7 +2371,7 @@ unchanged; item 4 is now sharper.*
 (`FRJ/Basic.lean:567`), validity at the root of every `FRJ.Kripke`
 model, and those are finite rooted POSETS (`le_antisymm` is a field)
 with `Rm ⊆ ≤` and fallible worlds.  Natural-deduction provability,
-`Nonempty (LaxND [] φ)` (`LaxLogic/PLLNDCore.lean:72`), is connected to
+`Nonempty (LaxND [] φ)` (`LaxLogic/PLL/ND/NDCore.lean:72`), is connected to
 it in one direction by `FRJ.Bridge.valid_of_derivable`: a `LaxND`
 theorem is valid in every `FRJ.Kripke`.  The other direction, from
 semantic `PLL` to a derivation, is what makes `decidePLL` a decision

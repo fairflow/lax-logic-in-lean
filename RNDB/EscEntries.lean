@@ -17,7 +17,7 @@ machinery, not from FRJ(◯) construction.
 -/
 import RNDB.Types
 import LaxLogic.RN.Reps
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 open PLLND PLLND.SemUI
 

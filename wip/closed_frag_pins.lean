@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.SearchConf
 
 /-!
 # Kernel-checked PCLL separations at the crank-7 boundary

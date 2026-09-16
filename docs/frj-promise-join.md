@@ -13,7 +13,7 @@ places the repository already constructs PLL countermodels.  Three
 findings, one per place, and a scope correction.
 
 **1. The frame class is aligned, exactly.**  `ConstraintModel`
-(`LaxLogic/PLLKripke.lean`) demands `refl_m`, `trans_m`, `sub_mi`,
+(`LaxLogic/PLL/Semantics/Kripke.lean`) demands `refl_m`, `trans_m`, `sub_mi`,
 `hered_F`, `full_F`; `FinCM` (`PLLCountermodelEmit.lean`) builds the
 reflexive closures of BOTH relations into `riB`/`rmB` and checks the rest
 in `WellFormed`.  `FRJ.Kripke` matches field for field — `rm_refl`,

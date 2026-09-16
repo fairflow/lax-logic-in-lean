@@ -94,7 +94,7 @@ Iemhoff's G4iLL adds to G4ip four rules governing `◯`:
   a "right-nested" rule `R◯→` and a "box-witnessed" rule `L◯→` that
   fires when the context also contains a box `◯χ`.
 
-The mechanisation's point of departure (`LaxLogic/PLLG4.lean`,
+The mechanisation's point of departure (`LaxLogic/PLL/G4/G4.lean`,
 `inductive G4`) is a faithful transcription of these rules; the
 faithfulness argument — multisets versus the repo's permutation-indexed
 lists, empty succedents, `⊥` not an atom, one deliberately added but
@@ -106,7 +106,7 @@ The plan was: mechanise G4iLL, prove `G4iLL = SC` (`SC` being the repo's
 height-indexed G3 calculus, `PLLSequent.lean`, already equipped with a
 mechanised cut), verify the Dershowitz–Manna measure, and read off
 decidability. The verified decision procedure for `G4` itself
-(`LaxLogic/PLLDecide.lean`) was built and works. What failed was the
+(`LaxLogic/PLL/Search/Decide.lean`) was built and works. What failed was the
 equivalence.
 
 ---

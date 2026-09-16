@@ -1,6 +1,6 @@
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLSemUILayered
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.SemUI.SemUILayered
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Cross-route probe: rank-bounded ∀p/∃p in the old one-variable harness

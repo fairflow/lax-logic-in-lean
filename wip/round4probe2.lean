@@ -1,5 +1,5 @@
 import wip.towerkit
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # ROUND 4, Task 1(b) — `BoxDesc` at COMPOUND bodies

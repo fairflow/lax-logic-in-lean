@@ -1,7 +1,7 @@
-/- Challenge: `conservativity_prop` from LaxLogic/PLLNDCore.lean:208
+/- Challenge: `conservativity_prop` from LaxLogic/PLL/ND/NDCore.lean:208
    Ground truth exists (14-line proof); the goal here is
    to re-derive it. Group: nd-core. -/
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 
 /-!
 # A slime-free core ND system for PLL, with conservativity over IPL

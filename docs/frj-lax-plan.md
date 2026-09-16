@@ -410,7 +410,7 @@ being precise about what that commits us to, because it is more than one
 constructor.
 
 The repo's PLL semantics is the Fairtlough–Mendler **constraint model**
-(`LaxLogic/PLLKripke.lean`): two relations and a set of fallible worlds,
+(`LaxLogic/PLL/Semantics/Kripke.lean`): two relations and a set of fallible worlds,
 
     C = ⟨W, Rᵢ, Rₘ, F, V⟩,     Rₘ ⊆ Rᵢ,   both reflexive and transitive,
     w ⊩ ⊥      iff  w ∈ F
@@ -425,7 +425,7 @@ extraction, not a syntactic one, and it is the place where the previous
 attempt's `worldOK` went wrong.
 
 There is a concrete target that settles the shape: `FinCM` and `checkB`
-in `LaxLogic/PLLCountermodelEmit.lean`, with
+in `LaxLogic/PLL/Semantics/CountermodelEmit.lean`, with
 `FinCM.not_provable_of_check`.  That is the repo's **certified** finite
 constraint-model checker, and it is what makes a discovered countermodel
 replayable by `decide`.  W6 should emit `Mod(D)` as a `FinCM`; stating

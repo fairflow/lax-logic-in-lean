@@ -55,7 +55,7 @@ true, to be machine-checked; **UNVERIFIED** = cited but the source was not reach
   2016). Pages 1–22 read directly. All A&P formulas below are from that text. **[VERIFIED]**
 - **SEP** — S. Artemov, M. Fitting, *Justification Logic*, Stanford Encyclopedia
   of Philosophy. **[VERIFIED]**
-- Repo cross-check (PLL's own axioms): `LaxLogic/PLLAxiom.lean`,
+- Repo cross-check (PLL's own axioms): `LaxLogic/PLL/Syntax/Axiom.lean`,
   `PLLTheorems.lean`, `PLLHilbert.lean`, `PLLDemos.lean`. **[VERIFIED]**
 
 ---

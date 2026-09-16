@@ -1,7 +1,7 @@
 import Verso
 import VersoManual
 import VersoBlueprint
-import LaxLogic.PLLLaxInfinite
+import LaxLogic.PLL.Semantics.LaxInfinite
 import wip.negFour
 import wip.rnClassify
 import wip.gapWidth

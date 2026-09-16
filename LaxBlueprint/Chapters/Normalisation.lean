@@ -1,8 +1,8 @@
 import Verso
 import VersoManual
 import VersoBlueprint
-import LaxLogic.PLLNormal
-import LaxLogic.PLLConfluence
+import LaxLogic.PLL.Normalisation.Normal
+import LaxLogic.PLL.Normalisation.Confluence
 
 open Verso.Genre
 open Verso.Genre.Manual

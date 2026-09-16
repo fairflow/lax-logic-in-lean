@@ -16,7 +16,7 @@ across a few hundred entries.
 
 Two gaps this exposed on the first pass, 2026-08-21:
 
-* `LaxLogic/PLLLaxInfinite.lean:634` had a bare `#print axioms` with NO
+* `LaxLogic/PLL/Semantics/LaxInfinite.lean:634` had a bare `#print axioms` with NO
   `#guard_msgs`.  It printed into the build log and checked nothing —
   a pin in appearance only.  Guarded here.
 * `FRJ/Sound.lean` had **no pin at all** for `FRJ.soundness`, the
@@ -44,7 +44,7 @@ Layer 2 (the engines and the verification harness) is `tools/`; layer 3
 (the database) does not exist yet.  Nothing in this file may import
 either — the arrow runs upward only.
 -/
-import LaxLogic.PLLLaxInfinite
+import LaxLogic.PLL.Semantics.LaxInfinite
 import LJF.OBridge
 import LaxLogic.RN.Reps
 import Reject.Cert

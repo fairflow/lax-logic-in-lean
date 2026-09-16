@@ -1,5 +1,5 @@
-import LaxLogic.PLLSearchPin
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.Search.SearchPin
+import LaxLogic.PLL.UI.G4UITrunc
 
 /-!
 # The low-budget jump-goal descents, PINNED
@@ -9,7 +9,7 @@ machine-checked mandate that is *evidence*, not a theorem: the search is
 kernel-opaque, so a probe's `PROVED` line certifies nothing that survives into
 the library.
 
-`LaxLogic/PLLSearchPin.lean` closes that gap.  `Verdict.proved` already carries
+`LaxLogic/PLL/Search/SearchPin.lean` closes that gap.  `Verdict.proved` already carries
 a typed term `t : G4cTm Γ C`; `#pinsrc` prints `t` as Lean source, emitting
 constructor names and membership chains only, so every formula index is
 recovered by unification and the printed term is proportional to the

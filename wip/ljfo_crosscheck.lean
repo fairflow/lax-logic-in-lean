@@ -4,8 +4,8 @@ station, so interp's E-value must be PLL-EQUIVALENT to ¬¬◯⊥ if the two
 routes agree: both directions tested with the certificate engines.
 Gated by sum3/size per the screening-horizon discipline. -/
 import LJF.OCore
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.Search.Search
 
 open LJFO PLLND
 

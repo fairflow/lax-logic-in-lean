@@ -1,0 +1,128 @@
+import LaxLogic.Util.FormattingUtils
+import LaxLogic.Util.Connectives
+import Mathlib.Tactic
+
+/-- Propositional Lax Logic formulae, long form -/
+inductive PLLFormula where
+| prop (constantName: String)
+| falsePLL
+| and (a: PLLFormula)(b: PLLFormula)
+| or (a: PLLFormula)(b: PLLFormula)
+| ifThen (antecedant: PLLFormula)(consequent: PLLFormula)
+| somehow (a: PLLFormula)
+deriving Inhabited, DecidableEq
+
+open Std (Format)
+namespace PLLFormula
+
+
+abbrev notPLL (F: PLLFormula) : PLLFormula := ifThen F falsePLL
+
+-- We use false implies false to as our cannoncial true value.
+abbrev truePLL := ifThen falsePLL falsePLL
+
+/-- Propositional constants -/
+def PropositionalConstant := {F: PLLFormula // ∃ (name:String ), F =  prop name }
+
+-- I originally used a sub-type for this, but I could not figure out how to derive DecidableEq
+/-- the type of implicational formulae -/
+inductive Conditional where
+| mk (F: PLLFormula) (h: ∃ (P Q:PLLFormula), F = ifThen P Q)
+deriving DecidableEq
+
+@[simp]
+def Conditional.val (C: Conditional) :=
+match C with
+ | mk F _ => F
+
+@[simp]
+def Conditional.prop (C: Conditional):  ∃ P Q, C.val = ifThen P Q :=
+match C with
+ | mk _ h => h
+
+instance : BEq Conditional where
+  beq c1 c2 :=  c1.val == c2.val
+
+@[simp]
+def Conditional.antecedant (F: Conditional) :=
+ match F with
+  | ⟨ifThen P _, _ ⟩  => P
+  | ⟨PLLFormula.prop _, p⟩ => by simp_all only [reduceCtorEq, exists_const]
+  | ⟨falsePLL, p⟩  => by simp_all only [reduceCtorEq, exists_const]
+  | ⟨and a b, p⟩  => by simp_all only [reduceCtorEq, exists_const]
+  | ⟨or a b, p⟩  => by simp_all only [reduceCtorEq, exists_const]
+  | ⟨somehow a, p⟩ => by simp_all only [reduceCtorEq, exists_const]
+
+@[simp]
+def Conditional.consequent (F: Conditional) :=
+ match F with
+ | ⟨ifThen _ Q, _ ⟩  => Q
+ | ⟨PLLFormula.prop _, p⟩ => by simp_all only [reduceCtorEq, exists_const]
+  | ⟨falsePLL, p⟩  => by simp_all only [reduceCtorEq, exists_const]
+  | ⟨and a b, p⟩  => by simp_all only [reduceCtorEq, exists_const]
+  | ⟨or a b, p⟩  => by simp_all only [reduceCtorEq, exists_const]
+  | ⟨somehow a, p⟩ => by simp_all only [reduceCtorEq, exists_const]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/-- Pretty-printer using the required logical symbols. -/
+def toString (F: PLLFormula) : String :=
+(stripParens printF) F where printF (F: PLLFormula) :=
+  match F with
+  | prop s  =>  s
+  | falsePLL =>  "⊥"
+  | and p q => addParens (printF p  ++  " ∧ " ++ printF q )
+  | or p q => addParens (printF p  ++  " ∨ " ++ printF q )
+  | ifThen falsePLL falsePLL =>  "⊤"
+  | ifThen p q => addParens (printF p  ++  " ⊃ " ++ printF q ) -- Symbol shortcut is \ssup
+  | somehow p => addParens ( "◯" ++ printF p )
+
+/-- `Repr` instance that first prints with `reprAux` and then
+    strips one pair of outer parentheses. -/
+instance : Repr PLLFormula where
+  reprPrec := getReprFn  toString
+
+-- Demontstrating Repr
+#eval (ifThen (prop "P") (somehow (and (prop "Q") falsePLL))) -- removes outer parents form
+#eval prop "P" -- deals with no parens
+#eval and truePLL (prop "P") -- True ∧ P
+
+end PLLFormula
+
+/-! ### Formula notation (scoped to `PLLND`)
+
+`◯A`, `A ∧ B`, `A ∨ B`, `A ↠ B` (implication), `⊥`: the same inside a sequent
+(`Γ, A ⊢ B`, `LaxLogic/Util/Turnstile.lean`) and outside it.  `↠` sits just
+above a sequent (27), so `Γ ⊢ A ↠ B` needs no parentheses; `→` between sequents
+stays outside.  In the typeset paper implication is `⊃`.
+
+`∧ ∨ ↠ ⊥` are the shared connectives of `LaxLogic/Util/Connectives.lean`,
+registered here for `PLLFormula`: they keep Lean's and Mathlib's tokens, are
+not overloaded, and yield the formula constructor exactly where a formula is
+wanted. -/
+namespace PLLND
+
+@[inherit_doc] scoped prefix:max "◯" => PLLFormula.somehow
+
+attribute [scoped connective and] PLLFormula.and
+attribute [scoped connective or] PLLFormula.or
+attribute [scoped connective imp] PLLFormula.ifThen
+attribute [scoped connective bot] PLLFormula.falsePLL
+
+scoped macro_rules | `($a ∧ $b) => `(fm_and% ($a) ($b))
+scoped macro_rules | `($a ∨ $b) => `(fm_or% ($a) ($b))
+scoped macro_rules | `(⊥) => `(fm_bot%)
+
+end PLLND

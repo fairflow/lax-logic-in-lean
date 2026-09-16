@@ -1,7 +1,7 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSearchNoFall
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Search.SearchNoFall
+import LaxLogic.PLL.Search.SearchConf
 
 /-!
 # Which of the three routes closes the boxed γ-branch at the floor?

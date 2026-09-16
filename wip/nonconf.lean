@@ -1,7 +1,7 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import wip.rnDict
 import wip.rungPinned
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.SearchConf
 
 /-!
 # The five remaining open cells against the NON-confluent five-world battery

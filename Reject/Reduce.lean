@@ -35,7 +35,7 @@ which forces `Fm x ⊊ Fm m` — and the refinement KEEPS `x Rᵢ m`.
 `exists_refined_witness` is that argument.
 -/
 import Reject.Complete
-import LaxLogic.PLLFinComp
+import LaxLogic.PLL.Semantics.FinComp
 import Mathlib.Data.Set.Card
 
 namespace Reject

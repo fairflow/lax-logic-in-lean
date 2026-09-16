@@ -13,7 +13,7 @@ the axiom audit.  The minimality development (Parts 5–8) lives in
 /-!
 # LJF◯: the lax-flagged focused calculus, and uniform interpolation for PLL
 
-The ◯-extension of `LaxLogic/LJF.lean` (which stays green beside this file as
+The ◯-extension of `LaxLogic/Focusing/LJF.lean` (which stays green beside this file as
 the IPC control), per `docs/ljfo-plan.md`.  Zero imports, deliberately: the
 auditability property — no other calculus can carry any part of the proof —
 is preserved from the IPC campaign.

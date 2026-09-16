@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearchCmd
+import LaxLogic.PLL.Search.SearchCmd
 
 /-!
 # Is the booleanization 𝔟⊥ of RN(◯,{}) finite?

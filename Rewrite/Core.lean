@@ -12,7 +12,7 @@ shrink a goal.
 
 The enabler is already in the tree: `Interd` is a full congruence
 (`Interd.and_congr`, `or_congr`, `imp_congr`, **`box_congr`**,
-LaxLogic/PLLSemUIFrag.lean), so rewriting a SUBFORMULA by a certified
+LaxLogic/PLL/SemUI/SemUIFrag.lean), so rewriting a SUBFORMULA by a certified
 interderivability preserves interderivability.  This file makes that
 mechanical.
 
@@ -35,8 +35,8 @@ DESIGN NOTES.
   `RwRule` carries a `Interd` proof, so this is enforced by TYPE: a
   PCLL-only merge simply cannot be given one.
 -/
-import LaxLogic.PLLSemUIFrag
-import LaxLogic.PLLSemUILayered
+import LaxLogic.PLL.SemUI.SemUIFrag
+import LaxLogic.PLL.SemUI.SemUILayered
 
 namespace Rewrite
 

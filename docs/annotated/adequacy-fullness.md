@@ -1,6 +1,6 @@
 # Adequacy and fullness for ⊩ᵖ: the decoration theorem
 
-Source: `LaxLogic/PLLEvidence.lean` — `tokenEvidence`,
+Source: `LaxLogic/PLL/Realisability/Evidence.lean` — `tokenEvidence`,
 `realP_adequate_and_full`, `realP_refutes_sequent`, and the table algebra
 `Tbl`/`tblPca` discharging every hypothesis. Audit:
 `[propext, Quot.sound]` throughout — **no choice**, and the way the proof
@@ -11,7 +11,7 @@ achieves that is part of its content. Prerequisite: the obstruction
 ## Setting
 
 The theorem decorates *checked finite frames*: `FinCM`
-(`LaxLogic/PLLCountermodelEmit.lean`) is a finite constraint model as
+(`LaxLogic/PLL/Semantics/CountermodelEmit.lean`) is a finite constraint model as
 literal data, with an executable forcing function `forceB` and a
 verified reflection lemma `force_iff` identifying the computation with
 the genuine Kripke forcing of the induced model `M.toModel h`. Evidence
@@ -159,8 +159,8 @@ In words: any countermodel validated by the verified checker is a
 refuting world (they are forced there, so fullness realises them) and
 the conclusion is unrealisable (it is unforced there, so adequacy
 forbids a realiser). Combined with `emitter_completeness`
-(`LaxLogic/PLLFinComp.lean`) this yields the completeness biconditional
-`derivable_iff_no_realP_refutation` (`LaxLogic/PLLRealCompleteness.lean`).
+(`LaxLogic/PLL/Semantics/FinComp.lean`) this yields the completeness biconditional
+`derivable_iff_no_realP_refutation` (`LaxLogic/PLL/Realisability/RealCompleteness.lean`).
 
 ## Two remarks for the paper
 

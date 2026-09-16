@@ -55,7 +55,7 @@ single-succedent.
 Write F′ := ◯p ⊃ r and G′ := F′ ⊃ ◯p = (◯p ⊃ r) ⊃ ◯p. The separating
 sequent is ◯G′, F′ ⇒ r.
 
-Proved derivable in G3iLL (`PLLG4Gap.sep_SC`, `LaxLogic/PLLG4Gap.lean`):
+Proved derivable in G3iLL (`PLLG4Gap.sep_SC`, `LaxLogic/PLL/G4/G4Gap.lean`):
 bind on ◯G′; a second use of F′ inside the `laxL` box-opening turns G′
 into ◯p, so ◯p holds outright, and F′ gives r as the final implication.
 
@@ -194,7 +194,7 @@ wants revisiting.
 
 ## 6. What survives, and the positive core
 
-**Craig interpolation for PLL.** Proved (`LaxLogic/PLLCraig.lean`:
+**Craig interpolation for PLL.** Proved (`LaxLogic/PLL/Sequent/Craig.lean`:
 `craig_interpolation`, `craig_implication`), via Maehara's method over
 the cut-free calculus `SC` (proved equivalent to natural deduction and
 the term calculus): from a derivation of Γ_1,Γ_2 ⊢ C it yields an
@@ -214,7 +214,7 @@ than consume them — L○→'s first premise keeps its implication (compare
 →SL of van der Giessen–Iemhoff's G4iSL, whose first premise likewise
 retains its principal), and, as the admissibility proofs also required,
 the box rules keep their box and R○→ keeps its context. The result
-(`G4c`, `LaxLogic/PLLG4H*.lean`) is proved complete for PLL, slotting
+(`G4c`, `LaxLogic/PLL/G4/G4H*.lean`) is proved complete for PLL, slotting
 into G4c = SC = natural deduction = term calculus (`PLLG4HComp.lean`:
 `completeness`, `equiv_sc`, `equiv_nd`, `equiv_tm`), with cut
 (`PLLG4HCut.lean`) and contraction admissible. So the calculus your
@@ -278,7 +278,7 @@ contexts are lists; `Γ.Perm Δ` is list permutation, so a premise of the
 form `Γ.Perm (F :: Δ)` reads "the principal formula F occurs in Γ, and Δ
 is the rest". Everything is in `github.com/fairflow/lax-logic-in-lean`.*
 
-### A.1 The transcribed G4iLL (`G4`, `LaxLogic/PLLG4.lean`)
+### A.1 The transcribed G4iLL (`G4`, `LaxLogic/PLL/G4/G4.lean`)
 
 ```lean
 inductive G4 : List PLLFormula → PLLFormula → Prop
@@ -325,7 +325,7 @@ X, Δ ⊢ ◯A with *both* the implication and the auxiliary box deleted.
 Contraction-freeness is thus taken in the strongest possible sense:
 nothing principal survives into any premise.
 
-### A.2 The repair (`G4h`/`G4c`, `LaxLogic/PLLG4H.lean`)
+### A.2 The repair (`G4h`/`G4c`, `LaxLogic/PLL/G4/G4H.lean`)
 
 `G4h` is the same calculus with a height index (`G4h n Γ C`: derivable
 with height at most `n`; the index is bookkeeping for the termination
@@ -414,7 +414,7 @@ current measured values; the two `Decidable` instances additionally use
 (a least-height step, and Mathlib finite-set internals), currently
 being removed.
 
-*(Statement sources: `LaxLogic/PLLG4Gap.lean`, `LaxLogic/PLLG4HComp.lean`,
-`LaxLogic/PLLG4Dec.lean`. The `#print axioms` audits are pinned by
+*(Statement sources: `LaxLogic/PLL/G4/G4Gap.lean`, `LaxLogic/PLL/G4/G4HComp.lean`,
+`LaxLogic/PLL/G4/G4Dec.lean`. The `#print axioms` audits are pinned by
 `#guard_msgs` at build time, so the values quoted here are enforced by
 the build, not transcribed by hand.)*

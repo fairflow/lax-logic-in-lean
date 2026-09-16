@@ -119,7 +119,7 @@ candidate was the last.
 Goals refuted here: {len(names)} — {', '.join(names)}.
 -/
 import FRJ.Search.Pin
-import LaxLogic.PLLSemUIFrag
+import LaxLogic.PLL.SemUI.SemUIFrag
 import Tools.Bank
 
 namespace RNFRJCerts

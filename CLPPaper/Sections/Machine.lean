@@ -1,0 +1,215 @@
+import Verso
+import VersoManual
+import LaxLogic.QLL
+import CLPPaper.Src
+import CLPPaper.Math
+
+open Verso.Genre
+open Verso.Genre.Manual
+open CLPPaper CLPPaper.Math
+
+#doc (Manual) "SLD and SLD◯: one machine for both passes" =>
+
+Table 2 rewrites a flat goal list and forgets the derivation; Fig. 3 is a
+proof-tree calculus and does no rewriting.  This section gives both passes
+the same operational form.  A state is a partial proof tree — a proof tree
+with open leaves — and a step expands one open leaf by one rule.  Table 2's
+goal list is the projection of the tree onto its open leaves, and the proof
+tree of Theorem 9.4 is the tree itself once no leaf is open.
+
+# The rules, in one format
+
+An open leaf `S` is replaced by a node whose open leaves are the new goals:
+
+```
+rule     open leaf S           new node                     store (SLD only)
+top      ⊤                     ⊤                            —
+cstr     B(t̃), isC B           B(t̃) leaf                    c ∧ B(t̃), if ok
+and      A ∧ B                 ∧I [A] [B]                   —
+orL/orR  A ∨ B                 ∨I₁ [A]  /  ∨I₂ [B]          —
+ex       ∃x.A                  ∃I t [A[t]],  t closed       —
+clause   P(t̃)                  clause w t̃ [S_w[t̃]]          —
+```
+
+SLD runs on a concrete program and threads a store.  SLD◯ runs on the
+abstract program, whose clause heads are all modal and whose bodies have $`\top`
+where the constraints were, so `cstr` has become `top` and there is no store:
+the constraint is extracted from the finished tree.  Every judgement of SLD◯
+is lax, so $`\bigcirc` appears in no rule; it appears in the QLL derivation that
+justifies each — $`\bigcirc I \top I` for `top`; $`\bigcirc E, \bigcirc E, \bigcirc I \land I` for `and`; $`\bigcirc E, \bigcirc I \lor I` for
+the disjunction rules; $`\bigcirc E, \bigcirc I \exists I` for `ex`; and $`\forall E` on $`\forall \tilde{x}. S^\sharp \supset \bigcirc P(\tilde{x})`,
+$`\bigcirc E` on the body's $`\bigcirc S^\sharp`, $`\supset E` for `clause`.  These are the cases of the
+soundness proof of the abstract calculus.
+
+A `CProof` with open leaves; `opens` lists them left to right, `store`
+conjoins the constraint leaves reached so far, `close` gives the `CProof` when
+no leaf is open.
+
+{stmt}`LaxLogic.QLL.SLD.PTree`
+
+{docstring LaxLogic.QLL.SLD.PTree +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.PTree`
+
+SLD: one rule at one open leaf, store `c` to `c'`, with congruence rules
+through every node so the position is free.
+
+{stmt}`LaxLogic.QLL.SLD.Expand`
+
+{docstring LaxLogic.QLL.SLD.Expand +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.Expand`
+
+SLD◯: the same rules on abstract partial trees, `cstr` gone, no store.
+
+{stmt}`LaxLogic.QLL.SLD.ExpandA`
+
+{docstring LaxLogic.QLL.SLD.ExpandA +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.ExpandA`
+
+# The projection to Table 2, and lifting
+
+Every SLD step is a Table 2 step on the projections.
+
+{stmt}`LaxLogic.QLL.SLD.SLDStep.goal_step`
+
+{docstring LaxLogic.QLL.SLD.SLDStep.goal_step +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDStep.goal_step`
+
+A rule shape applied at a given open leaf of a tree — located by a split of
+`opens` — is an expansion of the tree.
+
+{stmt}`LaxLogic.QLL.SLD.PTree.lift`
+
+{docstring LaxLogic.QLL.SLD.PTree.lift +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.PTree.lift`
+
+Lifting: a Table 2 step from a tree's goal list is an expansion of that tree.
+
+{stmt}`LaxLogic.QLL.Step.lift`
+
+{docstring LaxLogic.QLL.Step.lift +allowMissing}
+
+{srcLink}`LaxLogic.QLL.Step.lift`
+
+Runs lift: a Table 2 run from one goal is an SLD run on one tree.
+
+{stmt}`LaxLogic.QLL.Steps.lift`
+
+{docstring LaxLogic.QLL.Steps.lift +allowMissing}
+
+{srcLink}`LaxLogic.QLL.Steps.lift`
+
+Runs project.  With the previous node, Table 2 and the machine are the same
+relation on single goals, in both directions.
+
+{stmt}`LaxLogic.QLL.SLD.SLDSteps.goal`
+
+{docstring LaxLogic.QLL.SLD.SLDSteps.goal +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.goal`
+
+# Soundness, and Theorem 9.4 as an invariant
+
+Typing is preserved by every step, and a closed typed tree is a proof tree;
+the store is $`c_0 \land \mathit{store}` throughout the run.
+
+A run from `c₀ □ [S]` that closes its tree to `q` has `q` a proof tree of `S`
+and $`c \dashv\vdash c_0 \land \mathit{total} q`.  Theorem 9.4 in machine form.
+
+{stmt}`LaxLogic.QLL.SLD.SLDSteps.store`
+
+{docstring LaxLogic.QLL.SLD.SLDSteps.store +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.store`
+
+Soundness of SLD with respect to QLL: the finished tree proves $`\mathit{total} q \supset S`.
+
+{stmt}`LaxLogic.QLL.SLD.SLDSteps.prv`
+
+{docstring LaxLogic.QLL.SLD.SLDSteps.prv +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.prv`
+
+Soundness of SLD◯ with respect to QLL: a run from `[S]` that closes its tree
+gives an abstract proof, hence $`\Theta ^\sharp \vdash \bigcirc S`.
+
+{stmt}`LaxLogic.QLL.SLD.SLDCSteps.prv`
+
+{docstring LaxLogic.QLL.SLD.SLDCSteps.prv +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDCSteps.prv`
+
+# The simulation under `toA`
+
+Every SLD step on `Θ` is an SLD◯ step on `Θ♯` at the image leaf: `cstr`
+becomes `top`, every other rule is itself.  Heads must not be constraints.
+
+{stmt}`LaxLogic.QLL.SLD.Expand.toA`
+
+{docstring LaxLogic.QLL.SLD.Expand.toA +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.Expand.toA`
+
+The simulation on runs.
+
+{stmt}`LaxLogic.QLL.SLD.SLDSteps.toA`
+
+{docstring LaxLogic.QLL.SLD.SLDSteps.toA +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.toA`
+
+The converse simulation holds only when `ok` accepts every store; under
+pruning it fails at `cstr`, and that failure is the exact content of pruning.
+It is stated and not yet built.
+
+# The switching lemma, and pruning put back
+
+Expansions at two different leaves of the same tree commute.  The statement
+needs the leaf's position, so `ExpandAt` is `Expand` indexed by the position
+of the expanded leaf in `opens`.  It is stated without pruning for a reason
+that is itself the point: two constraint leaves each consistent with the
+store need not be jointly consistent, so under `ok = satisfiable` each single
+step is allowed and neither can be completed.
+
+`Expand` with the index of the expanded leaf.
+
+{stmt}`LaxLogic.QLL.SLD.ExpandAt`
+
+{docstring LaxLogic.QLL.SLD.ExpandAt +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.ExpandAt`
+
+The switching lemma: without pruning, expansions at leaves $`i \ne j` have a
+common successor reached either way, with stores equal up to $`\dashv\vdash`.
+
+{stmt}`LaxLogic.QLL.SLD.ExpandAt.diamond`
+
+{docstring LaxLogic.QLL.SLD.ExpandAt.diamond +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.ExpandAt.diamond`
+
+Pruning is invisible to answers.  For `ok` closed under provable weakening —
+satisfiability is — and an acceptable initial store, the pruned runs are
+exactly the unpruned runs whose final store passes `ok`.  So pruning changes
+which prefixes are explored, never which trees are reachable with an
+acceptable store.
+
+{stmt}`LaxLogic.QLL.SLD.SLDSteps.noPrune_iff`
+
+{docstring LaxLogic.QLL.SLD.SLDSteps.noPrune_iff +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.noPrune_iff`
+
+The implemented test `satOK` is not closed under weakening, because it
+accepts nonlinear stores it cannot decide; so strategy independence holds for
+the ideal test and can fail for the engine's.  What is proved about
+strategies is therefore: answers are independent of the selection order
+(Theorem 9.4 is position-free, and so is its machine form); the unpruned
+search space is confluent under switching; and pruning by an exact test
+changes neither.  Completeness of the machines — that every typed tree is the
+log of some run — and the Herbrand corollaries through `world2_free` and
+Theorem 7.5 remain OPEN.

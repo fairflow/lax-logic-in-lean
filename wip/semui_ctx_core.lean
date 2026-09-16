@@ -1,6 +1,6 @@
-import LaxLogic.PLLCtxCompleteness
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLG4Term
+import LaxLogic.PLL.Semantics.CtxCompleteness
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.G4.G4Term
 
 /-! Shared core of the constraint-commutation probes (models, Lemma-7
 constraints, nf, piece closure, relative towers) — no `main`, so the

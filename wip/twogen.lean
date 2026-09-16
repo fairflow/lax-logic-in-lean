@@ -1,6 +1,6 @@
 import wip.rnDict
-import LaxLogic.PLLSearchConf
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Search.SearchConf
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # Which valuations of `(◯⊥, ◯¬◯⊥)` are realisable?

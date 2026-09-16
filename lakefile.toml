@@ -46,6 +46,18 @@ rev = "v4.31.0"
 [[lean_lib]]
 name = "LaxBlueprint"
 
+# LaxPaper: the Verso write-up of the obligation library (LaxLogic/Obligation).
+# Deliberately NOT in defaultTargets — it is the only target that pulls verso
+# into the import graph.  Render with scripts/paper-render.sh.
+[[lean_lib]]
+name = "LaxPaper"
+
+# CLPPaper: the vanilla-Verso paper on the CLP mechanisation (LaxLogic/QLL/CLP*,
+# BodyCirc, HeadFlatten, CLPMachine).  Deliberately NOT in defaultTargets, for
+# the same reason as LaxPaper.  Build HTML + PDF with scripts/clp-paper.sh.
+[[lean_lib]]
+name = "CLPPaper"
+
 [[lean_lib]]
 name = "LaxLogic"
 

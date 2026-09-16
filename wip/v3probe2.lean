@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UI
+import LaxLogic.PLL.UI.G4UI
 
 /-!
 # v3 probe 2: algebraic differencing

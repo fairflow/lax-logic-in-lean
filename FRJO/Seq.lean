@@ -18,7 +18,7 @@ Design (plan §2, grounded in RK(Ξ) and FRJ(G)):
   (Cl1)–(Cl6) properties are W1's named obligations, stated below);
 * `Reg`/`Irr` — the two sequent forms with the modal zone `μ`.
 -/
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 namespace FRJO
 

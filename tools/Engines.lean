@@ -26,7 +26,7 @@ engine's soundness ever acquires `sorryAx`, the build fails HERE rather
 than in the results.
 -/
 import Certified.Register
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import FRJ.SoundW
 
 open PLLND
@@ -167,7 +167,7 @@ def g4cSearch : Engine where
   soundStmt := ∀ (Γ : List PLLFormula) (C : PLLFormula), PLLND.G4cTm Γ C →
     Nonempty (LaxND Γ C)
   sound := fun _ _ t => PLLND.Search.proved_sound t
-  pin := "see LaxLogic/PLLSearch.lean; G4c.equiv_nd is the PLL bridge"
+  pin := "see LaxLogic/PLL/Search/Search.lean; G4c.equiv_nd is the PLL bridge"
   completeness := "PROVED for the calculus; the SEARCH is fuel-bounded"
   corpus := "462 ρ-cells in 10629 ms; AND the frjhard ladder, where it beats LJF◯ 300-700x"
   measured := "2026-08-15 (wip/two_sided_corpus_out.txt); ladder 2026-08-22"

@@ -21,7 +21,7 @@ that consumes budget deposits a *law* that `need` must satisfy.  What
 at the start, by intuition.
 
 This is the method the repo already uses for timing constraints
-(`LaxLogic/PLLConstraints.lean`, after Mendler's *proofs-as-delays*): a
+(`LaxLogic/PLL/Timing/Constraints.lean`, after Mendler's *proofs-as-delays*): a
 proof of an abstract specification collects its side conditions instead
 of discharging them against guessed numbers, and the constraint algebra
 is `(ℕ, 0, +, max)` — `+1` where the recursion crosses a budget gate,

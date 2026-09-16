@@ -1,5 +1,5 @@
 import wip.G4conf
-import LaxLogic.PLLSearchCmd
+import LaxLogic.PLL.Search.SearchCmd
 
 /-!
 # `G4cf` is not complete without cut: the assumed metatheory of `wip/G4conf.lean` refuted

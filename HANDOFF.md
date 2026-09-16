@@ -4022,3 +4022,325 @@ harnesses were never retired; `LaxBlueprint/` untouched by this campaign;
 the structural refounding of `OFuelPFam` (§4.20) remains a design.  The
 agent worktree `agent-a5401eae81cb0a74d` is merged (691623b) and left in
 place per the standing rule.
+## 2026-09-11 — QLL/CLP: the CLP draft mechanised in two passes (branch `lax-obligations`, worktree `review-pr16`)
+
+The draft is Fairtlough–Mendler–Walton, "First-order Lax Logic as a framework
+for CLP" (10 Sep 1997, unpublished).  Plan and review:
+`docs/qll-clp-review.md` (§0 the `Rm` critique, §1 value to CLP theory, §2
+implementation, §3 the application, §4 the plan with its status).
+
+- PROVED, `◯`-free pass: Lloyd / van Emden–Kowalski for Horn programs
+  (`Herbrand`, `HerbrandFix`); Thm 7.5 at worlds 0, 1 (`HerbrandLLP`); proof
+  trees with constraint leaves, `Θ ⊢ total(p) ⊃ S`, Table 2, Thm 9.4, Cor 9.8
+  (`CLPCore`, `CLPOper`); world 2 as the least model over the constraint
+  relations, both directions (`HerbrandCLP.world2_free`).
+- PROVED, `◯` pass: Thm 6.3, Lemmas 8.3/8.4, Thm 9.7, Thm 6.8 (arbitrary
+  tables, refinement through instances), Prop 6.6 first half, Cor 9.8 by the
+  draft's route (`CLPAbstract`); Lemma 7.2 and Thm 7.5 for `i = 0, 1, 2` on the
+  four-world frame (`HerbrandCLP`).  All `[propext]` / `[propext, Quot.sound]`.
+- REFUTED: modelling `◯` with `Rm = Ri` (`ModalRelation`: such models validate
+  `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)`, which QLL does not prove); `HFrame` now carries its
+  own modal relation.
+- Built and run: `CLPEngine` (SLD search whose answers carry proof trees checked
+  by a proved-sound checker; certified ℚ solver with witness and Farkas
+  certificates); Examples 6.1 and 9.5 run by the engine *inside the kernel*
+  (`CLPExamples`); `CLPBench` (not imported): adders to 449 clauses, mortgage,
+  scheduling.  Draft artefacts found: Example 2.1's figures (see the plan doc).
+- REFUTED: the draft's Prop 6.6, second half (`HerbrandCLP.p66_refuted`,
+  one-world countermodel); true with the table's constraints lax-true
+  (`p66_with_lax`).
+- Built: abstract proofs as let-flattened λ̄c terms, accepted by `certify`
+  (`CLPCertify`); the direct reading of Fig. 3 is refused (`notInferable`).
+  Small terms only: `Kit.freshFor` doubles name length per nested binder, and
+  `certify` on a 3-bit adder's term exhausted memory (38 GB, killed).  Do not
+  run `certify` on deep terms until `freshFor` is made linear (task flagged).
+- Wolfram: `scripts/clp-wolfram.sh` runs `LaxLogic/QLL/CLPWolfram.lean`
+  against the bridge `~/Lean/mathematica-in-lean` (same toolchain and mathlib
+  commit, put on `LEAN_PATH`, not a Lake dependency).  Wolfram is an untrusted
+  solver and optimiser; its answers are checked by `certifyVerdict` /
+  `lowerBoundCert`.  `TOOLS.md` (not on this branch) owes an entry for the
+  script at merge.  Fourier–Motzkin now refuses an elimination step that would
+  exceed its row cap before building it (a designed cell had driven it to 24 GB).
+- NOT BUILT: stage 1 (Gentzen system); Def 6.5 as formulas.
+- Evening: `docs/qll-clp-writeup.md` rewritten (14 sections): how constraints
+  are solved, the mapping to Jaffar–Maher's transition system and Theorem 6.1,
+  the abstraction/refinement reading, why two (then four) Herbrand worlds,
+  every example recomputable by hand and grouped by domain and technique, and
+  a table of the unsimplified constraints with causes and en-route remedies
+  (none implemented).  `docs/qll-clp-pruning-and-cut.md`: research note on
+  CLP pruning vs Prolog's cut (quiet pruning, left-zero monoids); no
+  implementation, by instruction.
+- `LaxLogic/QLL/BodyCirc.lean` (new, not imported by `QLL.lean`), answering
+  Matthew's question whether `◯` should be allowed in clause bodies: with a
+  PLAIN head a body `◯` is strictly stronger (it discharges a constraint) —
+  `body_circ_to_plain` PROVED, converse REFUTED by a two-world countermodel;
+  with a MODAL head the two forms are interderivable (`clause3`/`clause4`,
+  first-order `fo_I_to_II`/`fo_II_to_I`, and with `◯` under an existential,
+  `fo_ex_I_to_II`/`fo_ex_II_to_I`, the shape a clause body actually has), so
+  a body `◯` buys nothing in
+  an abstract program.  `circ_circ_iff`: `◯◯A ⊣⊢ ◯A`, so `◯`-depth cannot
+  layer — that needs a family of modalities.  Worked first-order program
+  (`exQ`, kernel-run) shows constraints firing indirectly through a matching
+  head, with the indirect clause's table entry `⊤`: no extra constraint term
+  and no relaxation.
+- The inclusion lemma (`BodyCirc`, [propext]): `AProof.entries` lists the
+  table entries `(w, t̃, z)` a derivation summons; `entries a ⊆ entries a'`
+  gives `π₁|a'|_T ⊢ π₁|a|_T` for every table (`ext_prv_of_entries_subset`),
+  equal entry sets give `⊣⊢`.  This is the abstract-level preference between
+  derivations that differ only in how they prove `◯S`: intensional content
+  = the entries, everything else is identified by the monad laws.
+- `LaxLogic/QLL/HeadFlatten.lean` (new, not imported): variable-only heads
+  lose nothing given equality — `∀y. S y ⊃ P(f y)` and its Clark flattening
+  `∀x. (∃y. x = f y ∧ S y) ⊃ P x` are interderivable, one direction from
+  reflexivity, the other from substitutivity in `P`; the same two axioms
+  suffice for a `◯P(f y)` head (`◯E` lifts substitutivity).  Native to the
+  ◯-free fragment; the constraint framework's contribution is that `=` is a
+  constraint solved in the domain.  We have no Herbrand equality solver, so
+  constructor heads are logically available and computationally not.
+- CORRECTION (Matthew): `◯(P₁ ∧ P₂) ⊣⊢ ◯P₁ ∧ ◯P₂` does NOT "handle"
+  groupings under extraction — on the left one constraint may relate both
+  witnesses, on the right not.  Mechanised in `BodyCirc`: `circ_and_split`/
+  `circ_and_join` (provability), `dstr`/`dup` (the two realiser maps),
+  `dstr_dup` (identity up to ⊣⊢), `not_dup_dstr` (REFUTED: the round trip
+  turns `(⊤, ⋆)` into `(⊤ ∧ ⊥, ⋆)`); `AProof.ext_andC`: Fig. 3's `∧◯` is the
+  double strength, so cross-subgoal constraints live only in the table.
+- `LaxLogic/QLL/CLPMachine.lean` (new, not imported): SLD and SLD◯ in ONE
+  format — states are partial proof trees (`PTree`/`ATree`, open leaves =
+  the goal list), a step expands one leaf (`Expand`/`ExpandA`, identical
+  rule shapes, `cstr` ↦ `top`).  PROVED: every SLD step projects to a
+  Table 2 `Step` (`SLDStep.goal_step`); typing preserved, closed tree is a
+  `CProof`; Theorem 9.4 as a run invariant `c ⊣⊢ c₀ ∧ total q`
+  (`SLDSteps.store`); soundness wrt QLL for both machines (`SLDSteps.prv`,
+  `SLDCSteps.prv`); forward simulation SLD ⟹ SLD◯ under `toA`
+  (`Expand.toA`, `SLDSteps.toA`, heads not constraints).
+- Later the same evening, also PROVED in `CLPMachine`: LIFTING — a Table 2
+  step from a tree's goal list is an expansion of that tree (`Step.lift`),
+  and runs lift (`Steps.lift`); with `SLDSteps.goal` this is the run-level
+  correspondence Table 2 ⟷ SLD on single goals.  THE SWITCHING LEMMA —
+  `ExpandAt` indexes the expanded leaf; expansions at different leaves
+  commute without pruning (`ExpandAt.diamond`), stores equal up to ⊣⊢.
+  Pruning put back: for `ok` closed under provable weakening (satisfiability
+  is; the implemented `satOK` is NOT, being incomplete on nonlinear stores),
+  pruned runs are exactly the unpruned runs whose final store passes `ok`
+  (`SLDSteps.noPrune_iff`) — pruning changes which prefixes are explored,
+  never which trees are reachable with an acceptable store.  Still OPEN:
+  SLD◯ ⟹ SLD under toA for `ok := ⊤`; completeness (typed tree ⟹ run);
+  the Herbrand corollaries.
+- 2026-09-13: THE PAPER, as a standalone Verso document (Matthew's choice,
+  local build authorised): `CLPPaper/` (root `Paper.lean`, twelve sections
+  under `Sections/`), `CLPPaperMain.lean`, `[[lean_lib]] CLPPaper` in
+  `lakefile.toml` (NOT in defaultTargets), rendered by
+  `scripts/clp-paper-render.sh` into `_out/clp-paper/{html-single,html-multi}` (superseded 2026-09-14: `scripts/clp-paper.sh`, see below)
+  and served over HTTP (never file://).  Modelled on `LaxPaper/`; every
+  theorem node carries `(lean := "…")`, 110 names verified; builds in ~20 s
+  on top of the built library, renders in ~30 s.  `BodyCirc`, `HeadFlatten`,
+  `CLPMachine` are now imported by `LaxLogic/QLL.lean` so `lake build` covers
+  them and the paper can import them.
+- 2026-09-13 (later): the disjunct decoration `A ∨ ◯B` BUILT in `BodyCirc.lean`
+  and in the paper (§ "Decorating a disjunct" of `Sections/Modality.lean`,
+  eight nodes `mod_disj_*`): `◯(A ∨ ◯B) ⊣⊢ ◯(A ∨ B)`, `A ∨ B ⊢ A ∨ ◯B`, the
+  converse REFUTED (`not_prv_or_circ_to_or`, two-world model `m2`),
+  `AProof.ext_orL/orR` (rfl), `AProof.ext_top_of_pure` (all summoned entries
+  `⊤` ⟹ extracts `⊤`), `AProof.once_of_pure` (every other answer entails it: a
+  sound `once`), and the kernel-run instance `exD` (`Q(t) ⊂ R(t) ∨ ∃s. B(s) ∧
+  t ≥ s+2`, `R` free): two answers `⊤` and `s ≥ 5 ∧ z ≥ s+2`, `extD_top`,
+  `onceD`.  The correction to the earlier pending note: what makes a branch
+  free is `⊤` table entries, not "summons no entries".  Still stated, not
+  built: `◯(∧Γ ⊃ M)` and `¬◯B`.
+- PDF of the paper (NOT committed; `_out/` is gitignored; superseded 2026-09-14 by `scripts/clp-paper.sh`): `scripts/clp-paper-pdf.sh`
+  renders with `--with-tex`, patches Verso's `main.tex` (DejaVu Sans Mono from
+  TeX Live instead of the system font it asks for, DejaVu Sans as glyph
+  fallback for `◯ ℚ ⊨ ⊫ ⋃ ⋂ ⋁ ⊬`, A4) and runs `xelatex` three times: 39 pages,
+  0 missing glyphs.  The TeX backend prints each node's statement only (no
+  Lean name, no status chip); the browser route (`print.html` = html-single
+  plus a print stylesheet, printed by headless Brave) keeps the node panels
+  with code and status but is 87 pages / 9.5 MB and Brave never exits on its
+  own (run it under `gtimeout`).
+
+
+## 2026-09-14 — the paper workflow: vanilla Verso, PDF with the Lean statements, the `verso-paper` skill
+
+Matthew, after seeing the first PDF: links in my replies resolve in my
+worktree and are dead for him; the blueprint genre is for the one document
+GitHub Pages serves; a standalone paper about finished work should be vanilla
+Verso, with a printable PDF that carries every Lean statement, an HTML
+companion, and conventional-notation transcriptions next to the Lean.  Done:
+
+- `CLPPaper/` converted to vanilla `VersoManual` (56cf4fb): each result is
+  prose → `` $$`math` `` → `{docstring Name +allowMissing}`, which prints the
+  declaration's signature and docstring from the compiled library in HTML
+  **and** TeX (the blueprint nodes' code never reached TeX).  One `{docstring}`
+  per name per document; `scripts/blueprint-to-vanilla.py` did the node
+  rewrite, `scripts/lean-to-math.py` the first transcription pass.
+- Build: `scripts/clp-paper.sh [--serve]` → `docs/clp-paper/{html-single,
+  html-multi,tex}` + `docs/clp-paper.pdf`, both gitignored (built artefacts;
+  the source and scripts are what is pushed).  Generic:
+  `scripts/verso-paper.sh <lib> <Main> <out> <pdf>` and
+  `scripts/verso-tex-pdf.sh <texdir> <pdf>` (Verso asks for a system font a
+  Mac lacks: DejaVu from TeX Live by file name, per-glyph fallback, A4,
+  breakable verbatim; expect `tex errors: 0`, `missing glyphs: 0`).
+  Replaces `clp-paper-render.sh` and `clp-paper-pdf.sh`.
+- The process: `docs/verso-paper-workflow.md`; the skill:
+  `.claude/skills/verso-paper/SKILL.md` (parameters: genre, engine, outputs,
+  code included/linked, transcription, branch, output paths, delivery).
+- Delivery rule from now on: push, say "pull" (fast-forward into `tphols`),
+  SendUserFile the PDF; never a file link.
+- OPEN on the paper itself: the content ("extremely poor atm", Matthew) —
+  this round tested the process, not the prose.  Numbering of results is by
+  Lean name only (no theorem counters in vanilla Verso); a document-local
+  `theorem` directive with a TeX renderer is the next step if numbered
+  cross-references are wanted.
+- Later on 2026-09-14: `CLPPaper/Src.lean` adds two document-local roles:
+  `{srcLink}`Name`` (path:line linked to GitHub at the build commit, in HTML
+  and PDF via `\oldhref`) after every `{docstring}`, and
+  `{buildStamp}`CLPPaper/VERSION`` (version · branch@hash[+] · build time) as
+  the first line of the paper; `CLPPaper/VERSION` = 0.3, bump per delivered
+  draft.  `scripts/verso-html-local.py` rewrites the one-page HTML so it
+  reads from `file://` (Verso's `<base href="./">`, `find/?…` permalinks and
+  `href=""` contents all became directory listings for Matthew).  The skill
+  is ALSO installed at `~/.claude/skills/verso-paper/` because project skills
+  are read from the main checkout's `.claude/skills/`, not from a worktree
+  or another branch (`/verso-paper` was unknown in his `tphols` session and
+  in mine).  Reader's flow: `git -C ~/Lean/qll-review merge --ff-only
+  lax-obligations`, `lake build`, `scripts/clp-paper.sh --open`.
+- Later still (2026-09-14): Matthew's standing requirement restated — the
+  tool must go from the Lean sources to the paper with NO manual repair of
+  output, and the mathematics must correspond to the sources.  So
+  `CLPPaper/Math.lean` adds `{stmt}`Name``: the declaration's type rendered as
+  display mathematics at build time (binders → quantifiers, hypotheses →
+  premises, the object language `Prv/PEq/Form/Tm/Q` through a notation table,
+  generic fallback, typewriter last resort; non-propositions print nothing).
+  Every result is now prose → `{stmt}` → `{docstring}` → `{srcLink}`; the
+  hand-written display formulas before docstrings were removed;
+  `lean-to-math.py` is demoted to an authoring aid, not a build step.  Bug
+  found and fixed: `generic`/`form` recursed forever on a partially applied
+  `Form` constructor (SIGABRT 134 in the section build) — arity guards.
+
+## 2026-09-15 — branch `syntax-reorg`: tagged turnstiles, and `LaxLogic/` reorganised
+
+Matthew: "design a new syntactic approach using true argument [tag] notation
+getting rid of ⊢- and ⊨- and while you do it, reorganise the directories and
+files … Make sure every file compiles; use a fresh branch."  Branched from
+`lax-obligations` @ bf6b462.  The record, with rejected alternatives and the
+full module mapping: `docs/syntax-reorg-2026-09-15.md`.
+
+- **Notation** (`LaxLogic/Util/Turnstile.lean`, Lean core only).  `Γ ⊢[R] A` is
+  `R Γ A` with the tag a true argument (the calculus itself, possibly partially
+  applied: `Γ ⊢[G4h n] C`); `⊨[R]` for semantic consequence; `⊬[R]`/`⊭[R]` are
+  `¬ R Γ A` for a Prop-valued relation and `¬ Nonempty (R Γ A)` for a
+  Type-valued one (LaxND).  Plain `⊢ ⊨ ⊬ ⊭` use the scope's defaults
+  (`attribute [scoped turnstile_default] R`), chosen by context then formula
+  type when several are open; printing drops the tag exactly when that is
+  unambiguous.  Converted: `⊢-` (LaxND), `⊨-` (PLL Consequence), `⊢q` (Prv),
+  `⊩q` (SetPrv, a Set context), `⊫` (QLL Consequence).  Not converted (next):
+  PLL `⊩` for SetDeriv, `⊢qll p : A`, the other calculi's registration, the
+  Toolkit challenge corpus's private `⊬`.  Pins: `LaxLogic/Util/TurnstileTests.lean`
+  (watched one fail).  The seven search/draw commands now parse their context
+  at precedence 56.
+- **Layout.** 115 top-level modules moved to `PLL/{Syntax,ND,Normalisation,
+  Semantics,Realisability,Sequent,G4,UI,SemUI,Search,Timing}`, `Belief/`,
+  `Focusing/`, `Util/`; names = old names minus the `PLL`/`Belief` prefix;
+  declaration names and namespaces unchanged.  First commit pure renames
+  (git rename detection carries other branches' edits), second the import and
+  path rewrite across LaxLogic/, wip/, papers, tools/, prover-toolkit/,
+  scripts/, docs/ (this file excepted).  `scripts/reorg-2026-09-15.py
+  --rewrite` re-applies the rewrite on any branch that merges this one.
+- **Built.** Every LaxLogic module and both paper libraries, after each step.
+  `LaxLogic.QLL.CLPWolfram` needs the Wolfram bridge and is compiled only by
+  `scripts/clp-wolfram.sh`, as at baseline.
+
+## 2026-09-15 (evening) — `syntax-reorg`: sequent contexts and PLL formula notation
+
+Matthew: "build the formula category, PLL first, with sequent-style
+contexts"; "Γ, A for A :: Γ is indeed conventional and convenient both
+sides"; "we don't have to use ⊃ … Use a double headed arrow".  Record:
+`docs/syntax-reorg-2026-09-15.md` §2.1.
+
+- **Contexts.** `Γ, A, B ⊢ C` is `B :: A :: Γ` (list) or
+  `insert B (insert A Γ)` (set), in input and in printing; `A, B ⊢ C` is
+  `[A, B]`; `⊢ C` the empty context.  `LaxLogic/Util/Turnstile.lean`.
+- **Formulas.** `◯A`, `A ∧ B`, `A ∨ B`, `A ↠ B`, `⊥`, scoped in `PLLND`
+  (`LaxLogic/PLL/Syntax/Formula.lean`).  No quotation brackets: the same
+  notation inside and outside sequents.  `∧ ∨ ⊥` are not overloaded notations
+  (that broke `FinComp` and `CtxCompleteness`): a scoped macro sends them to a
+  type-directed elaborator that yields the formula connective only where a
+  formula is expected, and `And`/`Or`/`Bot.bot` everywhere else.
+- **Precedence.** Sequent 26 (formula side and context entries 27, `↠` 27).
+  Costs, all reported as errors: `P ∧ (Γ ⊢ A)` needs parentheses; `¬ Γ ⊢ A`
+  is written `Γ ⊬ A`; a context without a context variable starts with an
+  identifier and is ambiguous when list and set defaults are both in scope.
+- **Binder guard.** The comma of `∀ x : T, …` / `∀ φ ∈ Ds, …` is not read as a
+  context comma: a zero-width check before the context identifier
+  (`Guard.ctxIdent`).  Without it the first build failed at
+  `LaxLogic/PLL/ND/Theorems.lean:159`.
+- **Candidate elaboration** runs without error recovery; with recovery a failed
+  candidate became `sorry` and `⊢` was reported ambiguous (first build:
+  `PLL/ND/Consequence.lean`, `QLL/Complete.lean`).
+- **Library edits** (11 lines).  Parentheses around a sequent after `∧`:
+  `PLL/Semantics/Completeness.lean` ×3, `QLL/Complete.lean` ×1.
+  `¬ Γ ⊢ A` → `Γ ⊬ A`: `PLL/Semantics/Completeness.lean`, `QLL/Complete1.lean`,
+  and `PLL/Semantics/FinComp.lean` ×4 (there after `∨`, so parenthesised).
+  One `#guard_msgs` pin now prints `SC [◯A₀] A₀` (`PLL/Search/Run.lean`).
+- **Built** (evening): every `LaxLogic/` module named individually (8751 jobs),
+  `LaxPaper`, `CLPPaper` and the 107 baseline-compiled `wip/` modules (9165
+  jobs), `scripts/clp-wolfram.sh` exit 0.  The `sorry` warnings are the eight
+  pre-existing ones, in seven files.  TurnstileTests pins: the ambiguity message was watched
+  failing (line wrapping) before it was fixed.
+- **Next.** QLL formula notation (`◯[q]`, `◯[∀]`, `◯[∃]`, quantifiers) and
+  the QLL proof-term judgement.
+
+## 2026-09-15 (late evening) — `syntax-reorg`: QLL modalities and quantifiers
+
+Matthew: "now do QLL: ◯[q], ◯[∀], ◯[∃] and quantifiers".  Record:
+`docs/syntax-reorg-2026-09-15.md` §2.2.
+
+- **Notation** (`LaxLogic/QLL/Notation.lean`, scoped to `LaxLogic.QLL`):
+  `◯[∀] A`, `◯[∃] A`, `◯[q] A`; `∧ ∨ ↠`; `∀' A`, `∃' A` over a de Bruijn body
+  (Mathlib's model-theory notation); `∀ x, A`, `∃ x, A` with `x : Tm` standing
+  for `.fvar "x"`, closed by the binder.  `⊥ ⊤` in
+  `LaxLogic/QLL/NotationOrder.lean`, because the QLL core imports no Mathlib.
+  Active downstream of `QLL/Lc.lean` and `QLL/Deriv.lean`.
+- **Printing** both ways: `Γ, ◯[∀] A ⊢ ◯[∃] A ∨ B`, `Γ ⊢ ∀' A → Γ ⊢ ∃' A`; a
+  body of constructors prints with fresh names (`∀ y, ∃ z, … Tm.fvar "x"`).
+- **Shared connectives.** `LaxLogic/Util/Connectives.lean` now holds `↠` and the
+  type-directed `∧ ∨ ⊥ ⊤` for every development, registered by
+  `attribute [scoped connective imp] Form.imp`; PLL moved onto it (pins
+  unchanged).  Needed because two scoped `↠` notations are overloaded when
+  both developments are open.
+- **Inside `LaxLogic.QLL`**, `∀ x, b` / `∃ x, b` with one untyped binder are
+  formulas only where `Form` is expected; elsewhere Lean's own (built-in
+  elaborator, or `Exists fun x => b`).
+- **Built:** every `LaxLogic/` module by name (8754 jobs), both papers and the
+  107 baseline wip modules (9168 jobs), `scripts/clp-wolfram.sh` exit 0; two
+  deliberately wrong pins watched failing.
+- **Not changed.** `Surface.lean`'s `qf[…]` still uses `◯∀ ◯∃ ⊃`;
+  `Form.pred` has no notation; the proof-term judgement `⊢qll` is next.
+
+## 2026-09-15 (night) — `syntax-reorg`: the typing judgement, predicates, surface layer
+
+Matthew: "now do the ⊢qll judgement and also the surface syntax it's ok to
+change other modules.  find a good notation for predicates".  Record:
+`docs/syntax-reorg-2026-09-15.md` §2.3.
+
+- **Judgement.** `Γ ⊢ p : A` is `Derives p Γ A` (plain inside `LaxLogic.QLL`),
+  `Γ, u : B ⊢ p : A` extends the context by `(u, B)`, `Γ ⊬ p : A`,
+  `Γ ⊢[Derivable] p : A`.  `⊢qll` is gone.  Mechanism:
+  `attribute [turnstile typing] R` in `LaxLogic/Util/Turnstile.lean`; with no
+  typing judgement in play, `Γ ⊢ A : T` is still a type ascription.
+- **Predicates.** `P(x, a)` is `.pred "P" [x, .fvar "a"]`, `f(t)` a function term
+  where a `Tm` is expected, `P()` an atom (`LaxLogic/QLL/Notation.lean`).  An
+  unbound identifier in these argument positions, and in a judgement's proof
+  term or entry, is a free variable; printing is the converse.
+- **Surface layer** now matches the infoview: `◯[∀]`, `↠`, `∀ x, A`, `val[∀]`,
+  `let[∀]`; every bracket use, rendered-string pin, `CLPEngine.showForm` and the
+  checker's error messages converted.  `qf[…]`/`qp[…]` evaluate to literal
+  constructor terms; literal proof terms print `qp[…]`, literal judgements
+  `qd[…]`/`qj[…]`.
+- **Built:** every `LaxLogic/` module by name (8754 jobs), both papers and the
+  107 baseline wip modules (9168 jobs), `scripts/clp-wolfram.sh` exit 0; two
+  deliberately wrong judgement pins watched failing.
+- **Left as is** (cosmetic, both parse back): `Γ ⊢ (qp[λu. u]) : A` has outer
+  parentheses (Lean's parenthesizer), `qd[ ⊢ …]` has a space.
+- **Matthew, mid-session:** the surface brackets may become unnecessary now
+  that the term notation carries judgements; and baking our own syntax may not
+  be sensible given Lean's own features.  Assessment owed in the reply.

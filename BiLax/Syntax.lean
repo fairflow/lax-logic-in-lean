@@ -13,7 +13,7 @@ worlds force everything and on which exfalso is sound
 (docs/bilax-plan.md §4(b): fallibility trivialises the future, the
 retrospective connectives see the past).
 -/
-import LaxLogic.PLLNDCore
+import LaxLogic.PLL.ND.NDCore
 
 namespace BiLax
 

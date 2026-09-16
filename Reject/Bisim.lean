@@ -2,7 +2,7 @@
 BISIMULATION for PLL constraint models — REUSED, not reinvented.
 
 The notion completeness needs already exists in this tree:
-`PLLND.SemUI.ABisim` (`LaxLogic/PLLSemUI.lean`), built for the SEMANTIC
+`PLLND.SemUI.ABisim` (`LaxLogic/PLL/SemUI/SemUI.lean`), built for the SEMANTIC
 ROUTE TO UNIFORM INTERPOLATION, where a p-variant is a world related
 by a bisimulation protecting every atom but `p`.  Its zig-zag is
 already the one `◯` forces — `iforth`/`iback` to move the outer
@@ -19,7 +19,7 @@ rule — but its machinery is not, and this is the second time it has
 paid for itself.)
 -/
 import Reject.Height
-import LaxLogic.PLLSemUI
+import LaxLogic.PLL.SemUI.SemUI
 
 namespace Reject
 

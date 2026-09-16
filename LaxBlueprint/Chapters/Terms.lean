@@ -1,8 +1,8 @@
 import Verso
 import VersoManual
 import VersoBlueprint
-import LaxLogic.PLLTerms
-import LaxLogic.PLLConstraints
+import LaxLogic.PLL.ND.Terms
+import LaxLogic.PLL.Timing.Constraints
 
 open Verso.Genre
 open Verso.Genre.Manual

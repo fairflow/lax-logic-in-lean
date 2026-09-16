@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Test: the rank-bounded join for ∀p.◯(◯p⊃p)

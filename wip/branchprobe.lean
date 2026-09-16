@@ -1,4 +1,4 @@
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 
 /-!
 # BranchMixedConj probe: does the JOIN of the guarded stretch bounds,

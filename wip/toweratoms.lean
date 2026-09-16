@@ -13,8 +13,8 @@ This module makes the gap exactly one named statement, and discharges
 everything on either side of it:
 
 * `atomFree_iff` — the bridge between the `Bool` predicate `atomFree`
-  (`LaxLogic/PLLLaxInfinite.lean`) and the `Finset String` of `atoms`
-  (`LaxLogic/PLLG4Space.lean`), which the library also lacked;
+  (`LaxLogic/PLL/Semantics/LaxInfinite.lean`) and the `Finset String` of `atoms`
+  (`LaxLogic/PLL/G4/G4Space.lean`), which the library also lacked;
 * `ItpAtomsBounded` — the containment, in the pointwise form the induction
   will produce: an atom absent from every hypothesis is absent from the
   table's output;
@@ -29,7 +29,7 @@ everything on either side of it:
 `ItpAtomsBounded` is **OPEN** here — stated, not proved.  It is not a
 `sorry`: nothing below claims it, everything below is an implication with
 it as an explicit hypothesis.  Its proof is the induction that mirrors
-`itp_pfree` (`LaxLogic/PLLG4UITrunc.lean`:1961, ≈500 lines) clause for
+`itp_pfree` (`LaxLogic/PLL/UI/G4UITrunc.lean`:1961, ≈500 lines) clause for
 clause: the only clauses that put an atom into the output are the `prop q`
 filter-map and the `.ifThen (.prop q) B` rule (and, on the ∀-side, the
 `prop q` goal), and in each the atom comes from a member of `Γ` resp. `C`;

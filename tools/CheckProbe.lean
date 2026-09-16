@@ -26,7 +26,7 @@ Exit code 1 on any ALARM or any gate that did not fail.
 -/
 import wip.check_closed
 import FRJ.Bridge
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import wip.ljfo_link
 
 open FRJ FRJ.Search FRJ.Gbu.W FRJ.Arity Form

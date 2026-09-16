@@ -23,8 +23,8 @@ What is kernel-checked here:
   interderivable with `θ₃`.  So the fixpoint of the retention crank at
   this cell is reached at the third rung.
 -/
-import LaxLogic.PLLCountermodelEmit
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Semantics.CountermodelEmit
+import LaxLogic.PLL.Search.Search
 
 open PLLND
 

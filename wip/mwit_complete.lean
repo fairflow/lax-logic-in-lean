@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # The CONFIG-COMPLETION probe: which hypothesis protects `kvInvisible`?

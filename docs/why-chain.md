@@ -110,7 +110,7 @@ proved, sorry-free, with `frj_iff_not_IPL`.
 
 **P1. PLL judgments live in `Type`.** The fact is confirmed:
 `inductive LaxND : List PLLFormula → PLLFormula → Type`
-(`LaxLogic/PLLNDCore.lean:72`), `Deriv Γ φ := Nonempty (LaxND Γ φ)`, and
+(`LaxLogic/PLL/ND/NDCore.lean:72`), `Deriv Γ φ := Nonempty (LaxND Γ φ)`, and
 `G4cTm` a Type-valued proof-term calculus. *The motive ("we wanted
 effective procedures") is not recorded; `PLLNDCore.lean`'s header gives a
 different rationale, no green slime and cast-freedom. Recollection.* That

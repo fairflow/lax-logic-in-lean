@@ -1,6 +1,6 @@
 # The semantic route to uniform interpolation for PLL
 
-2026-07-18 · companion to `LaxLogic/PLLSemUI.lean` (sorry-free since the
+2026-07-18 · companion to `LaxLogic/PLL/SemUI/SemUI.lean` (sorry-free since the
 2026-07-19 graduation: the two named open targets are `Prop`-level
 conjectures `SemExDefinable`/`SemAllDefinable`). Status words used
 precisely: PROVED = machine-checked; OPEN = stated as a conjecture;
@@ -12,7 +12,7 @@ definability acquired a two-generator certificate method (substitution
 instances + the lower transform of the doubled model) with a
 computational value table at one variable.**
 
-## 0. Results of 2026-07-19 (all machine-checked in `LaxLogic/PLLSemUI.lean`)
+## 0. Results of 2026-07-19 (all machine-checked in `LaxLogic/PLL/SemUI/SemUI.lean`)
 
 **(a) The essential fibre of the quantifiers — the conjecture is a
 theorem.**  Call `p` *inessential* in M when M is PLL-equivalent to some
@@ -155,7 +155,7 @@ RN lattice.  Oracle pathology recorded in the table doc: failing
 `search` cost is unpredictable (non-monotone in fuel); successes instant.
 
 **(h) The reconstruction reduction (2026-07-19, overnight session;
-PROVED in `LaxLogic/PLLSemUI.lean`).**  Writing `M[χ]` for the
+PROVED in `LaxLogic/PLL/SemUI/SemUI.lean`).**  Writing `M[χ]` for the
 substitution `substP p χ M`, define the p-free candidates
 
     allCand p M  :=  M[⊥] ∧ M[⊤] ∧ lowT p M ∧ sideT p M
@@ -450,9 +450,9 @@ are now the canonical interface; the two efforts meet there.
 
 | artefact | content |
 |---|---|
-| `LaxLogic/PLLSemUI.lean` | ABisim, invariance, identity, specs, four adjunction theorems (all PROVED); two definability targets (OPEN) |
-| `LaxLogic/PLLFinComp.lean` | the finite canonical model = the intended definability engine |
-| `LaxLogic/PLLCountermodelEmit.lean` + diagrams | the two-sided oracle for testing candidate descriptions |
+| `LaxLogic/PLL/SemUI/SemUI.lean` | ABisim, invariance, identity, specs, four adjunction theorems (all PROVED); two definability targets (OPEN) |
+| `LaxLogic/PLL/Semantics/FinComp.lean` | the finite canonical model = the intended definability engine |
+| `LaxLogic/PLL/Semantics/CountermodelEmit.lean` + diagrams | the two-sided oracle for testing candidate descriptions |
 | `wip/lattice_cmp.lean`, `wip/slick_probe.lean` | 1-pv computation harnesses for candidate descriptions |
 | task #9 / `PROGRESS.md` | the syntactic route (independent; meets this one at the spec) |
 
@@ -504,7 +504,7 @@ the probe, and some still wedge.  All probe verdicts are sound on
 ### (k) 2026-07-19 afternoon: graduation, and the sandwich lemmas (the constraint–ladder comparison, PROVED)
 
 GRADUATION.  The theory file left `wip`: it is now
-`LaxLogic/PLLSemUI.lean`, registered in the root module, sorry-free —
+`LaxLogic/PLL/SemUI/SemUI.lean`, registered in the root module, sorry-free —
 the two definability targets are `Prop`-level CONJECTURES
 (`SemExDefinable`, `SemAllDefinable`), everything else PROVED (27
 flagship theorems audited ≤ [propext, Classical.choice, Quot.sound]).
@@ -515,7 +515,7 @@ THE EQUIVALENCE QUESTION (Matthew): are the two candidate
 constructions of ∀p M — (A) constraint models C[_] built from cl(M)
 (the TYPES-paper route), (B) ladder-level generator instances from
 cl(M) — equivalent?  ANSWER, machine-checked in
-`LaxLogic/PLLSemUICtx.lean` + `wip/semui_ctx_equiv.lean`:
+`LaxLogic/PLL/SemUI/SemUICtx.lean` + `wip/semui_ctx_equiv.lean`:
 
 * NOT equivalent for a single frozen C — the §0(j) oracle witness
   stands (M = ◯p⊃p over chain2: IPC value a1, translated PLL value ⊥);
@@ -627,7 +627,7 @@ constraints — doubled/Löb saturations), not the ambient theory.  This
 is the per-instance finite-support picture arriving from the third
 independent direction.
 
-### (n) 2026-07-19 evening: the general fails-half — PROVED (`LaxLogic/PLLSemUIRes.lean`)
+### (n) 2026-07-19 evening: the general fails-half — PROVED (`LaxLogic/PLL/SemUI/SemUIRes.lean`)
 
 The uniform one-world argument of §0(m) is now a THEOREM, fully
 general in the constraint and the frame theory.  The pieces (all
@@ -705,7 +705,7 @@ instance.
 
 ### (p) 2026-07-19: the dichotomy at the MODEL level — PROVED (c0Of lifted)
 
-`LaxLogic/PLLSemUIRes.lean`, final section.  Finite models as Boolean
+`LaxLogic/PLL/SemUI/SemUIRes.lean`, final section.  Finite models as Boolean
 tables (`FinModel`: n, ri, rm, fal); the Lemma-7 recipe in the
 library:
 
@@ -776,7 +776,7 @@ above the morning's weight caps.
 
 ### (r) 2026-07-19 late: the per-instance reconstruction law, made exact (mainline resumed)
 
-`LaxLogic/PLLSemUILaw.lean`: the law is now a formal object.
+`LaxLogic/PLL/SemUI/SemUILaw.lean`: the law is now a formal object.
 `rungsIn M` = the atom-free subformulas of M; the pools
 
     poolAll p M = {lowT p M, sideT p M} ∪ {M[p:=χ] : χ ∈ ⊥ :: ⊤ :: rungsIn M}
@@ -847,7 +847,7 @@ size).  Reproduction: `wip/semui_repro.lean`, `lake exe weightrepro`.
 ### (t) 2026-07-19 midnight: the frontier row settled — the ∀-law is refuted IN LEAN; the third generator is named
 
 `((p⊃◯⊥)⊃p)⊃p`, the sweep's lone UNKNOWN, fully resolved
-(`wip/frontier_row.lean`; pins in `LaxLogic/PLLSemUILaw.lean`):
+(`wip/frontier_row.lean`; pins in `LaxLogic/PLL/SemUI/SemUILaw.lean`):
 
 * every closed substitution instance ≡ ⊤ (substitutions contribute
   nothing); `lowT ≡ sideT ≡ ¬¬◯⊥` (four find-term directions);
@@ -933,7 +933,7 @@ Equations sketched in the session log; the mechanisation
 
 ### (v) 2026-07-20 overnight: the split MECHANISED — `∀p.(((p⊃◯⊥)⊃p)⊃p) = ◯⊥` PROVED
 
-`LaxLogic/PLLSemUISplit.lean` — sorry-free, full library green, all
+`LaxLogic/PLL/SemUI/SemUISplit.lean` — sorry-free, full library green, all
 seven theorems ≤ [propext, Classical.choice, Quot.sound]
 (`#guard_msgs`-pinned for the two flagships).
 
@@ -996,7 +996,7 @@ Two questions from Matthew, both answered.
 **1. Do the uniform interpolants of the ◯-free fragment RN({p})
 survive the PLL semantic quantifiers?**  YES — agreement with
 Pitts's IPC values, theorem-backed and sweep-certified
-(`LaxLogic/PLLSemUIOFree.lean` + `lake exe ofreesweep`).
+(`LaxLogic/PLL/SemUI/SemUIOFree.lean` + `lake exe ofreesweep`).
 
 For one variable the IPC values are closed and ◯-free: ⊤ (⊢ M) or ⊥
 (⊬ M).  The risk was a ◯-free row acquiring a LADDER value (◯⊥,
@@ -1104,7 +1104,7 @@ for the climb: the one-◯ two-variable fragment.
 
 ### (y) 2026-07-20 afternoon: the PARAMETRIC POINT-ADJUNCTION — one construction, three surgeries
 
-Matthew's probe, mechanised (`LaxLogic/PLLSemUIAdjoin.lean`, sorry-free;
+Matthew's probe, mechanised (`LaxLogic/PLL/SemUI/SemUIAdjoin.lean`, sorry-free;
 `adjoin_pbisim` AXIOM-FREE, `adjoin_reaches_lob` at the standard three).
 
     adjoin N n₀ U R : one point ⋆ anchored at n₀ —
@@ -1148,7 +1148,7 @@ whether a single parametric family covers it.
 
 Matthew's proposal (induction over the propositional variables, base
 case = the RN({p}) proofs, inductive step = the same construction),
-mechanised as a REDUCTION (`LaxLogic/PLLSemUIAmalg.lean`, sorry-free,
+mechanised as a REDUCTION (`LaxLogic/PLL/SemUI/SemUIAmalg.lean`, sorry-free,
 audits pinned).  His "both steps might collapse to one" is exactly
 what happened: ONE construction serves every variable count, and the
 whole induction is displaced into IPC.
@@ -1196,7 +1196,7 @@ probe first.
 
 ### (aa) 2026-07-20 afternoon: the BOX-COMMUTATION LAW proved (residues isolated) + the one-◯ two-variable sweep CLEAN
 
-**The law** (`LaxLogic/PLLSemUIBox.lean`, sorry-free; `semEx_box` at
+**The law** (`LaxLogic/PLL/SemUI/SemUIBox.lean`, sorry-free; `semEx_box` at
 [propext, Quot.sound] — choice-free):
 
     semAll_box : IsSemAll p φ ψ → BoxRowAmalgAll p φ ψ → IsSemAll p ◯φ ◯ψ
@@ -1329,7 +1329,7 @@ signal I fetch and merge its branch directly.
 
 ### (dd) 2026-07-20: SECOND WAVE LANDED — the description graft, complete machine
 
-`LaxLogic/PLLSemUIDesc.lean` (sorry-free, audits pinned, full library
+`LaxLogic/PLL/SemUI/SemUIDesc.lean` (sorry-free, audits pinned, full library
 green) — the canonical-cone graft in its general form, built and
 PROVED in one session-tail:
 
@@ -1381,7 +1381,7 @@ edited).
 The "remaining open mathematics" of §0(dd) — the pack for K :=
 `canonFin cl` — was built, measured, and REFUTED as the route; the
 day ends with the route corrected and the gap row's residue
-probe-supported.  Everything below `LaxLogic/PLLSemUITrace.lean`
+probe-supported.  Everything below `LaxLogic/PLL/SemUI/SemUITrace.lean`
 (sorry-free, pins standard three; `packRel_realises` axiom-FREE) plus
 two compiled probes (`wip/desc_probe.lean`, `wip/resid_probe.lean`).
 

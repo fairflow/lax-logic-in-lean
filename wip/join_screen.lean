@@ -32,8 +32,8 @@ under attack, each with a CONTROL that must fail in the same run:
 Verdicts are three-valued: `pass` / `fail` (certificate printed) /
 `flag`.  One appended line per cell block; nothing is silently capped.
 -/
-import LaxLogic.PLLCountermodelEmit
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Semantics.CountermodelEmit
+import LaxLogic.PLL.Search.SearchConf
 import Rewrite.Catalogue
 
 open PLLND PLLND.FinCM

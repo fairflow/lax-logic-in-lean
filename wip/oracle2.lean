@@ -1,7 +1,7 @@
-import LaxLogic.PLLCountermodelEmit
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLG4Term
-import LaxLogic.PLLSemUI
+import LaxLogic.PLL.Semantics.CountermodelEmit
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.G4.G4Term
+import LaxLogic.PLL.SemUI.SemUI
 
 /-!
 # oracle2 — the packaged two-sided decision TOOL (countermodel-first)

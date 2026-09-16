@@ -1,6 +1,6 @@
 > **Repo correction note (2026-07-09).** Where this report treats
 > Iemhoff's G4iLL-based results as settled (uniform interpolation for
-> PLL via G4LL, Cor. 8.1 equivalence), see `LaxLogic/PLLG4Gap.lean`:
+> PLL via G4LL, Cor. 8.1 equivalence), see `LaxLogic/PLL/G4/G4Gap.lean`:
 > the equivalence is refuted (machine-checked), so PLL uniform
 > interpolation is OPEN — task #9. Reports are otherwise verified
 > literature extractions.

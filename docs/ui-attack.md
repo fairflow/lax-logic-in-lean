@@ -120,7 +120,7 @@ can ever instantiate the ∀-side obstruction.**  The mechanism: in a
 FINITE constraint model every world forces a substituted odd rung of
 rank ≤ twice its Rᵢ-depth (`rank_bound` — a pure ∨/⊃ induction, ◯⊥
 treated as an opaque hereditary atom), and PLL's finite model property
-(`LaxLogic/PLLFiniteModel.lean`, already in the repo) converts
+(`LaxLogic/PLL/Semantics/FiniteModel.lean`, already in the repo) converts
 finite-model validity into derivability.  A countermodel to a
 chain-bound would need a world of infinite Rᵢ-depth — the limit point
 of the Rieger–Nishimura Esakia space — which FMP says a non-theorem

@@ -22,7 +22,7 @@ which is an equivalence in both directions.  Nothing here is trusted: the
 `prove?Bounded` in both directions (wip/ljfo_theta_run.lean).
 -/
 import LJF.OFuel
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import wip.ljfo_attack
 
 open LJFO LJFOAttack PLLND

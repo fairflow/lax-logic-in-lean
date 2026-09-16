@@ -40,7 +40,7 @@ flag `j : JD ::= tru | lax`, and polarised formulas
 
 **Provenance.** The polarised skeleton and the four judgments follow the
 LJF style of focusing (the name is Liang–Miller's). The IPC calculus this
-extends, `LaxLogic/LJF.lean`, is **not a port**: its header records that it
+extends, `LaxLogic/Focusing/LJF.lean`, is **not a port**: its header records that it
 is built from its own rules and imports nothing, deliberately, "so that the
 technique is what is under test" (Matthew, 2026-08-08). LJF◯ inherits that
 discipline — zero imports, no other calculus carries any of the proof. The
@@ -275,7 +275,7 @@ zero certified failures.
 
 * **`docs/calculus-map.md` has no LJF◯ entry.** It should gain one: LJF◯ is
   a further system in this repository, ours, the ◯-extension of the
-  self-contained focused calculus in `LaxLogic/LJF.lean`. What depends on it:
+  self-contained focused calculus in `LaxLogic/Focusing/LJF.lean`. What depends on it:
   `LJFORows`, `LJFO`, `LJFOHeight`, `LJFOUniverse`, `LJFOSearch`, `LJFOFuel`,
   and the four `wip/ljfo_*` probes (`_eval`, `_attack`, `_attack_weights`,
   `_crosscheck`) — nothing else. Until that entry exists the map is incomplete —

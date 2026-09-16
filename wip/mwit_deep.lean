@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Deep-model probe: `MwitResidue`/`RankGap` in the DESCENDING regime

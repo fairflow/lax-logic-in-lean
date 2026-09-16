@@ -18,7 +18,7 @@ status recorded there.*
 > this project's assessment. Iemhoff's uniform-interpolation theorem routes through her
 > Corollary 8.1, whose adequacy needs `G4iLL ≡ PLL`, and `G4iLL` is machine-checked
 > **INCOMPLETE** for PLL here: the sequent `◯((◯p→r)→◯p), ◯p→r ⇒ r` is derivable in `SC`
-> and rejected by the verified `G4` decider (`LaxLogic/PLLG4Gap.lean`, and
+> and rejected by the verified `G4` decider (`LaxLogic/PLL/G4/G4Gap.lean`, and
 > `docs/calculus-map.md` under "`G3iLL`, `G4iLL`"). **Uniform interpolation for PLL is
 > OPEN.** Everything below that depends on UI is therefore conditional, and is marked so.
 > Iemhoff's *Craig* interpolation result is unaffected, its proof using `G3iLL` only.
@@ -90,7 +90,7 @@ head of this file, and the Gabbay attribution in item 10.
 ### 1.1 Syntax
 
 Propositional variables come from a countable set. The repository's `PLLFormula` uses
-`String` atoms (`LaxLogic/PLLFormula.lean:3`), and the plan keeps them: **locally nameless**
+`String` atoms (`LaxLogic/PLL/Syntax/Formula.lean:3`), and the plan keeps them: **locally nameless**
 representation, free variables are `String`s and bound variables are de Bruijn indices.
 Justification in §6.1.
 
@@ -151,7 +151,7 @@ The two lax rules are exactly the repository's, unchanged
 These are F&M's `◯R` / bind pair. Nothing about them changes in the presence of
 quantifiers, and no new interaction rule is added: **`◯` is axiomatised exactly as in PLL**.
 In Hilbert form the same content is `somehowR`, `somehowM`, `somehowS`, `somehowBind`
-(`LaxLogic/PLLAxiom.lean`).
+(`LaxLogic/PLL/Syntax/Axiom.lean`).
 
 **Definition.** `Deriv2 Γ φ := Nonempty (LaxND2 Γ φ)` is what "PLL2 proves" means, by exact
 analogy with `Deriv` for PLL (`docs/calculus-map.md`).
@@ -170,7 +170,7 @@ PLL-specific. The PLL2-specific content is in §1.6 and §2.
 
 ### 1.3 The judgmental variant: `PD2`
 
-The Pfenning–Davies two-judgment presentation (`LaxLogic/PLLJudgmental.lean`) extends with
+The Pfenning–Davies two-judgment presentation (`LaxLogic/PLL/ND/Judgmental.lean`) extends with
 no surprises. Judgments `Γ ⊢ φ true` and `Γ ⊢ φ lax`; hypotheses are always `true`. The lax
 rules are unchanged (`PLLJudgmental.lean:69`, `:71`, `:74`):
 
@@ -213,7 +213,7 @@ lists the infrastructure.
 
 ### 1.5 The sequent calculus `SC2`
 
-The base is the repository's `SCh` (`LaxLogic/PLLSequent.lean:30`): G3-style, single
+The base is the repository's `SCh` (`LaxLogic/PLL/Sequent/Sequent.lean:30`): G3-style, single
 succedent, height-indexed, left rules keep their principal formula in the context via a
 membership hypothesis, so weakening/contraction/exchange are height-preserving admissible
 (`SCh.rename`). There is no cut rule; in PLL, cut is *admissible* and that is PROVED
@@ -498,7 +498,7 @@ theorem freeAtoms_erase2 (φ : PLL2Formula) : (erase2 φ).freeAtoms = φ.freeAto
 
 ### 3.1 The base: F&M constraint models
 
-`LaxLogic/PLLKripke.lean:28`. A constraint model is `(W, Ri, Rm, F, V)` with `Ri` and `Rm`
+`LaxLogic/PLL/Semantics/Kripke.lean:28`. A constraint model is `(W, Ri, Rm, F, V)` with `Ri` and `Rm`
 preorders, `Rm ⊆ Ri`, `F ⊆ W` an `Ri`-upward-closed set of *fallible* worlds, `V` an
 `Ri`-persistent valuation that is *full on `F`* (fallible worlds satisfy every atom).
 Forcing (`PLLKripke.lean:52`):
@@ -741,10 +741,10 @@ the niche.
 The repository has the monadic half of the argument already, and it is worth naming exactly
 what is missing.
 
-`LaxLogic/PLLReducibility.lean` defines reducibility `Red φ t` **by recursion on the
+`LaxLogic/PLL/Normalisation/Reducibility.lean` defines reducibility `Red φ t` **by recursion on the
 formula**: Kripke function spaces at `⊃`, elimination clauses at `∧`, value clauses at `∨`
 and `◯`, with SN conjoined into every clause so CR1 is free, and CR2/CR3 proved by induction
-on the formula. `LaxLogic/PLLTopTop.lean` upgrades the `◯`-clause to Lindley–Stark
+on the formula. `LaxLogic/PLL/Normalisation/TopTop.lean` upgrades the `◯`-clause to Lindley–Stark
 ⊤⊤-lifting (biorthogonality) to get strong normalisation of the *full* interleaved reduction
 including `let`-assoc.
 
@@ -842,7 +842,7 @@ statuses in §8.2.
 
 ### 5.2 What is decidable
 
-* **PLL itself.** PROVED here: `decidablePLL` (`LaxLogic/PLLG4Dec.lean:675`), via the
+* **PLL itself.** PROVED here: `decidablePLL` (`LaxLogic/PLL/G4/G4Dec.lean:675`), via the
   repaired terminating calculus `G4c`, F&M Theorem 2.8. `docs/calculus-map.md` records that
   this is a `G4c` result. On complexity, U. Egly, "Embedding lax logic into intuitionistic
   logic", CADE-18, LNCS 2392, Springer, 2002, pp. 78–93, DOI 10.1007/3-540-45620-1_6, gives a
@@ -858,7 +858,7 @@ statuses in §8.2.
 ### 5.3 The Pitts-interpretation image, and the conjecture to record
 
 Suppose the repository's uniform-interpolation campaign completes, i.e. suppose the four
-obligations E1/A1/E2/A2 of `LaxLogic/LJF.lean` are discharged unconditionally (they are
+obligations E1/A1/E2/A2 of `LaxLogic/Focusing/LJF.lean` are discharged unconditionally (they are
 currently PROVED for E1/A1 and proved *modulo* the saturated-context hypotheses `SatE2`,
 `SatA2` for E2/A2). Then there is a total computable map on formulas
 
@@ -1268,19 +1268,19 @@ on an appeal to authority.
   correction at the head of this file.
 * `docs/calculus-map.md` — which proof system a result belongs to. PLL2 adds `LaxND2` and
   `SC2` to that map; `G4c` and `LJF` do **not** extend (§6.5).
-* `LaxLogic/PLLNDCore.lean` — `LaxND`, and `conservativity_prop` / `conservativity_IPL`, the
+* `LaxLogic/PLL/ND/NDCore.lean` — `LaxND`, and `conservativity_prop` / `conservativity_IPL`, the
   proof that §2.4 lifts.
-* `LaxLogic/PLLJudgmental.lean` — the Pfenning–Davies presentation and `circInvert`.
-* `LaxLogic/PLLSequent.lean` — `SC`, `laxR`/`laxL`, and the cut-elimination measure that
+* `LaxLogic/PLL/ND/Judgmental.lean` — the Pfenning–Davies presentation and `circInvert`.
+* `LaxLogic/PLL/Sequent/Sequent.lean` — `SC`, `laxR`/`laxL`, and the cut-elimination measure that
   §4.1 says fails at second order.
-* `LaxLogic/PLLKripke.lean`, `LaxLogic/PLLFrames.lean` — the constraint models, the
+* `LaxLogic/PLL/Semantics/Kripke.lean`, `LaxLogic/PLL/Semantics/Frames.lean` — the constraint models, the
   structural lemmas that force the admissibility conditions of §3.2, `decForce`, and the
   `◯⊥` countermodel that §1.6 upgrades to second order.
-* `LaxLogic/PLLReducibility.lean`, `LaxLogic/PLLTopTop.lean` — the reducibility method by
+* `LaxLogic/PLL/Normalisation/Reducibility.lean`, `LaxLogic/PLL/Normalisation/TopTop.lean` — the reducibility method by
   recursion on the formula, which §4.3 says must become candidate-assignment-indexed.
-* `LaxLogic/LJF.lean` — the four obligations E1/A1/E2/A2, i.e. the four quantifier rules, and
+* `LaxLogic/Focusing/LJF.lean` — the four obligations E1/A1/E2/A2, i.e. the four quantifier rules, and
   the A2 discrepancy of §5.3.
-* `LaxLogic/PLLG4Gap.lean` — the machine-checked incompleteness of `G4iLL`, on which the
+* `LaxLogic/PLL/G4/G4Gap.lean` — the machine-checked incompleteness of `G4iLL`, on which the
   correction at the head of this file rests.
 * `docs/lax-interpolation-candidates-strategy.md` — the "interpolation candidates" method,
   which §4.3 identifies as the same bet one level down.

@@ -1,6 +1,6 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSearchPin
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Search.SearchPin
+import LaxLogic.PLL.Search.SearchConf
 import wip.rnEmbed
 import wip.rnDict
 
@@ -76,7 +76,7 @@ def main : IO Unit := do
   pl "import wip.rnEmbed"
   pl "import wip.rnDict"
   pl "import wip.rnDictBase"
-  pl "import LaxLogic.PLLCountermodelEmit"
+  pl "import LaxLogic.PLL.Semantics.CountermodelEmit"
   pl ""
   pl "/-!"
   pl "# The ladder/dictionary cross-relations, pinned"

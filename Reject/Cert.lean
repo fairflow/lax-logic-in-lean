@@ -44,7 +44,7 @@ would need FRJ's sequent syntax and derivations as an inductive type
 over it, at which point T1/T2 become its adequacy proof.
 -/
 import Reject.Complete
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 namespace Reject
 

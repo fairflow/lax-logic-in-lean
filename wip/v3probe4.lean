@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.UI.G4UITrunc
 
 /-! v3.1 probe: the REAL itpE/itpA (guards restored, all same-context
 references budget-paying) against the v2 fixpoint. -/

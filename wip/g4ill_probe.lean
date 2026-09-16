@@ -1,6 +1,6 @@
-import LaxLogic.PLLDecide
-import LaxLogic.PLLG4UI
-import LaxLogic.PLLG4Gap
+import LaxLogic.PLL.Search.Decide
+import LaxLogic.PLL.UI.G4UI
+import LaxLogic.PLL.G4.G4Gap
 /-!
 # g4ill_probe: per-instance decidable probe of Iemhoff-UI statements for G4iLL (task follow-on to #13)
 

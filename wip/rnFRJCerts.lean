@@ -31,7 +31,7 @@ candidate was the last.
 Goals refuted here: 24 — cAnd_10_13, cAnd_11_13, cBox_11, cBox_11_q11, cBox_11_q13, cImp_10_7, cImp_11_7, cImp_12_11, cImp_12_11_q11, cImp_12_11_q13, cImp_8_4, cImp_8_5, cOr_10_12, cOr_10_12_q11, cOr_10_12_q13, cOr_10_14, cOr_11_12, cOr_11_12_q11, cOr_11_12_q13, cOr_11_14, cOr_8_10, cOr_8_11, cOr_8_12, cOr_8_14.
 -/
 import FRJ.Search.Pin
-import LaxLogic.PLLSemUIFrag
+import LaxLogic.PLL.SemUI.SemUIFrag
 import Tools.Bank
 
 namespace RNFRJCerts

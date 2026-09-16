@@ -14,10 +14,10 @@ unlike `../NewClaims.lean`, whose statements were invented for the purpose.
 
 | file | from | ground truth |
 |---|---|---|
-| `conservativity.lean` | `LaxLogic/PLLNDCore.lean` | 14 lines |
-| `conservativity_prop.lean` | `LaxLogic/PLLNDCore.lean` | 14 lines |
-| `pfree_trans.lean` | `LaxLogic/LJFComplete.lean` | 15 lines |
-| `focalization.lean` | `LaxLogic/LJFComplete.lean` | 6 lines |
+| `conservativity.lean` | `LaxLogic/PLL/ND/NDCore.lean` | 14 lines |
+| `conservativity_prop.lean` | `LaxLogic/PLL/ND/NDCore.lean` | 14 lines |
+| `pfree_trans.lean` | `LaxLogic/Focusing/LJFComplete.lean` | 15 lines |
+| `focalization.lean` | `LaxLogic/Focusing/LJFComplete.lean` | 6 lines |
 
 Two further candidates (`force_circ_transparent`, `mem_gHat_shape`, both from
 `FRJ/Erase.lean`) were dropped: their prefixes do not compile standalone, which

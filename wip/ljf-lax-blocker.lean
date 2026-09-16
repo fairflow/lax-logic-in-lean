@@ -1,4 +1,4 @@
-import LaxLogic.PLLFocused
+import LaxLogic.PLL.Sequent.Focused
 
 /-!
 # The G4iLL blocking sequent, derived in the lax-flagged focused calculus
@@ -10,7 +10,7 @@ Iemhoff's G4iLL — the machine-checked incompleteness counterexample
 opened box), and G4iLL's contraction-free `⊃`-left consumes it.
 
 Matthew's question (2026-08-09): is this sequent still a blocker for the
-focused calculus with the lax flag (`LaxLogic/PLLFocused.lean`)?  If yes, the
+focused calculus with the lax flag (`LaxLogic/PLL/Sequent/Focused.lean`)?  If yes, the
 planned ◯-extension of LJF dies the same death and we need to know now.
 
 **Answer: it is derivable.**  The term `blocker` below is the first genuine

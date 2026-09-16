@@ -290,8 +290,8 @@ Steps 1 and 2 are days; 3 is a session or two; 4 and 5 are the research.
 
 | file | content | audit |
 |---|---|---|
-| `LaxLogic/PLLJudgmental.lean` | two-judgment PLL (`true`/`lax`), `rename`, `erase`, soundness both judgments, **completeness**, `equiv_nd`, `equiv_lax` | **no axioms at all** |
-| `LaxLogic/PLLPolar.lean` | polarised syntax `Pos`/`Neg` with `circ : Pos → Neg`, erasure, `polPos`/`polNeg`, roundtrip, `phase` | `[propext]` / axiom-free |
+| `LaxLogic/PLL/ND/Judgmental.lean` | two-judgment PLL (`true`/`lax`), `rename`, `erase`, soundness both judgments, **completeness**, `equiv_nd`, `equiv_lax` | **no axioms at all** |
+| `LaxLogic/PLL/Syntax/Polar.lean` | polarised syntax `Pos`/`Neg` with `circ : Pos → Neg`, erasure, `polPos`/`polNeg`, roundtrip, `phase` | `[propext]` / axiom-free |
 | `wip/polarity.lean` | `box_right_not_invertible`, `box_left_invertible` | `[propext, Quot.sound]` / `[propext]` |
 
 Two findings worth keeping from the build:

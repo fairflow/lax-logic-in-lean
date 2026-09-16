@@ -49,7 +49,7 @@ On failure, the trace is read as a model:
 -/
 import LJF.OSearch
 import LJF.OBridge
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 import Std.Data.HashMap
 
 namespace Unravel

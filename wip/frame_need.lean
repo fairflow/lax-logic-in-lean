@@ -16,8 +16,8 @@ needed.  This file carries such separators, machine-checked, one class at
 a time.  Soundness (`PLLND.soundness_valid`) turns (b) into the exhibition
 of a single countermodel.
 -/
-import LaxLogic.PLLKripke
-import LaxLogic.PLLNDCore
+import LaxLogic.PLL.Semantics.Kripke
+import LaxLogic.PLL.ND.NDCore
 
 namespace PLLND
 namespace Need

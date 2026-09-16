@@ -14,10 +14,10 @@ Verification: `lake build` (the focused stack is on the library root).
 
 | file | content | audit |
 |---|---|---|
-| `LaxLogic/PLLJudgmental.lean` | two-judgment PLL, sound + complete, `equiv_nd`, `equiv_lax` | none at all |
-| `LaxLogic/PLLPolar.lean` | polarised syntax, `circ : Pos → Neg`, roundtrip, `phase` | `[propext]` |
-| `LaxLogic/PLLFocused.lean` | focused calculus, four judgments with the `JD` flag; **soundness** | clean |
-| `LaxLogic/PLLCandidate.lean` | `Cand p` — the 13 closure clauses read off the rules | (definition) |
+| `LaxLogic/PLL/ND/Judgmental.lean` | two-judgment PLL, sound + complete, `equiv_nd`, `equiv_lax` | none at all |
+| `LaxLogic/PLL/Syntax/Polar.lean` | polarised syntax, `circ : Pos → Neg`, roundtrip, `phase` | `[propext]` |
+| `LaxLogic/PLL/Sequent/Focused.lean` | focused calculus, four judgments with the `JD` flag; **soundness** | clean |
+| `LaxLogic/PLL/UI/Candidate.lean` | `Cand p` — the 13 closure clauses read off the rules | (definition) |
 
 Findings along the way, each in its file's header or commit:
 
@@ -64,7 +64,7 @@ Status: starting.
 
 ## §3. The join clause FELL — all thirteen clauses hold (2026-08-08, afternoon)
 
-`LaxLogic/PLLCandOr.lean`, on the root, sorry-free, `lake build` 8668 green.
+`LaxLogic/PLL/UI/CandOr.lean`, on the root, sorry-free, `lake build` 8668 green.
 
 **The result.** For any budget `θ`, the consequence candidate
 
@@ -179,7 +179,7 @@ convergence theorem is re-read as: first-order candidates buy nothing. The
 chains are refutation-only instruments; the positive route must go through
 predicates on sequents.
 
-**The least candidate exists, for free** (`LaxLogic/PLLCandLeast.lean`):
+**The least candidate exists, for free** (`LaxLogic/PLL/UI/CandLeast.lean`):
 `LC p` is the inductive predicate whose CONSTRUCTORS are the thirteen clauses
 — a least fixed point, no extremal formula needed. `LC.toCand` (it is a
 candidate), `LC.initial` (contained in every candidate — NO AXIOMS AT ALL),
@@ -190,7 +190,7 @@ Refuting definability = the chains; proving it = the phase recursion, which is
 the next build.
 
 **The refutation criteria, kernel-checked, generic**
-(`LaxLogic/PLLUIChains.lean`, [propext] only): `no_least_consequence` (∃p) and
+(`LaxLogic/PLL/UI/UIChains.lean`, [propext] only): `no_least_consequence` (∃p) and
 `no_greatest_antecedent` (∀p), generic in the chain AND in the p-free class.
 The unused-variable linter found the chain's monotonicity hypotheses were
 unnecessary — strictness and trapping suffice — so the criteria are stronger
@@ -267,7 +267,7 @@ verified against LC by initiality. That is the next build.
 Matthew's test: build the polarised/focused apparatus with the lax rules
 omitted, same names throughout, and see whether the proposed UI proof runs.
 
-`LaxLogic/IPCFocused.lean`, namespace `IPC`, sorry-free, on the root.
+`LaxLogic/Focusing/IPCFocused.lean`, namespace `IPC`, sorry-free, on the root.
 Calculus named **`LJF`** (Liang–Miller); the PLL version is **`LJF◯`** = LJF +
 `◯` + the second judgment. Differences are exactly: no `circ`, no `JD` flag,
 no `circR`/`circL`, and `impR`/`andR` unrestricted.
@@ -317,7 +317,7 @@ that both logics share and neither has here.
 
 Direction change on Matthew's instruction, stated back and confirmed: the
 technique is under test, so **nothing is borrowed from any other calculus** —
-no `Deriv`, no `G4c`, no substitution lemmas, no completeness. `LaxLogic/LJF.lean`
+no `Deriv`, no `G4c`, no substitution lemmas, no completeness. `LaxLogic/Focusing/LJF.lean`
 imports nothing at all, not even Mathlib. Cut is **not** used anywhere and is
 not planned to be: identity expansion plus per-clause invertibility carry the
 property proofs (cut-admissibility remains available as a corollary-grade

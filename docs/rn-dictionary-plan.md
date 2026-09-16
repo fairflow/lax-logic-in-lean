@@ -208,7 +208,7 @@ before writing §2 of the first draft.
     theorem PLLND.LaxInfinite.closed_lax_infinite :
       Infinite (Quotient closedSetoid)
 
-`LaxLogic/PLLLaxInfinite.lean:616`, sorry-free, axioms
+`LaxLogic/PLL/Semantics/LaxInfinite.lean:616`, sorry-free, axioms
 `[propext, Classical.choice, Quot.sound]`, in the build via
 `LaxLogic.lean:75`. `closedSetoid` is the ⊣⊢ setoid on atom-free
 `PLLFormula`, so the statement is exactly *RN(◯,{}) has infinitely many
@@ -428,7 +428,7 @@ interpolant. What it may never do: confirm one.
    proposed measuring a question the main library had already answered,
    and proposed probing families whose infinitude was proved. The
    concrete rule: before scoping any RN question, read
-   `LaxLogic/PLLLaxInfinite.lean`, `docs/rho-order.md`,
+   `LaxLogic/PLL/Semantics/LaxInfinite.lean`, `docs/rho-order.md`,
    `docs/rn-explorer.html` and `wip/ladder8.lean`, which between them
    hold the fragment's proved structure.
 

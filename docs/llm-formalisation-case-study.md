@@ -195,7 +195,7 @@ theorem strong_normalisation {Γ : List PLLFormula} {φ : PLLFormula}
     (t : Tm Γ φ) : SNt t
 ```
 
-at `LaxLogic/PLLTopTop.lean:1278`, in a 1320-line `sorry`-free module
+at `LaxLogic/PLL/Normalisation/TopTop.lean:1278`, in a 1320-line `sorry`-free module
 (*measured*), landed on 2026-07-07 across three commits (`f9b5dbd`, `e475719`,
 `78461cd`).
 
@@ -289,7 +289,7 @@ Uniform interpolation for PLL was the campaign's target. Two routes ran, at
 different times and sometimes in parallel: a **syntactic** route (a Pitts-style
 table construction inside the G4-style calculus, living in `wip/`), and a
 **semantic** route (a layered-bisimulation amalgamation argument, living in
-`LaxLogic/PLLSemUI*.lean`). Both remain OPEN.
+`LaxLogic/PLL/SemUI/SemUI*.lean`). Both remain OPEN.
 
 The syntactic route came closest, and its state is exact. The crown theorem is
 
@@ -1401,8 +1401,8 @@ evidence below exists.
 | branch head, round commits and dates | `git log ui-confluence`, hashes as cited |
 | one `sorry` in the syntactic stack; crown axiom list | `wip/final.lean:176–209`, `wip/absorb_base.lean:2215–2281` |
 | five `sorry` proof terms in `LaxLogic/`, all in the semantic-UI line | *measured*, filtered grep over `LaxLogic/*.lean` |
-| `strong_normalisation`, its `sorry`-free 1320-line module, and the `⊤⊤` method | `LaxLogic/PLLTopTop.lean:1278`, header docstring lines 1–58, principal lemma at :683; commits `f9b5dbd`, `e475719`, `78461cd` (2026-07-07) |
-| the non-composition counterexamples and the quasi-commutation argument | `LaxLogic/PLLReducibility.lean:1017` ff and the `Counterexamples` section at the file's end |
+| `strong_normalisation`, its `sorry`-free 1320-line module, and the `⊤⊤` method | `LaxLogic/PLL/Normalisation/TopTop.lean:1278`, header docstring lines 1–58, principal lemma at :683; commits `f9b5dbd`, `e475719`, `78461cd` (2026-07-07) |
+| the non-composition counterexamples and the quasi-commutation argument | `LaxLogic/PLL/Normalisation/Reducibility.lean:1017` ff and the `Counterexamples` section at the file's end |
 | SN provenance (Benton–Bierman–de Paiva; Lindley–Stark; Doczkal–Schwinghammer) | quoted from the `PLLTopTop.lean` header; the priority claim is the file's own and is hedged there |
 | module and line counts | *measured* |
 | the six statement-hygiene rules | `PROGRESS.md` §§57, 58, 59, 60, 61, 63, plus §§66, 67 |

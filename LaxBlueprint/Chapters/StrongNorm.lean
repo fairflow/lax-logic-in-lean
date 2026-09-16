@@ -1,9 +1,9 @@
 import Verso
 import VersoManual
 import VersoBlueprint
-import LaxLogic.PLLStrongNorm
-import LaxLogic.PLLReducibility
-import LaxLogic.PLLTopTop
+import LaxLogic.PLL.Normalisation.StrongNorm
+import LaxLogic.PLL.Normalisation.Reducibility
+import LaxLogic.PLL.Normalisation.TopTop
 
 open Verso.Genre
 open Verso.Genre.Manual
@@ -87,7 +87,7 @@ together with {uses "beta_sn"}[] does not yield termination of
 {uses "step_split"}[]'s union.
 
 The witnesses are machine-checked, in the `Counterexamples` namespace at
-the end of `LaxLogic/PLLReducibility.lean`: a term `ce₁` that is
+the end of `LaxLogic/PLL/Normalisation/Reducibility.lean`: a term `ce₁` that is
 β-irreducible but assoc-steps to `ce₁assoc`, which then β-steps; and a term
 `ce₂` that is assoc-irreducible but β-steps to `ce₁`.
 

@@ -247,7 +247,7 @@ meant one of the three was wrong.
 gap.** `LJFO.search_sound` yields a derivation in LJF◯. Getting from
 there to `PLLND.LaxND` needs focalization for PLL, recorded as **OPEN**
 in `docs/ljfo-fidelity.md` §5 — the erasure bridge exists for the
-◯-free calculus `LJF` (`LaxLogic/LJFComplete.lean`: `sound`,
+◯-free calculus `LJF` (`LaxLogic/Focusing/LJFComplete.lean`: `sound`,
 `focalization`) but not for LJF◯. Until that lands, LJF◯ is a
 cross-check and a speed comparator here, never a source of PLL
 results.

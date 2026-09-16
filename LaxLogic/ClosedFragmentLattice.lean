@@ -14,7 +14,7 @@ With this instance, `CubeEmbedding.cube_le_iff` applies verbatim to
 RN(◯,{}): any certified finite set of genuine fragment covers of a class
 `n` spans a Boolean cube above `n`.
 -/
-import LaxLogic.PLLLaxInfinite
+import LaxLogic.PLL.Semantics.LaxInfinite
 import LaxLogic.CubeEmbedding
 
 open PLLFormula

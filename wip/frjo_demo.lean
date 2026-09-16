@@ -31,7 +31,7 @@ NEW FILE; nothing existing is edited.
 -/
 import FRJO.Core
 import wip.rnDict
-import LaxLogic.PLLDiagram
+import LaxLogic.PLL.Search.Diagram
 
 open PLLND PLLFormula LJFO
 open PLLND.SemUI.RND (repsL)

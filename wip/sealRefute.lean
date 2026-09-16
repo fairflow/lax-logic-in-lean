@@ -1,6 +1,6 @@
 import wip.envDesc
-import LaxLogic.PLLSearchCmd
-import LaxLogic.PLLSearchNoFall
+import LaxLogic.PLL.Search.SearchCmd
+import LaxLogic.PLL.Search.SearchNoFall
 
 /-!
 # No uniform route closes the boxed γ-branch at the floor

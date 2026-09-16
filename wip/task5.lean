@@ -63,7 +63,7 @@ example : q4 = .or circBot nCircBot := rfl
 
     ◯¬◯⊥  ⊬  ◯⊥ ∨ ¬◯⊥
 
-`⊬` is the notation of `LaxLogic/PLLNDCore.lean`, and unfolds to
+`⊬` is the notation of `LaxLogic/PLL/ND/NDCore.lean`, and unfolds to
 `¬ Nonempty (LaxND [◯¬◯⊥] (◯⊥ ∨ ¬◯⊥))`; since `Deriv Γ φ = Nonempty (LaxND Γ φ)`
 by definition, the semantic-fragment spelling `¬ SemUI.Deriv …` and the
 natural-deduction one are the SAME statement, and this single theorem carries

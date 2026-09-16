@@ -27,7 +27,7 @@ up-closed family (the candidate interpolant is the disjunction of
 remain OPEN.
 -/
 import wip.pcll1pv_stage3
-import LaxLogic.PLLConfluentComplete
+import LaxLogic.PLL.Semantics.ConfluentComplete
 
 namespace PLLND
 open FinComp

@@ -36,7 +36,7 @@ obstruction exhibited by such a model is not an artefact of plain PLL.
 Every term used below, in standard language.
 
 * **quantifier tables.**  `itpE p S fuel b Γ` and `itpA p S fuel b Γ C`
-  (`LaxLogic/PLLG4UITrunc.lean`) are formulas built by recursion on `Γ`;
+  (`LaxLogic/PLL/UI/G4UITrunc.lean`) are formulas built by recursion on `Γ`;
   they are the candidate uniform interpolants.  `itpE` is a conjunction of
   clauses (`andAll`), `itpA` a disjunction (`orAll`).  `p` is the variable
   being eliminated, `S` a finite set of formulas closed under immediate
@@ -161,7 +161,7 @@ map for the residue.  `wip/starve.lean` has the first four bricks.
 
 Worth recording so a later session does not spend days on it.
 
-`LaxLogic/PLLCompleteness.lean` proves `consequence_iff_derivable : Γ ⊨- φ ↔
+`LaxLogic/PLL/Semantics/Completeness.lean` proves `consequence_iff_derivable : Γ ⊨- φ ↔
 Nonempty (LaxND Γ φ)` — full soundness **and** completeness for the
 Fairtlough–Mendler constraint semantics, sorry-free, over `Γ` a list.  With
 `G4c.equiv_nd` this means *any* sequent about the quantifier tables could in
@@ -326,7 +326,7 @@ Full detail in PROGRESS §§89–90.
 
 Two things landed.
 
-**`#pinsrc`** (`LaxLogic/PLLSearchPin.lean`, documented as `docs/search-manual.md`
+**`#pinsrc`** (`LaxLogic/PLL/Search/SearchPin.lean`, documented as `docs/search-manual.md`
 §10).  The oracle's refutations were always theorems; its *proofs* were only
 probe output, because `Verdict.proved` carries a typed `G4cTm` that had no way
 into a source file.  `#pinsrc` prints it as Lean source, emitting **no
@@ -474,7 +474,7 @@ Recorded because they bear on how the evidence should be read.
 
 ## 6. New tooling
 
-`#pinsrc` (`LaxLogic/PLLSearchPin.lean`, manual §10) turns a search-found proof
+`#pinsrc` (`LaxLogic/PLL/Search/SearchPin.lean`, manual §10) turns a search-found proof
 into a kernel-checked theorem, printing the derivation with **no formulas** in it,
 so the output is proportional to the derivation and not to the tables.  Seven facts
 in this session moved from probe output to theorem.  This completes the
@@ -506,7 +506,7 @@ sorry-free and every `#guard_msgs` axiom audit passes as written.
 
 | file | contents |
 |---|---|
-| `LaxLogic/PLLSearchPin.lean` | `#pinsrc` — turns a search-found proof into a kernel-checked theorem |
+| `LaxLogic/PLL/Search/SearchPin.lean` | `#pinsrc` — turns a search-found proof into a kernel-checked theorem |
 | `wip/floorRefute.lean` | the descent at budget `0` is **false**; a second lower bound on the budget law |
 | `wip/goalDesc.lean` | the goal side of the descent, six of seven families; `desc_of_oth_nonbox` |
 | `wip/envDesc.lean` | the three gated environment components above the floor; `branch_of_cases`; **`grownAmb_of_box` / `grownAmb_of_plain`** |

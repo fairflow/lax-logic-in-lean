@@ -14,7 +14,7 @@ Facts checked below, all by `decide` over the repository's own
       so in the ≤-quotient [b] has no common Rm-witness class, and the
       ∀∃-lift of Rm refutes ◯p at [b] while the original forces it.
 -/
-import LaxLogic.PLLKripke
+import LaxLogic.PLL.Semantics.Kripke
 
 open PLLND PLLFormula
 

@@ -1,5 +1,5 @@
 import wip.atomForce
-import LaxLogic.PLLSearchPin
+import LaxLogic.PLL.Search.SearchPin
 
 /-!
 # The fresh-antecedent goal branch, closed without the ∃-ascent

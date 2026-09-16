@@ -33,7 +33,7 @@ reflexive case where the root itself forces `A`.  `boxHoldsRoot`
 supplies it.
 -/
 import Reject.Build
-import LaxLogic.PLLFrames
+import LaxLogic.PLL.Semantics.Frames
 
 namespace Reject
 

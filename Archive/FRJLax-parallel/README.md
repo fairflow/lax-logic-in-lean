@@ -16,7 +16,7 @@ Two things this directory is not:
   `Finset`-based and its constructors carry computed indices in their
   return types, which is exactly what is being redesigned here.
 
-Templates: `LaxLogic/PLLNDCore.lean` (slime-free, `Type`-valued,
+Templates: `LaxLogic/PLL/ND/NDCore.lean` (slime-free, `Type`-valued,
 cast-free) and `LaxLogic/LJFOCore.lean` (zero imports).
 
 ---

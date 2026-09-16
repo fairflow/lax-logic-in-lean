@@ -1,6 +1,6 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLConfluentComplete
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Semantics.ConfluentComplete
+import LaxLogic.PLL.Search.SearchConf
 import LaxLogic.RN.Reps
 
 /-!
@@ -67,7 +67,7 @@ def cnames : Array String := (candL.map (·.1)).toArray
 The refutation side (mutual confluence of a `FinCM`, computably, and the
 certificate theorem gluing `FinCM.checkB` to `derivU_sound`) and the
 positive bridge used to live here.  They have been **promoted into the
-library** as `LaxLogic/PLLSearchConf.lean`, in the *same* namespace
+library** as `LaxLogic/PLL/Search/SearchConf.lean`, in the *same* namespace
 `PLLND.RNC` and with the same statements, so a PCLL user need not
 `import wip.…` any more.
 

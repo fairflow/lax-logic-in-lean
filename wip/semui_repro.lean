@@ -1,5 +1,5 @@
 import wip.semui_ctx_core
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # Reproduction: the three large-object claims of the harness report

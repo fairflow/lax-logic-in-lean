@@ -1,5 +1,5 @@
 import wip.atomForce
-import LaxLogic.PLLSearchPin
+import LaxLogic.PLL.Search.SearchPin
 
 /-!
 # The floor branch at a `⊃`-shaped goal, and where the residue finally sits

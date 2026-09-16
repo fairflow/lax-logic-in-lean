@@ -2,7 +2,7 @@
 import wip.rnEmbed
 import wip.rnDict
 import wip.rnDictBase
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # The ladder/dictionary cross-relations, pinned

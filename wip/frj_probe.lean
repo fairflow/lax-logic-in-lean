@@ -14,7 +14,7 @@ which is Goranko's `Alt_n` phenomenon and much heavier to mechanise.
 
 This probe measures the distribution over the frames we actually use.
 -/
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 open PLLND PLLND.FinCM
 

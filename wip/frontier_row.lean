@@ -1,5 +1,5 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSemUILaw
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.SemUI.SemUILaw
 
 /-!
 # The frontier row `((p⊃◯⊥)⊃p)⊃p`, investigated

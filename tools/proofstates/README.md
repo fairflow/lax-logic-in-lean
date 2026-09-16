@@ -47,14 +47,14 @@ the interpreter.
 
 ```sh
 # whole file -> PLLTopTop-states.html in the current directory
-lake exe pstates LaxLogic/PLLTopTop.lean
+lake exe pstates LaxLogic/PLL/Normalisation/TopTop.lean
 
 # one declaration, named output
-lake exe pstates LaxLogic/PLLTopTop.lean --decl principal \
+lake exe pstates LaxLogic/PLL/Normalisation/TopTop.lean --decl principal \
     --html principal-states.html
 
 # the raw record as well
-lake exe pstates LaxLogic/PLLTopTop.lean --json toptop.json
+lake exe pstates LaxLogic/PLL/Normalisation/TopTop.lean --json toptop.json
 ```
 
 Options:
@@ -81,7 +81,7 @@ one, and the page marks the declarations that broke.
 
 ## Measured behaviour
 
-On this repository, `LaxLogic/PLLTopTop.lean` (1320 lines, 101 commands, the
+On this repository, `LaxLogic/PLL/Normalisation/TopTop.lean` (1320 lines, 101 commands, the
 `⊤⊤`-lifting strong-normalisation development):
 
 | | |
@@ -368,7 +368,7 @@ a file that fails to elaborate, in one HTML file with no runtime dependencies.
 
    ```sh
    lake build pstates
-   lake exe pstates LaxLogic/PLLTopTop.lean --decl principal \
+   lake exe pstates LaxLogic/PLL/Normalisation/TopTop.lean --decl principal \
        --html principal-states.html
    ```
 
@@ -408,8 +408,8 @@ A simpler 80% version — re-run on save, keep the browser tab, hit reload — i
 one `fswatch`/`entr` line away and needs no code here:
 
 ```sh
-ls LaxLogic/PLLTopTop.lean | entr -r \
-  lake exe pstates LaxLogic/PLLTopTop.lean --decl principal --html /tmp/p.html
+ls LaxLogic/PLL/Normalisation/TopTop.lean | entr -r \
+  lake exe pstates LaxLogic/PLL/Normalisation/TopTop.lean --decl principal --html /tmp/p.html
 ```
 
 ## Files

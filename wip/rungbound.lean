@@ -1,5 +1,5 @@
 import wip.rnClassify
-import LaxLogic.PLLFiniteModel
+import LaxLogic.PLL.Semantics.FiniteModel
 
 /-!
 # The substituted odd-rung chain has NO non-trivial upper bound
@@ -22,7 +22,7 @@ Answer: **no** — for `φ` of any shape whatever (one variable or not,
    used: the argument runs entirely in the `∨`/`⊃` recursion of the
    ladder, with `◯⊥` as an opaque `Rᵢ`-hereditary atom.
 
-2. `finite_model_property` (already in `LaxLogic/PLLFiniteModel.lean`):
+2. `finite_model_property` (already in `LaxLogic/PLL/Semantics/FiniteModel.lean`):
    `Nonempty (LaxND [] φ)` iff `φ` is forced at every world of every
    finite constraint model.
 

@@ -2,8 +2,8 @@
 
 **Question.** PCLL = PLL + the distribution scheme ◯(A∨B) ⊃ (◯A∨◯B);
 derivability from premises is `PLLND.ConfluentU.DerivU`
-(LaxLogic/PLLConfluentComplete.lean).  Complexity is `crank`
-(`PLLND.SemUI.crank`, LaxLogic/PLLSemUILayered.lean): atoms and ⊥ cost
+(LaxLogic/PLL/Semantics/ConfluentComplete.lean).  Complexity is `crank`
+(`PLLND.SemUI.crank`, LaxLogic/PLL/SemUI/SemUILayered.lean): atoms and ⊥ cost
 0, ∧/∨ take the maximum, ⊃ adds 1, ◯ adds 2.  Is there an R₀ ≤ 7 such
 that every `DerivU`-interderivability class of closed formulas with a
 representative of crank ≤ 7 already has a representative of

@@ -1,9 +1,9 @@
 [
-  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/PLLKripke.lean",      "group": "soundness"},
-  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/PLLNDCore.lean",      "group": "nd-core"},
-  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/PLLFormula.lean",     "group": "syntax"},
-  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/LJF.lean",            "group": "ljf-measure"},
-  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/LJFComplete.lean",    "group": "completeness"},
-  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/PLLG4ipComplete.lean","group": "completeness"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/PLL/Semantics/Kripke.lean",      "group": "soundness"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/PLL/ND/NDCore.lean",      "group": "nd-core"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/PLL/Syntax/Formula.lean",     "group": "syntax"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/Focusing/LJF.lean",            "group": "ljf-measure"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/Focusing/LJFComplete.lean",    "group": "completeness"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "LaxLogic/PLL/G4/G4ipComplete.lean","group": "completeness"},
   {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean", "file": "FRJ/Erase.lean",               "group": "conservativity"}
 ]

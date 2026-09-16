@@ -34,7 +34,7 @@ edits it.
 FOCUSED calculus.  Getting from there to `PLLND.LaxND` needs
 focalization for PLL, and `docs/ljfo-fidelity.md` §5 records that as
 **OPEN**: the erasure bridge exists for the ◯-free calculus `LJF`
-(`LaxLogic/LJFComplete.lean`, `sound`/`focalization`) but NOT for
+(`LaxLogic/Focusing/LJFComplete.lean`, `sound`/`focalization`) but NOT for
 LJF◯.  So:
 
 * an LJF◯ `true` is a certificate **for LJF◯**, and only a

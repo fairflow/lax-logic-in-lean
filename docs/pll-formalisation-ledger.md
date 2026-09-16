@@ -7,13 +7,13 @@ toolchain Lean v4.31.0 + Mathlib v4.31.0.*
 directory, prepend `../`). *Promotion note (2026-07-16): under the policy that
 nothing in `wip/` is ever claimed as formally proved, the Curry-paper files and
 the finished belief modules were moved into the `LaxLogic/` library —
-`wip/context_completeness.lean` → [`LaxLogic/PLLCtxCompleteness.lean`](../LaxLogic/PLLCtxCompleteness.lean),
-`wip/lax_infinite.lean` → [`LaxLogic/PLLLaxInfinite.lean`](../LaxLogic/PLLLaxInfinite.lean), and the seven
+`wip/context_completeness.lean` → [`LaxLogic/PLL/Semantics/CtxCompleteness.lean`](../LaxLogic/PLL/Semantics/CtxCompleteness.lean),
+`wip/lax_infinite.lean` → [`LaxLogic/PLL/Semantics/LaxInfinite.lean`](../LaxLogic/PLL/Semantics/LaxInfinite.lean), and the seven
 `wip/belief_*.lean` files → `LaxLogic/Belief*.lean` (see
 [belief-mechanisation-index.md](belief-mechanisation-index.md)) — all imported
 by the library root, so `lake build` checks them. The realisability file
 followed on 2026-07-18 — `wip/belief_realisability.lean` →
-[`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean), audits measured and
+[`LaxLogic/Belief/Realisability.lean`](../LaxLogic/Belief/Realisability.lean), audits measured and
 `#guard_msgs`-pinned on promotion — so only the separate UI-probe files
 remain in `wip/`.*
 
@@ -46,76 +46,76 @@ why).  To re-verify any row, run
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| Natural deduction for PLL (membership-based contexts; weakening/exchange/contraction admissible, cast-free) | `LaxND` (+ `LaxND.rename`) | [`PLLNDCore.lean:72`](../LaxLogic/PLLNDCore.lean) | (def) |
-| Cut-free G3-style sequent calculus, height-indexed | `SCh` / `SC` | [`PLLSequent.lean:31,58`](../LaxLogic/PLLSequent.lean) | (def) |
-| **Cut admissibility** (lexicographic induction; F&M Thm 2.6 engine) | `SC.cut` | [`PLLSequent.lean:524`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
-| **Cut elimination** | `cutElimination` | [`PLLSequent.lean:615`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
-| Sequent ⟶ natural deduction | `SC_to_ND` | [`PLLSequent.lean:546`](../LaxLogic/PLLSequent.lean) | **[p]** |
-| Natural deduction ⟶ sequent | `ND_to_SC` | [`PLLSequent.lean:578`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
-| **Disjunction property** (F&M Lemma 2.7) | `disjunction_property` | [`PLLSequent.lean:623`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
-| **`◯`-reflection**: `⊢ ◯M ⟹ ⊢ M` (F&M Lemma 2.7) | `somehow_reflection` | [`PLLSequent.lean:637`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
-| **Hilbert ⟷ natural deduction** | `hd_iff_ND` | [`PLLHilbert.lean:194`](../LaxLogic/PLLHilbert.lean) | **[p]** |
-| **Conservativity over IPL** (erasure form) | `conservativity_prop` | [`PLLNDCore.lean:193`](../LaxLogic/PLLNDCore.lean) | [p,Q] |
-| **Conservativity over IPL** (classic form: IPL sequents) | `conservativity_IPL` | [`PLLNDCore.lean:211`](../LaxLogic/PLLNDCore.lean) | **[p,Q]** — no choice |
-| Strong extensionality (F&M Thm 2.5) | `strong_extensionality` | [`PLLTheorems.lean:178`](../LaxLogic/PLLTheorems.lean) | **[p,Q]** |
+| Natural deduction for PLL (membership-based contexts; weakening/exchange/contraction admissible, cast-free) | `LaxND` (+ `LaxND.rename`) | [`PLLNDCore.lean:72`](../LaxLogic/PLL/ND/NDCore.lean) | (def) |
+| Cut-free G3-style sequent calculus, height-indexed | `SCh` / `SC` | [`PLLSequent.lean:31,58`](../LaxLogic/PLL/Sequent/Sequent.lean) | (def) |
+| **Cut admissibility** (lexicographic induction; F&M Thm 2.6 engine) | `SC.cut` | [`PLLSequent.lean:524`](../LaxLogic/PLL/Sequent/Sequent.lean) | **[p,Q]** |
+| **Cut elimination** | `cutElimination` | [`PLLSequent.lean:615`](../LaxLogic/PLL/Sequent/Sequent.lean) | **[p,Q]** |
+| Sequent ⟶ natural deduction | `SC_to_ND` | [`PLLSequent.lean:546`](../LaxLogic/PLL/Sequent/Sequent.lean) | **[p]** |
+| Natural deduction ⟶ sequent | `ND_to_SC` | [`PLLSequent.lean:578`](../LaxLogic/PLL/Sequent/Sequent.lean) | **[p,Q]** |
+| **Disjunction property** (F&M Lemma 2.7) | `disjunction_property` | [`PLLSequent.lean:623`](../LaxLogic/PLL/Sequent/Sequent.lean) | **[p,Q]** |
+| **`◯`-reflection**: `⊢ ◯M ⟹ ⊢ M` (F&M Lemma 2.7) | `somehow_reflection` | [`PLLSequent.lean:637`](../LaxLogic/PLL/Sequent/Sequent.lean) | **[p,Q]** |
+| **Hilbert ⟷ natural deduction** | `hd_iff_ND` | [`PLLHilbert.lean:194`](../LaxLogic/PLL/ND/Hilbert.lean) | **[p]** |
+| **Conservativity over IPL** (erasure form) | `conservativity_prop` | [`PLLNDCore.lean:193`](../LaxLogic/PLL/ND/NDCore.lean) | [p,Q] |
+| **Conservativity over IPL** (classic form: IPL sequents) | `conservativity_IPL` | [`PLLNDCore.lean:211`](../LaxLogic/PLL/ND/NDCore.lean) | **[p,Q]** — no choice |
+| Strong extensionality (F&M Thm 2.5) | `strong_extensionality` | [`PLLTheorems.lean:178`](../LaxLogic/PLL/ND/Theorems.lean) | **[p,Q]** |
 
 ## 2. Kripke constraint semantics (F&M §3–4)
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| Constraint models (F&M Def 3.1) + forcing (Def 3.2) | `ConstraintModel`, `force` | [`PLLKripke.lean:28,52`](../LaxLogic/PLLKripke.lean) | (def) |
-| **Soundness** (F&M Thm 3.3, sequent form) | `soundness` | [`PLLKripke.lean:97`](../LaxLogic/PLLKripke.lean) | **[p]** |
-| **Completeness** (F&M Thm 4.4, strengthened to sequents) | `completeness` | [`PLLCompleteness.lean:614`](../LaxLogic/PLLCompleteness.lean) | clean |
+| Constraint models (F&M Def 3.1) + forcing (Def 3.2) | `ConstraintModel`, `force` | [`PLLKripke.lean:28,52`](../LaxLogic/PLL/Semantics/Kripke.lean) | (def) |
+| **Soundness** (F&M Thm 3.3, sequent form) | `soundness` | [`PLLKripke.lean:97`](../LaxLogic/PLL/Semantics/Kripke.lean) | **[p]** |
+| **Completeness** (F&M Thm 4.4, strengthened to sequents) | `completeness` | [`PLLCompleteness.lean:614`](../LaxLogic/PLL/Semantics/Completeness.lean) | clean |
 
 ## 3. Countermodels — known non-theorems, formally refuted (F&M Fig. 3)
 
 | non-theorem | Lean name | location | axioms |
 |---|---|---|---|
-| `⊬ ¬◯⊥` (no doxastic `D`) | `not_provable_not_somehow_false` | [`PLLFrames.lean:88`](../LaxLogic/PLLFrames.lean) | [p,Q] |
-| `⊬ ◯(A∨B) ⊃ (◯A ∨ ◯B)` | `not_provable_somehow_or_dist` | [`PLLFrames.lean:142`](../LaxLogic/PLLFrames.lean) | clean |
-| `⊬ (◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)` | `not_provable_imp_somehow_dist` | [`PLLFrames.lean:205`](../LaxLogic/PLLFrames.lean) | clean |
+| `⊬ ¬◯⊥` (no doxastic `D`) | `not_provable_not_somehow_false` | [`PLLFrames.lean:88`](../LaxLogic/PLL/Semantics/Frames.lean) | [p,Q] |
+| `⊬ ◯(A∨B) ⊃ (◯A ∨ ◯B)` | `not_provable_somehow_or_dist` | [`PLLFrames.lean:142`](../LaxLogic/PLL/Semantics/Frames.lean) | clean |
+| `⊬ (◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)` | `not_provable_imp_somehow_dist` | [`PLLFrames.lean:205`](../LaxLogic/PLL/Semantics/Frames.lean) | clean |
 
 ## 4. Proof-term calculus: strong normalisation
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| **Strong normalisation of the full reduction** (β + `let`-assoc interleaved; Lindley–Stark ⊤⊤-lifting) | `strong_normalisation` | [`PLLTopTop.lean:1266`](../LaxLogic/PLLTopTop.lean) | clean |
-| Certified normaliser (normal form reached) | `Tm.normalize_spec` | [`PLLTopTop.lean:1296`](../LaxLogic/PLLTopTop.lean) | clean |
-| **Local confluence** of the full reduction (critical pairs: `let`-β and `let`-assoc under `let`-assoc) | `local_confluence` | [`PLLConfluence.lean`](../LaxLogic/PLLConfluence.lean) | `[propext]` (pinned) |
-| **Confluence / Church–Rosser** (Newman's lemma from strong normalisation) | `confluence` | [`PLLConfluence.lean`](../LaxLogic/PLLConfluence.lean) | `[propext, Classical.choice, Quot.sound]` (pinned) |
-| Uniqueness of normal forms; conversion = joinability; conversion decided by the normaliser (`Conv t u ↔ t.normalize = u.normalize`) | `normal_form_unique`, `conv_iff_joinable`, `conv_iff_normalize_eq` | [`PLLConfluence.lean`](../LaxLogic/PLLConfluence.lean) | as above |
-| **Idempotence is inter-derivability, not isomorphism**: `μ ∘ η ⇝* id` but `η ∘ μ` never reaches the identity (complete four-term reduction graph) | `mu_eta_not_mutually_inverse` | [`PLLIdempotency.lean`](../LaxLogic/PLLIdempotency.lean) | `[propext]` (pinned) |
-| `η ∘ μ` and the identity have no common reduct; **nor are they convertible** (via Church–Rosser) | `eta_mu_id_not_joinable`, `eta_mu_not_conv_id` | [`PLLIdempotency.lean`](../LaxLogic/PLLIdempotency.lean) | `[propext]` / conversion form `[propext, Classical.choice, Quot.sound]` (pinned) |
+| **Strong normalisation of the full reduction** (β + `let`-assoc interleaved; Lindley–Stark ⊤⊤-lifting) | `strong_normalisation` | [`PLLTopTop.lean:1266`](../LaxLogic/PLL/Normalisation/TopTop.lean) | clean |
+| Certified normaliser (normal form reached) | `Tm.normalize_spec` | [`PLLTopTop.lean:1296`](../LaxLogic/PLL/Normalisation/TopTop.lean) | clean |
+| **Local confluence** of the full reduction (critical pairs: `let`-β and `let`-assoc under `let`-assoc) | `local_confluence` | [`PLLConfluence.lean`](../LaxLogic/PLL/Normalisation/Confluence.lean) | `[propext]` (pinned) |
+| **Confluence / Church–Rosser** (Newman's lemma from strong normalisation) | `confluence` | [`PLLConfluence.lean`](../LaxLogic/PLL/Normalisation/Confluence.lean) | `[propext, Classical.choice, Quot.sound]` (pinned) |
+| Uniqueness of normal forms; conversion = joinability; conversion decided by the normaliser (`Conv t u ↔ t.normalize = u.normalize`) | `normal_form_unique`, `conv_iff_joinable`, `conv_iff_normalize_eq` | [`PLLConfluence.lean`](../LaxLogic/PLL/Normalisation/Confluence.lean) | as above |
+| **Idempotence is inter-derivability, not isomorphism**: `μ ∘ η ⇝* id` but `η ∘ μ` never reaches the identity (complete four-term reduction graph) | `mu_eta_not_mutually_inverse` | [`PLLIdempotency.lean`](../LaxLogic/PLL/ND/Idempotency.lean) | `[propext]` (pinned) |
+| `η ∘ μ` and the identity have no common reduct; **nor are they convertible** (via Church–Rosser) | `eta_mu_id_not_joinable`, `eta_mu_not_conv_id` | [`PLLIdempotency.lean`](../LaxLogic/PLL/ND/Idempotency.lean) | `[propext]` / conversion form `[propext, Classical.choice, Quot.sound]` (pinned) |
 
 *(Component results — `assoc_sn`, the certified one-step reducer `Tm.step?`, and
 the machine-checked failure of quasi-commutation forcing the semantic method —
-live in [`PLLStrongNorm.lean`](../LaxLogic/PLLStrongNorm.lean) / [`PLLReducibility.lean`](../LaxLogic/PLLReducibility.lean); not separately audited
+live in [`PLLStrongNorm.lean`](../LaxLogic/PLL/Normalisation/StrongNorm.lean) / [`PLLReducibility.lean`](../LaxLogic/PLL/Normalisation/Reducibility.lean); not separately audited
 here, subsumed by the above.)*
 
 ## 5. Beyond the I&C paper
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| **Craig interpolation for PLL** (Maehara over the cut-free calculus; scrubbed 2026-07-18 onto `finUnion`/membership forms) | `craig_interpolation'` (+ engine `SCh.maehara`, `SC.maehara'`) | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | **[p,Q]** — no choice |
-| Interpolation for implications | `craig_implication'` | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | **[p,Q]** |
-| legacy `∪`/`∩`-phrased forms (two-line wrappers of the primed) | `SC.maehara`, `craig_interpolation`, `craig_implication` | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | clean — statement-tainted‡ |
-| **PLL + `◯(A∨B)⊃(◯A∨◯B)` sound + complete for mutually confluent constraint models** (completeness side of F&M Thm 4.5; canonical model of closed prime sets, `◯⁻¹` prime via the scheme, confluence witness `◯⁻¹` of the `Rᵢ`-successor, Zorn Lindenbaum) | `ConfluentU.derivU_iff_confluent_valid` (+ `canonU_confluent`, `truth`) | [`PLLConfluentComplete.lean`](../LaxLogic/PLLConfluentComplete.lean) | clean (pinned) |
-| split model fails mutual confluence | `BeliefReal.modelOrSplit_not_confluent` | [`BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean) | clean (pinned; floor) |
-| **Kleene–Brouwer order on an inductively well-founded tree over a well-founded alphabet is well-founded** | `wellFounded_kb`, `wellFounded_kb'` | [`KleeneBrouwer.lean:164,180`](../LaxLogic/KleeneBrouwer.lean) | **none — fully constructive** (in-file guard asserts it) |
+| **Craig interpolation for PLL** (Maehara over the cut-free calculus; scrubbed 2026-07-18 onto `finUnion`/membership forms) | `craig_interpolation'` (+ engine `SCh.maehara`, `SC.maehara'`) | [`PLLCraig.lean`](../LaxLogic/PLL/Sequent/Craig.lean) | **[p,Q]** — no choice |
+| Interpolation for implications | `craig_implication'` | [`PLLCraig.lean`](../LaxLogic/PLL/Sequent/Craig.lean) | **[p,Q]** |
+| legacy `∪`/`∩`-phrased forms (two-line wrappers of the primed) | `SC.maehara`, `craig_interpolation`, `craig_implication` | [`PLLCraig.lean`](../LaxLogic/PLL/Sequent/Craig.lean) | clean — statement-tainted‡ |
+| **PLL + `◯(A∨B)⊃(◯A∨◯B)` sound + complete for mutually confluent constraint models** (completeness side of F&M Thm 4.5; canonical model of closed prime sets, `◯⁻¹` prime via the scheme, confluence witness `◯⁻¹` of the `Rᵢ`-successor, Zorn Lindenbaum) | `ConfluentU.derivU_iff_confluent_valid` (+ `canonU_confluent`, `truth`) | [`PLLConfluentComplete.lean`](../LaxLogic/PLL/Semantics/ConfluentComplete.lean) | clean (pinned) |
+| split model fails mutual confluence | `BeliefReal.modelOrSplit_not_confluent` | [`BeliefRealisability.lean`](../LaxLogic/Belief/Realisability.lean) | clean (pinned; floor) |
+| **Kleene–Brouwer order on an inductively well-founded tree over a well-founded alphabet is well-founded** | `wellFounded_kb`, `wellFounded_kb'` | [`KleeneBrouwer.lean:164,180`](../LaxLogic/Util/KleeneBrouwer.lean) | **none — fully constructive** (in-file guard asserts it) |
 
 *(Naming: the file and the literature say Kleene–Brouwer, also Lusin–Sierpiński;
 "Kolmogorov" could not be verified as part of the standard name.)*
 
-## 6. The Curry-paper results (F&M TYPES 2000, LNCS 2277) — [`LaxLogic/PLLCtxCompleteness.lean`](../LaxLogic/PLLCtxCompleteness.lean), [`LaxLogic/PLLLaxInfinite.lean`](../LaxLogic/PLLLaxInfinite.lean)
+## 6. The Curry-paper results (F&M TYPES 2000, LNCS 2277) — [`LaxLogic/PLL/Semantics/CtxCompleteness.lean`](../LaxLogic/PLL/Semantics/CtxCompleteness.lean), [`LaxLogic/PLL/Semantics/LaxInfinite.lean`](../LaxLogic/PLL/Semantics/LaxInfinite.lean)
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| Constraint-context soundness (Thm 6, ⟸ direction engine) | `Ctx.thm6_soundness` | [`PLLCtxCompleteness.lean:173`](../LaxLogic/PLLCtxCompleteness.lean) | [p,Q] |
-| **Context completeness** (Thm 6): `PLL ⊢ φ ⟺ ∀ standard C, IPL ⊢ φ^C` | `Ctx.thm6` | [`PLLCtxCompleteness.lean:651`](../LaxLogic/PLLCtxCompleteness.lean) | clean |
+| Constraint-context soundness (Thm 6, ⟸ direction engine) | `Ctx.thm6_soundness` | [`PLLCtxCompleteness.lean:173`](../LaxLogic/PLL/Semantics/CtxCompleteness.lean) | [p,Q] |
+| **Context completeness** (Thm 6): `PLL ⊢ φ ⟺ ∀ standard C, IPL ⊢ φ^C` | `Ctx.thm6` | [`PLLCtxCompleteness.lean:651`](../LaxLogic/PLL/Semantics/CtxCompleteness.lean) | clean |
 | Lemmas 8, 9 (escape family) | `Ctx.lemma8`, `Ctx.lemma9` | `:973,:864` | clean |
-| **No finite constraint set suffices** (Cor 10) | `Ctx.corollary10` | [`PLLCtxCompleteness.lean:981`](../LaxLogic/PLLCtxCompleteness.lean) | clean |
+| **No finite constraint set suffices** (Cor 10) | `Ctx.corollary10` | [`PLLCtxCompleteness.lean:981`](../LaxLogic/PLL/Semantics/CtxCompleteness.lean) | clean |
 | **The constraint algebra `𝕊` is a Boolean algebra** (Thm 2, bundled Mathlib instance) | `Ctx.thm2_boolean_algebra`, `Ctx.CQuot.instBooleanAlgebra` | `:1588,:1667` | **[p,Q]** |
-| **The closed lax fragment `RN(◯,{})` is infinite** | `LaxInfinite.closed_lax_infinite` | [`PLLLaxInfinite.lean:616`](../LaxLogic/PLLLaxInfinite.lean) | clean |
+| **The closed lax fragment `RN(◯,{})` is infinite** | `LaxInfinite.closed_lax_infinite` | [`PLLLaxInfinite.lean:616`](../LaxLogic/PLL/Semantics/LaxInfinite.lean) | clean |
 
 ## 7. Decidability of PLL — F&M Theorem 2.8, MECHANISED
 
@@ -130,17 +130,17 @@ the repair, and the repair carries the decidability.*
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| Repaired calculus proves exactly PLL (proof-theoretic half of Thm 2.8): `G4c Γ φ ↔ Nonempty (Tm Γ φ)` | `G4c.equiv_tm` | [`PLLG4HComp.lean:115`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
-| …and `↔ Nonempty (LaxND Γ C)` | `G4c.g4c_iff_nd` (via `equiv_nd`) | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
-| Cut admissible / completeness of `G4c` | `G4c.cut`, `G4c.completeness` | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
-| Height-bounded decidability of the cumulative set calculus | `G4sh.dec` (`Decidable (G4sh n Γ C)`) | [`PLLG4Set.lean`](../LaxLogic/PLLG4Set.lean) | **[p,Q]** |
-| Set-calculus embedding, choice-free form (`G4c Γ E ↔ G4s (toFin Γ) E`) | `G4c.iff_setFin` | [`PLLG4Set.lean`](../LaxLogic/PLLG4Set.lean) | **[p,Q]** |
-| Loop-checked, fuel-bounded backward search decides `G4c` | `G4c_iff_search` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** — no choice |
-| search success ⟹ derivation (choice-free `toFin` form) | `search_sound'` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** |
-| minimal-height derivation ⟹ search success (choice-free; `Nat.find` on `G4sh.dec`) | `search_complete'` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** |
-| **`G4c` is decidable** | `decidableG4c` (`Decidable (G4c Γ C)`) | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** — no choice |
-| **PLL provability is decidable** (F&M Thm 2.8): `Decidable (Nonempty (Tm Γ φ))` | `decidablePLL` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** — no choice |
-| legacy `toFinset`-phrased forms | `G4c.iff_set`, `search_sound`, `search_complete`, `height_bound` | [`PLLG4Set.lean`](../LaxLogic/PLLG4Set.lean), [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | clean — statement-tainted‡ |
+| Repaired calculus proves exactly PLL (proof-theoretic half of Thm 2.8): `G4c Γ φ ↔ Nonempty (Tm Γ φ)` | `G4c.equiv_tm` | [`PLLG4HComp.lean:115`](../LaxLogic/PLL/G4/G4HComp.lean) | **[p,Q]** |
+| …and `↔ Nonempty (LaxND Γ C)` | `G4c.g4c_iff_nd` (via `equiv_nd`) | [`PLLG4HComp.lean`](../LaxLogic/PLL/G4/G4HComp.lean) | **[p,Q]** |
+| Cut admissible / completeness of `G4c` | `G4c.cut`, `G4c.completeness` | [`PLLG4HComp.lean`](../LaxLogic/PLL/G4/G4HComp.lean) | **[p,Q]** |
+| Height-bounded decidability of the cumulative set calculus | `G4sh.dec` (`Decidable (G4sh n Γ C)`) | [`PLLG4Set.lean`](../LaxLogic/PLL/G4/G4Set.lean) | **[p,Q]** |
+| Set-calculus embedding, choice-free form (`G4c Γ E ↔ G4s (toFin Γ) E`) | `G4c.iff_setFin` | [`PLLG4Set.lean`](../LaxLogic/PLL/G4/G4Set.lean) | **[p,Q]** |
+| Loop-checked, fuel-bounded backward search decides `G4c` | `G4c_iff_search` | [`PLLG4Dec.lean`](../LaxLogic/PLL/G4/G4Dec.lean) | **[p,Q]** — no choice |
+| search success ⟹ derivation (choice-free `toFin` form) | `search_sound'` | [`PLLG4Dec.lean`](../LaxLogic/PLL/G4/G4Dec.lean) | **[p,Q]** |
+| minimal-height derivation ⟹ search success (choice-free; `Nat.find` on `G4sh.dec`) | `search_complete'` | [`PLLG4Dec.lean`](../LaxLogic/PLL/G4/G4Dec.lean) | **[p,Q]** |
+| **`G4c` is decidable** | `decidableG4c` (`Decidable (G4c Γ C)`) | [`PLLG4Dec.lean`](../LaxLogic/PLL/G4/G4Dec.lean) | **[p,Q]** — no choice |
+| **PLL provability is decidable** (F&M Thm 2.8): `Decidable (Nonempty (Tm Γ φ))` | `decidablePLL` | [`PLLG4Dec.lean`](../LaxLogic/PLL/G4/G4Dec.lean) | **[p,Q]** — no choice |
+| legacy `toFinset`-phrased forms | `G4c.iff_set`, `search_sound`, `search_complete`, `height_bound` | [`PLLG4Set.lean`](../LaxLogic/PLL/G4/G4Set.lean), [`PLLG4Dec.lean`](../LaxLogic/PLL/G4/G4Dec.lean) | clean — statement-tainted‡ |
 
 It is a **full** decision procedure (total `Decidable`, terminates on every
 input by the fuel bound + finite gated space + visited-set loop-check), and it is
@@ -165,17 +165,17 @@ mathematics through the choice-free `toFin`/representative route.
 The verified decider above is a *theorem*, not a practical tool: `decideFuel`
 is exponential (it exists only to make the completeness induction go through),
 and running `search` to it times out even on the gap sequent.  The practical
-searcher lives in [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) and returns
+searcher lives in [`PLLG4Term.lean`](../LaxLogic/PLL/G4/G4Term.lean) and returns
 the **derivation itself**:
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| `Type`-valued proof terms for `G4iLL″` (list contexts, membership `Prop`s, `Tm`-style) | `G4cTm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | — (a datatype) |
-| Fuel-free backward searcher emitting terms (untrusted `partial`; loop-checked by canonical list keys — no `decideFuel`, no `enum`) | `prove` / `G4cTm.find` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | — (a program) |
-| Every term projects to a `G4s` derivation | `G4cTm.sound'` (choice-free); `G4cTm.sound` (legacy, statement-tainted‡) | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | **[p,Q]**; clean |
-| A term certifies `G4c`, hence PLL, provability | `G4cTm.toG4c`, `G4cTm.toTm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | **[p,Q]** |
-| Every `G4c`-derivable sequent has a term | `G4cTm.ofG4c` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | **[p,Q]** |
-| `Nonempty (G4cTm Γ C) ↔ Nonempty (Tm Γ C)` | `G4cTm.equiv_tm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | **[p,Q]** |
+| `Type`-valued proof terms for `G4iLL″` (list contexts, membership `Prop`s, `Tm`-style) | `G4cTm` | [`PLLG4Term.lean`](../LaxLogic/PLL/G4/G4Term.lean) | — (a datatype) |
+| Fuel-free backward searcher emitting terms (untrusted `partial`; loop-checked by canonical list keys — no `decideFuel`, no `enum`) | `prove` / `G4cTm.find` | [`PLLG4Term.lean`](../LaxLogic/PLL/G4/G4Term.lean) | — (a program) |
+| Every term projects to a `G4s` derivation | `G4cTm.sound'` (choice-free); `G4cTm.sound` (legacy, statement-tainted‡) | [`PLLG4Term.lean`](../LaxLogic/PLL/G4/G4Term.lean) | **[p,Q]**; clean |
+| A term certifies `G4c`, hence PLL, provability | `G4cTm.toG4c`, `G4cTm.toTm` | [`PLLG4Term.lean`](../LaxLogic/PLL/G4/G4Term.lean) | **[p,Q]** |
+| Every `G4c`-derivable sequent has a term | `G4cTm.ofG4c` | [`PLLG4Term.lean`](../LaxLogic/PLL/G4/G4Term.lean) | **[p,Q]** |
+| `Nonempty (G4cTm Γ C) ↔ Nonempty (Tm Γ C)` | `G4cTm.equiv_tm` | [`PLLG4Term.lean`](../LaxLogic/PLL/G4/G4Term.lean) | **[p,Q]** |
 
 Trust is factored by the type discipline: the searcher is untrusted code, but
 anything it emits inhabits `G4cTm Γ C`, which the kernel checks — *if we can
@@ -186,7 +186,7 @@ emitted (`#eval` smoke tests in the file).
 
 ### 7.1b The derivability tactic `pll_g4c` — certificate splicing (added 2026-07-17)
 
-[`PLLRun.lean`](../LaxLogic/PLLRun.lean) packages the searcher as a tactic.
+[`PLLRun.lean`](../LaxLogic/PLL/Search/Run.lean) packages the searcher as a tactic.
 `pll_g4c` runs `G4cTm.find` at *elaboration time* as untrusted code, quotes the
 found derivation back into surface syntax (membership side conditions as
 explicit `List.Mem` constructor chains — no decision procedure, no axioms), and
@@ -211,10 +211,10 @@ This **retires `pll_g4`** (same file, removed 2026-07-17), which ran the
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| The separating sequent is PLL-derivable | `PLLG4Gap.sep_SC` | [`PLLG4Gap.lean:58`](../LaxLogic/PLLG4Gap.lean) | clean |
-| …but not naive-`G4iLL`-derivable | `PLLG4Gap.sep_not_G4` | [`PLLG4Gap.lean:340`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
-| Contraction not admissible in naive `G4iLL` | `PLLG4Gap.contraction_not_admissible` | [`PLLG4Gap.lean:378`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
-| Cut not admissible in naive `G4iLL` | `PLLG4Gap.cut_not_admissible` | [`PLLG4Gap.lean:396`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
+| The separating sequent is PLL-derivable | `PLLG4Gap.sep_SC` | [`PLLG4Gap.lean:58`](../LaxLogic/PLL/G4/G4Gap.lean) | clean |
+| …but not naive-`G4iLL`-derivable | `PLLG4Gap.sep_not_G4` | [`PLLG4Gap.lean:340`](../LaxLogic/PLL/G4/G4Gap.lean) | **[p]** |
+| Contraction not admissible in naive `G4iLL` | `PLLG4Gap.contraction_not_admissible` | [`PLLG4Gap.lean:378`](../LaxLogic/PLL/G4/G4Gap.lean) | **[p]** |
+| Cut not admissible in naive `G4iLL` | `PLLG4Gap.cut_not_admissible` | [`PLLG4Gap.lean:396`](../LaxLogic/PLL/G4/G4Gap.lean) | **[p]** |
 
 (`G4` = naive Iemhoff `G4iLL`, `PLLG4.lean`; `G4h`/`G4c` = repaired `G4iLL″`,
 `PLLG4H.lean`. The gap results refute *only* the naive calculus.)
@@ -225,12 +225,12 @@ This **retires `pll_g4`** (same file, removed 2026-07-17), which ran the
   as open; corrected 2026-07-17. F&M's own route was via the finite model
   property; the mechanised route is the repaired terminating calculus `G4iLL″`.
   A countermodel **specification** is now proved:
-  `not_provable_iff_exists_finite_countermodel` ([`PLLCountermodel.lean`](../LaxLogic/PLLCountermodel.lean),
+  `not_provable_iff_exists_finite_countermodel` ([`PLLCountermodel.lean`](../LaxLogic/PLL/Semantics/Countermodel.lean),
   clean) — `⊬φ ⟺ ∃ finite constraint model refuting φ` (contrapositive of the
   finite model property). This is the guarantee any extractor must meet and the
   seed for Route B realisability completeness (`route-b-model.md` §6).
   **A computable emitter with a verified checker now exists** (added
-  2026-07-17, [`PLLCountermodelEmit.lean`](../LaxLogic/PLLCountermodelEmit.lean)):
+  2026-07-17, [`PLLCountermodelEmit.lean`](../LaxLogic/PLL/Semantics/CountermodelEmit.lean)):
   `FinCM` (finite models as data), `forceB` (computable forcing), the
   reflection lemma `force_iff`, and the certificate theorem
   `not_provable_of_check` — **choice-free** `[propext, Quot.sound]`: any
@@ -259,7 +259,7 @@ facts, small-algebra enumerations): [`belief-mechanisation-index.md`](belief-mec
 Route B realisability results (the two evidence clauses, heredity, the local
 nucleus laws, the separation triptych, the double-negation believer, and
 combinatory completeness `Poly.abs_spec` **[p,Q]**): promoted 2026-07-18 to
-[`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean) with all 31 audits
+[`LaxLogic/Belief/Realisability.lean`](../LaxLogic/Belief/Realisability.lean) with all 31 audits
 `#guard_msgs`-pinned in-file (headline: `realS_fullness_obstruction` **[p,Q]**
 — no choice; `bite_uniform_split`, `extract_sound`, `extractS_sound`,
 `force_somehow_iff_notnot` clean); design history in [`route-b-model.md`](route-b-model.md) §8.
@@ -269,27 +269,27 @@ combinatory completeness `Poly.abs_spec` **[p,Q]**): promoted 2026-07-18 to
 The `⊩ᵖ` programme, promoted to the library after all proofs closed.  The
 narrative: uniformity fails at `∨`-under-`◯` (the bite) and at `⊃` (the
 barrier); the barrier provably blocks completeness for `⊩ˢ` (the
-obstruction, [`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean)); presenting the future to the `⊃`-clause
+obstruction, [`LaxLogic/Belief/Realisability.lean`](../LaxLogic/Belief/Realisability.lean)); presenting the future to the `⊃`-clause
 (`⊩ᵖ`) restores it, and the countermodels are supplied Zorn-free by the
 finitised canonical model with the mechanised decision procedure making
 every Lindenbaum decision.
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| Applicative structures + hereditary atom evidence | `Pca`, `Evidence` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | (defs) |
-| `⊩ᵖ` presented-strategy realisability (`x ⊩ᵖ[Ev, κ, w] φ`) | `realP` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | (def) |
-| **Adequacy + fullness** over token-decorated checked frames | `realP_adequate_and_full` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p,Q]** — no choice |
-| **The squeeze**: checked countermodels are `⊩ᵖ`-refutations | `realP_refutes_sequent` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p,Q]** |
-| Explicit table algebra; both table hypotheses by construction | `Tbl`, `tblPca`, `tbl_htab`, `tbl_htabP` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p]** |
-| Closed capstones (nothing assumed) | `realP_refutes_sequent_tbl`, `somehow_p_not_p_realP_tbl` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p,Q]** |
-| Finite theory triples; decidable consistency (`consB`/`cons_iff_rep`); extension dichotomy | `FTheory`, `cons_iff_rep`, `cons_insVal_or_insFal` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** (legacy `cons_iff_check` clean, statement-tainted‡) |
-| **Constructive Lindenbaum** (decided fold, no Zorn) | `lindenbaum` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
-| Closure-relative Lemma 4.2 suite | `MaxIn.*` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
-| **Truth lemma** on the finite canonical model | `truth_lemma` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
-| Finite countermodel existence | `finite_canonical_countermodel` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
-| **Emitter completeness**: underivable ⟹ checked countermodel | `emitter_completeness` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
-| Realisability countermodels for underivable sequents | `realP_countermodel_of_underivable` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | **[p,Q]** |
-| **Completeness of PLL for `⊩ᵖ`** (biconditional) | `derivable_iff_no_realP_refutation` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | **[p,Q]** |
+| Applicative structures + hereditary atom evidence | `Pca`, `Evidence` | [`PLLEvidence.lean`](../LaxLogic/PLL/Realisability/Evidence.lean) | (defs) |
+| `⊩ᵖ` presented-strategy realisability (`x ⊩ᵖ[Ev, κ, w] φ`) | `realP` | [`PLLEvidence.lean`](../LaxLogic/PLL/Realisability/Evidence.lean) | (def) |
+| **Adequacy + fullness** over token-decorated checked frames | `realP_adequate_and_full` | [`PLLEvidence.lean`](../LaxLogic/PLL/Realisability/Evidence.lean) | **[p,Q]** — no choice |
+| **The squeeze**: checked countermodels are `⊩ᵖ`-refutations | `realP_refutes_sequent` | [`PLLEvidence.lean`](../LaxLogic/PLL/Realisability/Evidence.lean) | **[p,Q]** |
+| Explicit table algebra; both table hypotheses by construction | `Tbl`, `tblPca`, `tbl_htab`, `tbl_htabP` | [`PLLEvidence.lean`](../LaxLogic/PLL/Realisability/Evidence.lean) | **[p]** |
+| Closed capstones (nothing assumed) | `realP_refutes_sequent_tbl`, `somehow_p_not_p_realP_tbl` | [`PLLEvidence.lean`](../LaxLogic/PLL/Realisability/Evidence.lean) | **[p,Q]** |
+| Finite theory triples; decidable consistency (`consB`/`cons_iff_rep`); extension dichotomy | `FTheory`, `cons_iff_rep`, `cons_insVal_or_insFal` | [`PLLFinComp.lean`](../LaxLogic/PLL/Semantics/FinComp.lean) | **[p,Q]** (legacy `cons_iff_check` clean, statement-tainted‡) |
+| **Constructive Lindenbaum** (decided fold, no Zorn) | `lindenbaum` | [`PLLFinComp.lean`](../LaxLogic/PLL/Semantics/FinComp.lean) | **[p,Q]** |
+| Closure-relative Lemma 4.2 suite | `MaxIn.*` | [`PLLFinComp.lean`](../LaxLogic/PLL/Semantics/FinComp.lean) | **[p,Q]** |
+| **Truth lemma** on the finite canonical model | `truth_lemma` | [`PLLFinComp.lean`](../LaxLogic/PLL/Semantics/FinComp.lean) | **[p,Q]** |
+| Finite countermodel existence | `finite_canonical_countermodel` | [`PLLFinComp.lean`](../LaxLogic/PLL/Semantics/FinComp.lean) | **[p,Q]** |
+| **Emitter completeness**: underivable ⟹ checked countermodel | `emitter_completeness` | [`PLLFinComp.lean`](../LaxLogic/PLL/Semantics/FinComp.lean) | **[p,Q]** |
+| Realisability countermodels for underivable sequents | `realP_countermodel_of_underivable` | [`PLLRealCompleteness.lean`](../LaxLogic/PLL/Realisability/RealCompleteness.lean) | **[p,Q]** |
+| **Completeness of PLL for `⊩ᵖ`** (biconditional) | `derivable_iff_no_realP_refutation` | [`PLLRealCompleteness.lean`](../LaxLogic/PLL/Realisability/RealCompleteness.lean) | **[p,Q]** |
 
 The mathematics is finitary (no Zorn; the only case decisions are by
 `decidablePLL`, and the crown avoids excluded middle deliberately), and
@@ -347,7 +347,7 @@ abbrev truePLL := ifThen falsePLL falsePLL
 
 `somehow` is `◯`; `notPLL`/`truePLL` are the defined `¬`/`⊤`.
 
-## II.2 Natural deduction ([`PLLNDCore.lean`](../LaxLogic/PLLNDCore.lean))
+## II.2 Natural deduction ([`PLLNDCore.lean`](../LaxLogic/PLL/ND/NDCore.lean))
 
 Contexts are lists; the identity rule is membership-based, so weakening,
 exchange and contraction are admissible (`LaxND.rename`), not structural:
@@ -374,7 +374,7 @@ The two lax rules are F&M's `◯I`/`◯E`. Provability of `φ` is
 `Nonempty (LaxND [] φ)`.
 
 For conservativity, the IPL fragment is its own judgment (same rules minus the
-two lax ones — `IPLND`, [`PLLNDCore.lean:167`](../LaxLogic/PLLNDCore.lean)), and erasure removes `◯`:
+two lax ones — `IPLND`, [`PLLNDCore.lean:167`](../LaxLogic/PLL/ND/NDCore.lean)), and erasure removes `◯`:
 
 ```lean
 def erase : PLLFormula → PLLFormula     -- ◯φ ↦ erase φ, else homomorphic
@@ -387,7 +387,7 @@ theorem conservativity_IPL {Γ φ} (hφ : isIPL φ) (hΓ : ∀ ψ ∈ Γ, isIPL 
     (p : LaxND Γ φ) : IPLND Γ φ
 ```
 
-## II.3 Sequent calculus and cut elimination ([`PLLSequent.lean`](../LaxLogic/PLLSequent.lean))
+## II.3 Sequent calculus and cut elimination ([`PLLSequent.lean`](../LaxLogic/PLL/Sequent/Sequent.lean))
 
 ```lean
 inductive SCh : Nat → List PLLFormula → PLLFormula → Prop
@@ -431,11 +431,11 @@ theorem somehow_reflection {A}
     (h : Nonempty (LaxND [] (A.somehow))) : Nonempty (LaxND [] A)
 ```
 
-## II.4 Hilbert system ([`PLLAxiom.lean`](../LaxLogic/PLLAxiom.lean), [`PLLHilbert.lean`](../LaxLogic/PLLHilbert.lean))
+## II.4 Hilbert system ([`PLLAxiom.lean`](../LaxLogic/PLL/Syntax/Axiom.lean), [`PLLHilbert.lean`](../LaxLogic/PLL/ND/Hilbert.lean))
 
 The axiom schemes (the three `◯`-schemes displayed; the remainder are the
 standard IPC schemes `K`, `S`, the `∧`/`∨` rules and ex falso —
-[`PLLAxiom.lean:36–60`](../LaxLogic/PLLAxiom.lean)):
+[`PLLAxiom.lean:36–60`](../LaxLogic/PLL/Syntax/Axiom.lean)):
 
 ```lean
 inductive PLLAxiom where
@@ -472,7 +472,7 @@ theorem strong_extensionality (a : String) (M N C : PLLFormula) :
       (iffPLL (substProp a M C) (substProp a N C))))
 ```
 
-## II.5 Kripke constraint semantics ([`PLLKripke.lean`](../LaxLogic/PLLKripke.lean))
+## II.5 Kripke constraint semantics ([`PLLKripke.lean`](../LaxLogic/PLL/Semantics/Kripke.lean))
 
 ```lean
 structure ConstraintModel where
@@ -505,11 +505,11 @@ theorem soundness    {Γ φ} (p : LaxND Γ φ) : Γ ⊨- φ            -- F&M Th
 theorem completeness {Γ φ} (h : Γ ⊨- φ) : Nonempty (LaxND Γ φ)  -- F&M Thm 4.4
 ```
 
-## II.6 Countermodels (F&M Fig. 3; [`PLLFrames.lean`](../LaxLogic/PLLFrames.lean))
+## II.6 Countermodels (F&M Fig. 3; [`PLLFrames.lean`](../LaxLogic/PLL/Semantics/Frames.lean))
 
 Each is soundness against a small explicit `ConstraintModel` (the models
 `modelFallible`, `modelOrSplit`, `modelNoImpDist` are defined at
-[`PLLFrames.lean:60–201`](../LaxLogic/PLLFrames.lean) and are `decide`-checkable):
+[`PLLFrames.lean:60–201`](../LaxLogic/PLL/Semantics/Frames.lean) and are `decide`-checkable):
 
 ```lean
 theorem not_provable_not_somehow_false :
@@ -524,11 +524,11 @@ theorem not_provable_imp_somehow_dist :
         (somehow ((prop "A").ifThen (prop "B")))))
 ```
 
-## II.7 Strong normalisation ([`PLLTopTop.lean`](../LaxLogic/PLLTopTop.lean))
+## II.7 Strong normalisation ([`PLLTopTop.lean`](../LaxLogic/PLL/Normalisation/TopTop.lean))
 
 The proof-term calculus `Tm`, the full one-step reduction `Step` (β for every
 connective + `let`-assoc), strong normalisation `SNt`, and normal forms `Nf`
-are defined in [`PLLTerms.lean`](../LaxLogic/PLLTerms.lean) / [`PLLProof.lean`](../LaxLogic/PLLProof.lean) / [`PLLNormal.lean`](../LaxLogic/PLLNormal.lean) (not
+are defined in [`PLLTerms.lean`](../LaxLogic/PLL/ND/Terms.lean) / [`PLLProof.lean`](../LaxLogic/PLL/Syntax/Proof.lean) / [`PLLNormal.lean`](../LaxLogic/PLL/Normalisation/Normal.lean) (not
 reproduced — a full calculus). The audited statements:
 
 ```lean
@@ -539,7 +539,7 @@ theorem Tm.normalize_spec {Γ φ} (t : Tm Γ φ) :
     Steps t t.normalize ∧ Nf t.normalize
 ```
 
-## II.8 Craig interpolation ([`PLLCraig.lean`](../LaxLogic/PLLCraig.lean))
+## II.8 Craig interpolation ([`PLLCraig.lean`](../LaxLogic/PLL/Sequent/Craig.lean))
 
 Choice-free primary forms (`atomsList` is built on the kit's `finUnion`):
 
@@ -568,7 +568,7 @@ theorem craig_implication {A B} (h : SC [] (A.ifThen B)) :
       SC [] (A.ifThen I) ∧ SC [] (I.ifThen B) ∧ I.atoms ⊆ A.atoms ∩ B.atoms
 ```
 
-## II.9 Kleene–Brouwer well-foundedness ([`KleeneBrouwer.lean`](../LaxLogic/KleeneBrouwer.lean))
+## II.9 Kleene–Brouwer well-foundedness ([`KleeneBrouwer.lean`](../LaxLogic/Util/KleeneBrouwer.lean))
 
 ```lean
 def DevLeft (v u : List α) : Prop :=      -- v branches lt-left of u
@@ -593,7 +593,7 @@ theorem wellFounded_kb'
 
 Audit: **no axioms at all** (in-file guard).
 
-## II.10 The Curry-paper results ([`LaxLogic/PLLCtxCompleteness.lean`](../LaxLogic/PLLCtxCompleteness.lean), [`LaxLogic/PLLLaxInfinite.lean`](../LaxLogic/PLLLaxInfinite.lean))
+## II.10 The Curry-paper results ([`LaxLogic/PLL/Semantics/CtxCompleteness.lean`](../LaxLogic/PLL/Semantics/CtxCompleteness.lean), [`LaxLogic/PLL/Semantics/LaxInfinite.lean`](../LaxLogic/PLL/Semantics/LaxInfinite.lean))
 
 Standard constraints and the expansion `φ^C`:
 
@@ -640,7 +640,7 @@ instance closedSetoid : Setoid Closed where r x y := LaxEquiv x.1 y.1 …
 theorem closed_lax_infinite : Infinite (Quotient closedSetoid)
 ```
 
-## II.11 Decidability — F&M Theorem 2.8 ([`PLLG4H.lean`](../LaxLogic/PLLG4H.lean), [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean))
+## II.11 Decidability — F&M Theorem 2.8 ([`PLLG4H.lean`](../LaxLogic/PLL/G4/G4H.lean), [`PLLG4Dec.lean`](../LaxLogic/PLL/G4/G4Dec.lean))
 
 The repaired calculus `G4iLL″` is `G4h` (height-indexed) / `G4c`; the decider is
 the loop-checked backward `search` over the set calculus (both large, not
@@ -669,10 +669,10 @@ instance decidablePLL (Γ φ) : Decidable (Nonempty (Tm Γ φ)) :=
 A full, terminating, kernel-honest decider (`#eval decide (Nonempty (Tm [p] p.somehow))`
 runs under `#guard_msgs` in `PLLDemos.lean`; no `native_decide`).
 
-## II.12 The naive-G4iLL incompleteness gap ([`PLLG4Gap.lean`](../LaxLogic/PLLG4Gap.lean))
+## II.12 The naive-G4iLL incompleteness gap ([`PLLG4Gap.lean`](../LaxLogic/PLL/G4/G4Gap.lean))
 
 The *naive* Iemhoff calculus (`G4`, contraction-free) is defined in
-[`PLLG4.lean`](../LaxLogic/PLLG4.lean) (not reproduced); these results show it is
+[`PLLG4.lean`](../LaxLogic/PLL/G4/G4.lean) (not reproduced); these results show it is
 incomplete for PLL — the motivation for the `G4iLL″` repair above:
 
 ```lean
@@ -692,4 +692,4 @@ theorem cut_not_admissible :
 ```
 
 *(End of Part II. The belief-paper layer's statements are indexed separately in
-[`belief-mechanisation-index.md`](belief-mechanisation-index.md) and [`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean).)*
+[`belief-mechanisation-index.md`](belief-mechanisation-index.md) and [`LaxLogic/Belief/Realisability.lean`](../LaxLogic/Belief/Realisability.lean).)*

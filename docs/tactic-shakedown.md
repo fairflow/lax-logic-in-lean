@@ -1,7 +1,7 @@
 # Tactic shakedown: retrofitting the normalisation proofs
 
 Before the ⊤⊤-lifting session, the recurring proof patterns of the
-normalisation development were distilled into `LaxLogic/PLLTactics.lean`
+normalisation development were distilled into `LaxLogic/PLL/ND/Tactics.lean`
 (132 lines, roughly half documentation, **zero imports** — `solve_by_elim`
 is core Lean as of this toolchain) and the two termination files were
 reproved with them, as a shakedown under real load.  Everything below is

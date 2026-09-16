@@ -23,8 +23,8 @@ entries, to two OPEN cells — which become frontier members below, not
 assumptions.
 -/
 import RNDB.RhoEntries
-import LaxLogic.PLLSearchConf
-import LaxLogic.PLLNoFall
+import LaxLogic.PLL.Search.SearchConf
+import LaxLogic.PLL.UI.NoFall
 import Certified.RhoFRJV
 
 open PLLND PLLND.SemUI PLLFormula

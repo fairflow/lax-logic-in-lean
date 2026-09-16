@@ -31,7 +31,7 @@ not preserve the forward fragment.  The same phenomenon as everywhere
 else here — fallibility trivialises the future.
 -/
 import BiLax.Syntax
-import LaxLogic.PLLCompleteness
+import LaxLogic.PLL.Semantics.Completeness
 
 namespace BiLax
 

@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # The last v2quant cell decided: D₆ ⊬ ◯(◯q⊃q)

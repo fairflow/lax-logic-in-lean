@@ -220,7 +220,7 @@ several failed FRJV-completeness campaigns before that).  Instead:
 `LJF/OBridge.lean`, ON `frjw-dev` ALREADY (the calculus map's "unmerged
 branch t1" note was stale; corrected), pins `[propext, Quot.sound]`, no
 choice.  `LaxND ↔ SC` and cut elimination are also mechanised
-(`SC_to_ND`, `ND_to_SC`, `cutElimination`, `LaxLogic/PLLSequent.lean`).
+(`SC_to_ND`, `ND_to_SC`, `cutElimination`, `LaxLogic/PLL/Sequent/Sequent.lean`).
 
 **Target statement** (syntactic end to end; `ofPLL` is the mechanised
 `PLLFormula ≃ Form` of `FRJ/Bridge.lean`):

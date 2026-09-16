@@ -23,7 +23,7 @@ lands, soundness of each concrete refutation is delivered by
 rest of the repo; the theorem retires the per-instance gate.
 -/
 import FRJO.Calc
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 namespace FRJO
 

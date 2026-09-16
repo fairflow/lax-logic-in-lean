@@ -22,7 +22,7 @@ No silent caps: the engine's `Stats` flags are printed per cell.
 import FRJ.Search.OpsW
 import FRJ.Bridge
 import LaxLogic.RN.Rho
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import wip.ljfo_link
 
 open FRJ FRJ.Search Form

@@ -65,3 +65,21 @@ them (2026-08-30). They are a record, **not** a benchmark: that set was
 contaminated by construction — `conservativity_prop`'s answer is written out
 inside `Solved/conservativity.lean`, and three of the four needed nothing their
 own file did not already contain.
+Four **proved** lemmas from the development, re-stated with `sorry`. Each has a
+known human proof of 6–15 lines, so a claim of success can be checked against
+something real — unlike the open UI claims, which are research problems, and
+unlike `../NewClaims.lean`, whose statements were invented for the purpose.
+
+| file | from | ground truth |
+|---|---|---|
+| `conservativity.lean` | `LaxLogic/PLL/ND/NDCore.lean` | 14 lines |
+| `conservativity_prop.lean` | `LaxLogic/PLL/ND/NDCore.lean` | 14 lines |
+| `pfree_trans.lean` | `LaxLogic/Focusing/LJFComplete.lean` | 15 lines |
+| `focalization.lean` | `LaxLogic/Focusing/LJFComplete.lean` | 6 lines |
+
+Two further candidates (`force_circ_transparent`, `mem_gHat_shape`, both from
+`FRJ/Erase.lean`) were dropped: their prefixes do not compile standalone, which
+is a limitation of prefix-truncation extraction, not of the lemmas.
+
+Each file is self-contained and compiles with exactly one `sorry`. Do not
+consult the original proof before attempting one.

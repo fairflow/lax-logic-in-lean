@@ -19,7 +19,7 @@ import FRJ.Search.Profile
 import FRJ.Bridge
 import Tools.Bank
 import LaxLogic.RN.Reps
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import LaxLogic.RN.Rho
 
 open FRJ

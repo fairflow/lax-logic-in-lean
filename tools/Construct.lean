@@ -4,8 +4,8 @@
 Matthew's correction, 2026-08-22/23: the earlier `frjdiff --rho` run set
 `emitClosureCap := 0`, which DISABLES G4c's only constructive stage.
 Every refutation it reported came from `sweepCert` — a look-up against
-`LaxLogic.PLLSearch.defaultFrames`, eleven hand-curated frames of ≤ 4
-worlds (pre-existing code, `LaxLogic/PLLSearch.lean:272`, none of it
+`LaxLogic.PLL.Search.Search.defaultFrames`, eleven hand-curated frames of ≤ 4
+worlds (pre-existing code, `LaxLogic/PLL/Search/Search.lean:272`, none of it
 written this session).  That is a battery match, not a construction, and
 comparing it to FRJ(◯) was comparing the wrong things.
 
@@ -26,7 +26,7 @@ sequent between two non-trivial representatives, both indices ≤ 12.
 import FRJ.Search.Profile
 import FRJ.Search.Pin
 import FRJ.Bridge
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import LaxLogic.RN.Rho
 import wip.ljfo_link
 

@@ -1237,9 +1237,9 @@ eighteen-function mega-mutual generates, before a `first |` chain of 68
 
 Two corrections to what the round assumed on opening.
 
-* **The farms are not tail-only.**  `LaxLogic/LJF.lean`, the IPC control,
+* **The farms are not tail-only.**  `LaxLogic/Focusing/LJF.lean`, the IPC control,
   invokes them seventeen times.  Any trim must keep that file green, so the
-  probe target is `lake build LaxLogic.LJFO LaxLogic.LJF`.
+  probe target is `lake build LaxLogic.LJFO LaxLogic.Focusing.LJF`.
 * **There are no duplicate alternatives to delete.**  A first analysis
   reported 51; that was a parser running past the end of `ljf_dec_e` into
   `ljf_dec_a` and comparing the two macros' lists against each other.  Within
@@ -1247,7 +1247,7 @@ Two corrections to what the round assumed on opening.
   byte-identical repeats.  The safe mechanical trim does not exist.
 
 What does exist: `(simp_arith; done)` at **position 21 of 68 and 21 of 62**
-is **DEAD in both farms** — deleted, and `LaxLogic.LJFO` and `LaxLogic.LJF`
+is **DEAD in both farms** — deleted, and `LaxLogic.LJFO` and `LaxLogic.Focusing.LJF`
 both build green.  Every goal not closed by the first twenty alternatives
 used to pay a full `simp_arith` before the remaining forty-odd were tried.
 Recorded in both macro docstrings so it is not re-added blindly.

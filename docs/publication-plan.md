@@ -43,9 +43,9 @@ a naive scan reports.
 
 | file | sorries | which |
 |---|---|---|
-| `LaxLogic/PLLSemUIChar.lean` | 2 | two `exact .inl (by sorry)` at 322, 327 |
-| `LaxLogic/PLLSemUIHenkin.lean` | 2 | two named `sorry`s at 341, 352 |
-| `LaxLogic/PLLSemUILayered.lean` | 1 | `amalgamation` at 827 |
+| `LaxLogic/PLL/SemUI/SemUIChar.lean` | 2 | two `exact .inl (by sorry)` at 322, 327 |
+| `LaxLogic/PLL/SemUI/SemUIHenkin.lean` | 2 | two named `sorry`s at 341, 352 |
+| `LaxLogic/PLL/SemUI/SemUILayered.lean` | 1 | `amalgamation` at 827 |
 
 That is the whole list. An earlier draft of this document added
 `tools/proofstates/Recorder.lean` as a fourth file; that was wrong. It
@@ -131,9 +131,9 @@ are blocked by exactly one file.
 
 ### 0.4 The one structural blocker, and it is small
 
-`Rewrite/Core.lean` imports `LaxLogic.PLLSemUILayered` (1 sorry). But:
+`Rewrite/Core.lean` imports `LaxLogic.PLL.SemUI.SemUILayered` (1 sorry). But:
 
-- `LaxLogic/PLLSemUIFrag.lean` (682 lines, **sorry-free**, and the home
+- `LaxLogic/PLL/SemUI/SemUIFrag.lean` (682 lines, **sorry-free**, and the home
   of `Interd` and the ND combinators that `Rewrite/` actually uses)
   references **exactly one** name from `PLLSemUILayered`: `crank`.
 - `crank` is a 7-line structural recursion on `PLLFormula`
@@ -155,7 +155,7 @@ document claimed it did.** `Rewrite/Catalogue.lean:43` imports
 
 ## 1. Work item W1 — cut the sorried dependency (small)
 
-Move `crank` from `LaxLogic/PLLSemUILayered.lean` into a new leaf module
+Move `crank` from `LaxLogic/PLL/SemUI/SemUILayered.lean` into a new leaf module
 (`LaxLogic/Crank.lean`, importing only the formula datatype), and have
 both `PLLSemUILayered` and `PLLSemUIFrag` import it.
 
@@ -265,7 +265,7 @@ clearest case is `cBox_14`:
 
 **Why the tree is behind.** It was last *regenerated* at `d37f9c0`
 (2026-07-26, +2199 lines). The bounded searcher
-`LaxLogic/PLLG4Term.lean` was improved the **next day**, `3a7272f`
+`LaxLogic/PLL/G4/G4Term.lean` was improved the **next day**, `3a7272f`
 (2026-07-27) — *"budget × failure memo × canonical key in the bounded
 searcher"*. Same fuel budget (`budget : Nat := 400000`), longer reach.
 Every commit to `wip/rnDict.lean` since `d37f9c0` is docstring-only.
@@ -350,7 +350,7 @@ A script — `scripts/verify-branch.sh` — that fails on any of:
 3. **Axiom pins.** The `#guard_msgs`-pinned `#print axioms` in
    `Rewrite/Catalogue.lean` and the FRJ soundness pin. `collectAxioms`
    is the only sound oracle; `native_decide` taints, and
-   `LaxLogic/BeliefExamples.lean` already carries two
+   `LaxLogic/Belief/Examples.lean` already carries two
    `native_decide.ax` axioms that the gate must either exempt by name
    or exclude from the branch.
 4. **Tool smoke test.** `lake exe frjcert "q10 ⊢ q10 ∧ q13" <tmp> 12`,

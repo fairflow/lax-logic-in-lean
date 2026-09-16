@@ -1,6 +1,6 @@
 import wip.rnEmbed
 import wip.rnDict
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # Distribution is NOT free on the ladder image

@@ -49,7 +49,7 @@ completeness independently and is the one in core.
 | `frjw_gcc.lean` | 63 | stage W4: an irregular FRJW disproof of `◯(◯p ⊃ p)`, the three facts that motivated `Lift` | green |
 | `rbar.lean` | 127 | the proposed irregular rule `(R̄)` and its soundness, from before FRJW | superseded by FRJW's rule set; kept as the record of the proposal (exists only on this branch) |
 | `gbu_ndrules.lean` | 115 | derivability of SC's `laxL`/`laxR` inside `Gbu◯` (the derivable half) | green; corollary of completeness now |
-| `quot_cm.lean` | 86 | the four-world constraint model refuting "the ≤-quotient of a finite preorder model preserves `◯`-forcing" (why the FMP bridge had to be syntactic) | REFUTATION, `[propext]`; imports `LaxLogic.PLLKripke` only |
+| `quot_cm.lean` | 86 | the four-world constraint model refuting "the ≤-quotient of a finite preorder model preserves `◯`-forcing" (why the FMP bridge had to be syntactic) | REFUTATION, `[propext]`; imports `LaxLogic.PLL.Semantics.Kripke` only |
 | `cornersweep.lean` (+ `_out.txt`) | 161 | the V-free corner sweep over the chase-revisit residual's hypotheses | probe, pre-FRJW |
 | `frjv_corner_probe.lean` | 154 | corner-trigger probe over the residue frames (FRJV completeness campaign) | probe, FRJV line |
 | `gbu_residue_probe.lean`, `gbu_seam1_probe.lean` | 63, 87 | seam-1 probes from the FRJV residue analysis | probes, `--run` scripts |

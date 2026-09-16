@@ -4,7 +4,7 @@ import wip.depth
 # PCLL control: `◯A ⊣⊢ A ∨ ◯⊥` is REFUTED, schema and CLOSED instance alike
 
 PCLL is PLL + the distribution axiom `◯(A ∨ B) ⊃ (◯A ∨ ◯B)` — the system
-`DerivU` of `LaxLogic/PLLConfluentComplete.lean`.  Its frame condition,
+`DerivU` of `LaxLogic/PLL/Semantics/ConfluentComplete.lean`.  Its frame condition,
 stated explicitly, is **mutual confluence** (`PLLFrames.MutuallyConfluent`):
 
     ∀ x w v,  x Rₘ w → x Rᵢ v → ∃ u,  w Rᵢ u  ∧  v Rₘ u

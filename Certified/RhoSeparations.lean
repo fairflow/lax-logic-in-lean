@@ -13,7 +13,7 @@ are kernel theorems (single exception: the open half `ρ12 ⊢? ρ15`).
 
 Regenerate after catalogue changes: `lake exe rhocover emit`.
 -/
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.SearchConf
 import LaxLogic.Deriv
 import LaxLogic.RN.Rho
 

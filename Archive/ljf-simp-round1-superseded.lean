@@ -1,7 +1,7 @@
 /- # Archive: LJF simplification round 1 — superseded proofs (2026-08-09)
 
 This file is NOT built (Archive/ is outside the Lake package roots). It
-preserves, verbatim, the top-level artefacts deleted from LaxLogic/LJF.lean
+preserves, verbatim, the top-level artefacts deleted from LaxLogic/Focusing/LJF.lean
 by simplification round 1, for future archaeologists. The complete
 pre-simplification state is tag `ljf-ui-v1` (= commit 7aefbdc, the landmark
 "UNIFORM INTERPOLATION FOR LJF — PROVED").

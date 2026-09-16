@@ -12,7 +12,7 @@ falsum from PLL's local falsum `⊥` (= F).  See docs/bilax-plan.md
 §4(b).
 -/
 import BiLax.Syntax
-import LaxLogic.PLLKripke
+import LaxLogic.PLL.Semantics.Kripke
 
 namespace BiLax
 open PLLND

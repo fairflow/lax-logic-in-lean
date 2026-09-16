@@ -1,5 +1,5 @@
-import LaxLogic.PLLNDCore
-import LaxLogic.PLLConsequence
+import LaxLogic.PLL.ND.NDCore
+import LaxLogic.PLL.ND.Consequence
 
 /-!
 # `Deriv` — derivability as a `Prop`, with the rules lifted to it

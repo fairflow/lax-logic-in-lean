@@ -48,8 +48,8 @@ both of which are TRIVIAL in `LJFComplete` only because `negOf` erases
 LJF◯ proof gives a PLL proof, and an LJF◯ failure gives a PLL failure.
 -/
 import LJF.OCore
-import LaxLogic.PLLNDCore
-import LaxLogic.PLLSequent
+import LaxLogic.PLL.ND.NDCore
+import LaxLogic.PLL.Sequent.Sequent
 
 namespace LJFO
 

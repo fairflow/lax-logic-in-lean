@@ -306,7 +306,7 @@ joins), or itself plus the chain of promise components.  `◯∈` from
 that decidable.
 
 This is the single-pledge shadow of the canonical model's `mfal`
-component (`LaxLogic/PLLCompleteness.lean`): `chain Z` says `Z` is
+component (`LaxLogic/PLL/Semantics/Completeness.lean`): `chain Z` says `Z` is
 pledged false along the root's whole modal cone. -/
 inductive Tag where
   /-- the root's modal cone is `{root}` -/

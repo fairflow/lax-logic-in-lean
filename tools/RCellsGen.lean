@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4Term
+import LaxLogic.PLL.G4.G4Term
 import LaxLogic.RN.Reps
 import LaxLogic.RN.Rho
 

@@ -31,8 +31,8 @@ The corpus is the certified closed-fragment catalogue
 (docs/pcll-closed-fragment-catalogue.md), which is exactly the set of
 formulas whose separations we want a rejection calculus to derive.
 -/
-import LaxLogic.PLLCountermodelEmit
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Semantics.CountermodelEmit
+import LaxLogic.PLL.Search.SearchConf
 
 open PLLND PLLND.FinCM
 

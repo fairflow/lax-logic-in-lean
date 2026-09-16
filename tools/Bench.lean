@@ -37,7 +37,7 @@ Output is TSV on stdout: one row per cell per engine, plus a summary.
 -/
 import wip.check_closed
 import tools.Decide
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 import Rewrite
 -- Explicit since 2026-09-03: the foundation modules no longer
 -- re-export Mathlib.  OUTSIDE the runtime closure of `lake exe pll`.

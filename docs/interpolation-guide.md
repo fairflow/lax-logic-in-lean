@@ -36,7 +36,7 @@ the one to teach first.)
 every sequent in it into an `A`-part and a `B`-part; at each rule one can write
 down a formula that separates the two parts, building the interpolant from the
 leaves up. This is Maehara's method, and it is exactly how the lax-logic
-repository proves Craig interpolation for PLL (`LaxLogic/PLLCraig.lean`).
+repository proves Craig interpolation for PLL (`LaxLogic/PLL/Sequent/Craig.lean`).
 
 **Why it matters.** Three classical uses:
 

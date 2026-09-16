@@ -2,7 +2,7 @@
 # The `Set`-valued subformula island
 
 `subformulasOf` and the `SomehowFree` subtype were the original
-(2024) presentation; they are the ONLY things in `LaxLogic/PLLFormula.lean`
+(2024) presentation; they are the ONLY things in `LaxLogic/PLL/Syntax/Formula.lean`
 that needed `Set`, hence Mathlib, and nothing in the development uses
 them — `PLLNDCore` mentions `eraseSomehow` in a comment only, and the
 live subformula machinery is `FRJ.sfR` / `Search.subs` over lists.
@@ -12,7 +12,7 @@ import closure of `lake exe pll` — is Mathlib-free.  Nothing here is
 deleted: this is the def/proof split of `docs/decider-outputs-design.md`
 applied at the one place the runtime closure needed it.
 -/
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 import Mathlib.Tactic
 
 namespace PLLFormula

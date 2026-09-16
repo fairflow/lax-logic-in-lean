@@ -18,7 +18,7 @@ import FRJ.Search.Profile
 import FRJ.Bridge
 import LaxLogic.RN.Reps
 import wip.ljfo_link
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 open FRJ
 

@@ -27,8 +27,8 @@ Direction: `Cl(Λ*) ⊆ Λ` always holds by soundness, so only
 a formula forced there but not derivable from the determining part).
 One appended line per failure; counts always printed.
 -/
-import LaxLogic.PLLCountermodelEmit
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Semantics.CountermodelEmit
+import LaxLogic.PLL.Search.SearchConf
 
 open PLLND PLLND.FinCM
 

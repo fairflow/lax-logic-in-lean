@@ -12,7 +12,7 @@ verdict; for a proved one prints the `Tm` proof term.  The engine runs
 INTERPRETED here, so use it on small formulas; `lake exe pll` is the
 compiled tool and the one that emits kernel-checked certificates.
 
-Modelled on `#draw` (`LaxLogic/PLLDiagramCmd.lean`).  A scan of the
+Modelled on `#draw` (`LaxLogic/PLL/Search/DiagramCmd.lean`).  A scan of the
 `command` parser category found no existing `#decide`
 (`docs/decider-outputs-design.md` §6, D5).
 -/

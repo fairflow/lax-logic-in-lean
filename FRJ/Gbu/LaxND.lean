@@ -1,7 +1,7 @@
 /-
 # `Gbu◯(G)` is sound for natural deduction: the syntactic bridge
 
-Every rule of `Gbu◯(G)` is admissible in `LaxND` (`LaxLogic/PLLNDCore.lean`):
+Every rule of `Gbu◯(G)` is admissible in `LaxND` (`LaxLogic/PLL/ND/NDCore.lean`):
 the intuitionistic rules are the natural-deduction rules under the
 membership-based `iden`, `L◯` at a `◯`-goal is `laxElim`, `R◯` is
 `laxIntro`, and `≐`-contexts are handled by `LaxND.rename`.  So a `Gbu◯`

@@ -34,3 +34,8 @@ generalPapers/mendler-et-al-ckd.pdf
 generalPapers/qckd.pdf
 # against the toolkit; one was committed by mistake at 8faed16.
 runs/
+_out/
+
+# Built papers (scripts/clp-paper.sh): HTML + PDF are build artefacts
+docs/clp-paper/
+docs/clp-paper.pdf

@@ -2,7 +2,7 @@
 # The `◯` rules of SC/LaxND inside `Gbu◯(G)` — the derivable half
 
 Check requested 2026-08-31, before stage W5: are SC's `laxL`/`laxR`
-(`LaxLogic/PLLSequent.lean`, F&M Figure 2) derivable in `Gbu◯(G)`
+(`LaxLogic/PLL/Sequent/Sequent.lean`, F&M Figure 2) derivable in `Gbu◯(G)`
 (`FRJ/Gbu/Circ.lean` §11b)?  `LaxND ↔ SC` is mechanised (`SC_to_ND`,
 `ND_to_SC`, with `cutElimination`), so cut-free SC is the right source:
 if every SC rule is admissible in `GbuRC` then `Gbu◯(G)` is complete in

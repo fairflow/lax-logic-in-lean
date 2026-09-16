@@ -1,5 +1,5 @@
 import wip.secondgen
-import LaxLogic.PLLLaxInfinite
+import LaxLogic.PLL.Semantics.LaxInfinite
 
 /-!
 # The free two-generated Heyting algebra does not embed over `◯⊥`

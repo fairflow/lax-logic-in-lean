@@ -15,7 +15,7 @@ sufficient it is the weakest sufficient `p`-free formula — the cell's
 certificate; the two cells it settled by oracle on 2026-09-04 are
 certified below in the kernel.
 -/
-import LaxLogic.PLLSemUICtx
+import LaxLogic.PLL.SemUI.SemUICtx
 import Meta.Audit
 
 namespace PLLND.SemUI

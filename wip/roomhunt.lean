@@ -1,5 +1,5 @@
 import wip.towerkit
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # `roomhunt` — the descent hunted INSIDE its own room hypothesis
@@ -126,7 +126,7 @@ def budgetBlind (L : List PLLFormula) : Bool :=
   ¬ ((coverTags L).contains "imp-imp*" || (coverTags L).contains "imp-box*")
 
 /-- Context-gate liveness, per context formula (`wip/budgetfit.lean` §3,
-re-read off `LaxLogic/PLLG4UITrunc.lean` lines 252-290). -/
+re-read off `LaxLogic/PLL/UI/G4UITrunc.lean` lines 252-290). -/
 def gateLive (Sl : List PLLFormula) (Γ : List PLLFormula) :
     List (String × Bool) :=
   Γ.filterMap (fun F => match F with
@@ -144,7 +144,7 @@ def liveGateCount (Sl : List PLLFormula) (Γ : List PLLFormula) : Nat :=
 
 /-- **The goal-driven budget gates** — missed by §81's shape instrument,
 which reads the space only.  `itpA`'s `goal` list reads `b` at two places
-(`LaxLogic/PLLG4UITrunc.lean`: the `⊃`-goal with the antecedent already in
+(`LaxLogic/PLL/UI/G4UITrunc.lean`: the `⊃`-goal with the antecedent already in
 `Γ`, and the `◯`-goal, plus the `◯`-goal's truncation disjunct). -/
 def goalGate (Γ : List PLLFormula) (g : PLLFormula) : String :=
   match g with

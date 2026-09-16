@@ -1,9 +1,9 @@
-import LaxLogic.PLLExec
+import LaxLogic.PLL.Search.Exec
 
 /-!
 # `laxrun` — the CLI entry point
 
-Subcommand dispatch onto the pure drivers of `LaxLogic.PLLExec`.  All the
+Subcommand dispatch onto the pure drivers of `LaxLogic.PLL.Search.Exec`.  All the
 actual computation lives there; this file is just the argv → driver map.
 
 ## How to run it

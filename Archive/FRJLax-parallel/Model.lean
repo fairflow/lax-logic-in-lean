@@ -25,7 +25,7 @@ The paper: "A *Kripke model* is a structure `K = ⟨P, ≤, ρ, V⟩`, where
 `V : P → 2^PV` is a function such that `α ≤ β` implies `V(α) ⊆ V(β)`."
 
 Fairtlough–Mendler (Definition 3.1, as formalised in
-`LaxLogic/PLLKripke.lean`): a constraint model carries a second
+`LaxLogic/PLL/Semantics/Kripke.lean`): a constraint model carries a second
 accessibility relation `R_m ⊆ R_i` and a set `F` of fallible worlds, with
 `F` upward closed and every atom true at a fallible world.
 

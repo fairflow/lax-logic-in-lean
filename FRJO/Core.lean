@@ -69,7 +69,7 @@ what is proved per instance.
 -/
 import LJF.OSearch
 import LJF.OBridge
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 import wip.ljfo_unravel
 
 namespace FRJO
