@@ -79,6 +79,98 @@ only where the explicit term is longer than three lines.
 `termination_by`/`decreasing_by` mutual recursion; the 0.88 pair genuinely
 diverges. Merge the 0.97 pair (`OCore` ↔ `OFuelSound`) or nothing.
 
+## Progress
+
+**Stage A, done 2026-09-16.**
+
+* `Enum.f_mem` (`FRJ/Minimal.lean`). Every proof that takes an `enumOf` needs
+  "every value of the enumeration is a member", and all 25 sites wrote the same
+  term out by hand. 25 sites rewritten, `FRJ/{Saturate,SaturateV}.lean` and
+  `FRJ/Gbu/{Circ,DB,W/CircDB,W/Corner,W/DB}.lean`.
+* **One induction over `Clo`, not five.** `clo_trans` (Cl6) is the general
+  transport; `clo_mono` (Cl4) and the four `clo_*_cons` lemmas of
+  `FRJ/Gbu/Base.lean` each repeated its five-case induction, differing only in
+  what they do with a base member. All five now supply that map and call
+  `clo_trans`, which is reordered to come first in `FRJ/Basic.lean`.
+
+Verified: `lake build FRJGbu FRJ` 8626 jobs, `lake build` 8746 jobs, and the
+ledger gate reports **one addition and no axiom change anywhere** —
+
+```
+ledger: 1 addition(s)/improvement(s)
+  NEW         FRJ.Enum.f_mem  (FRJ.Minimal)
+gate exit 2
+```
+
+which is the evidence the refactor changed no proof's content.
+
+**Stage C, the FRJ soundness triple, designed.** The three `join*_case`
+families are not the same lemma eight times: five (`joinAtP`, `joinAtF`,
+`joinOrP`, `joinOrF`, `joinCircP`) differ across the three calculi only in type
+names, while `joinAt`/`joinOr` differ by V/W's `kept` zone and `joinCirc` is
+three genuinely different proofs. So the target is the five, all three
+calculi — 2,523 duplicated lines down to about 1,395.
+
+The design constraint, and it is the whole difficulty: **the abstraction cannot
+quantify over the derivation `d`.** The proofs do not use `preR d` through an
+interface, they use it through *reduction* — `cases w` on inhabitants of
+`(preR d).W`, `none` fed where a world is expected, `join_force_comp` whose
+statement mentions `PreModel.join` syntactically. A record field
+`preR (joinAtP …) = PreModel.join …` is a propositional equation between
+structures whose first field is a `Type`, and every such step would need a
+`cast`. The escape is to state the core lemma directly about the
+`PreModel.join` term, with six ordinary hypotheses in place of the definitional
+facts (`preR_root_lbl`, `wfR`, `wfI`, `lhs_clo_of_steps`, and the two
+closedness proofs); each wrapper then discharges the unfolding by `rfl`,
+because `preR (FRJr.joinAtP …)` *is* that term.
+
+The risk is exactly that `rfl`: it asks the elaborator to unify an
+18-field `PreModel.join` literal against the `whnf` of `preR (…)`. **One
+wrapper is compiled before the other fourteen are written** — that build
+decides the design.
+
+**Stage C, done 2026-09-16.** The `rfl` holds. It was tested first in
+isolation, as a one-line probe (`preR (FRJr.joinAtP …) = PreModel.join … :=
+rfl`), before any core lemma was written; then `joinAtP` alone, all the way
+through a wrapper, before the other four were touched.
+
+`FRJ/SoundCore.lean` now holds two pre-model constructions — `joinPModel` for a
+promise join, `joinFModel` for a fallible one, the context being a parameter —
+and five calculus-free lemmas: `joinAtP_core`, `joinOrP_core`, `joinAtF_core`,
+`joinOrF_core`, `joinCircP_core`. It also holds the 308 lines of context and
+forcing lemmas that were the first third of `FRJ/Sound.lean` and mention no
+calculus at all.
+
+Each of the fifteen proofs (five cases × `FRJr`, `FRJVr`, `FRJWr`) is now a
+twelve-line wrapper. The statements of `join*_case` are untouched, in all three
+files.
+
+| | before | after |
+|---|--:|--:|
+| `FRJ/Sound.lean` | 1,921 | 1,079 |
+| `FRJ/SoundV.lean` | 1,948 | 1,272 |
+| `FRJ/SoundW.lean` | 1,963 | 1,287 |
+| `FRJ/SoundCore.lean` | — | 1,191 |
+| total | 5,832 | 4,829 |
+
+Verified: `lake build FRJ FRJGbu` green, and the ledger gate reports the five
+new core lemmas and the 308 moved helpers as additions and MOVES, with no axiom
+change anywhere.
+
+Two hypotheses had to be named explicitly, and they are the interesting
+residue: `hwfR` is `wfR d` composed with the context equation `hΓ`, and `hlhs`
+is `lhs_clo_of_steps` applied to the single `Step.join*` of the rule. Both were
+definitional in the original and are ordinary arguments now — which is what
+"abstract over the calculus" costs here, and it is six lines, not a design.
+
+**A gate improvement fell out of this.** Hoisting 308 declarations into a new
+module made every one of them vanish from `FRJ.Sound` and appear in
+`FRJ.SoundCore`, which the gate called a regression (a vanished declaration is
+the shape of a lost proof). It now distinguishes a MOVE — same name, same
+axioms, different module — from a loss, and a move whose axioms *changed* is
+still a regression, reported as `MOVED*`. Both cases are in
+`scripts/test-ledger-diff.py`, and both were watched failing.
+
 ## The rules that keep this honest
 
 1. **No statement moves.** If a refactor would change a theorem's statement, it

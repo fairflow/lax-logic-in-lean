@@ -8,9 +8,14 @@ Exit codes, so a caller can tell the two kinds of drift apart:
     0   identical
     1   REGRESSION — something got weaker: a new `sorryAx`, a new axiom, a new
         `native_decide` taint, or a declaration that has disappeared
-    2   STALE — only additions, or a declaration that got *stronger* (axioms
-        dropped).  Nothing is wrong with the development; the recorded ledger
-        needs regenerating and committing.
+    2   STALE — only additions, moves, or a declaration that got *stronger*
+        (axioms dropped).  Nothing is wrong with the development; the recorded
+        ledger needs regenerating and committing.
+
+A declaration that leaves one module and appears in another under the same name
+and the same axioms is a MOVE, not a loss: hoisting a shared lemma into a common
+module is a refactor, and the gate must not cry regression over it.  A move that
+CHANGES the axioms is still a regression, reported against the new module.
 
 A regression is reported per declaration, with the axioms that appeared, because
 the point of the gate is to name what changed, not to say "diff".
@@ -44,11 +49,32 @@ def main(recorded_path, fresh_path, scope_fresh=False):
                   "are not checked")
     regressions, stale = [], []
 
+    # a declaration is MOVED if its name left one module and arrived in another
+    gone_by_decl = {}
+    for (m, d) in old.keys() - new.keys():
+        gone_by_decl.setdefault(d, []).append(m)
+    moved = {}
+    for (m, d) in new.keys() - old.keys():
+        if d in gone_by_decl and gone_by_decl[d]:
+            moved[(m, d)] = gone_by_decl[d].pop(0)
+
     for key in sorted(old.keys() - new.keys()):
-        regressions.append(f"GONE        {key[1]}  ({key[0]}) — declaration no longer in the build")
+        if key[1] in gone_by_decl and key[0] in gone_by_decl[key[1]]:
+            regressions.append(f"GONE        {key[1]}  ({key[0]}) — declaration no longer in the build")
 
     for key in sorted(new.keys() - old.keys()):
         r = new[key]
+        if key in moved:
+            src = moved[key]
+            before = old[(src, key[1])]
+            if (before["axioms"] != r["axioms"] or before["sorry"] != r["sorry"]
+                    or before["native"] != r["native"]):
+                regressions.append(
+                    f"MOVED*      {key[1]}  ({src} -> {key[0]}) — and its axioms changed: "
+                    f"{', '.join(before['axioms']) or 'none'} -> {', '.join(r['axioms']) or 'none'}")
+            else:
+                stale.append(f"MOVED       {key[1]}  ({src} -> {key[0]})")
+            continue
         mark = " [sorryAx]" if r["sorry"] else (" [native]" if r["native"] else "")
         stale.append(f"NEW         {key[1]}  ({key[0]}){mark}")
 

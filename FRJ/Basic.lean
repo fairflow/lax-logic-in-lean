@@ -1146,17 +1146,6 @@ theorem clo_forces {K : Kripke} {a : K.W} {Γ : List Form}
 theorem clo_subset {Γ : List Form} {C : Form} (h : C ∈ Γ) : Clo Γ C :=
   .base h
 
-/-- **(Cl4)** `Γ₁ ⊆ Γ₂` implies `Cl(Γ₁) ⊆ Cl(Γ₂)`. -/
-theorem clo_mono {Γ₁ Γ₂ : List Form} (hsub : Γ₁ ⊆ Γ₂) {X : Form}
-    (h : Clo Γ₁ X) : Clo Γ₂ X := by
-  induction h with
-  | base hC => exact .base (hsub hC)
-  | and _ _ ihX ihY => exact .and ihX ihY
-  | orR _ ih => exact .orR ih
-  | orL _ ih => exact .orL ih
-  | imp _ ih => exact .imp ih
-  | circ _ ih => exact .circ ih
-
 /-- **(Cl5)** `Cl(Γ) ∩ PV = Γ ∩ PV`.  Stated as: a propositional variable
 lies in `Cl(Γ)` only if it already lies in `Γ`. -/
 theorem clo_pv {Γ : List Form} {p : String} (h : Clo Γ (.atom p)) :
@@ -1165,7 +1154,12 @@ theorem clo_pv {Γ : List Form} {p : String} (h : Clo Γ (.atom p)) :
   | base hC => exact hC
 
 /-- **(Cl6)** `Γ₁ ⊆ Cl(Γ₂)` implies `Cl(Γ₁) ⊆ Cl(Γ₂)`.  "This follows
-from (Cl3) and (Cl4)." -/
+from (Cl3) and (Cl4)."
+
+This is the ONLY induction over `Clo` in the development: every other transport
+of a closure — (Cl4) below, `clo_ctxEq`, and the four `clo_*_cons` lemmas of
+`FRJ/Gbu/Base.lean` — differs from it only in what it does with a base member,
+so each supplies that map and calls this. -/
 theorem clo_trans {Γ Δ : List Form} (h : ∀ X ∈ Δ, Clo Γ X) :
     ∀ {A : Form}, Clo Δ A → Clo Γ A := by
   intro A hA
@@ -1176,6 +1170,11 @@ theorem clo_trans {Γ Δ : List Form} (h : ∀ X ∈ Δ, Clo Γ X) :
   | orL _ ih => exact .orL ih
   | imp _ ih => exact .imp ih
   | circ _ ih => exact .circ ih
+
+/-- **(Cl4)** `Γ₁ ⊆ Γ₂` implies `Cl(Γ₁) ⊆ Cl(Γ₂)`. -/
+theorem clo_mono {Γ₁ Γ₂ : List Form} (hsub : Γ₁ ⊆ Γ₂) {X : Form}
+    (h : Clo Γ₁ X) : Clo Γ₂ X :=
+  clo_trans (fun _ hC => .base (hsub hC)) h
 
 /-- **(Cl2)** `A ∈ Cl(Γ)` implies `A ∈ Cl(Γ ∩ Sf(A))`.  Consumed by the
 irregular `⊃∈` case of the soundness proof. -/

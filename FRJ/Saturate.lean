@@ -386,8 +386,7 @@ def metR_prime {K : Kripke} {G : Form} {a : K.W} {C : Form}
           exact absurd (mem_upsPrime hXl) (by rw [hc]; exact List.not_mem_nil)
     let E := enumOf (upsPrime K a G) hne
     let f := E.f
-    have hfmem : ∀ j, f j ∈ upsPrime K a G := fun j =>
-      (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+    have hfmem : ∀ j, f j ∈ upsPrime K a G := E.f_mem
     let wit : ∀ j, IrrWit K G a (f j) := fun j =>
       ih (f j) (upsPrime_spec (hfmem j)).1 (upsPrime_spec (hfmem j)).2
     let stab := fun j => (wit j).stab
@@ -469,8 +468,7 @@ def metR_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
   let U := C₁ :: C₂ :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
-  have hfmem : ∀ j, f j ∈ U := fun j =>
-    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hfmem : ∀ j, f j ∈ U := E.f_mem
   let wit : ∀ j, IrrWit K G a (f j) := fun j =>
     if h1 : f j = C₁ then by rw [h1]; exact ih C₁ (sfR_or hC).1 hn1
     else if h2 : f j = C₂ then by rw [h2]; exact ih C₂ (sfR_or hC).2 hn2
@@ -563,8 +561,7 @@ def metR_primeP {K : Kripke} {G : Form} {a : K.W} {C : Form}
   let U := C :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
-  have hfmem : ∀ j, f j ∈ U := fun j =>
-    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hfmem : ∀ j, f j ∈ U := E.f_mem
   let wit : ∀ j, IrrWit K G a (f j) := fun j =>
     if h1 : f j = C then by rw [h1]; exact ih C hC hnf
     else
@@ -641,8 +638,7 @@ def metR_orP {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
   let U := C₁ :: C₂ :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
-  have hfmem : ∀ j, f j ∈ U := fun j =>
-    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hfmem : ∀ j, f j ∈ U := E.f_mem
   let wit : ∀ j, IrrWit K G a (f j) := fun j =>
     if h1 : f j = C₁ then by rw [h1]; exact ih C₁ (sfR_or hC).1 hn1
     else if h2 : f j = C₂ then by rw [h2]; exact ih C₂ (sfR_or hC).2 hn2
@@ -745,8 +741,7 @@ def metR_primeF {K : Kripke} {G : Form} {a : K.W} {C : Form}
   let U := C :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
-  have hfmem : ∀ j, f j ∈ U := fun j =>
-    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hfmem : ∀ j, f j ∈ U := E.f_mem
   let wit : ∀ j, IrrWit K G a (f j) := fun j =>
     if h1 : f j = C then by rw [h1]; exact ih C hC hnf
     else
@@ -811,8 +806,7 @@ def metR_orF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
   let U := C₁ :: C₂ :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
-  have hfmem : ∀ j, f j ∈ U := fun j =>
-    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hfmem : ∀ j, f j ∈ U := E.f_mem
   let wit : ∀ j, IrrWit K G a (f j) := fun j =>
     if h1 : f j = C₁ then by rw [h1]; exact ih C₁ (sfR_or hC).1 hn1
     else if h2 : f j = C₂ then by rw [h2]; exact ih C₂ (sfR_or hC).2 hn2

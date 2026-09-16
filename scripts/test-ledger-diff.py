@@ -81,6 +81,29 @@ def main(record):
         if not ok:
             bad.append((name, rc, want_rc, out.strip().splitlines()[:3]))
 
+    # a declaration that changes module, keeping its axioms, is a MOVE
+    moved_rows = [dict(r, module=r["module"] + ".Moved") if
+                  (r["module"], r["decl"]) == (v["module"], v["decl"]) else r
+                  for r in rows]
+    write(fresh, moved_rows)
+    rc, out = run(record, fresh)
+    ok = rc == 2 and "MOVED" in out and "GONE" not in out
+    print(f"  [{'ok ' if ok else 'BAD'}] a declaration moves module: exit {rc}")
+    if not ok:
+        bad.append(("move", rc, 2, out.strip().splitlines()[:3]))
+
+    # the same move, but the axioms changed too, IS a regression
+    moved_worse = [dict(r, module=r["module"] + ".Moved",
+                        sorry=True, axioms=sorted(set(r["axioms"]) | {"sorryAx"})) if
+                   (r["module"], r["decl"]) == (v["module"], v["decl"]) else r
+                   for r in rows]
+    write(fresh, moved_worse)
+    rc, out = run(record, fresh)
+    ok = rc == 1 and "MOVED*" in out
+    print(f"  [{'ok ' if ok else 'BAD'}] a move that changes the axioms: exit {rc}")
+    if not ok:
+        bad.append(("move+regress", rc, 1, out.strip().splitlines()[:3]))
+
     # one addition must NOT be reported as a regression
     added = dict(v, decl=v["decl"] + "._ledger_test_addition")
     write(fresh, rows + [added])

@@ -54,6 +54,14 @@ def enumOf : ∀ (S : List Form), S ≠ [] → Enum S
             obtain ⟨i, hi, hval⟩ := List.getElem_of_mem hy
             exact List.mem_map.mpr ⟨⟨i, hi⟩, List.mem_finRange _, hval⟩ }
 
+/-- Every value of an enumeration is a member of the list it enumerates.
+
+Every proof that takes an `enumOf` needs this as its first step, and all 25 of
+them wrote the same term out by hand (2026-09-16,
+`docs/proof-simplification-plan-2026-09-16.md` candidate 10). -/
+theorem Enum.f_mem {S : List Form} (E : Enum S) (j : Fin (E.n + 1)) : E.f j ∈ S :=
+  (E.spec (E.f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+
 /-! ## `Υ` for the prime case -/
 
 /-- The antecedent of an implication. -/

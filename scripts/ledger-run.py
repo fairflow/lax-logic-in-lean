@@ -74,6 +74,20 @@ def olean_exists(m):
                                        *m.split(".")) + ".olean")
 
 
+def built_modules():
+    """Every module of THIS repository that currently has an `.olean`: a module
+    whose source file exists here and whose object file was built."""
+    out, base = set(), os.path.join(".lake", "build", "lib", "lean")
+    for root, _dirs, files in os.walk(base):
+        for f in files:
+            if not f.endswith(".olean"):
+                continue
+            mod = os.path.relpath(os.path.join(root, f), base)[:-6].replace(os.sep, ".")
+            if os.path.exists(mod.replace(".", os.sep) + ".lean"):
+                out.add(mod)
+    return out
+
+
 def main(mods_file, out_file, built_only=False):
     mods = [l.strip() for l in open(mods_file, encoding="utf-8")
             if l.strip() and not l.startswith("#")]
@@ -83,6 +97,16 @@ def main(mods_file, out_file, built_only=False):
             print(f"ledger: --built-only, skipping {len(mods) - len(have)} "
                   f"module(s) with no .olean")
         mods = have
+    # A module that is built but not listed is INCLUDED, and announced: the
+    # list's job is to notice a module that falls OUT of the build, not to hide
+    # one that has just been written.  `--update` rewrites the list.
+    unlisted = sorted(built_modules() - set(mods) - {"Main"})
+    if unlisted:
+        print(f"ledger: {len(unlisted)} built module(s) not in the list, included "
+              f"anyway: {', '.join(unlisted[:8])}"
+              + (" …" if len(unlisted) > 8 else ""))
+        mods = mods + unlisted
+
     tmpdir = tempfile.mkdtemp(prefix="ledger-")
     graph = import_graph(mods)
     rows, pending, batch = [], list(mods), 0

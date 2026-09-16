@@ -460,8 +460,7 @@ theorem refutedCleanly_at {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     let f := E.f
     have hfmem : ∀ j, ∃ B, Form.imp (f j) B ∈ Ω := by
       intro j
-      have : f j ∈ (impPart Ω).map ante :=
-        (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+      have : f j ∈ (impPart Ω).map ante := E.f_mem j
       obtain ⟨X, hXmem, hante⟩ := List.mem_map.mp this
       obtain ⟨hXΩ, hXi⟩ := List.mem_filter.mp hXmem
       match X, hXi with
@@ -568,8 +567,7 @@ theorem refutedCleanly_or {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
   let U := C₁ :: C₂ :: (impPart Ω).map ante
   let E := enumOf U (by simp [U])
   let f := E.f
-  have hfmem : ∀ j, f j ∈ U := fun j =>
-    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hfmem : ∀ j, f j ∈ U := E.f_mem
   have hwit : ∀ j, ∃ p : List Form × List Form,
       D (.irr p.1 p.2 (f j)) ∧ p.1 ⊆ Ω ∧ Ω ⊆ p.1 ++ p.2 := by
     intro j

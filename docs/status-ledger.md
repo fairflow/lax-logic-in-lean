@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-16 11:47 BST from `db9118b` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-16 15:23 BST from `76c34f2` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**17449 declarations** in **395 modules**: 8635 theorems, 8814 definitions and data. **81 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**19878 declarations** in **431 modules**: 9620 theorems, 10258 definitions and data. **81 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -19,28 +19,43 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `CLPPaper` | 85 | 9 | 85 |  |  |
 | `FRJ.Basic` | 240 | 127 | 240 |  |  |
 | `FRJ.Bridge` | 15 | 12 | 15 |  |  |
+| `FRJ.BridgeV` | 2 | 2 | 2 |  |  |
 | `FRJ.Calculus` | 232 | 82 | 232 |  |  |
 | `FRJ.CalculusV` | 167 | 70 | 167 |  |  |
 | `FRJ.CalculusVLemmas` | 13 | 13 | 13 |  |  |
 | `FRJ.CalculusW` | 153 | 62 | 153 |  |  |
 | `FRJ.Complete` | 103 | 51 | 103 |  |  |
+| `FRJ.CompleteV` | 5 | 5 | 5 |  |  |
+| `FRJ.CompleteV0` | 1 | 1 | 1 |  |  |
 | `FRJ.Erase` | 22 | 20 | 22 |  |  |
 | `FRJ.Extract` | 81 | 34 | 81 |  |  |
 | `FRJ.ExtractV` | 16 | 9 | 16 |  |  |
 | `FRJ.ExtractW` | 16 | 9 | 16 |  |  |
 | `FRJ.Fallible` | 69 | 34 | 69 |  |  |
 | `FRJ.Gbu` | 1106 | 566 | 1106 |  |  |
-| `FRJ.Minimal` | 81 | 36 | 81 |  |  |
+| `FRJ.Minimal` | 82 | 37 | 82 |  |  |
+| `FRJ.Modal` | 88 | 18 | 88 |  |  |
 | `FRJ.Model` | 21 | 7 | 21 |  |  |
+| `FRJ.Profile` | 71 | 49 | 71 |  |  |
 | `FRJ.RefAt` | 65 | 27 | 65 |  |  |
 | `FRJ.Saturate` | 227 | 92 | 227 |  |  |
-| `FRJ.Search` | 132 | 17 | 132 |  |  |
-| `FRJ.Sound` | 38 | 38 | 38 |  |  |
+| `FRJ.SaturateV` | 244 | 97 | 244 |  |  |
+| `FRJ.Search` | 326 | 43 | 326 |  |  |
+| `FRJ.Sound` | 14 | 14 | 14 |  |  |
+| `FRJ.SoundCore` | 31 | 29 | 31 |  |  |
 | `FRJ.SoundV` | 14 | 14 | 14 |  |  |
 | `FRJ.SoundW` | 15 | 15 | 15 |  |  |
 | `FRJ.Step` | 223 | 58 | 223 |  |  |
 | `FRJ.StepV` | 110 | 17 | 110 |  |  |
 | `FRJ.StepW` | 183 | 39 | 183 |  |  |
+| `FRJ.WitnessKit` | 26 | 6 | 26 |  |  |
+| `FRJ.WitnessV` | 75 | 7 | 75 |  |  |
+| `FRJ.WitnessV1215` | 34 | 1 | 34 |  |  |
+| `FRJ.WitnessV1918` | 36 | 1 | 36 |  |  |
+| `FRJ.WitnessV2012` | 38 | 2 | 38 |  |  |
+| `FRJ.WitnessV2013` | 35 | 2 | 35 |  |  |
+| `FRJ.WitnessV2018` | 41 | 2 | 41 |  |  |
+| `LJF` | 1531 | 760 | 1531 |  |  |
 | `LaxBlueprint` | 10 | 0 | 10 |  |  |
 | `LaxLogic.Belief.BooleanIso` | 6 | 4 | 6 |  |  |
 | `LaxLogic.Belief.Collapse` | 5 | 4 | 5 |  |  |
@@ -271,10 +286,10 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 8370 |
-| `propext` | 3699 |
-| `propext`, `Quot.sound` | 3300 |
-| `propext`, `Classical.choice`, `Quot.sound` | 1991 |
+| *(none — axiom-free)* | 9390 |
+| `propext` | 4339 |
+| `propext`, `Quot.sound` | 3905 |
+| `propext`, `Classical.choice`, `Quot.sound` | 2155 |
 | `sorryAx` | 66 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 9 |
 | `propext`, `sorryAx`, `Quot.sound` | 6 |

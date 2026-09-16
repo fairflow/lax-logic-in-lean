@@ -36,6 +36,13 @@ python3 scripts/ledger-run.py "$MODS" "$TMP" $BUILT_ONLY || exit 3
 
 if [ "${1:-}" = "--update" ]; then
   mv "$TMP" "$RECORD"
+  # refresh the declared estate from what the record actually covers
+  python3 -c "
+import json, sys
+mods = sorted({json.loads(l)['module'] for l in open('$RECORD', encoding='utf-8')})
+open('$MODS', 'w', encoding='utf-8').write('\n'.join(mods) + '\n')
+print(f'ledger: {len(mods)} modules recorded in $MODS')
+" || exit 3
   trap - EXIT
   python3 scripts/ledger-report.py "$RECORD" "$REPORT" || exit 3
   echo "ledger: $RECORD and $REPORT updated"

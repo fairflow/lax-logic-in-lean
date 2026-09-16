@@ -103,8 +103,7 @@ theorem refutedCleanly_circ_kept {G : Form} {D : WSeq → Prop}
   let U := Z :: R
   let E := enumOf U (by simp [U])
   let f := E.f
-  have hfmem : ∀ j, f j ∈ U := fun j =>
-    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hfmem : ∀ j, f j ∈ U := E.f_mem
   have hwit : ∀ j, ∃ p : List Form × List Form,
       D (.irr p.1 p.2 (f j)) ∧ p.1 ⊆ Ω ∧ Ω ⊆ p.1 ++ p.2 := by
     intro j
@@ -480,8 +479,7 @@ theorem refutedCleanly_circ_certs {G : Form} {D : WSeq → Prop}
   let U := Z :: R
   let E := enumOf U (by simp [U])
   let f := E.f
-  have hfmem : ∀ j, f j ∈ U := fun j =>
-    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hfmem : ∀ j, f j ∈ U := E.f_mem
   have hwit : ∀ j, ∃ p : List Form × List Form,
       D (.irr p.1 p.2 (f j)) ∧ p.1 ⊆ Ω ∧ Ω ⊆ p.1 ++ p.2 := by
     intro j

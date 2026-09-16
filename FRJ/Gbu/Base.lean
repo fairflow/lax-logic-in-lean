@@ -374,61 +374,33 @@ inductive Step (G : Form) : (Bool × List Form × Form) →
 /-! ### The three closure facts the `≤` component needs -/
 
 theorem clo_and_cons {Ψ : List Form} {A B : Form} :
-    ∀ X, Clo (.and A B :: Ψ) X → Clo (A :: B :: Ψ) X := by
-  intro X h
-  induction h with
-  | @base C hC =>
-      rcases List.mem_cons.mp hC with rfl | hC'
-      · exact .and (.base List.mem_cons_self)
-          (.base (List.mem_cons_of_mem _ List.mem_cons_self))
-      · exact .base (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hC'))
-  | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
-  | orR _ ih => exact .orR ih
-  | orL _ ih => exact .orL ih
-  | imp _ ih => exact .imp ih
-  | circ _ ih => exact .circ ih
+    ∀ X, Clo (.and A B :: Ψ) X → Clo (A :: B :: Ψ) X :=
+  fun _ h => clo_trans (fun C hC => by
+    rcases List.mem_cons.mp hC with rfl | hC'
+    · exact .and (.base List.mem_cons_self)
+        (.base (List.mem_cons_of_mem _ List.mem_cons_self))
+    · exact .base (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hC'))) h
 
 theorem clo_or_cons {Ψ : List Form} {A B : Form} :
-    ∀ X, Clo (.or A B :: Ψ) X → Clo (A :: Ψ) X := by
-  intro X h
-  induction h with
-  | @base C hC =>
-      rcases List.mem_cons.mp hC with rfl | hC'
-      · exact .orL (.base List.mem_cons_self)
-      · exact .base (List.mem_cons_of_mem _ hC')
-  | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
-  | orR _ ih => exact .orR ih
-  | orL _ ih => exact .orL ih
-  | imp _ ih => exact .imp ih
-  | circ _ ih => exact .circ ih
+    ∀ X, Clo (.or A B :: Ψ) X → Clo (A :: Ψ) X :=
+  fun _ h => clo_trans (fun C hC => by
+    rcases List.mem_cons.mp hC with rfl | hC'
+    · exact .orL (.base List.mem_cons_self)
+    · exact .base (List.mem_cons_of_mem _ hC')) h
 
 theorem clo_or_cons' {Ψ : List Form} {A B : Form} :
-    ∀ X, Clo (.or A B :: Ψ) X → Clo (B :: Ψ) X := by
-  intro X h
-  induction h with
-  | @base C hC =>
-      rcases List.mem_cons.mp hC with rfl | hC'
-      · exact .orR (.base List.mem_cons_self)
-      · exact .base (List.mem_cons_of_mem _ hC')
-  | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
-  | orR _ ih => exact .orR ih
-  | orL _ ih => exact .orL ih
-  | imp _ ih => exact .imp ih
-  | circ _ ih => exact .circ ih
+    ∀ X, Clo (.or A B :: Ψ) X → Clo (B :: Ψ) X :=
+  fun _ h => clo_trans (fun C hC => by
+    rcases List.mem_cons.mp hC with rfl | hC'
+    · exact .orR (.base List.mem_cons_self)
+    · exact .base (List.mem_cons_of_mem _ hC')) h
 
 theorem clo_imp_cons {Ψ : List Form} {A B : Form} :
-    ∀ X, Clo (.imp A B :: Ψ) X → Clo (B :: Ψ) X := by
-  intro X h
-  induction h with
-  | @base C hC =>
-      rcases List.mem_cons.mp hC with rfl | hC'
-      · exact .imp (.base List.mem_cons_self)
-      · exact .base (List.mem_cons_of_mem _ hC')
-  | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
-  | orR _ ih => exact .orR ih
-  | orL _ ih => exact .orL ih
-  | imp _ ih => exact .imp ih
-  | circ _ ih => exact .circ ih
+    ∀ X, Clo (.imp A B :: Ψ) X → Clo (B :: Ψ) X :=
+  fun _ h => clo_trans (fun C hC => by
+    rcases List.mem_cons.mp hC with rfl | hC'
+    · exact .imp (.base List.mem_cons_self)
+    · exact .base (List.mem_cons_of_mem _ hC')) h
 
 /-- **Lemma 8** (`lemma:wggbu`, source 3216): every backward step
 strictly decreases `Wg` in the lexicographic order. -/
