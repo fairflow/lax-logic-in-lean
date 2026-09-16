@@ -30,7 +30,12 @@ trap 'rm -f "$TMP"' EXIT
 
 BUILT_ONLY=""
 SCOPE=""
-if [ "${1:-}" = "--built-only" ]; then BUILT_ONLY="--built-only"; SCOPE="--scope-fresh"; fi
+# `--built-only` is the CI mode, and in CI the checkout stamps every source
+# newer than every cached `.olean`, so the mtime staleness proxy would fire on
+# all of them.  Freshness there comes from `lake build` running in the same job.
+if [ "${1:-}" = "--built-only" ]; then
+  BUILT_ONLY="--built-only --no-stale-check"; SCOPE="--scope-fresh"
+fi
 
 python3 scripts/ledger-run.py "$MODS" "$TMP" $BUILT_ONLY || exit 3
 

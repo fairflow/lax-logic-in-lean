@@ -108,7 +108,7 @@ def built_modules():
     return out
 
 
-def main(mods_file, out_file, built_only=False):
+def main(mods_file, out_file, built_only=False, no_stale_check=False):
     mods = [l.strip() for l in open(mods_file, encoding="utf-8")
             if l.strip() and not l.startswith("#")]
     if built_only:
@@ -127,7 +127,7 @@ def main(mods_file, out_file, built_only=False):
               + (" …" if len(unlisted) > 8 else ""))
         mods = mods + unlisted
 
-    stale = stale_modules(mods)
+    stale = [] if no_stale_check else stale_modules(mods)
     if stale:
         print(f"ledger: {len(stale)} module(s) have a source newer than their .olean; "
               "build them before trusting the record:", file=sys.stderr)
@@ -175,4 +175,5 @@ def main(mods_file, out_file, built_only=False):
 
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    sys.exit(main(args[0], args[1], built_only="--built-only" in sys.argv))
+    sys.exit(main(args[0], args[1], built_only="--built-only" in sys.argv,
+                  no_stale_check="--no-stale-check" in sys.argv))
