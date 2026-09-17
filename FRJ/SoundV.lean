@@ -627,40 +627,13 @@ theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
             have hcc := h'.symm.trans h
             injection hcc
           subst hDW
-          have hu' : (PreModel.join
-              (sumElems (premIdxElems prem) (List.finRange (k + 1)))
-              (sumElems_complete (premIdxComplete prem) List.mem_finRange)
-              (joinCtxAtP stab th rhs F Δs)
-              (Sum.elim
-                (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-                (fun i => preR (dps i)))
-              (Sum.elim (fun _ => false) (fun _ => true))).rm none u := hu
-          rcases PreModel.join_rm_root hu' with h0 | ⟨c, a, hc, hra, hy⟩
-          · exact hne h0
-          · rw [hy] at hf
-            cases c with
-            | inl ji => exact Bool.noConfusion hc
-            | inr i =>
-                have hf' : (modR (dps i)).force a Z :=
-                  (join_force_comp hPJ (i := Sum.inr i)
-                    (preR_closed (dps i)) Z a).mp hf
-                refine covers_refutes hcov
-                  (fun x => (modR (dps i)).Rm (modR (dps i)).root x) ?_ ?_ ?_ a hra hf'
-                · exact fun x hx y hxy => (modR (dps i)).rm_trans hx hxy
-                · intro x hx hfx
-                  by_cases hxr : x = (modR (dps i)).root
-                  · rw [hxr] at hfx
-                    have hDi := (hall i).1
-                    rw [← hDi] at hfx
-                    exact (lemma39R (dps i)).2 hfx
-                  · exact tag_cone (dps i) (Ds 0) (hall i).2 x hx hxr hfx
-                · intro x hx A hA
-                  have h1 : Clo (Δs i) A := clo_trans (joinCtxAtP_clo i) (clo_mono hΓ.subset hA)
-                  have h2 : Clo ((preR (dps i)).lbl x) A :=
-                    clo_trans (fun Y hY => preR_closed (dps i) _ _
-                      ((preR (dps i)).root_le x) Y
-                      ((preR_root_lbl (dps i) Y).mpr hY)) h1
-                  exact clo_forces (fun Y hY => (lemma39R (dps i)).1 x Y hY) h2
+          exact tagConeP_core (Ms := fun j i => preI (prem j) i)
+            (Ns := fun i => preR (dps i))
+            (elems := premIdxElems prem) (hcomplete := premIdxComplete prem)
+            (fun i => preR_closed (dps i)) (fun i => preR_root_lbl (dps i))
+            hcov hall (fun i => joinCtxAtP_clo i) hΓ.subset
+            (fun i => lemma39R (dps i)) (fun i => tag_cone (dps i))
+            hPJ u hu hne hf
   | _, _, _, .joinAtF prem hJ1 hJ2 hF hFnot hg hΓ, Z, ht, u, hu, hne, hf => by
       rcases ht with h | ⟨W, h, -⟩ <;> exact Tag.noConfusion h
   | _, _, _, @FRJVr.joinOr _ n stab th rhs C₁ C₂ kept prem hJ1 hJ2 hcirc hkc hC hg _ hΓ, Z, ht, u, hu, hne, hf => by
@@ -680,40 +653,13 @@ theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
             have hcc := h'.symm.trans h
             injection hcc
           subst hDW
-          have hu' : (PreModel.join
-              (sumElems (premIdxElems prem) (List.finRange (k + 1)))
-              (sumElems_complete (premIdxComplete prem) List.mem_finRange)
-              (joinCtxOrP stab th rhs Δs)
-              (Sum.elim
-                (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-                (fun i => preR (dps i)))
-              (Sum.elim (fun _ => false) (fun _ => true))).rm none u := hu
-          rcases PreModel.join_rm_root hu' with h0 | ⟨c, a, hc, hra, hy⟩
-          · exact hne h0
-          · rw [hy] at hf
-            cases c with
-            | inl ji => exact Bool.noConfusion hc
-            | inr i =>
-                have hf' : (modR (dps i)).force a Z :=
-                  (join_force_comp hPJ (i := Sum.inr i)
-                    (preR_closed (dps i)) Z a).mp hf
-                refine covers_refutes hcov
-                  (fun x => (modR (dps i)).Rm (modR (dps i)).root x) ?_ ?_ ?_ a hra hf'
-                · exact fun x hx y hxy => (modR (dps i)).rm_trans hx hxy
-                · intro x hx hfx
-                  by_cases hxr : x = (modR (dps i)).root
-                  · rw [hxr] at hfx
-                    have hDi := (hall i).1
-                    rw [← hDi] at hfx
-                    exact (lemma39R (dps i)).2 hfx
-                  · exact tag_cone (dps i) (Ds 0) (hall i).2 x hx hxr hfx
-                · intro x hx A hA
-                  have h1 : Clo (Δs i) A := clo_trans (joinCtxOrP_clo i) (clo_mono hΓ.subset hA)
-                  have h2 : Clo ((preR (dps i)).lbl x) A :=
-                    clo_trans (fun Y hY => preR_closed (dps i) _ _
-                      ((preR (dps i)).root_le x) Y
-                      ((preR_root_lbl (dps i) Y).mpr hY)) h1
-                  exact clo_forces (fun Y hY => (lemma39R (dps i)).1 x Y hY) h2
+          exact tagConeP_core (Ms := fun j i => preI (prem j) i)
+            (Ns := fun i => preR (dps i))
+            (elems := premIdxElems prem) (hcomplete := premIdxComplete prem)
+            (fun i => preR_closed (dps i)) (fun i => preR_root_lbl (dps i))
+            hcov hall (fun i => joinCtxOrP_clo i) hΓ.subset
+            (fun i => lemma39R (dps i)) (fun i => tag_cone (dps i))
+            hPJ u hu hne hf
   | _, _, _, .joinOrF prem hJ1 hJ2 hC hg hΓ, Z, ht, u, hu, hne, hf => by
       rcases ht with h | ⟨W, h, -⟩ <;> exact Tag.noConfusion h
   | _, _, _, @FRJVr.joinCirc _ n stab th rhs Z0 kept prem hJ1 hJ2 hcirc hkc hZ0 hg _ hΓ, Z, ht, u, hu, hne, hf => by
@@ -727,43 +673,14 @@ theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
       · exact Tag.noConfusion h
       · have hWZ : Z0 = W := by injection h
         subst hWZ
-        have hu' : (PreModel.join
-            (sumElems (premIdxElems prem) (List.finRange (k + 1)))
-            (sumElems_complete (premIdxComplete prem) List.mem_finRange)
-            (joinCtxOrP stab th rhs Δs)
-            (Sum.elim
-              (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-              (fun i => preR (dps i)))
-            (Sum.elim (fun _ => false) (fun _ => true))).rm none u := hu
-        rcases PreModel.join_rm_root hu' with h0 | ⟨c, a, hc, hra, hy⟩
-        · exact hne h0
-        · rw [hy] at hf
-          cases c with
-          | inl ji => exact Bool.noConfusion hc
-          | inr i =>
-              have hPJ : ClosedLbl
-                  (preR (FRJVr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ0 hg hΓ)) :=
-                preR_closed _
-              have hf' : (modR (dps i)).force a Z :=
-                (join_force_comp hPJ (i := Sum.inr i)
-                  (preR_closed (dps i)) Z a).mp hf
-              refine covers_refutes hcov
-                (fun x => (modR (dps i)).Rm (modR (dps i)).root x) ?_ ?_ ?_ a hra hf'
-              · exact fun x hx y hxy => (modR (dps i)).rm_trans hx hxy
-              · intro x hx hfx
-                by_cases hxr : x = (modR (dps i)).root
-                · rw [hxr] at hfx
-                  have hDi := (hDs i).1
-                  rw [← hDi] at hfx
-                  exact (lemma39R (dps i)).2 hfx
-                · exact tag_cone (dps i) Z0 (hDs i).2 x hx hxr hfx
-              · intro x hx A hA
-                have h1 : Clo (Δs i) A := clo_trans (joinCtxOrP_clo i) (clo_mono hΓ.subset hA)
-                have h2 : Clo ((preR (dps i)).lbl x) A :=
-                  clo_trans (fun Y hY => preR_closed (dps i) _ _
-                    ((preR (dps i)).root_le x) Y
-                    ((preR_root_lbl (dps i) Y).mpr hY)) h1
-                exact clo_forces (fun Y hY => (lemma39R (dps i)).1 x Y hY) h2
+        exact tagConeP_core (Ms := fun j i => preI (prem j) i)
+          (Ns := fun i => preR (dps i))
+          (elems := premIdxElems prem) (hcomplete := premIdxComplete prem)
+          (fun i => preR_closed (dps i)) (fun i => preR_root_lbl (dps i))
+          hcov hDs (fun i => joinCtxOrP_clo i) hΓ.subset
+          (fun i => lemma39R (dps i)) (fun i => tag_cone (dps i))
+          (preR_closed (FRJVr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ0 hg hΓ))
+          u hu hne hf
 
 theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJVi G St Th C) (i : RegIdx d) (w : (preI d i).W),

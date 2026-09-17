@@ -1197,4 +1197,78 @@ theorem joinCircP_core {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Fo
             exact (ihP i).2 hf'
           · exact ihT i Z (hDs i).2 a hra ha hf'
 
+/-- **The pledge is honoured at a promise join**, for any family of component
+pre-models: the `tag_cone` step of `joinAtP`, `joinOrP` and `joinCircP`, stated
+about `joinPModel` so that the three calculi share one proof.
+
+`V` is the pledged formula (`Ds 0` at `joinAtP`/`joinOrP`, the goal body at
+`joinCircP`); `hcov` is the covering certificate the conclusion's tag carries,
+`hall` the per-component pledge the rule's side condition carries, `ihP` and
+`ihT` the recursive `lemma39R (dps i)` and `tag_cone (dps i)`, and `hΨ` the
+rule's `joinCtx?P_clo`.  `hΓ` is the conclusion context's inclusion in the
+rule's own.
+
+Only the join's root is quantified away: each wrapper still opens its own tag
+by `rcases`, because `htag` and `hDs` are the rules' own side conditions. -/
+theorem tagConeP_core {n k : Nat} {Idx : Fin (n + 1) → Type}
+    [DecidableEq ((j : Fin (n + 1)) × Idx j)]
+    {elems : List ((j : Fin (n + 1)) × Idx j)} {hcomplete : ∀ ji, ji ∈ elems}
+    {Ψ Γ' : List Form} {Ms : (j : Fin (n + 1)) → Idx j → PreModel}
+    {Ns : Fin (k + 1) → PreModel} {Δs : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form} {tps : Fin (k + 1) → Tag} {V Z : Form}
+    (hNC : ∀ i, ClosedLbl (Ns i))
+    (hNroot : ∀ i, (Ns i).lbl (Ns i).root ≐ Δs i)
+    (hcov : Covers Γ' V Z)
+    (hall : ∀ i, Ds i = V ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W V))
+    (hΨ : ∀ (i : Fin (k + 1)), ∀ X ∈ Ψ, Clo (Δs i) X)
+    (hΓ : Γ' ⊆ Ψ)
+    (ihP : ∀ i, (∀ w, ((Ns i).toKripke (hNC i)).forces w ((Ns i).lbl w)) ∧
+        ¬ ((Ns i).toKripke (hNC i)).force ((Ns i)).root (Ds i))
+    (ihT : ∀ i (Z' : Form),
+        (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z') →
+        ∀ u, ((Ns i).toKripke (hNC i)).Rm ((Ns i).toKripke (hNC i)).root u →
+          u ≠ ((Ns i).toKripke (hNC i)).root →
+          ¬ ((Ns i).toKripke (hNC i)).force u Z')
+    (hP : ClosedLbl (joinPModel elems hcomplete Ψ Ms Ns))
+    (u : (joinPModel elems hcomplete Ψ Ms Ns).W)
+    (hu : ((joinPModel elems hcomplete Ψ Ms Ns).toKripke hP).Rm
+        ((joinPModel elems hcomplete Ψ Ms Ns).toKripke hP).root u)
+    (hne : u ≠ ((joinPModel elems hcomplete Ψ Ms Ns).toKripke hP).root) :
+    ¬ ((joinPModel elems hcomplete Ψ Ms Ns).toKripke hP).force u Z := by
+  intro hf
+  have hu' : (PreModel.join
+      (sumElems elems (List.finRange (k + 1)))
+      (sumElems_complete hcomplete List.mem_finRange)
+      Ψ
+      (Sum.elim
+        (fun (ji : (j : Fin (n + 1)) × Idx j) => Ms ji.1 ji.2)
+        (fun i => Ns i))
+      (Sum.elim (fun _ => false) (fun _ => true))).rm none u := hu
+  rcases PreModel.join_rm_root hu' with h0 | ⟨c, a, hc, hra, hy⟩
+  · exact hne h0
+  · rw [hy] at hf
+    cases c with
+    | inl ji => exact Bool.noConfusion hc
+    | inr i =>
+        have hf' : ((Ns i).toKripke (hNC i)).force a Z :=
+          (join_force_comp hP (i := Sum.inr i) (hNC i) Z a).mp hf
+        refine covers_refutes hcov
+          (fun x => ((Ns i).toKripke (hNC i)).Rm
+            ((Ns i).toKripke (hNC i)).root x) ?_ ?_ ?_ a hra hf'
+        · exact fun x hx y hxy => ((Ns i).toKripke (hNC i)).rm_trans hx hxy
+        · intro x hx hfx
+          by_cases hxr : x = ((Ns i).toKripke (hNC i)).root
+          · rw [hxr] at hfx
+            have hDi := (hall i).1
+            rw [← hDi] at hfx
+            exact (ihP i).2 hfx
+          · exact ihT i V (hall i).2 x hx hxr hfx
+        · intro x hx A hA
+          have h1 : Clo (Δs i) A := clo_trans (hΨ i) (clo_mono hΓ hA)
+          have h2 : Clo ((Ns i).lbl x) A :=
+            clo_trans (fun Y hY => hNC i _ _ ((Ns i).root_le x) Y
+              ((hNroot i Y).mpr hY)) h1
+          exact clo_forces (fun Y hY => (ihP i).1 x Y hY) h2
+
 end FRJ
