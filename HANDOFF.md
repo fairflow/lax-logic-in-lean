@@ -4685,3 +4685,47 @@ case-insensitive filesystem, invisible on macOS, 53 declarations recorded
 twice. `lake build Tools.Engines` reports `unknown target`, so the run aborted
 at exit 3 with no ledger generated. The 2026-09-16 `Tools`/`tools` repair fixed
 the lakefile and the imports and never reached the record. Removed.
+
+## 2026-09-17 (night) — `tag_cone`, and a gate that mistook de-duplication for loss
+
+**`tag_cone` was three copies of one proof**, `FRJ/Sound.lean:722`,
+`SoundV.lean:603`, `SoundW.lean:631`, 165 lines each — of which `joinAtP`,
+`joinOrP` and `joinCircP` are 133. One lemma `FRJ.tagConeP_core`
+(`FRJ/SoundCore.lean`, 74 lines) over the abstract `joinPModel`, taking the
+covering hypothesis, the per-component `hall`, the `joinCtx?P_clo` supplier,
+`hΓ` and the two recursive calls as function parameters; six wrappers of seven
+lines each. `tag_cone` itself: 165 → 82 in every file. Net **175 lines**;
+`lake build` green, gate clean with one addition, and
+`FRJ.tag_cone`/`V.tag_cone`/`W.tag_cone` all still `[propext, Quot.sound]`,
+sorry-free.
+
+**The probe decided it before anything was written**, as Stage C's `rfl` did:
+a one-line `:= hu` against the *abstract* `joinPModel`, compiled alone. It
+passed, so no wrapper had to keep the eight-line ascription and the design ran
+at full size. A second, unstated risk — whether the four-member mutual block
+accepts `fun i => tag_cone (dps i)` as an argument — was cleared by compiling
+one arm through one wrapper first; `lemma39R` was already doing exactly that
+(`FRJ/Sound.lean:711`).
+
+**Left deliberately**: each `joinAtP`/`joinOrP` wrapper still opens its own tag
+by hand (`rcases htag`, `rcases ht`, `injection`, `subst` — nine lines, six
+times). A second lemma over `htag`/`ht` returning `Covers Γ' (Ds 0) Z` would
+take another ~42 lines for ~14 of its own. That is a fact about the tag
+algebra, not the model.
+
+**The gate mistook a de-duplication for a loss, and is now fixed.**
+`docs/ledger-modules.txt` carried `Tools.Engines` beside `tools.Engines` — two
+module names for one file on a case-insensitive filesystem, 53 declarations
+recorded twice. Removing one made the gate report **53 REGRESSIONS**: the
+classifier recognised a MOVE only when a name *arrives* in a new module, and
+here it was already present in both. `ledger-diff.py` now checks, before
+calling a departure GONE, whether the same declaration with the same axioms,
+`sorry` and `native` flags survives elsewhere; if so the line is **DUPE** and
+STALE, and if the survivor disagrees in any of those it is still GONE. Both
+halves are watched failing in `scripts/test-ledger-diff.py` — eleven cases now,
+all behaving.
+
+**One cache defect for whoever clones `.lake` next**: `LJF/O.olean` is absent
+from the `merge-main` build cache although its hash and trace files are there,
+so the first gate in a fresh worktree dies on it. `lake build LJF.O` rebuilds
+it cleanly but costs ~25 minutes (`set_option maxHeartbeats 8000000`).

@@ -31,6 +31,7 @@ vanished.
 | 2026-09-17 | candidate 7: 238 guarded-membership sites → 96 | 399 |
 | 2026-09-17 | `join_closed`: one lemma for 24 `preR_closed` join arms | 235 |
 | 2026-09-17 | candidate 8: the LJF weakening triple | 201 |
+| 2026-09-17 | `tagConeP_core`: `tag_cone` 165 → 82 lines in each of three files | 175 |
 
 **Refused, each with a written reason and, since 2026-09-17, a designed watched
 failure**: the G4/G4H/G4P triplication (eliminations cannot be abstracted over

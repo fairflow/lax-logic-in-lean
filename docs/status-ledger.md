@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-17 13:05 BST from `06c34d5` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-17 17:45 BST from `ce2ab6a` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**28275 declarations** in **574 modules**: 12955 theorems, 15320 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**28226 declarations** in **573 modules**: 12951 theorems, 15275 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -30,7 +30,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.CompleteV` | 5 | 5 | 5 |  |  |
 | `FRJ.CompleteV0` | 1 | 1 | 1 |  |  |
 | `FRJ.Erase` | 22 | 20 | 22 |  |  |
-| `FRJ.Extract` | 81 | 34 | 81 |  |  |
+| `FRJ.Extract` | 82 | 35 | 82 |  |  |
 | `FRJ.ExtractV` | 16 | 9 | 16 |  |  |
 | `FRJ.ExtractW` | 16 | 9 | 16 |  |  |
 | `FRJ.Fallible` | 69 | 34 | 69 |  |  |
@@ -44,7 +44,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.SaturateV` | 164 | 65 | 164 |  |  |
 | `FRJ.Search` | 500 | 75 | 500 |  |  |
 | `FRJ.Sound` | 14 | 14 | 14 |  |  |
-| `FRJ.SoundCore` | 32 | 29 | 32 |  |  |
+| `FRJ.SoundCore` | 33 | 30 | 33 |  |  |
 | `FRJ.SoundCoreV` | 2 | 2 | 2 |  |  |
 | `FRJ.SoundV` | 14 | 14 | 14 |  |  |
 | `FRJ.SoundW` | 15 | 15 | 15 |  |  |
@@ -59,7 +59,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.WitnessV2013` | 35 | 2 | 35 |  |  |
 | `FRJ.WitnessV2018` | 41 | 2 | 41 |  |  |
 | `FRJO` | 273 | 92 | 273 |  |  |
-| `LJF` | 1540 | 764 | 1540 |  |  |
+| `LJF` | 1542 | 766 | 1542 |  |  |
 | `LaxBlueprint` | 10 | 0 | 10 |  |  |
 | `LaxLogic.Belief.BooleanIso` | 6 | 4 | 6 |  |  |
 | `LaxLogic.Belief.Collapse` | 5 | 4 | 5 |  |  |
@@ -175,7 +175,6 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `RNDB` | 2147 | 93 | 2147 |  |  |
 | `Reject` | 224 | 116 | 224 |  |  |
 | `Rewrite` | 113 | 62 | 113 |  |  |
-| `Tools` | 53 | 8 | 53 |  |  |
 | `tools` | 897 | 131 | 897 |  |  |
 | `wip.G4conf` | 51 | 7 | 49 | 2 |  |
 | `wip.ascRefute` | 25 | 10 | 25 |  |  |
@@ -362,9 +361,9 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12382 |
-| `propext`, `Quot.sound` | 8139 |
-| `propext` | 5303 |
+| *(none — axiom-free)* | 12337 |
+| `propext`, `Quot.sound` | 8136 |
+| `propext` | 5302 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2419 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
