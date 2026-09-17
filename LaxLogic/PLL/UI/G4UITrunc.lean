@@ -739,9 +739,17 @@ so the two sides always take the same branch; the budget-gated clauses
 pair up at the same budget. -/
 
 set_option maxHeartbeats 4000000 in
-theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
-    (∀ b Γ, G4c [itpE p S (fuel + 1) b Γ] (itpE p S fuel b Γ)) ∧
-    (∀ b Γ C, G4c [itpA p S fuel b Γ C] (itpA p S (fuel + 1) b Γ C)) := by
+/-- One monotonicity step of the interpolant tables, with the step abstract.
+
+`itp_fuel_mono` and `itp_budget_mono` were the same 574-line proof twice, one
+stepping the fuel and one the budget (2026-09-17).  `sf`/`sb` are the two
+component steps and `hsf`/`hsb` their equations — `rfl` at both
+instantiations. -/
+theorem itp_step_mono (p : String) (S : Finset PLLFormula)
+    (sf sb : Nat → Nat) (hsf : ∀ f, sf (f + 1) = sf f + 1)
+    (hsb : ∀ b, sb (b + 1) = sb b + 1) : ∀ (fuel : Nat),
+    (∀ b Γ, G4c [itpE p S (sf fuel) (sb b) Γ] (itpE p S fuel b Γ)) ∧
+    (∀ b Γ C, G4c [itpA p S fuel b Γ C] (itpA p S (sf fuel) (sb b) Γ C)) := by
   intro fuel
   induction fuel with
   | zero =>
@@ -757,7 +765,7 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
       constructor
       · -- [itpE p S (fuel+2) b Γ] ⊢ itpE p S (fuel+1) b Γ
         intro b Γ
-        rw [itpE_succ p S (fuel + 1) b Γ, itpE_succ p S fuel b Γ]
+        rw [hsf, itpE_succ p S (sf fuel) (sb b) Γ, itpE_succ p S fuel b Γ]
         refine andAll_map ?_
         intro φ hφ
         simp only [itpEcls] at hφ
@@ -923,10 +931,11 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                           cases b with
                           | zero => cases hin
                           | succ b' =>
+                              rw [hsb]
                               rcases List.mem_singleton.mp hin with rfl
                               refine ⟨_, ?_, imp_mono
                                 (imp_mono (ihE b' Γ) (ihA b' Γ (A₁.ifThen B₁)))
-                                (ihE (b' + 1) (B :: Γ))⟩
+                                (hsb b' ▸ ihE (b' + 1) (B :: Γ))⟩
                               simp only [itpEcls]
                               refine List.mem_append.mpr (Or.inr
                                 (List.mem_flatMap.mpr
@@ -965,9 +974,10 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                           cases b with
                           | zero => cases hin
                           | succ b' =>
+                              rw [hsb]
                               rcases List.mem_cons.mp hin with rfl | hin'
                               · refine ⟨_, ?_, imp_mono (ihA b' Γ A₁)
-                                  (ihE (b' + 1) (B :: Γ))⟩
+                                  (hsb b' ▸ ihE (b' + 1) (B :: Γ))⟩
                                 simp only [itpEcls]
                                 refine List.mem_append.mpr (Or.inr
                                   (List.mem_flatMap.mpr
@@ -979,7 +989,7 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                 refine ⟨_, ?_, imp_mono
                                   (box_mono (imp_mono (ihE b' Γ)
                                     (ihA b' Γ A₁.somehow)))
-                                  (ihE (b' + 1) (B :: Γ))⟩
+                                  (hsb b' ▸ ihE (b' + 1) (B :: Γ))⟩
                                 simp only [itpEcls]
                                 refine List.mem_append.mpr (Or.inr
                                   (List.mem_flatMap.mpr
@@ -1020,9 +1030,9 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                     next => cases hin
       · -- [itpA p S (fuel+1) b Γ C] ⊢ itpA p S (fuel+2) b Γ C
         intro b Γ C
-        rw [itpA_succ p S fuel b Γ C, itpA_succ p S (fuel + 1) b Γ C]
+        rw [itpA_succ p S fuel b Γ C, hsf, itpA_succ p S (sf fuel) (sb b) Γ C]
         have hGOAL : ∀ φ ∈ itpAgoal p S fuel b Γ C,
-            ∃ ψ ∈ itpAgoal p S (fuel + 1) b Γ C, G4c [φ] ψ := by
+            ∃ ψ ∈ itpAgoal p S (sf fuel) (sb b) Γ C, G4c [φ] ψ := by
           intro φ hφ
           cases C with
           | prop q =>
@@ -1054,9 +1064,10 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                 cases b with
                 | zero => cases hφ
                 | succ b' =>
+                    rw [hsb]
                     rcases List.mem_singleton.mp hφ with rfl
                     refine ⟨_, ?_, imp_mono (ihE b' (C₁ :: Γ))
-                      (ihA (b' + 1) (C₁ :: Γ) C₂)⟩
+                      (hsb b' ▸ ihA (b' + 1) (C₁ :: Γ) C₂)⟩
                     rw [if_pos hpres]
                     exact .head _
               next hpres =>
@@ -1070,11 +1081,12 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
               cases b with
               | zero => cases hφ
               | succ b' =>
+                  rw [hsb]
                   rcases List.mem_singleton.mp hφ with rfl
                   exact ⟨_, .head _,
-                    box_mono (imp_mono (ihE b' Γ) (ihA (b' + 1) Γ D))⟩
+                    box_mono (imp_mono (ihE b' Γ) (hsb b' ▸ ihA (b' + 1) Γ D))⟩
         have hENV : ∀ φ ∈ itpAenv p S fuel b Γ C,
-            ∃ ψ ∈ itpAenv p S (fuel + 1) b Γ C, G4c [φ] ψ := by
+            ∃ ψ ∈ itpAenv p S (sf fuel) (sb b) Γ C, G4c [φ] ψ := by
           intro φ hφ
           simp only [itpAenv] at hφ
           obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
@@ -1220,10 +1232,11 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                           cases b with
                           | zero => cases hin
                           | succ b' =>
+                              rw [hsb]
                               rcases List.mem_singleton.mp hin with rfl
                               refine ⟨_, ?_, and_mono
                                 (imp_mono (ihE b' Γ) (ihA b' Γ (A₁.ifThen B₁)))
-                                (ihA (b' + 1) (B :: Γ) C)⟩
+                                (hsb b' ▸ ihA (b' + 1) (B :: Γ) C)⟩
                               simp only [itpAenv]
                               refine List.mem_flatMap.mpr
                                 ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩
@@ -1260,9 +1273,10 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                           cases b with
                           | zero => cases hin
                           | succ b' =>
+                              rw [hsb]
                               rcases List.mem_cons.mp hin with rfl | hin'
                               · refine ⟨_, ?_, and_mono (ihA b' Γ A₁)
-                                  (ihA (b' + 1) (B :: Γ) C)⟩
+                                  (hsb b' ▸ ihA (b' + 1) (B :: Γ) C)⟩
                                 simp only [itpAenv]
                                 refine List.mem_flatMap.mpr
                                   ⟨A₁.somehow.ifThen B, hFΓ, ?_⟩
@@ -1273,7 +1287,7 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                 refine ⟨_, ?_, and_mono
                                   (box_mono (imp_mono (ihE b' Γ)
                                     (ihA b' Γ A₁.somehow)))
-                                  (ihA (b' + 1) (B :: Γ) C)⟩
+                                  (hsb b' ▸ ihA (b' + 1) (B :: Γ) C)⟩
                                 simp only [itpAenv]
                                 refine List.mem_flatMap.mpr
                                   ⟨A₁.somehow.ifThen B, hFΓ, ?_⟩
@@ -1311,7 +1325,14 @@ theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                         | ifThen _ _ => cases heq
                     next => cases hin
         exact itpAfull_map (map_append hGOAL hENV)
-          (fun b' hb => ⟨b', hb, ihE b' Γ⟩)
+          (fun b' hb => ⟨sb b', by rw [hb, hsb], ihE b' Γ⟩)
+
+
+/-- **Fuel monotonicity**: `itp_step_mono` at `sf := (· + 1)`, `sb := id`. -/
+theorem itp_fuel_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
+    (∀ b Γ, G4c [itpE p S (fuel + 1) b Γ] (itpE p S fuel b Γ)) ∧
+    (∀ b Γ C, G4c [itpA p S fuel b Γ C] (itpA p S (fuel + 1) b Γ C)) :=
+  itp_step_mono p S (fun f => f + 1) (fun b => b) (fun _ => rfl) (fun _ => rfl)
 
 /-! ### Budget monotonicity
 
@@ -1321,582 +1342,14 @@ A larger jump budget means a *stronger* ∃-quantifier and a *weaker*
 resp. nothing to map), and at successor budgets the components pair up
 with budgets `(b', b)` against `(b, b+1)` — the ∀-quantified induction
 hypotheses cover every pairing.  The induction is on fuel; the budget
-is handled by the same local splits as in `itp_fuel_mono`. -/
+is handled by the same local splits.  Both directions are the
+one proof `itp_step_mono`; this is its second instance. -/
 
-set_option maxHeartbeats 4000000 in
+/-- **Budget monotonicity**: `itp_step_mono` at `sf := id`, `sb := (· + 1)`. -/
 theorem itp_budget_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
     (∀ b Γ, G4c [itpE p S fuel (b + 1) Γ] (itpE p S fuel b Γ)) ∧
-    (∀ b Γ C, G4c [itpA p S fuel b Γ C] (itpA p S fuel (b + 1) Γ C)) := by
-  intro fuel
-  induction fuel with
-  | zero =>
-      constructor
-      · intro b Γ
-        simp only [itpE]
-        exact G4c.truePLL_intro _
-      · intro b Γ C
-        simp only [itpA]
-        exact G4c.botL (.head _)
-  | succ fuel ih =>
-      obtain ⟨ihE, ihA⟩ := ih
-      constructor
-      · -- [itpE p S (fuel+1) (b+1) Γ] ⊢ itpE p S (fuel+1) b Γ
-        intro b Γ
-        rw [itpE_succ p S fuel (b + 1) Γ, itpE_succ p S fuel b Γ]
-        refine andAll_map ?_
-        intro φ hφ
-        simp only [itpEcls] at hφ
-        rcases List.mem_append.mp hφ with hφ | hφ
-        · rcases List.mem_append.mp hφ with hφ | hφ
-          · -- the ⊥ clause: identical at both budgets
-            split at hφ
-            next hbot =>
-              rcases List.mem_singleton.mp hφ with rfl
-              refine ⟨falsePLL, ?_, G4c.botL (.head _)⟩
-              simp only [itpEcls]
-              exact List.mem_append.mpr (Or.inl (List.mem_append.mpr
-                (Or.inl (by rw [if_pos hbot]; exact .head _))))
-            next => cases hφ
-          · -- the atom clauses: identical at both budgets
-            obtain ⟨F, hFΓ, heq⟩ := List.mem_filterMap.mp hφ
-            cases F with
-            | prop q =>
-                simp only at heq
-                split at heq
-                next => cases heq
-                next hq =>
-                  injection heq with heq'
-                  subst heq'
-                  refine ⟨prop q, ?_, G4c.init (.head _)⟩
-                  simp only [itpEcls]
-                  refine List.mem_append.mpr (Or.inl (List.mem_append.mpr
-                    (Or.inr (List.mem_filterMap.mpr ⟨prop q, hFΓ, ?_⟩))))
-                  simp only
-                  rw [if_neg hq]
-            | falsePLL => cases heq
-            | and _ _ => cases heq
-            | or _ _ => cases heq
-            | ifThen _ _ => cases heq
-            | somehow _ => cases heq
-        · -- the rule clauses
-          obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
-          cases F with
-          | prop _ => cases hin
-          | falsePLL => cases hin
-          | and A B =>
-              simp only at hin
-              split at hin
-              next => cases hin
-              next h1 =>
-                split at hin
-                next h2 =>
-                  rcases List.mem_singleton.mp hin with rfl
-                  refine ⟨_, ?_, ihE b (A :: B :: Γ)⟩
-                  simp only [itpEcls]
-                  refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
-                    ⟨A.and B, hFΓ, ?_⟩))
-                  simp only
-                  rw [if_neg h1, if_pos h2]
-                  exact .head _
-                next => cases hin
-          | or A B =>
-              simp only at hin
-              split at hin
-              next => cases hin
-              next h1 =>
-                split at hin
-                next h2 =>
-                  rcases List.mem_singleton.mp hin with rfl
-                  refine ⟨_, ?_, or_mono (ihE b (A :: Γ)) (ihE b (B :: Γ))⟩
-                  simp only [itpEcls]
-                  refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
-                    ⟨A.or B, hFΓ, ?_⟩))
-                  simp only
-                  rw [if_neg h1, if_pos h2]
-                  exact .head _
-                next => cases hin
-          | somehow χ =>
-              simp only at hin
-              split at hin
-              next => cases hin
-              next hg =>
-                rcases List.mem_singleton.mp hin with rfl
-                refine ⟨_, ?_, box_mono (ihE b (χ :: Γ))⟩
-                simp only [itpEcls]
-                refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
-                  ⟨χ.somehow, hFΓ, ?_⟩))
-                simp only
-                rw [if_neg hg]
-                exact .head _
-          | ifThen A' B =>
-              cases A' with
-              | prop q =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next hBΓ =>
-                    split at hin
-                    next hBS =>
-                      split at hin
-                      next hq =>
-                        rcases List.mem_singleton.mp hin with rfl
-                        refine ⟨_, ?_, ihE b (B :: Γ)⟩
-                        simp only [itpEcls]
-                        refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
-                          ⟨(prop q).ifThen B, hFΓ, ?_⟩))
-                        simp only
-                        rw [if_neg hBΓ, if_pos hBS, if_pos hq]
-                        exact .head _
-                      next hq =>
-                        split at hin
-                        next => cases hin
-                        next hqp =>
-                          rcases List.mem_singleton.mp hin with rfl
-                          refine ⟨_, ?_,
-                            imp_mono (G4c.init (.head _)) (ihE b (B :: Γ))⟩
-                          simp only [itpEcls]
-                          refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
-                            ⟨(prop q).ifThen B, hFΓ, ?_⟩))
-                          simp only
-                          rw [if_neg hBΓ, if_pos hBS, if_neg hq, if_neg hqp]
-                          exact .head _
-                    next => cases hin
-              | falsePLL => cases hin
-              | and A₁ B₁ =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next h1 =>
-                    split at hin
-                    next h2 =>
-                      rcases List.mem_singleton.mp hin with rfl
-                      refine ⟨_, ?_, ihE b (A₁.ifThen (B₁.ifThen B) :: Γ)⟩
-                      simp only [itpEcls]
-                      refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
-                        ⟨(A₁.and B₁).ifThen B, hFΓ, ?_⟩))
-                      simp only
-                      rw [if_neg h1, if_pos h2]
-                      exact .head _
-                    next => cases hin
-              | or A₁ B₁ =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next h1 =>
-                    split at hin
-                    next h2 =>
-                      rcases List.mem_singleton.mp hin with rfl
-                      refine ⟨_, ?_, ihE b (A₁.ifThen B :: B₁.ifThen B :: Γ)⟩
-                      simp only [itpEcls]
-                      refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
-                        ⟨(A₁.or B₁).ifThen B, hFΓ, ?_⟩))
-                      simp only
-                      rw [if_neg h1, if_pos h2]
-                      exact .head _
-                    next => cases hin
-              | ifThen A₁ B₁ =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next hDΓ =>
-                    split at hin
-                    next hDS =>
-                      split at hin
-                      next hBD =>
-                        split at hin
-                        next hABD =>
-                          cases b with
-                          | zero => cases hin
-                          | succ b' =>
-                              rcases List.mem_singleton.mp hin with rfl
-                              refine ⟨_, ?_, imp_mono
-                                (imp_mono (ihE b' Γ) (ihA b' Γ (A₁.ifThen B₁)))
-                                (ihE (b' + 1) (B :: Γ))⟩
-                              simp only [itpEcls]
-                              refine List.mem_append.mpr (Or.inr
-                                (List.mem_flatMap.mpr
-                                  ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩))
-                              simp only
-                              rw [if_neg hDΓ, if_pos hDS, if_pos hBD, if_pos hABD]
-                              exact .head _
-                        next => cases hin
-                      next hBD =>
-                        split at hin
-                        next hBDS =>
-                          rcases List.mem_singleton.mp hin with rfl
-                          refine ⟨_, ?_, imp_mono
-                            (imp_mono (ihE b (B₁.ifThen B :: Γ))
-                              (ihA b (B₁.ifThen B :: Γ) (A₁.ifThen B₁)))
-                            (ihE b (B :: Γ))⟩
-                          simp only [itpEcls]
-                          refine List.mem_append.mpr (Or.inr
-                            (List.mem_flatMap.mpr
-                              ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩))
-                          simp only
-                          rw [if_neg hDΓ, if_pos hDS, if_neg hBD, if_pos hBDS]
-                          exact .head _
-                        next => cases hin
-                    next => cases hin
-              | somehow A₁ =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next hBΓ =>
-                    split at hin
-                    next hBS =>
-                      rcases List.mem_append.mp hin with hin | hin
-                      · split at hin
-                        next hAS =>
-                          cases b with
-                          | zero => cases hin
-                          | succ b' =>
-                              rcases List.mem_cons.mp hin with rfl | hin'
-                              · refine ⟨_, ?_, imp_mono (ihA b' Γ A₁)
-                                  (ihE (b' + 1) (B :: Γ))⟩
-                                simp only [itpEcls]
-                                refine List.mem_append.mpr (Or.inr
-                                  (List.mem_flatMap.mpr
-                                    ⟨A₁.somehow.ifThen B, hFΓ, ?_⟩))
-                                simp only
-                                rw [if_neg hBΓ, if_pos hBS, if_pos hAS]
-                                exact List.mem_append.mpr (Or.inl (.head _))
-                              · rcases List.mem_singleton.mp hin' with rfl
-                                refine ⟨_, ?_, imp_mono
-                                  (box_mono (imp_mono (ihE b' Γ)
-                                    (ihA b' Γ A₁.somehow)))
-                                  (ihE (b' + 1) (B :: Γ))⟩
-                                simp only [itpEcls]
-                                refine List.mem_append.mpr (Or.inr
-                                  (List.mem_flatMap.mpr
-                                    ⟨A₁.somehow.ifThen B, hFΓ, ?_⟩))
-                                simp only
-                                rw [if_neg hBΓ, if_pos hBS, if_pos hAS]
-                                exact List.mem_append.mpr
-                                  (Or.inl (.tail _ (.head _)))
-                        next => cases hin
-                      · obtain ⟨X, hXΓ, heq⟩ := List.mem_filterMap.mp hin
-                        cases X with
-                        | somehow x =>
-                            simp only at heq
-                            split at heq
-                            next => cases heq
-                            next hg =>
-                              injection heq with heq'
-                              subst heq'
-                              refine ⟨_, ?_, imp_mono
-                                (box_mono (imp_mono (ihE b (x :: Γ))
-                                  (ihA b (x :: Γ) A₁.somehow)))
-                                (ihE b (B :: Γ))⟩
-                              simp only [itpEcls]
-                              refine List.mem_append.mpr (Or.inr
-                                (List.mem_flatMap.mpr
-                                  ⟨A₁.somehow.ifThen B, hFΓ, ?_⟩))
-                              simp only
-                              rw [if_neg hBΓ, if_pos hBS]
-                              refine List.mem_append.mpr (Or.inr
-                                (List.mem_filterMap.mpr ⟨x.somehow, hXΓ, ?_⟩))
-                              simp only
-                              rw [if_neg hg]
-                        | prop _ => cases heq
-                        | falsePLL => cases heq
-                        | and _ _ => cases heq
-                        | or _ _ => cases heq
-                        | ifThen _ _ => cases heq
-                    next => cases hin
-      · -- [itpA p S (fuel+1) b Γ C] ⊢ itpA p S (fuel+1) (b+1) Γ C
-        intro b Γ C
-        rw [itpA_succ p S fuel b Γ C, itpA_succ p S fuel (b + 1) Γ C]
-        have hGOAL : ∀ φ ∈ itpAgoal p S fuel b Γ C,
-            ∃ ψ ∈ itpAgoal p S fuel (b + 1) Γ C, G4c [φ] ψ := by
-          intro φ hφ
-          cases C with
-          | prop q =>
-              simp only [itpAgoal] at hφ ⊢
-              split at hφ
-              next => cases hφ
-              next hq =>
-                rcases List.mem_singleton.mp hφ with rfl
-                refine ⟨prop q, ?_, G4c.init (.head _)⟩
-                rw [if_neg hq]
-                exact .head _
-          | falsePLL =>
-              simp only [itpAgoal] at hφ
-              cases hφ
-          | and C₁ C₂ =>
-              simp only [itpAgoal] at hφ ⊢
-              rcases List.mem_singleton.mp hφ with rfl
-              exact ⟨_, .head _, and_mono (ihA b Γ C₁) (ihA b Γ C₂)⟩
-          | or C₁ C₂ =>
-              simp only [itpAgoal] at hφ ⊢
-              rcases List.mem_cons.mp hφ with rfl | hφ'
-              · exact ⟨_, .head _, ihA b Γ C₁⟩
-              · rcases List.mem_singleton.mp hφ' with rfl
-                exact ⟨_, .tail _ (.head _), ihA b Γ C₂⟩
-          | ifThen C₁ C₂ =>
-              simp only [itpAgoal] at hφ ⊢
-              split at hφ
-              next hpres =>
-                cases b with
-                | zero => cases hφ
-                | succ b' =>
-                    rcases List.mem_singleton.mp hφ with rfl
-                    refine ⟨_, ?_, imp_mono (ihE b' (C₁ :: Γ))
-                      (ihA (b' + 1) (C₁ :: Γ) C₂)⟩
-                    rw [if_pos hpres]
-                    exact .head _
-              next hpres =>
-                rcases List.mem_singleton.mp hφ with rfl
-                refine ⟨_, ?_, imp_mono (ihE b (C₁ :: Γ))
-                  (ihA b (C₁ :: Γ) C₂)⟩
-                rw [if_neg hpres]
-                exact .head _
-          | somehow D =>
-              simp only [itpAgoal] at hφ ⊢
-              cases b with
-              | zero => cases hφ
-              | succ b' =>
-                  rcases List.mem_singleton.mp hφ with rfl
-                  exact ⟨_, .head _,
-                    box_mono (imp_mono (ihE b' Γ) (ihA (b' + 1) Γ D))⟩
-        have hENV : ∀ φ ∈ itpAenv p S fuel b Γ C,
-            ∃ ψ ∈ itpAenv p S fuel (b + 1) Γ C, G4c [φ] ψ := by
-          intro φ hφ
-          simp only [itpAenv] at hφ
-          obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
-          cases F with
-          | prop q =>
-              simp only at hin
-              split at hin
-              next hg =>
-                rcases List.mem_singleton.mp hin with rfl
-                refine ⟨truePLL, ?_, G4c.truePLL_intro _⟩
-                simp only [itpAenv]
-                refine List.mem_flatMap.mpr ⟨prop q, hFΓ, ?_⟩
-                simp only
-                rw [if_pos hg]
-                exact .head _
-              next => cases hin
-          | falsePLL => cases hin
-          | and A B =>
-              simp only at hin
-              split at hin
-              next => cases hin
-              next h1 =>
-                split at hin
-                next h2 =>
-                  rcases List.mem_singleton.mp hin with rfl
-                  refine ⟨_, ?_, ihA b (A :: B :: Γ) C⟩
-                  simp only [itpAenv]
-                  refine List.mem_flatMap.mpr ⟨A.and B, hFΓ, ?_⟩
-                  simp only
-                  rw [if_neg h1, if_pos h2]
-                  exact .head _
-                next => cases hin
-          | or A B =>
-              simp only at hin
-              split at hin
-              next => cases hin
-              next h1 =>
-                split at hin
-                next h2 =>
-                  rcases List.mem_singleton.mp hin with rfl
-                  refine ⟨_, ?_, and_mono
-                    (imp_mono (ihE b (A :: Γ)) (ihA b (A :: Γ) C))
-                    (imp_mono (ihE b (B :: Γ)) (ihA b (B :: Γ) C))⟩
-                  simp only [itpAenv]
-                  refine List.mem_flatMap.mpr ⟨A.or B, hFΓ, ?_⟩
-                  simp only
-                  rw [if_neg h1, if_pos h2]
-                  exact .head _
-                next => cases hin
-          | somehow χ =>
-              simp only at hin
-              split at hin
-              · split at hin
-                next => cases hin
-                next hg =>
-                  rcases List.mem_singleton.mp hin with rfl
-                  refine ⟨_, ?_, box_mono
-                    (imp_mono (ihE b (χ :: Γ)) (ihA b (χ :: Γ) _))⟩
-                  simp only [itpAenv]
-                  refine List.mem_flatMap.mpr ⟨χ.somehow, hFΓ, ?_⟩
-                  simp only
-                  rw [if_neg hg]
-                  exact .head _
-              all_goals cases hin
-          | ifThen A' B =>
-              cases A' with
-              | prop q =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next hBΓ =>
-                    split at hin
-                    next hBS =>
-                      split at hin
-                      next hq =>
-                        rcases List.mem_singleton.mp hin with rfl
-                        refine ⟨_, ?_, ihA b (B :: Γ) C⟩
-                        simp only [itpAenv]
-                        refine List.mem_flatMap.mpr
-                          ⟨(prop q).ifThen B, hFΓ, ?_⟩
-                        simp only
-                        rw [if_neg hBΓ, if_pos hBS, if_pos hq]
-                        exact .head _
-                      next hq =>
-                        split at hin
-                        next => cases hin
-                        next hqp =>
-                          rcases List.mem_singleton.mp hin with rfl
-                          refine ⟨_, ?_, and_mono (G4c.init (.head _))
-                            (ihA b (B :: Γ) C)⟩
-                          simp only [itpAenv]
-                          refine List.mem_flatMap.mpr
-                            ⟨(prop q).ifThen B, hFΓ, ?_⟩
-                          simp only
-                          rw [if_neg hBΓ, if_pos hBS, if_neg hq, if_neg hqp]
-                          exact .head _
-                    next => cases hin
-              | falsePLL => cases hin
-              | and A₁ B₁ =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next h1 =>
-                    split at hin
-                    next h2 =>
-                      rcases List.mem_singleton.mp hin with rfl
-                      refine ⟨_, ?_, ihA b (A₁.ifThen (B₁.ifThen B) :: Γ) C⟩
-                      simp only [itpAenv]
-                      refine List.mem_flatMap.mpr
-                        ⟨(A₁.and B₁).ifThen B, hFΓ, ?_⟩
-                      simp only
-                      rw [if_neg h1, if_pos h2]
-                      exact .head _
-                    next => cases hin
-              | or A₁ B₁ =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next h1 =>
-                    split at hin
-                    next h2 =>
-                      rcases List.mem_singleton.mp hin with rfl
-                      refine ⟨_, ?_,
-                        ihA b (A₁.ifThen B :: B₁.ifThen B :: Γ) C⟩
-                      simp only [itpAenv]
-                      refine List.mem_flatMap.mpr
-                        ⟨(A₁.or B₁).ifThen B, hFΓ, ?_⟩
-                      simp only
-                      rw [if_neg h1, if_pos h2]
-                      exact .head _
-                    next => cases hin
-              | ifThen A₁ B₁ =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next hDΓ =>
-                    split at hin
-                    next hDS =>
-                      split at hin
-                      next hBD =>
-                        split at hin
-                        next hABD =>
-                          cases b with
-                          | zero => cases hin
-                          | succ b' =>
-                              rcases List.mem_singleton.mp hin with rfl
-                              refine ⟨_, ?_, and_mono
-                                (imp_mono (ihE b' Γ) (ihA b' Γ (A₁.ifThen B₁)))
-                                (ihA (b' + 1) (B :: Γ) C)⟩
-                              simp only [itpAenv]
-                              refine List.mem_flatMap.mpr
-                                ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩
-                              simp only
-                              rw [if_neg hDΓ, if_pos hDS, if_pos hBD, if_pos hABD]
-                              exact .head _
-                        next => cases hin
-                      next hBD =>
-                        split at hin
-                        next hBDS =>
-                          rcases List.mem_singleton.mp hin with rfl
-                          refine ⟨_, ?_, and_mono
-                            (imp_mono (ihE b (B₁.ifThen B :: Γ))
-                              (ihA b (B₁.ifThen B :: Γ) (A₁.ifThen B₁)))
-                            (ihA b (B :: Γ) C)⟩
-                          simp only [itpAenv]
-                          refine List.mem_flatMap.mpr
-                            ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩
-                          simp only
-                          rw [if_neg hDΓ, if_pos hDS, if_neg hBD, if_pos hBDS]
-                          exact .head _
-                        next => cases hin
-                    next => cases hin
-              | somehow A₁ =>
-                  simp only at hin
-                  split at hin
-                  next => cases hin
-                  next hBΓ =>
-                    split at hin
-                    next hBS =>
-                      rcases List.mem_append.mp hin with hin | hin
-                      · split at hin
-                        next hAS =>
-                          cases b with
-                          | zero => cases hin
-                          | succ b' =>
-                              rcases List.mem_cons.mp hin with rfl | hin'
-                              · refine ⟨_, ?_, and_mono (ihA b' Γ A₁)
-                                  (ihA (b' + 1) (B :: Γ) C)⟩
-                                simp only [itpAenv]
-                                refine List.mem_flatMap.mpr
-                                  ⟨A₁.somehow.ifThen B, hFΓ, ?_⟩
-                                simp only
-                                rw [if_neg hBΓ, if_pos hBS, if_pos hAS]
-                                exact List.mem_append.mpr (Or.inl (.head _))
-                              · rcases List.mem_singleton.mp hin' with rfl
-                                refine ⟨_, ?_, and_mono
-                                  (box_mono (imp_mono (ihE b' Γ)
-                                    (ihA b' Γ A₁.somehow)))
-                                  (ihA (b' + 1) (B :: Γ) C)⟩
-                                simp only [itpAenv]
-                                refine List.mem_flatMap.mpr
-                                  ⟨A₁.somehow.ifThen B, hFΓ, ?_⟩
-                                simp only
-                                rw [if_neg hBΓ, if_pos hBS, if_pos hAS]
-                                exact List.mem_append.mpr
-                                  (Or.inl (.tail _ (.head _)))
-                        next => cases hin
-                      · obtain ⟨X, hXΓ, heq⟩ := List.mem_filterMap.mp hin
-                        cases X with
-                        | somehow x =>
-                            simp only at heq
-                            split at heq
-                            next => cases heq
-                            next hg =>
-                              injection heq with heq'
-                              subst heq'
-                              refine ⟨_, ?_, and_mono
-                                (box_mono (imp_mono (ihE b (x :: Γ))
-                                  (ihA b (x :: Γ) A₁.somehow)))
-                                (ihA b (B :: Γ) C)⟩
-                              simp only [itpAenv]
-                              refine List.mem_flatMap.mpr
-                                ⟨A₁.somehow.ifThen B, hFΓ, ?_⟩
-                              simp only
-                              rw [if_neg hBΓ, if_pos hBS]
-                              refine List.mem_append.mpr (Or.inr
-                                (List.mem_filterMap.mpr ⟨x.somehow, hXΓ, ?_⟩))
-                              simp only
-                              rw [if_neg hg]
-                        | prop _ => cases heq
-                        | falsePLL => cases heq
-                        | and _ _ => cases heq
-                        | or _ _ => cases heq
-                        | ifThen _ _ => cases heq
-                    next => cases hin
-        exact itpAfull_map (map_append hGOAL hENV)
-          (fun b' hb => ⟨b, rfl, by rw [hb]; exact ihE b' Γ⟩)
+    (∀ b Γ C, G4c [itpA p S fuel b Γ C] (itpA p S fuel (b + 1) Γ C)) :=
+  itp_step_mono p S (fun f => f) (fun b => b + 1) (fun _ => rfl) (fun _ => rfl)
 
 /-! ### Multi-step budget monotonicity
 

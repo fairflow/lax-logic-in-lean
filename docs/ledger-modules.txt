@@ -384,6 +384,9 @@ tools.Engines
 tools.Hard
 tools.Pin
 tools.PllMain
+tools.RCFuel
+tools.RCells
+tools.RCellsGen
 tools.Search
 tools.Svg
 tools.Terminate

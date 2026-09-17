@@ -289,6 +289,71 @@ Three things it settled, and the third is the boundary:
    with `interp` never abstracted and no `termination_by` touched. Compile one
    block first, as the FRJ work compiled one `rfl` first.
 
+## Stage C, candidate 3, done 2026-09-17: fuel and budget monotonicity were one proof
+
+*This closes Stage C: candidate 1 done, candidate 5 refused with reasons,
+candidate 3 here. The survey's estimate for it was ~551 lines; the actual
+saving is 547, which is the first candidate whose size estimate held.*
+
+`LaxLogic/PLL/UI/G4UITrunc.lean` proved
+
+    itp_fuel_mono   : G4c [itpE p S (fuel+1) b Γ] (itpE p S fuel b Γ)  ∧  …
+    itp_budget_mono : G4c [itpE p S fuel (b+1) Γ] (itpE p S fuel b Γ)  ∧  …
+
+by the same 574-line induction twice, at lines 1331–1903 and 1915–2488. The
+two bodies differ in which of the two numerals carries the `+ 1`; everything
+else — the same eleven splits, the same `itpEcls`/`itpAgoal`/`itpAenv` walk,
+the same `imp_mono`/`box_mono` plumbing — is common.
+
+The abstraction replaces the two numerals by two step *functions*:
+
+    theorem itp_step_mono (p : String) (S : Finset PLLFormula)
+        (sf sb : Nat → Nat) (hsf : ∀ f, sf (f + 1) = sf f + 1)
+        (hsb : ∀ b, sb (b + 1) = sb b + 1) : ∀ (fuel : Nat),
+        (∀ b Γ, G4c [itpE p S (sf fuel) (sb b) Γ] (itpE p S fuel b Γ)) ∧
+        (∀ b Γ C, G4c [itpA p S fuel b Γ C] (itpA p S (sf fuel) (sb b) Γ C))
+
+and the two theorems become five-line instances, at `sf := (· + 1), sb := id`
+and `sf := id, sb := (· + 1)`, both equations `fun _ => rfl`.
+
+**What the two hypotheses buy, precisely.** A concrete `b + 1` in the source
+position reduces: `itpAgoal … (b'+1) … (somehow D)` iota-reduces to its
+`succ` branch, and the tables unfold by `itpE_succ`. An abstract `sb (b'+1)`
+does not, and that is the *only* thing the abstraction breaks. `hsb` restores
+it exactly where the proof splits on the budget — six `rw [hsb]` at the six
+`cases b with … | succ b' =>` branches, and eight `hsb b' ▸ ih… (b' + 1) …`
+transports where an induction hypothesis is applied at the stepped budget —
+and `hsf` at the two `rw [itpE_succ …]` / `rw [itpA_succ …]` unfoldings. The
+final `itpAfull_map` argument, which in the fuel proof passes the budget
+through unchanged, becomes `fun b' hb => ⟨sb b', by rw [hb, hsb], ihE b' Γ⟩`.
+Nothing else in 582 lines changed.
+
+**Why this one worked where three others were refused.** The refusals
+(`aSound`, `OCore` station factoring, G4/G4H/G4P) all founder on something
+*per-copy*: a separate inductive family, a separate recursion, a separate
+termination argument. Here the two copies live in one file, share every
+definition and every recursion, and the only doubled object is the numeral
+step — which is a function, and a function is the one kind of thing that
+abstracts without cost. That is the test worth carrying forward: ask what is
+doubled, not how similar the text is.
+
+**The probe, run before writing anything** (the shape the last
+`itpAfull_map` argument has to take, with `sb` abstract):
+
+```lean
+example (p : String) (S : Finset PLLFormula) (sb : Nat → Nat)
+    (hsb : ∀ b, sb (b + 1) = sb b + 1) (f₁ f₂ b : Nat) (Γ : List PLLFormula)
+    (ihE : ∀ b', G4c [itpE p S f₂ (sb b') Γ] (itpE p S f₁ b' Γ)) :
+    ∀ b₁', b = b₁' + 1 → ∃ b₂', sb b = b₂' + 1 ∧
+      G4c [itpE p S f₂ b₂' Γ] (itpE p S f₁ b₁' Γ) :=
+  fun b' hb => ⟨sb b', by rw [hb, hsb], ihE b'⟩
+```
+
+Verified: the file is 4,036 lines down to 3,489 — **547 lines removed**, one
+582-line proof and two five-line instances in place of 1,147 lines of proof —
+`lake build` green, and the gate reports the addition of `itp_step_mono` with
+no axiom change to `itp_fuel_mono` or `itp_budget_mono`.
+
 ## Refused: the G4 / G4H / G4P triplication (candidate 5, 886 lines)
 
 Examined 2026-09-16 and **not attempted**. The five families (`inv`,
@@ -326,6 +391,184 @@ eliminates a derivation (it inducts on `Nat` and matches on the formula), so it
 would fit a record of the 17 introduction rules — about 140 lines, with the same
 "compile one instantiation first" discipline. Small, and it touches the ladder
 documents; his call, not mine.
+
+## Stage D, candidate 7, designed 2026-09-17: the guarded-membership census
+
+The `simp only … / split at hin / next … =>` idiom in the three
+uniform-interpolation files was surveyed as "~700 lines". A census of all
+**238** sites gives a sharper picture. Every site is *consuming* a membership
+hypothesis; they sit in eight proofs only (`itp_step_mono`, `itp_pfree`,
+`itp_sound`, `itp_congr` in `G4UITrunc.lean`, three in `G4UI.lean`, one in
+`G4UIStab.lean`), forming **114 maximal chains over 2,425 lines, of which 961
+are scaffolding**. The *producing* idiom is separate — 82 sites of
+`simp only` / `rw [if_neg h₁, if_pos h₂]` / `exact .head _`, ~214 lines — and
+never uses `split`.
+
+| group | guard shape | chains | scaffold lines |
+|---|---|--:|--:|
+| G1 | one guard, `[e]`/`[]`, one live leaf | 32 | 138 |
+| G2 | `if c₁ then [] else if c₂ then [e] else []` | 32 | 263 |
+| G3 | 2–5 guards, **two** live leaves | 22 | 263 |
+| G4 | cascade over `… ++ Γ.filterMap …` | 8 | 123 |
+| G5 | cascade containing `match b with \| 0 \| b'+1` | 12 | 146 |
+| G6 | Option-valued (`if c then none else some e`) | 8 | 28 |
+
+Two facts decide the design. **Every dead branch in the tables is literally
+`[]`** (`itpEcls`, `itpAgoal`, `itpAenv`), except the inner pair of G3. And
+**80 of about 160 live leaves bind their guard** and feed it straight to the
+producing `rw [if_neg h₁, if_pos h₂]`, so the two halves are coupled: whatever
+replaces the split must hand the guard proofs back *in the unnormalised form
+`if_pos`/`if_neg` accept*.
+
+So the extraction is one iff-lemma used as a simp lemma, not a family of
+bespoke `mem_guard` lemmas — neither `List.mem_ite_nil_left` nor an iff form
+exists in Mathlib or Batteries:
+
+```lean
+theorem mem_ite_list {α : Type} {c : Prop} [inst : Decidable c]
+    {l₁ l₂ : List α} {x : α} :
+    (x ∈ if c then l₁ else l₂) ↔ (c ∧ x ∈ l₁) ∨ (¬c ∧ x ∈ l₂) := by
+  cases inst with | isTrue h => simp [h] | isFalse h => simp [h]
+```
+
+`cases inst`, not `by_cases`, so that `Classical.choice` stays out of the
+axiom pins. Used with `List.not_mem_nil`, `List.mem_singleton`,
+`List.mem_cons`, `List.mem_append`, `and_false`, `false_or`, `or_false`, one
+`simp only` collapses a cascade of **any depth**, because the `[]` branches die
+under `and_false`/`false_or`. The set is bundled as a `mem_tbl` macro so the
+name list is written once rather than 114 times, and so it serves the
+producing side too.
+
+**The constraint that shapes the simp-set is over-reduction, not
+under-reduction.** A guard such as `¬(χ ∈ Γ ∨ χ ∉ S)` must arrive at the
+producing `rw [if_neg hg]` *unchanged*, so `not_or`, `not_not`, `not_and`,
+`ne_eq` and `Decidable` normalisation must stay out of the set. The one thing
+that provably does not collapse is `match b with | 0 => [] | b'+1 => [e]`:
+simp has no lemma for a matcher on `b`, so G5 keeps its `cases b` — and that
+is the designed watched failure.
+
+Against the three refusals: (a) nothing is abstracted over a record — the
+only eliminations in the eight proofs are `induction fuel` and `cases F`/
+`cases C`, kept verbatim; (b) `grep` finds no `termination_by`/`decreasing_by`
+anywhere in the three files; (c) nothing is passed under a lambda. The lemma
+rewrites a *proposition*, forward, with every row term left concrete, which is
+why none of the three mechanisms has purchase.
+
+Estimate to be held to: **500 lines**, range 420–700. Order: G2 (the shape the
+probe tests), then G1, G4, G3, then the producing side; G5 and G6 last or not
+at all. The likeliest reason it comes in under is G3: its collapsed `rcases`
+pattern carries four to six guard names plus two `rfl`s, and at the
+indentation those sites already sit at (columns 26–34) it wraps to three lines
+rather than one.
+
+## Done 2026-09-17: a 445-row table written out twice
+
+`tools/RCFuel.lean` and `tools/RCellsGen.lean` each carried the classed
+R-increment cells `(op, i, j, k)` — 445 rows, 446 byte-identical lines — as a
+private root-level `def cells`. It is now `tools/RCells.lean`, importing
+nothing so that neither generator drags the other's dependencies in, in
+namespace `RCells` because eight other modules in this tree declare a
+root-level `cells` of a different type. RCFuel 477 → 31 lines, RCellsGen
+620 → 174; `tools.RCells` added to the `Tools` library glob, without which the
+exe roots cannot see it (`lake` builds an exe root's imports only from declared
+libraries).
+
+The check that matters here is not the build. `.lake/build/bin/rcellsgen`
+reproduces the committed `wip/rcells.lean` **byte-for-byte**, 2,247 lines — so
+the generated content is provably unchanged, which a compile alone would not
+show. This is data, not proof, and it is listed because it is the single
+largest identical block in the repository.
+
+An incidental finding: neither generator's declarations were in the ledger
+before this. The campaign built every *library*; `lean_exe` roots that belong
+to no library were outside the estate, which is the same gap `FRJO` fell
+through. Nineteen declarations entered the record with this change, seventeen
+of them pre-existing.
+
+## Refused 2026-09-17: the `LaxND` congruence split (candidate 9, 300 lines)
+
+Measured, not estimated: `LaxND` has twelve constructors and **fourteen**
+proofs split on all twelve, **300 lines** across `NDCore.lean` (five),
+`Terms.lean` (two), `Realisability.lean` (two), and one each in `SemUICtx`,
+`CtxCompleteness`, `Judgmental`, `Hilbert`, `Obligation/PLLBridge`.
+
+The proposed `LaxND.mapCtx` reaches **three** of the fourteen — `erased`,
+`substND`, `translate`, the only ones whose shape is
+`LaxND Γ φ → LaxND (Γ.map f) (f φ)` — so 54 lines, and it buys them at the
+price the module was built to avoid. With `f` abstract, `.impIntro` yields
+`LaxND (Γ.map f) (.ifThen (f φ) (f ψ))` where the goal is
+`LaxND (Γ.map f) (f (.ifThen φ ψ))`. For the concrete `erase`/`substP`/`subC`
+these are `rfl` by iota; for abstract `f` they need `hImp ▸`, an `Eq.rec` on a
+`Type`-valued index — a real cast, and `NDCore.lean:230` already records the
+superseded version of `erased` as having needed fifteen of them. Worse,
+`conservativity` proves `p.erased.isIPLProof` by `induction p` with arms
+`exact ih`, which typecheck *only* because `p.erased` iota-reduces per
+constructor and `isIPLProof` matches on the constructor. Cast `erased` and
+those arms stop reducing.
+
+This is the fourth refusal, and the first whose mechanism is **(d)**: the
+abstraction stops something reducing that the concrete form reduced by iota.
+It is the same mechanism that `itp_step_mono` survived — there, one equation
+per stepped variable restored the reduction at six sites; here the equation
+would have to be carried through a `Type`-valued index, which no equation
+can do.
+
+The certificate is a designed watched failure, to be pasted at the end of
+`LaxLogic/PLL/ND/NDCore.lean` inside `namespace PLLND`:
+
+```lean
+example (f : PLLFormula → PLLFormula)
+    (hImp : ∀ φ ψ, f (.ifThen φ ψ) = .ifThen (f φ) (f ψ))
+    {Γ : List PLLFormula} {φ ψ : PLLFormula}
+    (d : LaxND (f φ :: Γ.map f) (f ψ)) :
+    (hImp φ ψ ▸ LaxND.impIntro d :
+        LaxND (Γ.map f) (f (.ifThen φ ψ))).isIPLProof = d.isIPLProof := rfl
+```
+
+The `Eq.rec` is stuck on the opaque `hImp φ ψ`, the match cannot reduce, and
+`rfl` fails. Only if it unexpectedly passes is `mapCtx` viable. The one live
+sub-item, which is Matthew's call and not Stage A: making `f` a structure
+whose field matches the connectives, so that commutation is iota again. That
+redefines `erase`, `substP` and `subC` across three modules and touches a
+published conservativity result.
+
+## Stage A, candidate 8, designed 2026-09-17: the LJF weakening triple
+
+Two families, both about `Sub` (`LJF/OCore.lean:122`), **528 identical lines**
+— not the ~700 the survey quoted, because 46 further blocks (303 lines) are
+`Sub.cons`/`Sub.grow`/`Sub.trans` *compositions* and genuinely differ.
+
+*Family B, and it needs no new code at all.* `Sub.cons` (`LJF/OCore.lean:132`)
+is written out by hand, byte-for-byte its own proof body, at **53 sites over
+252 lines** — `OCore` 13, `OFuelSound` 12, `OFuelPSound` 12,
+`LaxLogic/Focusing/LJF.lean` 6, `O` 3, `OFuelPFam` 3, `OFuelMin` 2,
+`OFuelPMin` 2. Each becomes `(Sub.cons _ hsubD)`. This is a pure inlining
+reversal and is the half to do first.
+
+*Family A, two lemmas.* Every call of `atkQimp`/`atkDyk`/`atkCimp`/`atkPark`
+supplies `hx, hX, hrest` in one of two shapes — **69 sites over 276 lines**:
+
+```lean
+theorem rowHyp {A X : Neg} {rest done Γ' : List Neg}
+    (hsubD : Sub done Γ') (hXr : (X, rest) ∈ splits done) : X ∈ A :: Γ' :=
+  List.mem_cons_of_mem _ (hsubD _ (splits_mem hXr))
+
+theorem rowSub {A X : Neg} {rest done Γ' : List Neg}
+    (hsubD : Sub done Γ') (hXr : (X, rest) ∈ splits done) : Sub rest (A :: Γ') :=
+  fun Z hZ => List.mem_cons_of_mem _ (hsubD _ (splits_sub hXr Z hZ))
+```
+
+**The constraint that dictates two bare lemmas rather than one wrapper**:
+`ljf_dec_sound` (`LJF/OCore.lean:2233`, `set_option hygiene false`, 37
+`by assumption` entries) reads call-site variables, so the derivations `D₁`,
+`D₂` must remain direct arguments at the call site. A wrapper that swallowed
+them is the mechanism that reverted the `OCore` station factoring. Mechanism
+(d) is inert here: `Sub` and `_ ∈ _` are `Prop`s, so proof irrelevance makes
+the replacement invisible to reduction.
+
+Estimate: **~410 lines** (range 350–480). Order: Family B in
+`LJF/OFuelSound.lean` first (12 sites, fuel measure, no `ljf_dec_sound`
+farm), then the rest of B, then A.
 
 ## The rules that keep this honest
 

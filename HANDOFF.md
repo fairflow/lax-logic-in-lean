@@ -4502,3 +4502,67 @@ the five families are eliminations, which cannot be abstracted over a record of
 operations, and the duplication is load-bearing — `G4` is the object of a
 published separation, `G4ipComplete` is the rule-8 fragment result, and
 `G4h.inv` is height-preserving where `G4.inv` has no height.
+
+## 2026-09-17 — one proof instead of two, and a table instead of two
+
+Branch `ledger`, continuing the simplification campaign
+(`docs/proof-simplification-plan-2026-09-16.md`). Two refactors landed, one
+design was refused with a certificate, and two more were designed.
+
+**`itp_fuel_mono` and `itp_budget_mono` were one proof.**
+`LaxLogic/PLL/UI/G4UITrunc.lean` ran the same 574-line induction twice,
+differing only in which of the two numerals carries the `+ 1`. Both are now
+instances of
+
+    itp_step_mono (sf sb : Nat → Nat)
+      (hsf : ∀ f, sf (f + 1) = sf f + 1) (hsb : ∀ b, sb (b + 1) = sb b + 1)
+
+at `(· + 1), id` and `id, (· + 1)`, both equations `fun _ => rfl`. 4,036 lines
+→ 3,489. **The only thing the abstraction breaks is reduction**: a concrete
+`b + 1` iota-reduces where `sb (b + 1)` does not, and `hsb` restores it at
+exactly six `cases b` branches plus eight `hsb b' ▸ ih… (b' + 1)` transports;
+`hsf` does the same at the two `itpE_succ`/`itpA_succ` unfoldings. Nothing else
+in 582 lines changed. This closes Stage C of the plan: candidate 1 done,
+candidate 5 refused, candidate 3 here — and it is the first candidate whose
+size estimate held (survey ~551, actual 547).
+
+**A 445-row table written out twice.** `tools/RCFuel.lean` and
+`tools/RCellsGen.lean` each carried a byte-identical 446-line `cells`; it is
+now `tools/RCells.lean` (no imports, namespace `RCells`, added to the `Tools`
+library glob — without which a `lean_exe` root cannot see it). RCFuel 477 → 31
+lines, RCellsGen 620 → 174. The check that matters is not the build:
+`.lake/build/bin/rcellsgen` reproduces the committed `wip/rcells.lean`
+byte-for-byte, 2,247 lines.
+
+**The estate had a second hole of the `FRJO` kind.** Neither generator's
+declarations were in the ledger before today. The campaign built every
+*library*; a `lean_exe` root belonging to no library was outside the estate.
+Seventeen pre-existing declarations entered the record with this change.
+
+**The gate says the refactors changed nothing.** 19 additions, **zero
+regressions**, no axiom change to any existing declaration —
+
+```
+ledger: 19 addition(s)/improvement(s)
+  NEW         PLLND.itp_step_mono  (LaxLogic.PLL.UI.G4UITrunc)
+  NEW         RCells.cells  (tools.RCells)
+  …
+```
+
+**Refused: the `LaxND` congruence split (candidate 9).** Fourteen proofs split
+on all twelve `LaxND` constructors, 300 measured lines; `LaxND.mapCtx` reaches
+three of them (54 lines) and reintroduces the casts `NDCore` was built to
+avoid. With `f` abstract, `.impIntro`'s conclusion and the goal differ by
+`hImp ▸`, an `Eq.rec` on a `Type`-valued index, and `conservativity`'s arms
+typecheck only because `p.erased` iota-reduces per constructor. This is the
+fourth refusal and the first of mechanism **(d)** — the abstraction stops
+something reducing that the concrete form reduced by iota. A designed watched
+failure is recorded in the plan as the certificate.
+
+**Designed, not yet built:** candidate 7 (the guarded-membership census: 238
+sites, 114 chains, 961 scaffolding lines, one `mem_ite_list` iff-lemma used as
+a simp-set behind a `mem_tbl` macro — the constraint is *over*-reduction, the
+guards must reach the producing `rw [if_neg …]` unnormalised) and candidate 8
+(the LJF weakening triple: 528 identical lines, of which 252 need no new code
+at all because `Sub.cons` already exists and is written out by hand at 53
+sites). Both in `docs/proof-simplification-plan-2026-09-16.md`.

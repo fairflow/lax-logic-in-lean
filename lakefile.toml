@@ -192,7 +192,7 @@ root = "Main"
 # side.  See Tools/README.md.
 [[lean_lib]]
 name = "Tools"
-globs = ["tools.Bank", "tools.Cert", "tools.Pin", "tools.Search", "tools.Derive", "tools.Engines", "tools.Terminate", "tools.Diff", "tools.Hard", "tools.Verdict", "tools.Construct", "tools.BankRho", "tools.Cover"]
+globs = ["tools.Bank", "tools.Cert", "tools.Pin", "tools.Search", "tools.Derive", "tools.Engines", "tools.Terminate", "tools.Diff", "tools.Hard", "tools.Verdict", "tools.Construct", "tools.BankRho", "tools.Cover", "tools.RCells"]
 
 # frjterm: is the CAP-FREE CLOSURE outcome reachable at all?  (2026-08-21)
 # rhocover: the catalogue-wide PLL cover sweep (item 2, 2026-08-24).

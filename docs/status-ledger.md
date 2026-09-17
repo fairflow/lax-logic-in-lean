@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-17 10:30 BST from `8cc40d6` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-17 12:00 BST from `4aeb8f2` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**28253 declarations** in **571 modules**: 12952 theorems, 15301 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**28272 declarations** in **574 modules**: 12953 theorems, 15319 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -105,7 +105,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.PLL.Sequent` | 245 | 95 | 245 |  |  |
 | `LaxLogic.PLL.Syntax` | 391 | 141 | 391 |  |  |
 | `LaxLogic.PLL.Timing` | 130 | 42 | 130 |  |  |
-| `LaxLogic.PLL.UI` | 289 | 196 | 289 |  |  |
+| `LaxLogic.PLL.UI` | 290 | 197 | 290 |  |  |
 | `LaxLogic.PLLInstanceBound` | 27 | 9 | 27 |  |  |
 | `LaxLogic.PLLSubformulaSet` | 10 | 3 | 10 |  |  |
 | `LaxLogic.QLL.Abstract` | 21 | 18 | 21 |  |  |
@@ -176,7 +176,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `Reject` | 224 | 116 | 224 |  |  |
 | `Rewrite` | 113 | 62 | 113 |  |  |
 | `Tools` | 53 | 8 | 53 |  |  |
-| `tools` | 879 | 131 | 879 |  |  |
+| `tools` | 897 | 131 | 897 |  |  |
 | `wip.G4conf` | 51 | 7 | 49 | 2 |  |
 | `wip.ascRefute` | 25 | 10 | 25 |  |  |
 | `wip.atomForce` | 6 | 6 | 6 |  |  |
@@ -362,9 +362,9 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12370 |
-| `propext`, `Quot.sound` | 8136 |
-| `propext` | 5296 |
+| *(none — axiom-free)* | 12381 |
+| `propext`, `Quot.sound` | 8139 |
+| `propext` | 5301 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2419 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
