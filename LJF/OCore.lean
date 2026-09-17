@@ -1920,6 +1920,18 @@ theorem splits_sub {Γ : List Neg} :
       · cases h; exact Sub.grow Y
       · cases hEq; exact Sub.cons Y (ih hZ)
 
+/-- The `hX` argument of an attack row: the split's head, read back through a
+`done`-inclusion and past the row's own head hypothesis `A`. -/
+theorem rowHyp {A X : Neg} {rest done Γ' : List Neg}
+    (hsubD : Sub done Γ') (hXr : (X, rest) ∈ splits done) : X ∈ A :: Γ' :=
+  List.mem_cons_of_mem _ (hsubD _ (splits_mem hXr))
+
+/-- The `hrest` argument of an attack row: the split's residual, read back
+through a `done`-inclusion and past the row's own head hypothesis `A`. -/
+theorem rowSub {A X : Neg} {rest done Γ' : List Neg}
+    (hsubD : Sub done Γ') (hXr : (X, rest) ∈ splits done) : Sub rest (A :: Γ') :=
+  fun Z hZ => List.mem_cons_of_mem _ (hsubD _ (splits_sub hXr Z hZ))
+
 theorem findFire_atom {full : List Neg} :
     ∀ {l : List (Neg × List Neg)} {a N rest},
       findFire full l = some (a, N, rest) → atomMem a full = true := by
@@ -3217,12 +3229,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           if hx1 : x ∈ [interp p [] done (some (.up (.atom q)))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
-              ((aSound p [] done (.up (.atom q))).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ)))))))
+              ((aSound p [] done (.up (.atom q))).wk (Sub.cons _ hsubD)))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3238,10 +3245,8 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     exact nBotElim _ (List.mem_cons_self ..)
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
-                      (List.mem_cons_of_mem _
-                        (hsubD _ ((splits_mem hXr))))
-                      (fun Z hZ => List.mem_cons_of_mem _
-                        (hsubD _ ((splits_sub hXr Z hZ))))
+                      (rowHyp hsubD hXr)
+                      (rowSub hsubD hXr)
                       (aSound p [N] rest (.circ (.atom q)))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3251,18 +3256,14 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.atom q)))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.atom q)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3332,12 +3333,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           if hx1 : x ∈ [interp p [] done (some (.up .fls))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
-              ((aSound p [] done (.up .fls)).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ)))))))
+              ((aSound p [] done (.up .fls)).wk (Sub.cons _ hsubD)))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3353,10 +3349,8 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     exact nBotElim _ (List.mem_cons_self ..)
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
-                      (List.mem_cons_of_mem _
-                        (hsubD _ ((splits_mem hXr))))
-                      (fun Z hZ => List.mem_cons_of_mem _
-                        (hsubD _ ((splits_sub hXr Z hZ))))
+                      (rowHyp hsubD hXr)
+                      (rowSub hsubD hXr)
                       (aSound p [N] rest (.circ .fls))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3366,18 +3360,14 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ .fls))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ .fls))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3447,30 +3437,15 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           if he1 : x = interp p [] done (some (.circ P₁)) then
             subst he1
             exact .circR (.stable (stabOr1 (unStable (circROf
-                ((aSound p [] done (.circ P₁)).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ))))))))
+                ((aSound p [] done (.circ P₁)).wk (Sub.cons _ hsubD))))))
           else if he2 : x = interp p [] done (some (.circ P₂)) then
             subst he2
             exact .circR (.stable (stabOr2 (unStable (circROf
-                ((aSound p [] done (.circ P₂)).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ))))))))
+                ((aSound p [] done (.circ P₂)).wk (Sub.cons _ hsubD))))))
           else if he3 : x = interp p [] done (some (.up (.or P₁ P₂))) then
             subst he3
             exact .circR (.stable (.laxOf (unStable
-              ((aSound p [] done (.up (.or P₁ P₂))).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ)))))))
+              ((aSound p [] done (.up (.or P₁ P₂))).wk (Sub.cons _ hsubD)))))
           else
           have hx2 := (List.mem_append.mp hx).resolve_left (by
             intro h
@@ -3491,10 +3466,8 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     exact nBotElim _ (List.mem_cons_self ..)
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
-                      (List.mem_cons_of_mem _
-                        (hsubD _ ((splits_mem hXr))))
-                      (fun Z hZ => List.mem_cons_of_mem _
-                        (hsubD _ ((splits_sub hXr Z hZ))))
+                      (rowHyp hsubD hXr)
+                      (rowSub hsubD hXr)
                       (aSound p [N] rest (.circ (.or P₁ P₂)))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3504,18 +3477,14 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.or P₁ P₂)))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.or P₁ P₂)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3585,12 +3554,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           if hx1 : x ∈ [interp p [] done (some (.circ P'))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.rfoc (.rel (circROf
-              ((aSound p [] done (.circ P')).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ))))))))
+              ((aSound p [] done (.circ P')).wk (Sub.cons _ hsubD))))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3606,10 +3570,8 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     exact nBotElim _ (List.mem_cons_self ..)
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
-                      (List.mem_cons_of_mem _
-                        (hsubD _ ((splits_mem hXr))))
-                      (fun Z hZ => List.mem_cons_of_mem _
-                        (hsubD _ ((splits_sub hXr Z hZ))))
+                      (rowHyp hsubD hXr)
+                      (rowSub hsubD hXr)
                       (aSound p [N] rest (.circ (.down (.up P'))))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3619,18 +3581,14 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.down (.up P'))))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.down (.up P'))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3700,12 +3658,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           if hx1 : x ∈ [interp p [] done (some (.circ P'))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.rfoc (.rel (.circR (circROf
-              ((aSound p [] done (.circ P')).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ)))))))))
+              ((aSound p [] done (.circ P')).wk (Sub.cons _ hsubD)))))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3721,10 +3674,8 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     exact nBotElim _ (List.mem_cons_self ..)
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
-                      (List.mem_cons_of_mem _
-                        (hsubD _ ((splits_mem hXr))))
-                      (fun Z hZ => List.mem_cons_of_mem _
-                        (hsubD _ ((splits_sub hXr Z hZ))))
+                      (rowHyp hsubD hXr)
+                      (rowSub hsubD hXr)
                       (aSound p [N] rest (.circ (.down (.circ P'))))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3734,18 +3685,14 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.down (.circ P'))))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.down (.circ P'))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3815,12 +3762,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           if hx1 : x ∈ [interp p [] done (some (.up (.down (.and M₁ M₂))))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
-              ((aSound p [] done (.up (.down (.and M₁ M₂)))).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ)))))))
+              ((aSound p [] done (.up (.down (.and M₁ M₂)))).wk (Sub.cons _ hsubD)))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3836,10 +3778,8 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     exact nBotElim _ (List.mem_cons_self ..)
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
-                      (List.mem_cons_of_mem _
-                        (hsubD _ ((splits_mem hXr))))
-                      (fun Z hZ => List.mem_cons_of_mem _
-                        (hsubD _ ((splits_sub hXr Z hZ))))
+                      (rowHyp hsubD hXr)
+                      (rowSub hsubD hXr)
                       (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3849,18 +3789,14 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3930,12 +3866,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           if hx1 : x ∈ [interp p [] done (some (.up (.down (.imp Q₀ N₀))))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
-              ((aSound p [] done (.up (.down (.imp Q₀ N₀)))).wk (by
-                intro Z hZ
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _
-                    (hsubD _ (hZ)))))))
+              ((aSound p [] done (.up (.down (.imp Q₀ N₀)))).wk (Sub.cons _ hsubD)))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3951,10 +3882,8 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     exact nBotElim _ (List.mem_cons_self ..)
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
-                      (List.mem_cons_of_mem _
-                        (hsubD _ ((splits_mem hXr))))
-                      (fun Z hZ => List.mem_cons_of_mem _
-                        (hsubD _ ((splits_sub hXr Z hZ))))
+                      (rowHyp hsubD hXr)
+                      (rowSub hsubD hXr)
                       (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3964,18 +3893,14 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
-                        (List.mem_cons_of_mem _
-                          (hsubD _ ((splits_mem hXr))))
-                        (fun Z hZ => List.mem_cons_of_mem _
-                          (hsubD _ ((splits_sub hXr Z hZ))))
+                        (rowHyp hsubD hXr)
+                        (rowSub hsubD hXr)
                         (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
