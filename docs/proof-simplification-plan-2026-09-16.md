@@ -189,6 +189,63 @@ axioms, different module — from a loss, and a move whose axioms *changed* is
 still a regression, reported as `MOVED*`. Both cases are in
 `scripts/test-ledger-diff.py`, and both were watched failing.
 
+**`tag_cone`, the fourth member of the mutual block, done 2026-09-17.**
+`tag_cone` was proved three times at 165 lines and pairwise similarity
+0.984–0.993. The distribution inside it is what decides the design: eight of
+its eleven arms are one to six lines — a barren root, or a tag that cannot be
+`chain` — and **`joinAtP`, `joinOrP` and `joinCircP` are 133 of the 165**
+(45, 45, 43). Two similarity claims were checked by diff before anything was
+written, not assumed: R↔V differ only in the `kept` zone and only inside the
+SMALL arms, so the three big arms are identical across R and V modulo `FRJVr`;
+V↔W is rename-only (`stab`/`th` → `Ξs`/`Θs`).
+
+One lemma, `tagConeP_core` (`FRJ/SoundCore.lean`, 74 lines), states the shared
+part about the abstract `joinPModel elems hcomplete Ψ Ms Ns`, taking as
+ordinary parameters what the arms read off the derivation: the covering
+certificate `hcov`, the per-component pledge `hall`, the `joinCtx?P_clo`
+supplier, `hΓ`, and the two recursive calls `lemma39R (dps i)` and
+`tag_cone (dps i)` as functions. The recursion is NOT moved: each file keeps
+its eleven-arm skeleton and calls out, as `SoundCore` and `join_closed` do.
+`joinCircP_core` was already carrying `ihP` and `ihT` with literally the
+`tag_cone` statement, over abstract `Ns`, and was most of the answer.
+
+**The probe, run alone before any core lemma was written.** The one genuine
+risk was whether `hu : (modR d).Rm (modR d).root u` still ascribes to a
+`PreModel.join` term when `Ms`/`Ns` are abstract — the step the concrete text
+performs at `FRJ/Sound.lean:749`. A one-line `:= hu` example against the
+abstract `joinPModel`, compiled alone, **passed**, so no wrapper keeps an
+ascription and the design runs at full size. `joinAtP` was then taken all the
+way through one wrapper, and compiled, before the other five were touched —
+the same discipline as the `rfl` probe above; that build is also what showed
+the mutual block accepts `fun i => tag_cone (dps i)` as an argument, which
+`lemma39R` was already relying on one lemma over.
+
+| | before | after |
+|---|--:|--:|
+| `FRJ/Sound.lean` | 1,079 | 996 |
+| `FRJ/SoundV.lean` | 984 | 901 |
+| `FRJ/SoundW.lean` | 999 | 916 |
+| `FRJ/SoundCore.lean` | 1,200 | 1,274 |
+| total | 4,262 | 4,087 |
+
+175 lines, `tag_cone` itself 165 → 82 in each of the three files. Verified:
+`lake build` green (8,748 jobs), and the gate reports
+
+```
+ledger: 1 addition(s)/improvement(s) — regenerate `docs/status-ledger.jsonl`
+  NEW         FRJ.tagConeP_core  (FRJ.SoundCore)
+```
+
+with `FRJ.tag_cone`, `FRJ.V.tag_cone` and `FRJ.W.tag_cone` unchanged at
+`[propext, Quot.sound]`.
+
+**What was NOT done, and the reason is the estimate.** Each `joinAtP`/
+`joinOrP` wrapper still opens its own tag by hand — `rcases htag`, `rcases ht`,
+`injection`, `subst`, nine lines, six times. A second lemma taking `htag` and
+`ht` and returning `Covers Γ' (Ds 0) Z ∧ hall` would take another 42 lines out
+for 14 of its own. It is a separate fact about the tag algebra, not about the
+model, and it is left for whoever next opens these files.
+
 ## Stage B, done 2026-09-16: `SaturateV` said 21 things twice
 
 The survey called `FRJ/Saturate.lean` ↔ `FRJ/SaturateV.lean` 825 duplicated
