@@ -129,13 +129,18 @@ def main(mods_file, out_file, built_only=False, no_stale_check=False):
 
     stale = [] if no_stale_check else stale_modules(mods)
     if stale:
-        print(f"ledger: {len(stale)} module(s) have a source newer than their .olean; "
-              "build them before trusting the record:", file=sys.stderr)
-        for m in stale[:20]:
-            print(f"    lake build {m}", file=sys.stderr)
-        if len(stale) > 20:
-            print(f"    … and {len(stale) - 20} more", file=sys.stderr)
-        raise SystemExit("ledger: stale object files")
+        # mtime is a proxy, and it has one false positive: a source restored by
+        # `git checkout` keeps its content and gains a new mtime.  Lake decides
+        # by hash, so ask it — a genuinely current module costs one no-op build.
+        print(f"ledger: {len(stale)} module(s) look stale by mtime; asking lake")
+        p = subprocess.run(["lake", "build", *stale], capture_output=True, text=True)
+        if p.returncode != 0:
+            sys.stderr.write(p.stdout + p.stderr)
+            raise SystemExit("ledger: stale object files, and rebuilding them failed")
+        still = stale_modules(stale)
+        if still:
+            print(f"ledger: lake reports {len(still)} of them already current "
+                  "(restored source, unchanged content); continuing")
 
     tmpdir = tempfile.mkdtemp(prefix="ledger-")
     graph = import_graph(mods)

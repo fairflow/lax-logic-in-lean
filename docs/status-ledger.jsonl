@@ -7942,6 +7942,10 @@
 {"axioms":["propext","Quot.sound"],"decl":"LJFO.fireASoundP.congr_simp","kind":"theorem","module":"LJF.OFuelPSound","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LJFO.interpP.eq_def","kind":"theorem","module":"LJF.OFuelPSound","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LJFO.interpP_dykStation_row","kind":"theorem","module":"LJF.OFuelPSound","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.stationCircP","kind":"def","module":"LJF.OFuelPSound","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.stationCircP.congr_simp","kind":"theorem","module":"LJF.OFuelPSound","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.stationUpP","kind":"def","module":"LJF.OFuelPSound","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.stationUpP.congr_simp","kind":"theorem","module":"LJF.OFuelPSound","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LJFO.ASoundF'","kind":"def","module":"LJF.OFuelSound","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LJFO.ESoundF'","kind":"def","module":"LJF.OFuelSound","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"LJFO.aSoundF","kind":"def","module":"LJF.OFuelSound","native":false,"sorry":false}
@@ -7953,6 +7957,10 @@
 {"axioms":["propext","Quot.sound"],"decl":"LJFO.fireASoundF","kind":"def","module":"LJF.OFuelSound","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"LJFO.fireASoundF.congr_simp","kind":"theorem","module":"LJF.OFuelSound","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LJFO.interpF.eq_def","kind":"theorem","module":"LJF.OFuelSound","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.stationCircF","kind":"def","module":"LJF.OFuelSound","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.stationCircF.congr_simp","kind":"theorem","module":"LJF.OFuelSound","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.stationUpF","kind":"def","module":"LJF.OFuelSound","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.stationUpF.congr_simp","kind":"theorem","module":"LJF.OFuelSound","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"LJFO.Inv.toH","kind":"def","module":"LJF.OHeight","native":false,"sorry":false}
 {"axioms":[],"decl":"LJFO.InvH","kind":"inductive","module":"LJF.OHeight","native":false,"sorry":false}
 {"axioms":[],"decl":"LJFO.InvH.andR","kind":"ctor","module":"LJF.OHeight","native":false,"sorry":false}

@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-17 08:51 BST from `fd8db61` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-17 10:30 BST from `8cc40d6` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**28245 declarations** in **571 modules**: 12948 theorems, 15297 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**28253 declarations** in **571 modules**: 12952 theorems, 15301 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -59,7 +59,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.WitnessV2013` | 35 | 2 | 35 |  |  |
 | `FRJ.WitnessV2018` | 41 | 2 | 41 |  |  |
 | `FRJO` | 273 | 92 | 273 |  |  |
-| `LJF` | 1532 | 760 | 1532 |  |  |
+| `LJF` | 1540 | 764 | 1540 |  |  |
 | `LaxBlueprint` | 10 | 0 | 10 |  |  |
 | `LaxLogic.Belief.BooleanIso` | 6 | 4 | 6 |  |  |
 | `LaxLogic.Belief.Collapse` | 5 | 4 | 5 |  |  |
@@ -363,7 +363,7 @@ Every distinct axiom set in the estate, most common first.
 | axioms | declarations |
 |---|--:|
 | *(none — axiom-free)* | 12370 |
-| `propext`, `Quot.sound` | 8128 |
+| `propext`, `Quot.sound` | 8136 |
 | `propext` | 5296 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2419 |
 | `sorryAx` | 8 |
