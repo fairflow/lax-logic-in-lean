@@ -13,6 +13,40 @@ each step is finished only when the module builds and
 declaration that gained an axiom or a `sorryAx`, which is exactly the failure
 mode a proof refactor can hide.
 
+## Scoreboard
+
+Every row is gated: `lake build` green and `scripts/check-ledger.sh` reporting
+the new lemmas as additions and **zero regressions** — no declaration anywhere
+in the estate gained an axiom, a `sorryAx` or a `native_decide` taint, and none
+vanished.
+
+| done | what | lines |
+|---|---|--:|
+| 2026-09-16 | `Enum.f_mem`; one `Clo` induction, not five | ~120 |
+| 2026-09-16 | `FRJ/SoundCore.lean` + `SoundCoreV.lean`: fifteen join proofs → five | 1,003 |
+| 2026-09-16 | `SaturateV` said 21 things twice | 291 |
+| 2026-09-16 | LJF `fireA`; station factoring in the two fuel files | 1,077 |
+| 2026-09-17 | `itp_step_mono`: fuel and budget monotonicity were one proof | 547 |
+| 2026-09-17 | `tools/RCells.lean`: a 445-row table written out twice | 436 |
+| 2026-09-17 | candidate 7: 238 guarded-membership sites → 96 | 399 |
+| 2026-09-17 | `join_closed`: one lemma for 24 `preR_closed` join arms | 235 |
+| 2026-09-17 | candidate 8: the LJF weakening triple | 201 |
+
+**Refused, each with a written reason and, since 2026-09-17, a designed watched
+failure**: the G4/G4H/G4P triplication (eliminations cannot be abstracted over
+a record, and the duplication is load-bearing for a published separation); the
+LJF `aSound` triple (a duplicated recursion needs its termination argument);
+station factoring in `OCore` (a recursive call under a lambda loses the
+call-site variables `ljf_dec_sound`'s `assumption` entries read); and the
+`LaxND` congruence split (the abstraction stops something reducing that the
+concrete form reduced by iota, and the repair would have to cross a
+`Type`-valued index).
+
+**The one sentence worth carrying forward**: ask what is *doubled*, not how
+similar the text is — and if the doubled thing is a **function**, it abstracts
+for free; if it is an inductive family, a recursion, or a termination
+argument, it does not.
+
 ## What the survey found
 
 141 proof bodies are byte-identical to another modulo whitespace and comments
@@ -606,7 +640,53 @@ whose field matches the connectives, so that commutation is iota again. That
 redefines `erase`, `substP` and `subC` across three modules and touches a
 published conservativity result.
 
-## Stage A, candidate 8, designed 2026-09-17: the LJF weakening triple
+## Stage A, candidate 8, DONE 2026-09-17: the LJF weakening triple, 201 lines
+
+| file | before | after |
+|---|--:|--:|
+| `LJF/OCore.lean` | 4,116 | 4,041 |
+| `LJF/OFuelSound.lean` | 1,171 | 1,111 |
+| `LJF/OFuelPSound.lean` | 1,305 | 1,239 |
+
+201 lines against the ~410 estimate, and **the shortfall is a correction to the
+census, not a failure of the design.** Two counts were wrong:
+
+* **Family B: 27 sites, not 53.** A census of all 115 blocks of that shape
+  found only 27 that are the bare `Sub.cons _ h`. Of the rest, 36 are
+  `Sub.cons _ (Sub.grow _)` and 16 are
+  `Sub.cons _ (Sub.trans (Sub.grow _) hsub)` — the *compositions* the survey
+  itself set aside as genuinely different. `(Sub.cons _ hsubD)` is not what
+  they are.
+* **Family A: 78 of 138 argument slots**, not 138 — 48 of 69 `hX` and 30 of 69
+  `hrest`. The 21 remaining `hX` and 15 `hrest` route through `hsub`, where the
+  inclusion in scope is `Sub (Y :: done) Γ'`, **one cons wider** than the
+  lemmas' `Sub done Γ'`; bridging it needs `Sub.trans (Sub.grow _) hsub` at
+  every site, which is generalisation rather than extraction and is no shorter.
+  The other 18 `hrest` are the `rest := done` instantiation, with no
+  `splits_sub` in them at all.
+
+`rowHyp` and `rowSub` are in `LJF/OCore.lean` after `splits_sub`. **No
+`assumption` failure occurred**: both lemmas return a `Prop` proof and swallow
+nothing, so `D₁`/`D₂` stayed direct call-site arguments and `ljf_dec_sound`'s
+farm still sees them. `lake build` green (8,748 jobs) and `lake build LJF`
+green (3,102 jobs) — note the bare build does **not** cover `LJF`, which is
+absent from `defaultTargets`. Gate: two additions, `LJFO.rowHyp` and
+`LJFO.rowSub`, and zero regressions.
+
+**A latent gate defect came out of this, and it is worth more than the 201
+lines.** `scripts/check-ledger.sh` in its default mode could not run in a fresh
+worktree at all: a checkout stamps every source newer than every cloned
+`.olean`, the mtime proxy fires on all 579 modules, the script asks lake to
+rebuild them, and `docs/ledger-modules.txt` carried **`Tools.Engines` beside
+`tools.Engines`** — a duplicate minted by the case-insensitive filesystem and
+invisible on macOS. `lake build Tools.Engines` reports `unknown target`, so the
+run aborted at exit 3 with no ledger generated. The 2026-09-16 `Tools`/`tools`
+repair fixed the lakefile and the imports and never reached the record. The
+duplicate is now removed.
+
+### The design, as written before the work
+
+
 
 Two families, both about `Sub` (`LJF/OCore.lean:122`), **528 identical lines**
 — not the ~700 the survey quoted, because 46 further blocks (303 lines) are
@@ -657,7 +737,7 @@ lambda already compiles in both blocks today** — `FRJ/Sound.lean:712` passes
 `(fun i => tag_cone (dps i))` and `FRJ/Extract.lean:526` passes
 `(fun i => preR (dps i))` inside `Sum.elim`. Neither design moves a recursion.
 
-### `preR_closed` — DONE 2026-09-17, 237 lines
+### `preR_closed` — DONE 2026-09-17, 235 lines
 
 The probe was the lemma itself, and it compiled first time, as did the first
 arm rewritten by hand. All **24 join arms** (eight per file, three files) are
@@ -683,11 +763,11 @@ now instances:
 
 | file | before | after |
 |---|--:|--:|
-| `FRJ/Extract.lean` | 944 | 881 |
-| `FRJ/ExtractV.lean` | 510 | 423 |
-| `FRJ/ExtractW.lean` | 504 | 417 |
+| `FRJ/Extract.lean` | 941 | 880 |
+| `FRJ/ExtractV.lean` | 509 | 422 |
+| `FRJ/ExtractW.lean` | 503 | 416 |
 
-237 lines, against an estimate of 265 — the shortfall is exactly the predicted
+235 lines, against an estimate of 265 — the shortfall is exactly the predicted
 one: the `preI_spec`/`occI_steps`/`Step.join*` prelude stays in every arm,
 because the `Step` constructor differs per arm *and* per calculus. That
 prelude is the only calculus-specific content left in any of the 24 arms, and

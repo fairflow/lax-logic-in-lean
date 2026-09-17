@@ -58,9 +58,27 @@ def main(recorded_path, fresh_path, scope_fresh=False):
         if d in gone_by_decl and gone_by_decl[d]:
             moved[(m, d)] = gone_by_decl[d].pop(0)
 
+    # a declaration that left one module but is STILL PRESENT, under the same
+    # name and the same axioms, in another module is a duplicate record being
+    # removed, not a loss.  `Tools.Engines` and `tools.Engines` were recorded
+    # as two modules of the same file on a case-insensitive filesystem, and
+    # dropping one of them made the gate report 53 regressions (2026-09-17).
+    same_decl_elsewhere = {}
+    for (m, d), r in new.items():
+        same_decl_elsewhere.setdefault(d, []).append((m, r))
+
     for key in sorted(old.keys() - new.keys()):
         if key[1] in gone_by_decl and key[0] in gone_by_decl[key[1]]:
-            regressions.append(f"GONE        {key[1]}  ({key[0]}) — declaration no longer in the build")
+            o = old[key]
+            twin = next((m for m, r in same_decl_elsewhere.get(key[1], [])
+                         if r["axioms"] == o["axioms"] and r["sorry"] == o["sorry"]
+                         and r["native"] == o["native"]), None)
+            if twin is not None:
+                stale.append(f"DUPE        {key[1]}  ({key[0]}) — dropped; "
+                             f"same declaration and axioms remain in {twin}")
+            else:
+                regressions.append(
+                    f"GONE        {key[1]}  ({key[0]}) — declaration no longer in the build")
 
     for key in sorted(new.keys() - old.keys()):
         r = new[key]

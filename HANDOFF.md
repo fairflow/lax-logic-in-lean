@@ -4635,11 +4635,11 @@ calculus, which is why it is the hypothesis and not the lemma.
 
 | file | before | after |
 |---|--:|--:|
-| `FRJ/Extract.lean` | 944 | 881 |
-| `FRJ/ExtractV.lean` | 510 | 423 |
-| `FRJ/ExtractW.lean` | 504 | 417 |
+| `FRJ/Extract.lean` | 941 | 880 |
+| `FRJ/ExtractV.lean` | 509 | 422 |
+| `FRJ/ExtractW.lean` | 503 | 416 |
 
-237 lines, against an estimate of 265 — short by exactly the predicted amount,
+235 lines, against an estimate of 265 — short by exactly the predicted amount,
 for exactly the predicted reason. `lake build` green, 8,748 jobs.
 
 **The two mechanisms that sank the `OCore` station factoring are simply absent
@@ -4653,3 +4653,35 @@ passing a recursive call under a lambda already compiles in both blocks today
 `joinOrP` and `joinCircP` are 133 of the 164 lines per copy. Its probe is a
 one-line `:= hu` against an abstract `joinPModel`; the existing text already
 performs that ascription at `FRJ/Sound.lean:749`.
+
+## 2026-09-17 (evening) — the LJF weakening triple, and a gate that could not run
+
+Branch `ledger`, candidate 8, done by an agent in its own worktree and merged
+here. `Sub.cons` (`LJF/OCore.lean:132`) was written out by hand, byte-for-byte
+its own proof body, at 27 sites; and two new lemmas `rowHyp`/`rowSub` after
+`splits_sub` absorb 78 of the 138 argument slots at the 69
+`atkQimp`/`atkDyk`/`atkCimp`/`atkPark` call sites. `LJF/OCore.lean`
+4,116 → 4,041, `OFuelSound.lean` 1,171 → 1,111, `OFuelPSound.lean`
+1,305 → 1,239: **201 lines**, gate clean with two additions.
+
+**The estimate was 410 and the shortfall is a correction to the census**, not a
+failure: Family B is 27 sites and not 53 (36 of the rest are
+`Sub.cons _ (Sub.grow _)` and 16 `Sub.cons _ (Sub.trans (Sub.grow _) hsub)` —
+compositions, not instances), and 21 `hX` + 15 `hrest` route through `hsub`,
+whose inclusion is `Sub (Y :: done) Γ'`, **one cons wider** than the lemmas'
+`Sub done Γ'`. Bridging that is generalisation, not extraction, and is no
+shorter.
+
+No `assumption` failure: both lemmas return a `Prop` proof and swallow nothing,
+so the derivations stayed direct call-site arguments and `ljf_dec_sound`'s farm
+still sees them.
+
+**The finding worth more than the lines: `scripts/check-ledger.sh` in default
+mode could not run in a fresh worktree at all.** A checkout stamps every source
+newer than every cloned `.olean`, so the mtime proxy fires on all 579 modules;
+the script then asks lake to rebuild them, and `docs/ledger-modules.txt`
+carried **`Tools.Engines` beside `tools.Engines`** — a duplicate minted by the
+case-insensitive filesystem, invisible on macOS, 53 declarations recorded
+twice. `lake build Tools.Engines` reports `unknown target`, so the run aborted
+at exit 3 with no ledger generated. The 2026-09-16 `Tools`/`tools` repair fixed
+the lakefile and the imports and never reached the record. Removed.

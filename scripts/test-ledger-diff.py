@@ -113,6 +113,34 @@ def main(record):
     if not ok:
         bad.append(("addition", rc, 2, out.strip().splitlines()[:3]))
 
+    # A DUPLICATE RECORD REMOVED IS NOT A LOSS, but a duplicate whose twin
+    # disagrees still is.  `Tools.Engines` and `tools.Engines` were two module
+    # names for one file on a case-insensitive filesystem, and dropping one of
+    # them made the gate cry 53 regressions (2026-09-17).  Both halves are
+    # tested: the classifier must stay quiet on the first and must NOT stay
+    # quiet on the second.
+    dup = dict(v, module=v["module"] + ".Dup")
+    dup_record = os.path.join(tmp, "dup-record.jsonl")
+    write(dup_record, rows + [dup])           # the record holds both copies
+    write(fresh, rows)                        # the fresh run holds only one
+    rc, out = run(dup_record, fresh)
+    ok = rc == 2 and "DUPE" in out and "GONE" not in out
+    print(f"  [{'ok ' if ok else 'BAD'}] a duplicate record is dropped: exit {rc}")
+    if not ok:
+        bad.append(("dupe", rc, 2, out.strip().splitlines()[:3]))
+
+    # the same shape, but the surviving twin carries a `sorry`: still a LOSS
+    dup_worse = dict(v, module=v["module"] + ".Dup")
+    write(dup_record, rows + [dup_worse])
+    write(fresh, [dict(r, sorry=True, axioms=sorted(set(r["axioms"]) | {"sorryAx"}))
+                  if (r["module"], r["decl"]) == (v["module"], v["decl"]) else r
+                  for r in rows])
+    rc, out = run(dup_record, fresh)
+    ok = rc == 1 and "GONE" in out
+    print(f"  [{'ok ' if ok else 'BAD'}] a dropped copy whose twin differs is still GONE: exit {rc}")
+    if not ok:
+        bad.append(("dupe-negative", rc, 1, out.strip().splitlines()[:3]))
+
     if bad:
         print("\ntest-ledger-diff: FAILED")
         for name, rc, want, head in bad:

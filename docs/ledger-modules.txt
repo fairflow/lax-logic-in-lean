@@ -370,7 +370,6 @@ Rewrite.Canon
 Rewrite.Catalogue
 Rewrite.Core
 Rewrite.Set
-Tools.Engines
 tools.Bank
 tools.BankRho
 tools.Cert
