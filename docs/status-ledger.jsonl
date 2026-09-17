@@ -13937,9 +13937,12 @@
 {"axioms":["propext","Quot.sound"],"decl":"PLLND.inter_fuel_mono","kind":"theorem","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.inter_pfree","kind":"theorem","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.inter_sound","kind":"theorem","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
+{"axioms":["propext"],"decl":"PLLND.ite_none_eq_some","kind":"theorem","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
+{"axioms":["propext"],"decl":"PLLND.mem_ite_list","kind":"theorem","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.orAll","kind":"def","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.orAll.eq_def","kind":"theorem","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"PLLND.or_mono","kind":"theorem","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
+{"axioms":[],"decl":"PLLND.tacticMem_tbl_","kind":"def","module":"LaxLogic.PLL.UI.G4UI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.E_step","kind":"theorem","module":"LaxLogic.PLL.UI.G4UIAdq","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.inter_adequate","kind":"theorem","module":"LaxLogic.PLL.UI.G4UIAdq","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"PLLND.andAll_project_c","kind":"theorem","module":"LaxLogic.PLL.UI.G4UIStab","native":false,"sorry":false}

@@ -4566,3 +4566,50 @@ guards must reach the producing `rw [if_neg …]` unnormalised) and candidate 8
 (the LJF weakening triple: 528 identical lines, of which 252 need no new code
 at all because `Sub.cons` already exists and is written out by hand at 53
 sites). Both in `docs/proof-simplification-plan-2026-09-16.md`.
+
+## 2026-09-17 (afternoon) — 238 guarded-membership sites became 96
+
+Branch `ledger`, candidate 7 of the simplification plan, Stage D.
+
+The three uniform-interpolation files spent 961 lines on `simp only … /
+split at hin / next … =>` scaffolding around tables whose dead branches are
+literally `[]`. One iff-lemma replaces it:
+
+    mem_ite_list : (x ∈ if c then l₁ else l₂) ↔ (c ∧ x ∈ l₁) ∨ (¬c ∧ x ∈ l₂)
+
+used as a *simp lemma* — with `List.not_mem_nil`, `and_false`, `false_or`,
+`or_false` — behind a `mem_tbl` macro, so a cascade of any depth collapses in
+one step. Mathlib's `mem_ite` has the shape `(p → a ∈ s) ∧ (¬p → a ∈ t)`,
+which does not collapse; `cases inst` rather than `by_cases`, to keep
+`Classical.choice` out of the pins. A second lemma `ite_none_eq_some` does the
+same for the `Option`-valued `filterMap` rows, replacing
+`split`/`injection`/`subst` with one `obtain`.
+
+**The constraint is over-reduction, not under-reduction.** 80 of about 160
+live leaves bind their guard and feed it straight back to the producing
+`rw [if_neg h₁, if_pos h₂]`, so `not_or`, `not_not`, `not_and`, `ne_eq` and
+`Decidable` normalisation are deliberately absent from the simp-set.
+
+| file | before | after | `split at` |
+|---|--:|--:|--:|
+| `G4UITrunc.lean` | 3,489 | 3,126 | 202 → 82 |
+| `G4UI.lean` | 1,856 | 1,846 | 27 → 13 |
+| `G4UIStab.lean` | 457 | 431 | 9 → 1 |
+
+Net 399 lines, or 436 of scaffolding against the 37 the lemmas cost. **Gate: 3
+additions — the two lemmas and the macro — and zero regressions**, over 142
+rewritten proof sites.
+
+**Both probes were run before anything was rewritten**, and the watched failure
+fired: `mem_tbl` reports `simp made no progress` on
+`match b with | 0 => [] | b'+1 => …`, so the budget group keeps its `cases b`.
+
+**And the largest remaining group turned out to be that same boundary.** The
+census counted 22 sites "written with `·` bullets rather than `next`" as a
+parser limitation worth another ~60 lines. Extending the parser matched them
+and the build failed at nine sites: those `split`s are on a **matcher**
+(`match C with …`), not on an `if` — which is *why* they were written with
+bullets, since splitting a matcher leaves no guard proposition for
+`next h =>` to bind. Reverted in all three files and recorded. **One `if`, one
+collapse; one matcher, one `cases`.** 96 is the floor this design reaches, not
+a deficiency in the rewriter.

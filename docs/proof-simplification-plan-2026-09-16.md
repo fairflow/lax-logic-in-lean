@@ -461,6 +461,80 @@ pattern carries four to six guard names plus two `rfl`s, and at the
 indentation those sites already sit at (columns 26–34) it wraps to three lines
 rather than one.
 
+## Stage D, candidate 7, done 2026-09-17: 238 guarded-membership sites became 96
+
+The design above survived contact. Both probes were run first, and both said
+what they were designed to say. Probe 1 — `mem_tbl` at a real G2 site, guards
+fed straight back to `rw [if_neg h1, if_pos h2]` — **passed**. Probe 2, the
+watched failure, **failed**, one step earlier than predicted: `mem_tbl at hφ`
+itself reports `simp made no progress` on `match b with | 0 => [] | b'+1 => …`,
+so the budget group G5 keeps its `cases b` and the boundary of the design is
+exactly where the census said it was.
+
+`mem_ite_list`, `ite_none_eq_some` and the `mem_tbl` macro live in
+`LaxLogic/PLL/UI/G4UI.lean`, the earliest of the three files, so all three see
+them (37 lines).
+
+**Result: 238 `split at` sites down to 96, 5,802 lines down to 5,403** — a net
+399, or 436 lines of scaffolding against the 37 the lemmas cost.
+
+| file | before | after | `split at` |
+|---|--:|--:|--:|
+| `G4UITrunc.lean` | 3,489 | 3,126 | 202 → 82 |
+| `G4UI.lean` | 1,856 | 1,846 | 27 → 13 |
+| `G4UIStab.lean` | 457 | 431 | 9 → 1 |
+
+The rewrite was mechanical, in four passes, each compiled before the next: the
+fixed two-guard shape (16 chains), then a general single-live-leaf cascade
+parser of any depth (18, then 24 once unnamed guards were allowed to become
+`_`), then the multi-live-leaf case, which emits one `rcases` with a nested
+alternation pattern and `·` bullets —
+
+```lean
+mem_tbl at hin
+rcases hin with ⟨hBΓ, hBS, ⟨hq, rfl⟩ | ⟨hq, hqp, rfl⟩⟩
+· …
+· …
+```
+
+— and finally the `Option`-valued rows, where `simp only [ite_none_eq_some] at
+heq` + `obtain ⟨hg, rfl⟩ := heq` replaces `split`/`injection`/`subst` (8
+sites). The parser composes with itself: each pass collapses inner cascades
+into `mem_tbl`/`obtain` pairs, which the next pass reads as leaves and absorbs
+into the enclosing cascade, so a three-deep nest ends as one `rcases`. Run to a
+fixpoint.
+
+**Against the 500-line estimate: 436 lines of scaffolding, inside the stated
+420–700 range but under the point estimate**, and not for the reason predicted.
+G3's `rcases` patterns did not wrap badly.
+
+What is left is 96 sites, and the attempt to take the largest remaining group
+**failed and was reverted**, which is the more useful result. The census had
+counted 22 sites "written with `·` bullets rather than `next`" as a parser
+limitation worth another ~60 lines. Extending the parser to read bullets
+matched them, and the build then failed at nine sites with
+
+```
+Dependent elimination failed: Failed to solve equation
+  (match C with
+    | ◯a => [◯(interE p fuel (χ :: Γ) ↠ interA p fuel (χ :: Γ) C)]
+    | x => []) = φ :: as✝
+```
+
+**The bullet form is not a style; it is a tell.** These `split`s are on a
+*matcher* — `match C with …` — not on an `if`, which is exactly why they were
+written with bullets in the first place: splitting a matcher produces goals
+with no guard proposition to name, so there is nothing for `next h =>` to
+bind. And a matcher is precisely what `mem_ite_list` does not reach. The
+bullet group is the same boundary as G5, in disguise: **one `if`, one
+collapse; one matcher, one `cases`.** Reverted in all three files; 96 is the
+floor this design reaches, not a parser deficiency.
+
+The one group that is still mechanically open is the **8 cascades whose live
+leaf is a `List.mem_append` alternation**, which needs a second alternation
+level in the pattern builder — worth perhaps 30 lines, and genuinely a parser
+limitation rather than a boundary of the design.
+
 ## Done 2026-09-17: a 445-row table written out twice
 
 `tools/RCFuel.lean` and `tools/RCellsGen.lean` each carried the classed

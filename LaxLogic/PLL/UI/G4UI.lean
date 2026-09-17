@@ -26,6 +26,41 @@ open PLLFormula
 
 namespace PLLND
 
+/-! ### Guarded-list membership
+
+The interpolant tables below are nested `if`s whose dead branches are
+literally `[]`, and the proofs about them spend most of their length on
+`split`. `mem_ite_list` is the characterisation that lets one `simp only`
+collapse a cascade of any depth instead: the `[]` branches die under
+`and_false`/`false_or`. Mathlib's `mem_ite` (`Mathlib/Logic/Basic.lean`) has
+the shape `(p → a ∈ s) ∧ (¬p → a ∈ t)`, which does not collapse. -/
+
+/-- Membership in a guarded list. `cases inst` rather than `by_cases`, so that
+`Classical.choice` stays out of the axiom pins. -/
+theorem mem_ite_list {α : Type} {c : Prop} [inst : Decidable c]
+    {l₁ l₂ : List α} {x : α} :
+    (x ∈ if c then l₁ else l₂) ↔ (c ∧ x ∈ l₁) ∨ (¬c ∧ x ∈ l₂) := by
+  cases inst with
+  | isTrue h => simp [h]
+  | isFalse h => simp [h]
+
+/-- The `Option`-valued guard, for the `Γ.filterMap` rows. -/
+theorem ite_none_eq_some {α : Type} {c : Prop} [inst : Decidable c] {e x : α} :
+    ((if c then none else some e) = some x) ↔ (¬c ∧ e = x) := by
+  cases inst with
+  | isTrue h => simp [h]
+  | isFalse h => simp [h]
+
+/-- Collapse a guarded interpolant-table row to its normal form.
+
+The lemma list is chosen so that the `[]` branches die while the guard
+propositions survive **unnormalised**: `not_or`, `not_not`, `not_and`, `ne_eq`
+and `Decidable` normalisation are deliberately absent, because the producing
+side feeds those same guards back to `rw [if_neg …, if_pos …]`. -/
+macro "mem_tbl" loc:(Lean.Parser.Tactic.location)? : tactic =>
+  `(tactic| simp only [mem_ite_list, List.not_mem_nil, List.mem_singleton,
+      List.mem_cons, List.mem_append, and_false, false_or, or_false] $(loc)?)
+
 /-- Big conjunction; `[]` is `⊤ = ⊥→⊥`. -/
 def andAll : List PLLFormula → PLLFormula
   | [] => truePLL
@@ -902,11 +937,9 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
         rcases List.mem_append.mp hφ with hφ | hφ
         · rcases List.mem_append.mp hφ with hφ | hφ
           · -- the ⊥ clause
-            split at hφ
-            next hbot =>
-              rcases List.mem_singleton.mp hφ with rfl
-              exact G4s.botL (memF hbot)
-            next => cases hφ
+            mem_tbl at hφ
+            obtain ⟨hbot, rfl⟩ := hφ
+            exact G4s.botL (memF hbot)
           · -- the atom clauses
             obtain ⟨F, hFΓ, heq⟩ := List.mem_filterMap.mp hφ
             cases F with
@@ -947,27 +980,20 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
           | ifThen A' B =>
               cases A' with
               | prop q =>
-                  simp only at hin
-                  split at hin
-                  next hq =>
-                    rcases List.mem_singleton.mp hin with rfl
-                    have ih' := ihE (B :: Γ)
+                  mem_tbl at hin
+                  rcases hin with ⟨hq, rfl⟩ | ⟨_, _, rfl⟩
+                  · have ih' := ihE (B :: Γ)
                     rw [List.toFinset_cons] at ih'
                     exact G4s.impLProp (memF hFΓ) (memF hq) ih'
-                  next =>
-                    split at hin
-                    next => cases hin
-                    next =>
-                      rcases List.mem_singleton.mp hin with rfl
-                      refine G4s.impR ?_
-                      have ih' := ihE (B :: Γ)
-                      rw [List.toFinset_cons] at ih'
-                      refine G4s.impLProp
-                        (Finset.mem_insert_of_mem (memF hFΓ))
-                        (Finset.mem_insert_self _ _) ?_
-                      exact ih'.weaken_subset
-                        (Finset.insert_subset_insert _
-                          (Finset.subset_insert _ _))
+                  · refine G4s.impR ?_
+                    have ih' := ihE (B :: Γ)
+                    rw [List.toFinset_cons] at ih'
+                    refine G4s.impLProp
+                      (Finset.mem_insert_of_mem (memF hFΓ))
+                      (Finset.mem_insert_self _ _) ?_
+                    exact ih'.weaken_subset
+                      (Finset.insert_subset_insert _
+                        (Finset.subset_insert _ _))
               | falsePLL => cases hin
               | and A₁ B₁ =>
                   rcases List.mem_singleton.mp hin with rfl
@@ -1160,15 +1186,12 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
           obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
           cases F with
           | prop q =>
-              simp only at hin
-              split at hin
-              next hg =>
-                rcases List.mem_singleton.mp hin with rfl
-                obtain ⟨hq, hC⟩ := hg
-                subst hq
-                subst hC
-                exact G4s.init (Finset.mem_insert_of_mem (memF hFΓ))
-              next => cases hin
+              mem_tbl at hin
+              obtain ⟨hg, rfl⟩ := hin
+              obtain ⟨hq, hC⟩ := hg
+              subst hq
+              subst hC
+              exact G4s.init (Finset.mem_insert_of_mem (memF hFΓ))
           | falsePLL => cases hin
           | and A B =>
               rcases List.mem_singleton.mp hin with rfl
@@ -1241,11 +1264,9 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
           | ifThen A' B =>
               cases A' with
               | prop q =>
-                  simp only at hin
-                  split at hin
-                  next hg =>
-                    rcases List.mem_singleton.mp hin with rfl
-                    refine G4s.impLProp
+                  mem_tbl at hin
+                  rcases hin with ⟨hg, rfl⟩ | ⟨_, _, rfl⟩
+                  · refine G4s.impLProp
                       (Finset.mem_insert_of_mem (memF hFΓ))
                       (Finset.mem_insert_of_mem (memF hg)) ?_
                     have ih' := ihA (B :: Γ) C
@@ -1254,22 +1275,17 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                       intro y hy
                       simp only [Finset.mem_insert] at hy ⊢
                       tauto)
-                  next =>
-                    split at hin
-                    next => cases hin
-                    next =>
-                      rcases List.mem_singleton.mp hin with rfl
-                      refine G4s.andL_ins ?_
-                      refine G4s.impLProp
-                        (Finset.mem_insert_of_mem
-                          (Finset.mem_insert_of_mem (memF hFΓ)))
-                        (Finset.mem_insert_self _ _) ?_
-                      have ih' := ihA (B :: Γ) C
-                      rw [List.toFinset_cons] at ih'
-                      exact ih'.weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
+                  · refine G4s.andL_ins ?_
+                    refine G4s.impLProp
+                      (Finset.mem_insert_of_mem
+                        (Finset.mem_insert_of_mem (memF hFΓ)))
+                      (Finset.mem_insert_self _ _) ?_
+                    have ih' := ihA (B :: Γ) C
+                    rw [List.toFinset_cons] at ih'
+                    exact ih'.weaken_subset (by
+                      intro y hy
+                      simp only [Finset.mem_insert] at hy ⊢
+                      tauto)
               | falsePLL => cases hin
               | and A₁ B₁ =>
                   rcases List.mem_singleton.mp hin with rfl
@@ -1495,28 +1511,22 @@ theorem inter_fuel_mono (p : String) : ∀ (fuel : Nat),
         rcases List.mem_append.mp hφ with hφ | hφ
         · rcases List.mem_append.mp hφ with hφ | hφ
           · -- the ⊥ clause: identical at both fuels
-            split at hφ
-            next hbot =>
-              rcases List.mem_singleton.mp hφ with rfl
-              refine G4c.andAll_elim ?_ (G4c.botL (.head _))
-              exact List.mem_append.mpr (Or.inl (List.mem_append.mpr
-                (Or.inl (by rw [if_pos hbot]; exact .head _))))
-            next => cases hφ
+            mem_tbl at hφ
+            obtain ⟨hbot, rfl⟩ := hφ
+            refine G4c.andAll_elim ?_ (G4c.botL (.head _))
+            exact List.mem_append.mpr (Or.inl (List.mem_append.mpr
+              (Or.inl (by rw [if_pos hbot]; exact .head _))))
           · -- the atom clauses: identical at both fuels
             obtain ⟨F, hFΓ, heq⟩ := List.mem_filterMap.mp hφ
             cases F with
             | prop q =>
-                simp only at heq
-                split at heq
-                next => cases heq
-                next hq =>
-                  injection heq with heq'
-                  subst heq'
-                  refine G4c.andAll_elim ?_ (G4c.init (.head _))
-                  refine List.mem_append.mpr (Or.inl (List.mem_append.mpr
-                    (Or.inr (List.mem_filterMap.mpr ⟨prop q, hFΓ, ?_⟩))))
-                  simp only
-                  rw [if_neg hq]
+                simp only [ite_none_eq_some] at heq
+                obtain ⟨hq, rfl⟩ := heq
+                refine G4c.andAll_elim ?_ (G4c.init (.head _))
+                refine List.mem_append.mpr (Or.inl (List.mem_append.mpr
+                  (Or.inr (List.mem_filterMap.mpr ⟨prop q, hFΓ, ?_⟩))))
+                simp only
+                rw [if_neg hq]
             | falsePLL => cases heq
             | and _ _ => cases heq
             | or _ _ => cases heq
@@ -1553,11 +1563,9 @@ theorem inter_fuel_mono (p : String) : ∀ (fuel : Nat),
           | ifThen A' B =>
               cases A' with
               | prop q =>
-                  simp only at hin
-                  split at hin
-                  next hg =>
-                    rcases List.mem_singleton.mp hin with rfl
-                    have hE := ihE (B :: Γ)
+                  mem_tbl at hin
+                  rcases hin with ⟨hg, rfl⟩ | ⟨hg, hq, rfl⟩
+                  · have hE := ihE (B :: Γ)
                     simp only [interE] at hE
                     refine G4c.andAll_elim ?_ hE
                     refine List.mem_append.mpr (Or.inr
@@ -1565,20 +1573,15 @@ theorem inter_fuel_mono (p : String) : ∀ (fuel : Nat),
                     simp only
                     rw [if_pos hg]
                     exact .head _
-                  next hg =>
-                    split at hin
-                    next => cases hin
-                    next hq =>
-                      rcases List.mem_singleton.mp hin with rfl
-                      have hE := ihE (B :: Γ)
-                      simp only [interE] at hE
-                      refine G4c.andAll_elim ?_
-                        (imp_mono (G4c.init (.head _)) hE)
-                      refine List.mem_append.mpr (Or.inr
-                        (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
-                      simp only
-                      rw [if_neg hg, if_neg hq]
-                      exact .head _
+                  · have hE := ihE (B :: Γ)
+                    simp only [interE] at hE
+                    refine G4c.andAll_elim ?_
+                      (imp_mono (G4c.init (.head _)) hE)
+                    refine List.mem_append.mpr (Or.inr
+                      (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
+                    simp only
+                    rw [if_neg hg, if_neg hq]
+                    exact .head _
               | falsePLL => cases hin
               | and A₁ B₁ =>
                   rcases List.mem_singleton.mp hin with rfl
@@ -1659,16 +1662,13 @@ theorem inter_fuel_mono (p : String) : ∀ (fuel : Nat),
         · -- the goal clauses
           cases C with
           | prop q =>
-              simp only at hφ
-              split at hφ
-              next => cases hφ
-              next hq =>
-                rcases List.mem_singleton.mp hφ with rfl
-                refine G4c.orAll_intro ?_ (G4c.init (.head _))
-                refine List.mem_append.mpr (Or.inl ?_)
-                simp only
-                rw [if_neg hq]
-                exact .head _
+              mem_tbl at hφ
+              obtain ⟨hq, rfl⟩ := hφ
+              refine G4c.orAll_intro ?_ (G4c.init (.head _))
+              refine List.mem_append.mpr (Or.inl ?_)
+              simp only
+              rw [if_neg hq]
+              exact .head _
           | falsePLL => cases hφ
           | and C₁ C₂ =>
               rcases List.mem_singleton.mp hφ with rfl
@@ -1705,17 +1705,14 @@ theorem inter_fuel_mono (p : String) : ∀ (fuel : Nat),
           obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
           cases F with
           | prop q =>
-              simp only at hin
-              split at hin
-              next hg =>
-                rcases List.mem_singleton.mp hin with rfl
-                refine G4c.orAll_intro ?_ (G4c.truePLL_intro _)
-                refine List.mem_append.mpr (Or.inr
-                  (List.mem_flatMap.mpr ⟨prop q, hFΓ, ?_⟩))
-                simp only
-                rw [if_pos hg]
-                exact .head _
-              next => cases hin
+              mem_tbl at hin
+              obtain ⟨hg, rfl⟩ := hin
+              refine G4c.orAll_intro ?_ (G4c.truePLL_intro _)
+              refine List.mem_append.mpr (Or.inr
+                (List.mem_flatMap.mpr ⟨prop q, hFΓ, ?_⟩))
+              simp only
+              rw [if_pos hg]
+              exact .head _
           | falsePLL => cases hin
           | and A B =>
               rcases List.mem_singleton.mp hin with rfl
@@ -1749,28 +1746,21 @@ theorem inter_fuel_mono (p : String) : ∀ (fuel : Nat),
           | ifThen A' B =>
               cases A' with
               | prop q =>
-                  simp only at hin
-                  split at hin
-                  next hg =>
-                    rcases List.mem_singleton.mp hin with rfl
-                    refine G4c.orAll_intro ?_ (ihA (B :: Γ) C)
+                  mem_tbl at hin
+                  rcases hin with ⟨hg, rfl⟩ | ⟨hg, hq, rfl⟩
+                  · refine G4c.orAll_intro ?_ (ihA (B :: Γ) C)
                     refine List.mem_append.mpr (Or.inr
                       (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
                     simp only
                     rw [if_pos hg]
                     exact .head _
-                  next hg =>
-                    split at hin
-                    next => cases hin
-                    next hq =>
-                      rcases List.mem_singleton.mp hin with rfl
-                      refine G4c.orAll_intro ?_
-                        (and_mono (G4c.init (.head _)) (ihA (B :: Γ) C))
-                      refine List.mem_append.mpr (Or.inr
-                        (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
-                      simp only
-                      rw [if_neg hg, if_neg hq]
-                      exact .head _
+                  · refine G4c.orAll_intro ?_
+                      (and_mono (G4c.init (.head _)) (ihA (B :: Γ) C))
+                    refine List.mem_append.mpr (Or.inr
+                      (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
+                    simp only
+                    rw [if_neg hg, if_neg hq]
+                    exact .head _
               | falsePLL => cases hin
               | and A₁ B₁ =>
                   rcases List.mem_singleton.mp hin with rfl
