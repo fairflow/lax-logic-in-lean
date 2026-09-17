@@ -7323,6 +7323,7 @@
 {"axioms":["propext"],"decl":"LJFO.findFire.eq_def","kind":"theorem","module":"LJF.OCore","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LJFO.findFire_atom","kind":"theorem","module":"LJF.OCore","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LJFO.findFire_mem","kind":"theorem","module":"LJF.OCore","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LJFO.fireA","kind":"def","module":"LJF.OCore","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"LJFO.fireASound","kind":"def","module":"LJF.OCore","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"LJFO.fireASound.congr_simp","kind":"theorem","module":"LJF.OCore","native":false,"sorry":false}
 {"axioms":[],"decl":"LJFO.goalW","kind":"def","module":"LJF.OCore","native":false,"sorry":false}
