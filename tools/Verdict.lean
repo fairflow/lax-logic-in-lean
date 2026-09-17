@@ -38,7 +38,7 @@ sequent.  Two things fall out:
   `(q8 ∧ q11) ⊃ q15` with a checked 3-world `FinCM` in 0 ms, while
   FRJ(◯) closes cap-free on it and builds nothing.
 -/
-import Tools.Engines
+import tools.Engines
 
 namespace Verdict
 

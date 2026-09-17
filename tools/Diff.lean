@@ -17,7 +17,7 @@ questions are different:
 -/
 import FRJ.Search.Profile
 import FRJ.Bridge
-import Tools.Bank
+import tools.Bank
 import LaxLogic.RN.Reps
 import LaxLogic.PLL.Search.Search
 import LaxLogic.RN.Rho

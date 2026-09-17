@@ -67,7 +67,7 @@ Usage:  `lake exe rnfrj [--rounds=N] [--jmax=N] [--pmax=N] [--lamcap=N]
                         [--status=proved|refuted|open|all] [--limit=N]
                         [--only=NAME[,NAME...]] [--cand=K]`
 -/
-import Tools.Bank
+import tools.Bank
 import FRJ.Search.Engine
 import FRJ.Search.Fast
 

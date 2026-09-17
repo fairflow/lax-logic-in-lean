@@ -32,7 +32,7 @@ Goals refuted here: 24 — cAnd_10_13, cAnd_11_13, cBox_11, cBox_11_q11, cBox_11
 -/
 import FRJ.Search.Pin
 import LaxLogic.PLL.SemUI.SemUIFrag
-import Tools.Bank
+import tools.Bank
 
 namespace RNFRJCerts
 

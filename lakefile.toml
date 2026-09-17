@@ -192,40 +192,40 @@ root = "Main"
 # side.  See Tools/README.md.
 [[lean_lib]]
 name = "Tools"
-globs = ["Tools.Bank", "Tools.Cert", "Tools.Pin", "Tools.Search", "Tools.Derive", "Tools.Engines", "Tools.Terminate", "Tools.Diff", "Tools.Hard", "Tools.Verdict", "Tools.Construct", "Tools.BankRho", "Tools.Cover"]
+globs = ["tools.Bank", "tools.Cert", "tools.Pin", "tools.Search", "tools.Derive", "tools.Engines", "tools.Terminate", "tools.Diff", "tools.Hard", "tools.Verdict", "tools.Construct", "tools.BankRho", "tools.Cover"]
 
 # frjterm: is the CAP-FREE CLOSURE outcome reachable at all?  (2026-08-21)
 # rhocover: the catalogue-wide PLL cover sweep (item 2, 2026-08-24).
 [[lean_exe]]
 name = "rhocover"
-root = "Tools.Cover"
+root = "tools.Cover"
 
 [[lean_exe]]
 name = "frjterm"
-root = "Tools.Terminate"
+root = "tools.Terminate"
 
 # frjdiff: Fast vs Profile, matched and unbounded arity  (2026-08-21)
 [[lean_exe]]
 name = "frjdiff"
-root = "Tools.Diff"
+root = "tools.Diff"
 
 # frjhard: the escalation ladder, one engine per invocation so the caller
 # can impose a real (process-level) timeout.  (2026-08-21)
 [[lean_exe]]
 name = "frjhard"
-root = "Tools.Hard"
+root = "tools.Hard"
 
 # frjconstruct: FRJ(◯) modR vs G4c CounterEmit.emit, construction vs
 # construction, battery excluded.  (2026-08-23)
 [[lean_exe]]
 name = "frjconstruct"
-root = "Tools.Construct"
+root = "tools.Construct"
 
 # rhobank: sweep the 462 ρ-cells and emit kernel-checkable refutation
 # certificates for every hit (discover-then-pin).  (2026-08-24)
 [[lean_exe]]
 name = "rhobank"
-root = "Tools.BankRho"
+root = "tools.BankRho"
 
 [[lean_lib]]
 name = "wipshared"
@@ -418,12 +418,12 @@ root = "wip.frj_sat"
 # The RN(◯,{}) oracle-bank harness for the FRJ(◯) countermodel search.
 [[lean_exe]]
 name = "rnfrj"
-root = "Tools.Search"
+root = "tools.Search"
 
 # Emit a kernel-checkable countermodel from a search hit.
 [[lean_exe]]
 name = "rnpin"
-root = "Tools.Pin"
+root = "tools.Pin"
 
 # Kreisel-Putnam screen for candidate ◯-rejection rules (BiLax (b)).
 [[lean_exe]]
@@ -774,12 +774,12 @@ root = "wip.frjo_demo"
 # Route B: the derivation-preserving extractor (route A is `rnpin`).
 [[lean_exe]]
 name = "frjderive"
-root = "Tools.Derive"
+root = "tools.Derive"
 
 # One command: sequent in, Lean-checked certificate + SVG out.
 [[lean_exe]]
 name = "frjcert"
-root = "Tools.Cert"
+root = "tools.Cert"
 
 # floorprobe: certified bounds on the normal-form floor (agent a6e77, 2026-08-25):
 # 25 = certified upper bound; battery separates 268/300 pairs among the 25

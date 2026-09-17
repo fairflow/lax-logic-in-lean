@@ -29,7 +29,7 @@ itself, one line per rule with its sequent.
 -/
 import FRJ.Search.Fast
 import FRJ.Search.Pin
-import Tools.Bank
+import tools.Bank
 
 open FRJ
 

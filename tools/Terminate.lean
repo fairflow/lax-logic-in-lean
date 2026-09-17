@@ -33,7 +33,7 @@ which is what makes them the right test cells.
 -/
 import FRJ.Search.Fast
 import FRJ.Bridge
-import Tools.Engines
+import tools.Engines
 
 open FRJ
 

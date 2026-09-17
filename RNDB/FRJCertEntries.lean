@@ -13,7 +13,7 @@ Scope: the shared representative set (`RNReps.reps`, 16 formulas) —
 these certificates were produced against dictionary cells.
 -/
 import RNDB.Types
-import Tools.Bank
+import tools.Bank
 import wip.rnFRJCerts
 import FRJ.Bridge
 

@@ -18,7 +18,7 @@ discipline — discovery untrusted, the result kernel-checked.
 -/
 import FRJ.Search.Fast
 import FRJ.Search.Pin
-import Tools.Bank
+import tools.Bank
 
 open FRJ
 
