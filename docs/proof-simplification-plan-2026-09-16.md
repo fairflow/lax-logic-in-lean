@@ -644,6 +644,112 @@ Estimate: **~410 lines** (range 350–480). Order: Family B in
 `LJF/OFuelSound.lean` first (12 sites, fuel measure, no `ljf_dec_sound`
 farm), then the rest of B, then A.
 
+## Designed 2026-09-17: the two remaining FRJ triplications
+
+Both are `FRJ`/`FRJV`/`FRJW` copies of one proof, and both were surveyed,
+measured and probe-designed without a build. **One fact settles the two
+mechanisms that killed the `OCore` station factoring**: `termination_by` and
+`decreasing_by` do not occur in any of
+`FRJ/{Sound,SoundV,SoundW,Extract,ExtractV,ExtractW}.lean`. There is no measure
+and no `assumption` farm, both recursions are equation-compiler recursions over
+the mutual inductive `FRJr`/`FRJi`, and **passing a recursive call under a
+lambda already compiles in both blocks today** — `FRJ/Sound.lean:712` passes
+`(fun i => tag_cone (dps i))` and `FRJ/Extract.lean:526` passes
+`(fun i => preR (dps i))` inside `Sum.elim`. Neither design moves a recursion.
+
+### `preR_closed` — DONE 2026-09-17, 237 lines
+
+The probe was the lemma itself, and it compiled first time, as did the first
+arm rewritten by hand. All **24 join arms** (eight per file, three files) are
+now instances:
+
+```lean
+  | _, _, _, @FRJr.joinAtP … => by
+      refine join_closed (fun x => ?_) (fun x X hX => ?_)
+      · cases x with
+        | inl ji => exact preI_closed (prem ji.1) ji.2
+        | inr i => exact preR_closed (dps i)
+      · cases x with
+        | inl ji =>
+            obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+            exact clo_trans (fun Y hY => .base ((hlbl Y).mpr hY))
+              (lhs_clo_of_steps
+                ((occI_steps hocc).tail
+                  ⟨_, Step.joinAtP (F := F) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
+        | inr i =>
+            exact clo_trans (fun Y hY => .base ((preR_root_lbl (dps i) Y).mpr hY))
+              (joinCtxAtP_clo i X hX)
+```
+
+| file | before | after |
+|---|--:|--:|
+| `FRJ/Extract.lean` | 944 | 881 |
+| `FRJ/ExtractV.lean` | 510 | 423 |
+| `FRJ/ExtractW.lean` | 504 | 417 |
+
+237 lines, against an estimate of 265 — the shortfall is exactly the predicted
+one: the `preI_spec`/`occI_steps`/`Step.join*` prelude stays in every arm,
+because the `Step` constructor differs per arm *and* per calculus. That
+prelude is the only calculus-specific content left in any of the 24 arms, and
+naming it as a hypothesis is what the design was for.
+
+The V/W measurement that justified it, checked independently: **all 13
+`preR_closed` arms are byte-identical between V and W**, and 10 of the 13
+between R and V.
+
+### The original estimate and design
+
+`FRJ/Extract.lean:657`, `ExtractV.lean:282`, `ExtractW.lean:277`, 189–190 lines
+each, 41% of them mentioning a doubled name. The decisive measurement is
+sharper than the similarity score: **the V and W bodies are byte-identical** —
+`diff` touches only the statement line and the nine constructor-pattern
+headers. All 24 join arms are instances of *one* lemma over the raw
+`PreModel.join`, with no `Idx`/`Sum` scaffolding and no new module:
+
+```lean
+theorem join_closed {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, i ∈ ιe}
+    {Γ₀ : List Form} {Ms : ι → PreModel} {iP : ι → Bool}
+    (hM : ∀ i, ClosedLbl (Ms i))
+    (hroot : ∀ i, ∀ X ∈ Γ₀, Clo ((Ms i).lbl (Ms i).root) X) :
+    ClosedLbl (PreModel.join ιe ιc Γ₀ Ms iP)
+```
+
+Mechanism (d) — does something stop reducing? — **already has a passing witness
+eleven lines above where the lemma would go**: `join_le_comp`
+(`FRJ/Extract.lean:246`) does `cases h with | comp hab` on `PJLe Ms` for a
+fully abstract `Ms`, and the field equations the arms rely on
+(`lbl none = Γ₀`, `lbl (some ⟨i,a⟩) = (Ms i).lbl a`, `Extract.lean:184`) do not
+stop reducing when `Γ₀`/`Ms` are variables. The lemma above *is* the probe: if
+`cases hle` were stuck, the design is refuted outright.
+
+The likeliest reason it comes in under: the `hroot` supply keeps the five-line
+`preI_spec`/`occI_steps`/`Step.join*` prelude in each arm (e.g.
+`Extract.lean:675`), because the `Step` constructor differs per arm *and* per
+calculus — arms would land at 13–14 lines rather than 10, costing about 70.
+
+### `tag_cone` — second, ≈ 230 lines
+
+`FRJ/Sound.lean:722`, `SoundV.lean:603`, `SoundW.lean:631`, 164 lines each,
+45% mentioning a doubled name — and the distribution is the point:
+**`joinAtP`, `joinOrP` and `joinCircP` are 133 of the 164 lines** (45, 45, 43),
+while the other eight arms are one to six lines each. R↔V differ only in the
+`kept` zone and only inside the three *six*-line arms; V↔W is rename-only
+(`stab`/`th` → `Ξs`/`Θs`).
+
+The `SoundCore` vocabulary is already in place: `joinCircP_core`
+(`FRJ/SoundCore.lean:1014`) already carries `ihP` and `ihT` with literally the
+`tag_cone` statement (`:1043`), over abstract `Ns`, and `joinCircP_case`
+(`Sound.lean:618`) already discharges the
+`modR d ≡ (joinPModel …).toKripke hP` defeq by `exact`. One new
+`tagConeP_core` serves all nine sites.
+
+Its probe is the one genuine risk, and it is exactly the Stage C risk one link
+further along: whether `hu : (modR d).Rm (modR d).root u` still arrives at a
+parameter typed by `PreModel.join` when `Ms`/`Ns` are abstract. The existing
+text already ascribes this by `:= hu` at `Sound.lean:749`, so the probe is a
+one-line `:= hu` against the abstract `joinPModel`. Failure costs about a third
+of the saving, not the design.
+
 ## The rules that keep this honest
 
 1. **No statement moves.** If a refactor would change a theorem's statement, it

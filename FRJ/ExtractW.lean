@@ -282,189 +282,102 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
   | _, _, _, .impIn d _ _ => preR_closed d
   | _, _, _, .circIn d _ _ => preR_closed d
   | _, _, _, @FRJWr.joinAtP _ n k Ξs Θs rhs F t' tps Δs Ds prem dps hJ1 _ _ hJ7 _ _ _ _ _ _ => by
-      intro w v hle X hX
-      cases v with
-      | none => cases hle with
-        | root => exact .base hX
-      | some jb =>
-          obtain ⟨x, b⟩ := jb
-          cases hle with
-          | root =>
-              cases x with
-              | inl ji =>
-                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
-                  refine clo_trans (fun Y hY => ?_)
-                    (lhs_clo_of_steps
-                      ((occI_steps hocc).tail
-                        ⟨_, Step.joinAtP (F := F) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
-                  refine preI_closed (prem ji.1) ji.2 _ _
-                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  exact (hlbl Y).mpr hY
-              | inr i =>
-                  refine clo_trans (fun Y hY => ?_) (joinCtxAtP_clo i X hX)
-                  refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
-                  exact (preR_root_lbl (dps i) Y).mpr hY
-          | comp hab =>
-              cases x with
-              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
-              | inr i => exact preR_closed (dps i) _ _ hab X hX
+      refine join_closed (fun x => ?_) (fun x X hX => ?_)
+      · cases x with
+        | inl ji => exact preI_closed (prem ji.1) ji.2
+        | inr i => exact preR_closed (dps i)
+      · cases x with
+        | inl ji =>
+            obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+            exact clo_trans (fun Y hY => .base ((hlbl Y).mpr hY))
+              (lhs_clo_of_steps
+                ((occI_steps hocc).tail
+                  ⟨_, Step.joinAtP (F := F) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
+        | inr i =>
+            exact clo_trans (fun Y hY => .base ((preR_root_lbl (dps i) Y).mpr hY))
+              (joinCtxAtP_clo i X hX)
   | _, _, _, @FRJWr.joinAtF _ n Ξs Θs rhs F prem hJ1 _ _ _ _ _ _ => by
-      intro w v hle X hX
-      cases v with
-      | none => cases hle with
-        | root => exact .base hX
-      | some jb =>
-          obtain ⟨x, b⟩ := jb
-          cases hle with
-          | root =>
-              cases x with
-              | inl ji =>
-                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
-                  refine clo_trans (fun Y hY => ?_)
-                    (lhs_clo_of_steps
-                      ((occI_steps hocc).tail
-                        ⟨_, Step.joinAtF (F := F) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
-                  refine preI_closed (prem ji.1) ji.2 _ _
-                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  exact (hlbl Y).mpr hY
-              | inr _ => exact .base hX
-          | comp hab =>
-              cases x with
-              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
-              | inr _ => exact .base hX
+      refine join_closed (fun x => ?_) (fun x X hX => ?_)
+      · cases x with
+        | inl ji => exact preI_closed (prem ji.1) ji.2
+        | inr _ => exact fun _ _ _ Y hY => .base hY
+      · cases x with
+        | inl ji =>
+            obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+            exact clo_trans (fun Y hY => .base ((hlbl Y).mpr hY))
+              (lhs_clo_of_steps
+                ((occI_steps hocc).tail
+                  ⟨_, Step.joinAtF (F := F) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
+        | inr _ =>
+            exact .base hX
   | _, _, _, @FRJWr.joinOrP _ n k Ξs Θs rhs C₁ C₂ t' tps Δs Ds prem dps hJ1 _ _ hJ7 _ _ _ _ _ => by
-      intro w v hle X hX
-      cases v with
-      | none => cases hle with
-        | root => exact .base hX
-      | some jb =>
-          obtain ⟨x, b⟩ := jb
-          cases hle with
-          | root =>
-              cases x with
-              | inl ji =>
-                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
-                  refine clo_trans (fun Y hY => ?_)
-                    (lhs_clo_of_steps
-                      ((occI_steps hocc).tail
-                        ⟨_, Step.joinOrP (C₁ := C₁) (C₂ := C₂) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
-                  refine preI_closed (prem ji.1) ji.2 _ _
-                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  exact (hlbl Y).mpr hY
-              | inr i =>
-                  refine clo_trans (fun Y hY => ?_) (joinCtxOrP_clo i X hX)
-                  refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
-                  exact (preR_root_lbl (dps i) Y).mpr hY
-          | comp hab =>
-              cases x with
-              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
-              | inr i => exact preR_closed (dps i) _ _ hab X hX
+      refine join_closed (fun x => ?_) (fun x X hX => ?_)
+      · cases x with
+        | inl ji => exact preI_closed (prem ji.1) ji.2
+        | inr i => exact preR_closed (dps i)
+      · cases x with
+        | inl ji =>
+            obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+            exact clo_trans (fun Y hY => .base ((hlbl Y).mpr hY))
+              (lhs_clo_of_steps
+                ((occI_steps hocc).tail
+                  ⟨_, Step.joinOrP (C₁ := C₁) (C₂ := C₂) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
+        | inr i =>
+            exact clo_trans (fun Y hY => .base ((preR_root_lbl (dps i) Y).mpr hY))
+              (joinCtxOrP_clo i X hX)
   | _, _, _, @FRJWr.joinOrF _ n Ξs Θs rhs C₁ C₂ prem hJ1 _ _ _ _ _ => by
-      intro w v hle X hX
-      cases v with
-      | none => cases hle with
-        | root => exact .base hX
-      | some jb =>
-          obtain ⟨x, b⟩ := jb
-          cases hle with
-          | root =>
-              cases x with
-              | inl ji =>
-                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
-                  refine clo_trans (fun Y hY => ?_)
-                    (lhs_clo_of_steps
-                      ((occI_steps hocc).tail
-                        ⟨_, Step.joinOrF (C₁ := C₁) (C₂ := C₂) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
-                  refine preI_closed (prem ji.1) ji.2 _ _
-                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  exact (hlbl Y).mpr hY
-              | inr _ => exact .base hX
-          | comp hab =>
-              cases x with
-              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
-              | inr _ => exact .base hX
+      refine join_closed (fun x => ?_) (fun x X hX => ?_)
+      · cases x with
+        | inl ji => exact preI_closed (prem ji.1) ji.2
+        | inr _ => exact fun _ _ _ Y hY => .base hY
+      · cases x with
+        | inl ji =>
+            obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+            exact clo_trans (fun Y hY => .base ((hlbl Y).mpr hY))
+              (lhs_clo_of_steps
+                ((occI_steps hocc).tail
+                  ⟨_, Step.joinOrF (C₁ := C₁) (C₂ := C₂) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
+        | inr _ =>
+            exact .base hX
   | _, _, _, @FRJWr.joinCircP _ n k Ξs Θs rhs Z tps Δs Ds prem dps hJ1 _ _ _ _ _ _ _ _ => by
-      intro w v hle X hX
-      cases v with
-      | none => cases hle with
-        | root => exact .base hX
-      | some jb =>
-          obtain ⟨x, b⟩ := jb
-          cases hle with
-          | root =>
-              cases x with
-              | inl ji =>
-                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
-                  refine clo_trans (fun Y hY => ?_)
-                    (lhs_clo_of_steps
-                      ((occI_steps hocc).tail
-                        ⟨_, Step.joinCircP (Z := Z) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
-                  refine preI_closed (prem ji.1) ji.2 _ _
-                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  exact (hlbl Y).mpr hY
-              | inr i =>
-                  refine clo_trans (fun Y hY => ?_) (joinCtxOrP_clo i X hX)
-                  refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
-                  exact (preR_root_lbl (dps i) Y).mpr hY
-          | comp hab =>
-              cases x with
-              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
-              | inr i => exact preR_closed (dps i) _ _ hab X hX
+      refine join_closed (fun x => ?_) (fun x X hX => ?_)
+      · cases x with
+        | inl ji => exact preI_closed (prem ji.1) ji.2
+        | inr i => exact preR_closed (dps i)
+      · cases x with
+        | inl ji =>
+            obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+            exact clo_trans (fun Y hY => .base ((hlbl Y).mpr hY))
+              (lhs_clo_of_steps
+                ((occI_steps hocc).tail
+                  ⟨_, Step.joinCircP (Z := Z) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
+        | inr i =>
+            exact clo_trans (fun Y hY => .base ((preR_root_lbl (dps i) Y).mpr hY))
+              (joinCtxOrP_clo i X hX)
   | _, _, _, @FRJWr.joinCirc _ n Ξs Θs rhs Z kept prem hJ1 _ _ hkc _ _ _ _ => by
-      intro w v hle X hX
-      cases v with
-      | none => cases hle with
-        | root => exact .base hX
-      | some jb =>
-          obtain ⟨ji, b⟩ := jb
-          cases hle with
-          | root =>
-              obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
-              refine clo_trans (fun Y hY => ?_)
-                (lhs_clo_of_steps
-                  ((occI_steps hocc).tail
-                    ⟨_, Step.joinCirc (Z := Z) ji.1 hJ1 hkc (CtxEq.refl _)⟩) X hX)
-              refine preI_closed (prem ji.1) ji.2 _ _
-                ((preI (prem ji.1) ji.2).root_le b) Y ?_
-              rw [hlbl]; exact hY
-          | comp hab => exact preI_closed (prem _) _ _ _ hab X hX
+      refine join_closed (fun ji => preI_closed (prem ji.1) ji.2)
+        (fun ji X hX => ?_)
+      obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+      exact clo_trans (fun Y hY => .base (by rw [hlbl]; exact hY))
+        (lhs_clo_of_steps
+          ((occI_steps hocc).tail
+            ⟨_, Step.joinCirc (Z := Z) ji.1 hJ1 hkc (CtxEq.refl _)⟩) X hX)
   | _, _, _, @FRJWr.joinAt _ n Ξs Θs rhs F kept prem hJ1 _ _ hkc _ _ _ _ _ => by
-      intro w v hle X hX
-      cases v with
-      | none => cases hle with
-        | root => exact .base hX
-      | some jb =>
-          obtain ⟨ji, b⟩ := jb
-          cases hle with
-          | root =>
-              obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
-              refine clo_trans (fun Y hY => ?_)
-                (lhs_clo_of_steps
-                  ((occI_steps hocc).tail
-                    ⟨_, Step.joinAt (F := F) ji.1 hJ1 hkc (CtxEq.refl _)⟩) X hX)
-              refine preI_closed (prem ji.1) ji.2 _ _
-                ((preI (prem ji.1) ji.2).root_le b) Y ?_
-              rw [hlbl]; exact hY
-          | comp hab => exact preI_closed (prem _) _ _ _ hab X hX
+      refine join_closed (fun ji => preI_closed (prem ji.1) ji.2)
+        (fun ji X hX => ?_)
+      obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+      exact clo_trans (fun Y hY => .base (by rw [hlbl]; exact hY))
+        (lhs_clo_of_steps
+          ((occI_steps hocc).tail
+            ⟨_, Step.joinAt (F := F) ji.1 hJ1 hkc (CtxEq.refl _)⟩) X hX)
   | _, _, _, @FRJWr.joinOr _ n Ξs Θs rhs C₁ C₂ kept prem hJ1 _ _ hkc _ _ _ _ => by
-      intro w v hle X hX
-      cases v with
-      | none => cases hle with
-        | root => exact .base hX
-      | some jb =>
-          obtain ⟨ji, b⟩ := jb
-          cases hle with
-          | root =>
-              obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
-              refine clo_trans (fun Y hY => ?_)
-                (lhs_clo_of_steps
-                  ((occI_steps hocc).tail
-                    ⟨_, Step.joinOr (C₁ := C₁) (C₂ := C₂) ji.1 hJ1 hkc (CtxEq.refl _)⟩) X hX)
-              refine preI_closed (prem ji.1) ji.2 _ _
-                ((preI (prem ji.1) ji.2).root_le b) Y ?_
-              rw [hlbl]; exact hY
-          | comp hab => exact preI_closed (prem _) _ _ _ hab X hX
-
+      refine join_closed (fun ji => preI_closed (prem ji.1) ji.2)
+        (fun ji X hX => ?_)
+      obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+      exact clo_trans (fun Y hY => .base (by rw [hlbl]; exact hY))
+        (lhs_clo_of_steps
+          ((occI_steps hocc).tail
+            ⟨_, Step.joinOr (C₁ := C₁) (C₂ := C₂) ji.1 hJ1 hkc (CtxEq.refl _)⟩) X hX)
 theorem preI_closed {G : Form} : ∀ {Ξ Θ : List Form} {C : Form}
     (d : FRJWi G Ξ Θ C) (i : RegIdx d), ClosedLbl (preI d i)
   | _, _, _, .axI _ _ _ _, i => (i : Empty).elim

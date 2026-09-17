@@ -4613,3 +4613,43 @@ bullets, since splitting a matcher leaves no guard proposition for
 `next h =>` to bind. Reverted in all three files and recorded. **One `if`, one
 collapse; one matcher, one `cases`.** 96 is the floor this design reaches, not
 a deficiency in the rewriter.
+
+## 2026-09-17 (late) — one lemma for 24 join arms
+
+Branch `ledger`. `preR_closed` was proved three times — `FRJ/Extract.lean:657`,
+`ExtractV.lean:282`, `ExtractW.lean:277`, 189–190 lines each — and the
+measurement that decided the refactor is sharper than any similarity score:
+**all 13 arms are byte-identical between V and W**, and 10 of the 13 between R
+and V.
+
+All 24 join arms are now instances of one 16-line lemma:
+
+    join_closed (hM : ∀ i, ClosedLbl (Ms i))
+      (hroot : ∀ i, ∀ X ∈ Γ₀, Clo ((Ms i).lbl (Ms i).root) X) :
+      ClosedLbl (PreModel.join ιe ιc Γ₀ Ms iP)
+
+**What each arm keeps is exactly what differs**: the `preI_spec` /
+`occI_steps` / `Step.join*` prelude that witnesses the join context sitting
+below the component's root — the `Step` constructor differs per arm *and* per
+calculus, which is why it is the hypothesis and not the lemma.
+
+| file | before | after |
+|---|--:|--:|
+| `FRJ/Extract.lean` | 944 | 881 |
+| `FRJ/ExtractV.lean` | 510 | 423 |
+| `FRJ/ExtractW.lean` | 504 | 417 |
+
+237 lines, against an estimate of 265 — short by exactly the predicted amount,
+for exactly the predicted reason. `lake build` green, 8,748 jobs.
+
+**The two mechanisms that sank the `OCore` station factoring are simply absent
+here**, and one grep says so: `termination_by`/`decreasing_by` do not occur in
+any of `FRJ/{Sound,SoundV,SoundW,Extract,ExtractV,ExtractW}.lean`. Both
+recursions are equation-compiler recursions over the mutual inductive, and
+passing a recursive call under a lambda already compiles in both blocks today
+(`FRJ/Sound.lean:712`, `FRJ/Extract.lean:526`).
+
+**Still designed and not built: `tag_cone`**, ≈ 230 lines, where `joinAtP`,
+`joinOrP` and `joinCircP` are 133 of the 164 lines per copy. Its probe is a
+one-line `:= hu` against an abstract `joinPModel`; the existing text already
+performs that ascription at `FRJ/Sound.lean:749`.
