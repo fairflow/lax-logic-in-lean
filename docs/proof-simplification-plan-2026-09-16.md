@@ -213,6 +213,55 @@ what can be shared.** The number that matters is how many of the "identical"
 declarations mention something that is itself doubled — here 34 of 55, and that
 is what the 825 collapses to 291 against.
 
+## Refused: the LJF `aSound` triple (candidate 2, ~1,900 lines)
+
+Examined 2026-09-16 and **not attempted as stated**, for a third reason, which
+completes the pattern.
+
+`aSound` (`LJF/OCore.lean:2731`), `aSoundF` (`LJF/OFuelSound.lean:294`) and
+`aSoundP` (`LJF/OFuelPSound.lean:340`) prove the same statement over
+`interp`, `interpF` and `interpP`; there is no type renaming at all, and
+normalising the fuel away leaves `aSound` and `aSoundF` differing in 110 of
+1,290 lines. But:
+
+* **What is duplicated is the recursion itself.** All three are two-member
+  `mutual` blocks with calls both ways, so `aSound` cannot move without
+  `eSound`; and their termination arguments are not one function of different
+  arguments — `2 * sum3 todo + sum3 done + 3 ^ wNeg G` discharged by a
+  fifty-alternative tactic farm, against `f` discharged by `omega`. An
+  abstraction must carry the decrease obligations as parameters, roughly forty
+  of them, and about 200 clause and row equations besides: more lines supplied
+  than removed.
+* **The proof depends on iota-reduction of the interpolant's rows.** After
+  `cases X`, fourteen arms must reduce for `exact nBotElim _ …` to typecheck.
+  Abstract the row and every one becomes an explicit hypothesis per goal shape
+  — the "stuck context function" that sank the G4 attempt, reached from the
+  introduction side instead of the elimination side.
+* **The 110 divergent lines sit in exactly the arm the abstraction must open**
+  (`interp` puts the ◯-implication's left component at `rest`, `interpF` at
+  `done`), so the 0.97 similarity gives back what it offers. And `aSoundP` is
+  not a near-copy: 44 `atkPark` sites against none, `atkDyk` gone, because
+  retention at the full station makes the residual simulator unnecessary —
+  which is the property `OFuelP` exists to exhibit.
+
+Three cheaper moves survive, in ascending risk, and are the live plan for
+`LJF/`:
+
+1. `fireASoundF` and `fireASoundP` are byte-identical and already abstract over
+   the interpolant. One `fireA` in `OCore`, with `fireASound` as its
+   instance — about 50 lines, and the statements are already the same.
+2. `atkPark` generalises `atkCimp`, and the file already carries the proof
+   (`atkPark … = atkCimp … := rfl`, `OFuelPSound.lean:77`). Hoist it — about
+   25 lines, and it records the identity that file was written to record.
+3. **Factor the station rows within each file.** The eleven station blocks of
+   one `aSound` differ only in the goal term — the four non-◯ blocks are 39
+   lines each and differ pairwise in four lines. A `stationBranches` lemma per
+   file, stated about the *literal* `(splits done).attach.map (fun … => match
+   X, hXr with …)` term so that `cases X` still iota-reduces, takes ≥300 lines
+   out of each body: 900–1,000 across the three, at a fraction of the risk,
+   with `interp` never abstracted and no `termination_by` touched. Compile one
+   block first, as the FRJ work compiled one `rfl` first.
+
 ## Refused: the G4 / G4H / G4P triplication (candidate 5, 886 lines)
 
 Examined 2026-09-16 and **not attempted**. The five families (`inv`,

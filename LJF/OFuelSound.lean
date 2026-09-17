@@ -48,20 +48,7 @@ def fireASoundF {done : List Neg} {a : String} {N' : Neg}
     (hf : findFire done (splits done) = some (a, N', rest))
     (rec : Inv (A :: ([N'] ++ rest)) [] .tru G) :
     Inv (A :: done) [] .tru G :=
-  simHyp
-    (fl := fun hs lf =>
-      .lfoc (hs _ (List.mem_cons_of_mem _
-          (splits_mem (findFire_mem hf))))
-        (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
-          (atomMem_mem (findFire_atom hf)))))) lf))
-    (Sub.cons _ (splits_sub (findFire_mem hf)))
-    (rec.wk (by
-      intro Z hZ
-      rcases List.mem_cons.mp hZ with rfl | hZ
-      · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-      · rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_self ..
-        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+  fireA hf rec
 
 set_option maxHeartbeats 12000000 in
 mutual

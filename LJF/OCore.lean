@@ -2193,12 +2193,16 @@ theorem interpFire_eq {p : String} {done : List Neg} {a : String} {N' : Neg}
       · rw [hf] at heq; cases heq; rfl
       · rw [hf] at heq; cases heq
 
-/-- The fire step of `aSound`, one term for every goal shape. -/
-def fireASound {p : String} {done : List Neg} {a : String} {N' : Neg}
-    {rest : List Neg} {G : Neg}
+/-- The fire step: the station's own `⊃`-elimination, for ANY interpolant `A`.
+
+Abstracting `A` is what lets the three soundness proofs share it — `interp`,
+`interpF` and `interpP` differ, and this step does not look at them
+(2026-09-16). -/
+def fireA {done : List Neg} {a : String} {N' : Neg}
+    {rest : List Neg} {G A : Neg}
     (hf : findFire done (splits done) = some (a, N', rest))
-    (rec : Inv (interp p [N'] rest (some G) :: ([N'] ++ rest)) [] .tru G) :
-    Inv (interp p [N'] rest (some G) :: done) [] .tru G :=
+    (rec : Inv (A :: ([N'] ++ rest)) [] .tru G) :
+    Inv (A :: done) [] .tru G :=
   simHyp
     (fl := fun hs lf =>
       .lfoc (hs _ (List.mem_cons_of_mem _
@@ -2213,6 +2217,14 @@ def fireASound {p : String} {done : List Neg} {a : String} {N' : Neg}
       · rcases List.mem_cons.mp hZ with rfl | hZ
         · exact List.mem_cons_self ..
         · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+
+/-- `fireA` at the fuel-free interpolant. -/
+def fireASound {p : String} {done : List Neg} {a : String} {N' : Neg}
+    {rest : List Neg} {G : Neg}
+    (hf : findFire done (splits done) = some (a, N', rest))
+    (rec : Inv (interp p [N'] rest (some G) :: ([N'] ++ rest)) [] .tru G) :
+    Inv (interp p [N'] rest (some G) :: done) [] .tru G :=
+  fireA hf rec
 
 /-! # Part 4: soundness of both modes -/
 
