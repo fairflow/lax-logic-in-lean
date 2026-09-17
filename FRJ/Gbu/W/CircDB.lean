@@ -295,86 +295,10 @@ theorem refutedCleanly_circ {G : Form} {D : WSeq → Prop} (hsat : WSaturated G 
     (hgoal : Form.circ Z ∈ sfR G)
     (himp : ∀ A B, Form.imp A B ∈ Ω → WEvalI D Ω A)
     (hz : WEvalI D Ω Z) :
-    WRefutedCleanly G Ω (.circ Z) := by
-  let U := Z :: (impPart Ω).map ante
-  let E := enumOf U (by simp [U])
-  let f := E.f
-  have hfmem : ∀ j, f j ∈ U := E.f_mem
-  have hwit : ∀ j, ∃ p : List Form × List Form,
-      D (.irr p.1 p.2 (f j)) ∧ p.1 ⊆ Ω ∧ Ω ⊆ p.1 ++ p.2 := by
-    intro j
-    have hev : WEvalI D Ω (f j) := by
-      by_cases e₀ : f j = Z
-      · exact e₀ ▸ hz
-      have hm : f j ∈ (impPart Ω).map ante := by
-        rcases List.mem_cons.mp (hfmem j) with h | h
-        · exact absurd h e₀
-        · exact h
-      obtain ⟨X, hXmem, hante⟩ := List.mem_map.mp hm
-      obtain ⟨hXΩ, hXi⟩ := List.mem_filter.mp hXmem
-      match X, hXi with
-      | .imp A B, _ =>
-          have hA : A = f j := hante
-          exact hA ▸ himp A B hXΩ
-    obtain ⟨Ξ, Θ, k₁, k₂, k₃⟩ := hev
-    exact ⟨(Ξ, Θ), k₁, k₂, k₃⟩
-  obtain ⟨g, hg⟩ := finEx hwit
-  set Ξ : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
-  set Θ : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
-  have hStTh : ∀ j, D (.irr (Ξ j) (Θ j) (f j)) := fun j => (hg j).1
-  have hStΩ : ∀ j, Ξ j ⊆ Ω := fun j => (hg j).2.1
-  have hΩΞ : ∀ j, Ω ⊆ Ξ j ++ Θ j := fun j => (hg j).2.2
-  obtain ⟨d⟩ := finPi (fun j => hsat.1 _ (hStTh j))
-  have hJ1 : ∀ i j, i ≠ j → Ξ i ⊆ Ξ j ++ Θ j :=
-    fun i j _ => fun {_} hX => hΩΞ j (hStΩ i hX)
-  have hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (Ξ j)) → A ∈ upsilon f := by
-    intro A B hmem
-    obtain ⟨j, hj⟩ := mem_unionAll.mp hmem
-    have hAB : Form.imp A B ∈ Ω := hStΩ j (List.mem_filter.mp hj).1
-    exact (E.spec A).mpr (List.mem_cons_of_mem _
-      (List.mem_map.mpr ⟨.imp A B, List.mem_filter.mpr ⟨hAB, rfl⟩, rfl⟩))
-  have hcirc : unionAll (fun j => circPart (Ξ j)) = [] := by
-    refine eq_nil_of_forall_not_mem (fun X hX => ?_)
-    obtain ⟨j, hj⟩ := mem_unionAll.mp hX
-    obtain ⟨hmem, hc⟩ := List.mem_filter.mp hj
-    exact absurd hc (by
-      rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
-      exact fun h => Bool.noConfusion h)
-  refine ⟨_, .barren,
-    ⟨.joinCirc (fun j => d j) hJ1 (fun A B h => .ups (hJ2 A B h)) hcirc
-      (keptChainRestrict _ Θ)
-      (.ups ((E.spec Z).mpr List.mem_cons_self)) hgoal (CtxEq.refl _)⟩,
-    Or.inl rfl, fun X hX => .base ?_⟩
-  by_cases hin : ∃ j, X ∈ Ξ j
-  · obtain ⟨j, hj⟩ := hin
-    refine List.mem_append_left _ ?_
-    by_cases hi : X.isImp
-    · exact List.mem_append_right _
-        (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
-    · refine List.mem_append_left _ (List.mem_append_left _
-        (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
-      have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
-      exact (List.mem_filter.mp this).2
-  · have hall : ∀ j, X ∈ Θ j := by
-      intro j
-      rcases List.mem_append.mp (hΩΞ j hX) with h' | h'
-      · exact absurd ⟨j, h'⟩ hin
-      · exact h'
-    by_cases hi : X.isImp
-    · refine List.mem_append_right _ ?_
-      match X, hi with
-      | .imp A B, _ =>
-          refine mem_restrict.mpr ⟨?_, ?_⟩
-          · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
-          · exact (E.spec A).mpr (List.mem_cons_of_mem _
-              (List.mem_map.mpr ⟨.imp A B,
-                List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩))
-    · refine List.mem_append_left _ (List.mem_append_left _
-        (List.mem_append_right _ ?_))
-      refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
-      have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
-      exact (List.mem_filter.mp this).2
+    WRefutedCleanly G Ω (.circ Z) :=
+  let ⟨Γ, d, hcov⟩ := refutedCleanly_circ_core circRuleW hΩ hgoal
+    (fun A B h => irr_of_evalI hsat (himp A B h)) (irr_of_evalI hsat hz)
+  ⟨Γ, .barren, d, Or.inl rfl, hcov⟩
 
 /-- Lemma 13, MODAL zone — `gbuSuccCirc` is the clean refutation, forgotten
 
@@ -422,48 +346,20 @@ theorem gbuInv14 {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
   | axI F hF hgoal hTh => exact Bool.noConfusion hF
   | circNotIn dr htag hTh hgoal =>
       -- `◯∉`: re-admit the zone, enlarged by `Ω`
-      obtain ⟨s', hs'mem, hsub⟩ :=
-        hsat.2 (.irr [] (Ω ++ Θ) (.circ Z))
-          ⟨.circNotIn dr htag (fun X hX => by
-              rcases List.mem_append.mp hX with hX' | hX'
-              · refine ⟨?_, hΩ X hX'⟩
-                refine clo_trans (fun Y hY => ?_) (hcl X hX')
-                exact (hTh Y (by
-                  have := h2 hY
-                  simpa using this)).1
-              · exact hTh X hX') hgoal⟩
-      match s', hsub with
-      | .irr Ξ' Θ' _, ⟨rfl, hSt, hTh'⟩ =>
-          exact ⟨Ξ', Θ', hs'mem,
-            fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
-            fun {x} hx => List.mem_append_right _ (hTh' (List.mem_append_left _ hx))⟩
+      exact evalI_of_irr hsat
+        ⟨.circNotIn dr htag (liftZoneGrow hΩ hcl h2 hTh) hgoal⟩
+        (fun {_} hx => absurd hx List.not_mem_nil)
+        (fun {_} hx => List.mem_append_right _ (List.mem_append_left _ hx))
   | lift dr hTh =>
       -- `Lift`: re-admit at the enlarged zone through `Lift` itself
-      obtain ⟨s', hs'mem, hsub⟩ :=
-        hsat.2 (.irr [] (Ω ++ Θ) (.circ Z))
-          ⟨.lift dr (fun X hX => by
-              rcases List.mem_append.mp hX with hX' | hX'
-              · refine ⟨?_, hΩ X hX'⟩
-                refine clo_trans (fun Y hY => ?_) (hcl X hX')
-                exact (hTh Y (by
-                  have := h2 hY
-                  simpa using this)).1
-              · exact hTh X hX')⟩
-      match s', hsub with
-      | .irr Ξ' Θ' _, ⟨rfl, hSt, hTh'⟩ =>
-          exact ⟨Ξ', Θ', hs'mem,
-            fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
-            fun {x} hx =>
-              List.mem_append_right _ (hTh' (List.mem_append_left _ hx))⟩
+      exact evalI_of_irr hsat
+        ⟨.lift dr (liftZoneGrow hΩ hcl h2 hTh)⟩
+        (fun {_} hx => absurd hx List.not_mem_nil)
+        (fun {_} hx => List.mem_append_right _ (List.mem_append_left _ hx))
   | axIC F ats hats hFf hgoal hThv =>
       -- `Ax^I◯`: the zone already contains `Ω`, classically
-      refine ⟨[], Θ, hmem, fun {x} hx => absurd hx List.not_mem_nil, ?_⟩
-      intro x hx
-      refine List.mem_append_right _ ((hThv x).mpr ?_)
-      refine List.mem_filter.mpr ⟨hΩ x hx, ?_⟩
-      refine clo_classForce (fun Y hY => ?_) (hcl x hx)
-      have hY' : Y ∈ Θ := by simpa using h2 hY
-      exact (List.mem_filter.mp ((hThv Y).mp hY')).2
+      exact ⟨[], Θ, hmem, fun {_} hx => absurd hx List.not_mem_nil,
+        vacZoneGrow hΩ hcl h2 hThv⟩
 
 /-- On a `Ĝ`-context the invariant IS (BSr1). -/
 theorem unrefutedBelow_of_gHat {G : Form} {D : WSeq → Prop} {Ω : List Form}

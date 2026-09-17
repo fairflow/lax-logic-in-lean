@@ -32,16 +32,19 @@ vanished.
 | 2026-09-17 | `join_closed`: one lemma for 24 `preR_closed` join arms | 235 |
 | 2026-09-17 | candidate 8: the LJF weakening triple | 201 |
 | 2026-09-17 | `tagConeP_core`: `tag_cone` 165 → 82 lines in each of three files | 175 |
+| 2026-09-17 | the `FRJ/Gbu` W-copy hoist: seven W copies, 1,110 → 814 | 296 |
 
 **Refused, each with a written reason and, since 2026-09-17, a designed watched
 failure**: the G4/G4H/G4P triplication (eliminations cannot be abstracted over
 a record, and the duplication is load-bearing for a published separation); the
 LJF `aSound` triple (a duplicated recursion needs its termination argument);
 station factoring in `OCore` (a recursive call under a lambda loses the
-call-site variables `ljf_dec_sound`'s `assumption` entries read); and the
+call-site variables `ljf_dec_sound`'s `assumption` entries read); the
 `LaxND` congruence split (the abstraction stops something reducing that the
 concrete form reduced by iota, and the repair would have to cross a
-`Type`-valued index).
+`Type`-valued index); and `gbuInv14`'s case split (an elimination again — the
+V and W irregular families have different constructor sets, so only the arm
+BODIES were hoisted, not the `cases`).
 
 **The one sentence worth carrying forward**: ask what is *doubled*, not how
 similar the text is — and if the doubled thing is a **function**, it abstracts
@@ -887,6 +890,118 @@ parameter typed by `PreModel.join` when `Ms`/`Ns` are abstract. The existing
 text already ascribes this by `:= hu` at `Sound.lean:749`, so the probe is a
 one-line `:= hu` against the abstract `joinPModel`. Failure costs about a third
 of the saving, not the design.
+
+## Done 2026-09-17: the `FRJ/Gbu` W-copy hoist (candidate 10)
+
+This is candidate 10, "the `enumOf`/cover preamble in `FRJ/Gbu`, ~540 lines,
+a `coverOf` lemma" — and the fix is not a `coverOf` lemma. The preamble is
+not what is doubled; the whole manufacture proof is, and once the rule it
+fires is a parameter the preamble travels with it for free.
+
+`FRJ/Gbu/DB.lean` + `Circ.lean` against `FRJ/Gbu/W/DB.lean` +
+`W/CircDB.lean`: seven declarations proved twice, once over FRJV and once
+over FRJW. Measured, not estimated — `diff` on the seven pairs touches only
+the statement line, the `EvalI`→`WEvalI` renames, and (in `_circ`) the one
+`RefAt.ups` adapter. Everything else was byte-identical.
+
+### The probe, and what it settled
+
+The stated obstacle was the `⋈^◯` premise (J2), which is **not** alpha-equal
+across the families: `A ∈ upsilon rhs` in FRJV (`FRJ/CalculusV.lean:192`),
+`RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) A` in FRJW
+(`FRJ/CalculusW.lean:172`). The probe asked whether one abstract rule-field
+type can serve both, for all four fields used
+(`axR`, `⋈^At`, `⋈^∨`, `⋈^◯`), and it **passes**:
+
+```
+$ lake env lean probe_wcopy.lean      # 3.1 s
+$                                      # (exit 0, no output)
+```
+
+The probe was a scratch file (deleted); its four rule types are now the repo's
+`AxRRule`/`AtRule`/`OrRule`/`CircRule` and its eight instances the
+`…RuleV`/`…RuleW` definitions, so the probe survives as the code. The `⋈^◯`
+line that carries the divergence read
+
+```lean
+example : CircRuleOf FRJVi FRJVr × CircRuleOf FRJWi FRJWr :=
+  ⟨@fun _ _ _ _ _ _ _ p a b c d e f _ h => FRJVr.joinCirc p a b c d e f h,
+   @fun _ _ _ _ _ _ _ p a b c d e f _ h =>
+      FRJWr.joinCirc p a (fun A B hm => .ups (b A B hm)) c d e f h⟩
+```
+
+So `joinCirc` needs **no** premise-predicate parameter. The abstract field
+carries the STRICT (FRJV) premise; FRJW's rule asks for strictly less, so the
+W instance weakens it by `RefAt.ups` — the same adapter the W call site
+already carried at `W/CircDB.lean:345` before the hoist. A weaker rule
+instantiates a stronger abstract field for free; only a rule asking for MORE
+would have needed the extra parameter.
+
+The design is `FRJ/SoundCore.lean`'s: the rule is an explicit hypothesis, the
+core mentions no calculus, no recursion moves. Two further hypotheses replace
+the database layer, so `FSeq`/`WSeq` do not appear in any core either:
+`irr_of_evalI` ((DB1) at an irregular row) and `evalI_of_irr` ((DB2), with the
+subsuming row's zones repaired), one four- and one nine-line lemma per family.
+
+### What was hoisted
+
+Into `FRJ/Gbu/DB.lean`, all calculus-free: the four rule-field types
+(`AxRRule`, `AtRule`, `OrRule`, `CircRule`); the three manufacture cores
+(`refutedCleanly_at_core`, `_or_core`, `_circ_core`); the two zone-bookkeeping
+lemmas `impZoneSplit` (clause viii) and `orZoneMerge` (Lemma 10). Into
+`FRJ/Gbu/Circ.lean`, next to `clo_classForce`: `liftZoneGrow` and
+`vacZoneGrow`, the three arm bodies of clause 14.
+
+| declaration | V before → after | W before → after |
+|---|--:|--:|
+| `refutedCleanly_at` | 103 → 9 | 99 → 9 |
+| `refutedCleanly_or` | 90 → 11 | 90 → 11 |
+| `refutedCleanly_circ` | 85 → 10 | 86 → 10 |
+| `gbuInv7` | 20 → 8 | 20 → 8 |
+| `gbuInv8` | 47 → 10 | 47 → 10 |
+| `gbuInv10` | 27 → 8 | 27 → 8 |
+| `gbuInv14` | 52 → 25 | 52 → 24 |
+
+| file | before | after |
+|---|--:|--:|
+| `FRJ/Gbu/DB.lean` | 724 | 964 |
+| `FRJ/Gbu/Circ.lean` | 2,582 | 2,519 |
+| `FRJ/Gbu/W/DB.lean` | 568 | 376 |
+| `FRJ/Gbu/W/CircDB.lean` | 542 | 438 |
+| total | 4,416 | 4,297 |
+
+The number to read is **296**: the two W files fell from 1,110 lines to 814,
+and what left them was duplication only — `gbuInv9`, `pledge_of_le` and the
+pledged-lookup layer, which are W-specific and have no V counterpart, are
+untouched. The net across all four is 119, because the V bodies
+did not vanish — they BECAME the cores, and the price of naming what differs
+is the 62 lines of rule-field signature plus eight one-line instances. The
+gain the net line count does not show is that Lemmas 11, 12 and 13 now have
+one proof each instead of two.
+
+### Refused: `gbuInv14`'s case split
+
+The fifth refusal, and the same mechanism as the G4 one. Clause 14 opens with
+`cases d` on the irregular derivation, and the two families' constructor sets
+genuinely differ: FRJVi has `impNotIn` and `liftI`, FRJWi has `lift` and no
+`impNotIn`. An abstract premise family has nothing to case on, and the
+watched failure says so exactly:
+
+```lean
+example {Ri : Form → List Form → List Form → Form → Type}
+    {G : Form} {Ξ Θ : List Form} {Z : Form} (d : Ri G Ξ Θ (.circ Z)) : True := by
+  cases d
+```
+```
+error: Tactic `cases` failed: major premise type is not an inductive type
+  Ri G Ξ Θ Z.circ
+```
+
+What the arms DO is calculus-free, and that was hoisted: `liftZoneGrow` for
+the `◯∉`/`Lift` arms, `vacZoneGrow` for `Ax^I◯`, with `evalI_of_irr` supplying
+the (DB2) tail. Each arm is three lines in each family now, and the 52-line
+bodies are 25 and 24 — the residue is the `cases` itself, which is where the
+two calculi actually differ.
 
 ## The rules that keep this honest
 

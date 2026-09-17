@@ -4729,3 +4729,63 @@ all behaving.
 from the `merge-main` build cache although its hash and trace files are there,
 so the first gate in a fresh worktree dies on it. `lake build LJF.O` rebuilds
 it cleanly but costs ~25 minutes (`set_option maxHeartbeats 8000000`).
+
+## 2026-09-17 (night) — the `FRJ/Gbu` W-copy hoist, and a premise that was not the obstacle
+
+Branch `worktree-agent-ade7dc555024ee46f`, cut from `ledger` at `e037be1`.
+Candidate 10 of `docs/proof-simplification-plan-2026-09-16.md`, which the
+survey had described as "the `enumOf`/cover preamble in `FRJ/Gbu`, ~540 lines,
+a `coverOf` lemma". The preamble is not what is doubled: **seven whole
+declarations were proved twice**, once over FRJV in `FRJ/Gbu/DB.lean` +
+`Circ.lean` and once over FRJW in `FRJ/Gbu/W/DB.lean` + `W/CircDB.lean` —
+`refutedCleanly_at`, `refutedCleanly_or`, `refutedCleanly_circ`, `gbuInv7`,
+`gbuInv8`, `gbuInv10`, `gbuInv14`. `diff` on the seven pairs touches only the
+statement line, the `EvalI`/`FRJVi` → `WEvalI`/`FRJWi` renames, and one
+`RefAt.ups` adapter.
+
+**The probe passed, and the stated obstacle dissolved rather than costing a
+parameter.** The `⋈^◯` premise (J2) is genuinely not alpha-equal across the
+families — `A ∈ upsilon rhs` in FRJV (`FRJ/CalculusV.lean:192`), the relaxed
+`RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) A` in FRJW
+(`FRJ/CalculusW.lean:172`) — but the abstract rule field carries the STRICT
+(FRJV) premise, and FRJW's instance weakens it by `RefAt.ups`, the same
+adapter the W call site already carried. A weaker rule instantiates a stronger
+abstract field for free; only a rule asking for MORE would have needed
+`joinCirc`'s own premise predicate as a further parameter. Worth carrying
+forward: check the DIRECTION of a premise divergence before paying for it.
+
+**What is now shared** (`FRJ/Gbu/DB.lean`, all calculus-free): four rule-field
+types `AxRRule`/`AtRule`/`OrRule`/`CircRule`, the constructor field types
+verbatim; three manufacture cores `refutedCleanly_at_core`/`_or_core`/
+`_circ_core` over abstract `Ri`/`Rr` with the rule as an explicit hypothesis;
+the zone-bookkeeping lemmas `impZoneSplit` (clause viii) and `orZoneMerge`
+(Lemma 10). Two adapters per family, `irr_of_evalI` ((DB1) at an irregular
+row) and `evalI_of_irr` ((DB2), zones repaired), keep `FSeq`/`WSeq` out of
+every core. In `FRJ/Gbu/Circ.lean`, beside `clo_classForce`: `liftZoneGrow`
+and `vacZoneGrow`, the arm bodies of clause 14. Eight two-line instances
+(`axRRuleV`…`circRuleW`) and seven wrappers of 8–11 lines per family.
+
+**Refused, with a watched failure: `gbuInv14`'s case split.** The fifth
+refusal of the campaign and the G4 mechanism again — clause 14 opens with
+`cases d` on the irregular derivation, and the constructor sets differ
+(`FRJVi` has `impNotIn` and `liftI`, `FRJWi` has `lift` and no `impNotIn`). An
+abstract premise family has nothing to case on:
+
+```lean
+example {Ri : Form → List Form → List Form → Form → Type}
+    {G : Form} {Ξ Θ : List Form} {Z : Form} (d : Ri G Ξ Θ (.circ Z)) : True := by
+  cases d
+-- error: Tactic `cases` failed: major premise type is not an inductive type
+--   Ri G Ξ Θ Z.circ
+```
+
+So only the arm BODIES were hoisted; each arm is three lines in each family
+now and the 52-line bodies are 25 and 24.
+
+**Numbers.** `FRJ/Gbu/DB.lean` 724 → 964, `Circ.lean` 2,582 → 2,519,
+`W/DB.lean` 568 → 376, `W/CircDB.lean` 542 → 438; total 4,416 → 4,297. The
+figure to read is the **296** that left the two W files, which was duplication
+only — `gbuInv9`, `pledge_of_le` and the pledged-lookup layer are W-specific
+and untouched. The net is smaller because the V bodies did not vanish, they
+BECAME the cores; the price of naming what differs is 62 lines of rule-field
+signature. No statement changed, and no recursion moved.
