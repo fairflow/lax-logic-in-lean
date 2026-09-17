@@ -253,6 +253,33 @@ Three cheaper moves survive, in ascending risk, and are the live plan for
 2. `atkPark` generalises `atkCimp`, and the file already carries the proof
    (`atkPark … = atkCimp … := rfl`, `OFuelPSound.lean:77`). Hoist it — about
    25 lines, and it records the identity that file was written to record.
+### Station factoring: done for the two fuel files, refused for `OCore`
+
+Done 2026-09-16/17. `OFuelSound` and `OFuelPSound` each had eleven station
+clauses running the same case split — six identical at 89 and 114 lines, three
+at 42 and 67 — differing only in which goal they proved. Each file now has two
+lemmas (`stationCircF`/`stationUpF`, `stationCircP`/`stationUpP`) and nine
+one-line call sites. **1,077 lines out of the two files**, no statement changed,
+`lake build LJF` green.
+
+Three things it settled, and the third is the boundary:
+
+* **A fuel-recursive call can be passed as a parameter.** The sites hand the
+  lemma `fun todo rest H => aSoundF p f todo rest H` — a recursive call under a
+  lambda with variable arguments. Lean accepts it because the measure is the
+  fuel, which does not mention those arguments: the decrease goal is `f < f+1`.
+* **The lemma must be stated about the literal row term**, the `match X, hXr
+  with …` copied from `interpF` with the goal abstracted, so `cases X` still
+  reduces the fourteen arms.
+* **The same move fails in `OCore`, and the failure is the measure.** There the
+  termination argument is the syntactic complexity of the arguments themselves,
+  discharged by the fifty-alternative `ljf_dec_sound` farm whose entries read
+  call-site variables with `assumption` (hygiene deliberately off). Put the
+  recursive call under a lambda and those variables are no longer at the call
+  site: `Tactic 'assumption' failed`, six times over. Tried, reverted, recorded
+  — the fuel files are shareable and the fuel-free one is not, for a reason that
+  belongs to `decreasing_by`, not to the proof.
+
 3. **Factor the station rows within each file.** The eleven station blocks of
    one `aSound` differ only in the goal term — the four non-◯ blocks are 39
    lines each and differ pairwise in four lines. A `stationBranches` lemma per
