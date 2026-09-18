@@ -5035,3 +5035,58 @@ or to record these 229 by hand, is Matthew's call; `--update` was not run.
 One incidental repair: the 2026-09-16 Stage B deletion left `MinZetaNS`'s
 docstring stranded in `FRJ/SaturateV.lean`, where it had attached itself to
 `CircSupply` and documented the wrong declaration. Replaced.
+
+## 2026-09-18 (late) — `SaturateV`'s other 34, and a gate that cannot see a rename
+
+`FRJ/Saturate.lean` ↔ `FRJ/SaturateV.lean`, the half left open on 2026-09-16.
+Twenty-one declarations were deleted then as redundant outright; the other 34
+byte-identical ones were **not** redundant, because they mention one of five
+witness records — `IrrWit`, `MRWit`, `FRWit`, `OWit`, `PledgeFam` — differing
+in one field, `FRJr` against `FRJVr`. Those five are now parameterised over the
+rule family (`MRWitOf Rr`, with `MRWit := MRWitOf FRJr` and
+`V.MRWit := MRWitOf FRJVr`), and the 34 are shared.
+
+`FRJ/SaturateV.lean` 1,331 → 613; `Saturate.lean` 1,559 → 1,886;
+`Minimal.lean` 531 → 538. **384 lines**, 718 of them out of `SaturateV`.
+Byte-identical shared declarations: 33 before, **0** after. `lake build` green.
+
+**Four probes, all passed, and the third was not in the brief.** Probes 1–2
+cleared the type level and, decisively, `visit`'s `decreasing_by` farm — the
+`OCore` mechanism did not fire, because that failure came from putting a
+recursive call *under a lambda*, and nothing here moves a call. But 17 of the
+33 **apply a constructor of the doubled inductive family**, which record
+parameterisation does not reach; a builder core over abstract `Ri`/`Rr` with
+the constructors as fields was needed, and passed. **Why this worked where G4
+and `gbuInv14` were refused**: the layer only *introduces* — every
+`cases`/`rcases`/`induction` in either file is on a membership proof, a
+formula, or a decidable proposition, never on a derivation. A record supplies
+introduction forms; an elimination has nothing to case on.
+
+`metR_prime`/`metR_or` are **not** shared: FRJV's `joinAt` asks for *more* than
+the paper's (`restrict_keptChain`, `joinCtxAt_eq_base`). The FRJ/Gbu finding
+ran the favourable way — a weaker rule instantiates a stronger abstract field
+for free — and this one runs the other way, so they stay parameters.
+
+**The gate said 200 REGRESSIONS, and it was right to.** A rename is invisible
+to it: it learned MOVE (same name, new module) on 2026-09-16 and DUPE (a
+duplicate dropped while the same declaration survives elsewhere) on
+2026-09-17, but a name that *leaves and arrives in the same module* is neither.
+Adjudicated by hand, name by name: **194 of the 200 are names the elaborator
+mints** — constructors, recursors, `casesOn`, `noConfusion`, `sizeOf_spec`,
+`injEq`, `eq_def`, `congr_simp`, `ctorIdx`, and every field projection — and
+**6 are hand-written**, `MRWit.toFree`/`.toOWit`/`.weaken` in each namespace,
+now one shared copy each (`FRJ/Saturate.lean:210`, `:524`, `:1133`) over the
+abstract rule type. Zero SORRY, zero AXIOM, zero NATIVE, zero `MOVED*`, and
+`#axioms_within` reads `[propext, Quot.sound]` for `visit`, `V.visit`,
+`visit_core` and both `completeness_of_*`, with the bound negative-tested
+first.
+
+**A question for Matthew, left open rather than taken** (plan document, "For
+Matthew: should the record count elaborator plumbing?"): **19.2% of the record
+— 5,417 of 28,249 rows — are names the elaborator mints from another
+declaration's name.** `scripts/ledger.lean`'s `skip?` already drops `f.eq_3`
+and `f.match_1` on exactly that reasoning; the constructor/recursor family was
+never added. Dropping them would end this class of false regression for good
+and make the count mean "declarations someone wrote" — but it changes a headline
+number by a fifth, which is a redefinition of the unit of account, not a bug
+fix. His call.

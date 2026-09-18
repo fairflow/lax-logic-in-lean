@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-18 21:05 BST from `1bd4113` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-18 22:04 BST from `ae44f5a` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**29214 declarations** in **603 modules**: 13409 theorems, 15805 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**29170 declarations** in **603 modules**: 13355 theorems, 15815 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -35,13 +35,13 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.ExtractW` | 16 | 9 | 16 |  |  |
 | `FRJ.Fallible` | 69 | 34 | 69 |  |  |
 | `FRJ.Gbu` | 1129 | 577 | 1129 |  |  |
-| `FRJ.Minimal` | 82 | 37 | 82 |  |  |
+| `FRJ.Minimal` | 83 | 37 | 83 |  |  |
 | `FRJ.Modal` | 88 | 18 | 88 |  |  |
 | `FRJ.Model` | 21 | 7 | 21 |  |  |
 | `FRJ.Profile` | 71 | 49 | 71 |  |  |
 | `FRJ.RefAt` | 65 | 27 | 65 |  |  |
-| `FRJ.Saturate` | 227 | 92 | 227 |  |  |
-| `FRJ.SaturateV` | 164 | 65 | 164 |  |  |
+| `FRJ.Saturate` | 293 | 93 | 293 |  |  |
+| `FRJ.SaturateV` | 53 | 10 | 53 |  |  |
 | `FRJ.Search` | 500 | 75 | 500 |  |  |
 | `FRJ.Sound` | 14 | 14 | 14 |  |  |
 | `FRJ.SoundCore` | 33 | 30 | 33 |  |  |
@@ -392,8 +392,8 @@ Every distinct axiom set in the estate, most common first.
 | axioms | declarations |
 |---|--:|
 | *(none — axiom-free)* | 12622 |
-| `propext`, `Quot.sound` | 8397 |
-| `propext` | 5614 |
+| `propext`, `Quot.sound` | 8398 |
+| `propext` | 5569 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2548 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |

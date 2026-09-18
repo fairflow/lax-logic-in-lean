@@ -1238,6 +1238,58 @@ Two lessons, both already paid for once:
   `FrontierSampler` sub-tree: `LJF.Complete`. That sweep takes seconds and
   would have caught this on the day of the merge.
 
+## For Matthew: should the record count elaborator plumbing?
+
+**This is a decision about what a number in the record means, so it is left
+open rather than taken.**
+
+Three times in two days a *structural* refactor has made the gate cry
+regression at declarations nobody wrote:
+
+1. **MOVE** — a declaration changes module. Taught 2026-09-16.
+2. **DUPE** — a duplicate record dropped while the same declaration and axioms
+   survive elsewhere (`Tools.Engines` beside `tools.Engines`, 53 rows). Taught
+   2026-09-17, watched failing both ways.
+3. **RENAME** — `MRWit` became `MRWitOf`, and with it went
+   `MRWit.casesOn`, `MRWit.rec`, `MRWit.mk.sizeOf_spec`, `MRWit.noConfusion`,
+   every field projection, and so on. **200 GONE lines in the merged tree**,
+   and the classification is exhaustive: **194 are names the elaborator mints**
+   (constructors, recursors, `casesOn`, `noConfusion`, `sizeOf_spec`, `injEq`,
+   `eq_def`, `congr_simp`, `ctorIdx`, and the field projections `.der`,
+   `.ctx`, `.cov`, `.t`, `.wfal`, `.wld`, `.wle`, `.stab`, `.sub`, `.th`,
+   `.tOK`, `.ground`, `.dps`, `.hbody`, `.hlam`, `.htps`, `.k`, `.tps`,
+   `.Δs`), and **6 are hand-written** — `MRWit.toFree`, `.toOWit`, `.weaken`
+   in each of the two namespaces, now **one shared copy each**
+   (`MRWitOf.toFree` at `FRJ/Saturate.lean:210`, `.toOWit` at `:524`,
+   `.weaken` at `:1133`), stated over the abstract rule type. Zero SORRY, zero
+   AXIOM, zero NATIVE, zero `MOVED*`.
+
+The pattern is not three accidents. **19.2% of the record — 5,417 of 28,249
+rows before the `SaturateV` work — are names the elaborator mints from another
+declaration's name**: `.noConfusion` 880, `.sizeOf_spec` 775, `.mk.*` 687,
+`.injEq` 546, `.casesOn` 452, `.rec` 452, `.recOn` 399, `.eq_def` 394,
+`.noConfusionType` 304, `.congr_simp` 210, `.below`/`.brecOn` 124 each. They
+exist if and only if their parent does, and their axioms are determined by it.
+`scripts/ledger.lean`'s `skip?` **already** drops the same kind of thing —
+`f.eq_3`, `f.match_1` — on exactly this reasoning; the constructor/recursor
+family was simply never added.
+
+**The case for dropping them**: the record would count declarations someone
+wrote; a rename would stop looking like a loss; the gate would keep its
+strictness where it matters, because a generated name cannot be weaker than its
+parent, and a parent that gains `sorryAx` or vanishes is still reported.
+
+**The case against, and it is why this is Matthew's**: "28,249 declarations" is
+a number he quotes, and this would change it by a fifth overnight. It is a
+redefinition of the estate's unit of account, not a bug fix.
+
+**What was done instead**: the GONE lines were adjudicated by hand, name by
+name, and the adjudication is recorded above rather than the classifier being
+widened to swallow them. Independently,
+`#axioms_within` reads `[propext, Quot.sound]` for `visit`, `V.visit`,
+`visit_core`, both `allMet_of_supply`, both `completeness_of_supply`, both
+`completeness_of_endpoints` — with the bound negative-tested first.
+
 ## The rules that keep this honest
 
 1. **No statement moves.** If a refactor would change a theorem's statement, it
