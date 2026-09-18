@@ -33,6 +33,7 @@ vanished.
 | 2026-09-17 | candidate 8: the LJF weakening triple | 201 |
 | 2026-09-17 | `tagConeP_core`: `tag_cone` 165 → 82 lines in each of three files | 175 |
 | 2026-09-17 | the `FRJ/Gbu` W-copy hoist: seven W copies, 1,110 → 814 | 296 |
+| 2026-09-18 | `Saturate` ↔ `SaturateV`: the other 34, via the rule record | 384 |
 
 **Refused, each with a written reason and, since 2026-09-17, a designed watched
 failure**: the G4/G4H/G4P triplication (eliminations cannot be abstracted over
@@ -307,6 +308,193 @@ The lesson for the rest of this plan: **similarity measured on text overstates
 what can be shared.** The number that matters is how many of the "identical"
 declarations mention something that is itself doubled — here 34 of 55, and that
 is what the 825 collapses to 291 against.
+
+## Stage B finished 2026-09-18: `Saturate` ↔ `SaturateV`, the other 34
+
+Stage B above deleted the 21 declarations that were redundant outright and
+stopped, because the other 34 byte-identical declarations mention one of five
+witness records whose derivation field is `FRJr` on one side and `FRJVr` on
+the other: deleting them would silently retype the V layer to the paper
+calculus. This section finishes the candidate. Nothing was deleted; the five
+records were **parameterised over the family**, and the declarations that
+mention them are now proved once.
+
+Re-measured on `ledger` at `1bd4113`, post-deletion, and the 2026-09-16
+figures reproduce exactly: **51 shared declaration names** (72 − 21), **33
+byte-identical** (34 by the earlier count; the one-declaration difference is
+parse convention, not content). Every one of the 33 is a genuinely different
+theorem: the six whose own text names no witness record (`visit`, `visitG`,
+`allMet_of_supply`, `allMetF_of_endpoints`, `circSupply_of_coneGrounded`,
+`pledgeSupply_of_locFree`) state their results in `SatStmt`/`GStmt`/`AllMet`/
+`CircSupply`, which are doubled in turn.
+
+### Four probes, in ascending risk, each compiled alone before the next
+
+The declared hazard was the recorded `OCore` mechanism: `visit`, `visitG` and
+`visitMax` are well-founded recursions whose `decreasing_by` farms discharge
+obligations with bare `assumption`, and a structure parameter changes the call
+site. It did not fire, and the reason is worth stating precisely. The
+`OCore` failure came from putting a recursive call **under a lambda**, which
+removes the call-site variables the farm's `assumption` entries read. Nothing
+here moves a call: the change is to the recursion's RESULT TYPE and to three
+leading arguments, and the measure `(ht K a, t, C.size)` never mentions the
+witness type.
+
+1. **The parameterised record, and the abbreviations at both
+   instantiations.** `MRWitOf` beside `MRWit`, `abbrev`s at `FRJr` and
+   `FRJVr`, plus an existing declaration restated through the abbreviation —
+   `MRWit.weaken` (projections only) and `metR_and` (whose body applies the
+   constructors `.andR1`/`.andR2`). **PASSED.** A reducible `abbrev` is
+   transparent to dot notation in both directions: `.andR2` resolves against
+   the field type `Rr G t ctx C₂` once `Rr` is instantiated, and `w.weaken`
+   finds `MRWitOf.weaken`.
+2. **`visit`'s `decreasing_by` farm, with the parameterised type at its call
+   sites.** The five records made `…Of` + `abbrev`, so `SatStmt` reduces to
+   `MRWitOf FRJr …`. **PASSED**, exit 0, zero errors.
+3. **A builder body over an ABSTRACT family.** Probes 1 and 2 clear only the
+   type level. 17 of the 33 apply a constructor of the doubled inductive
+   family, which no amount of record-parameterisation reaches, so a third
+   probe was designed and run: `metR_and_core` over abstract `Ri`/`Rr` with
+   the constructors taken as fields. **PASSED**, and the instantiation form
+   matters: `abbrev metR_and := metR_and_core satRulesR` fails with *don't
+   know how to synthesize implicit argument `K`*, because a bare implicit
+   binder is instantiated eagerly. Declaring the leading binders **strict
+   implicit** (`⦃K : Kripke⦄ …`) fixes it and costs each instantiation exactly
+   one line instead of a six-line restated signature, about 200 lines over
+   the file pair.
+4. **`visit_core`: the recursion itself over the abstract family.** The
+   decisive one. **PASSED** — the only error in the compile was probe 3's
+   eager-implicit fault at the instantiation line; the farm closed.
+
+### The design
+
+**The layer only INTRODUCES.** No declaration in either file does `cases d`
+or `induction d` on a derivation; every elimination is on a membership
+proof, a formula, or a decidable proposition. That is exactly the condition
+the G4 and `gbuInv14` refusals identify as missing: a record supplies
+introduction forms, so an introduction-only layer abstracts over the family
+through a record of its constructors, and an elimination does not.
+
+`SatRules Ri Rr` (`FRJ/Saturate.lean`, 16 fields, 106 lines) carries the
+sixteen constructors this layer applies, each field the constructor's type
+verbatim. The measurement that made it cheap: those sixteen have **identical
+signatures in `FRJi`/`FRJr` and `FRJVi`/`FRJVr`**, checked by extracting and
+diffing them, not assumed from the similarity score. Two instances,
+`satRulesR` and `satRulesV`, eight lines each.
+
+The five records are `IrrWitOf` (`FRJ/Minimal.lean`), `MRWitOf`, `FRWitOf`,
+`OWitOf`, `PledgeFamOf` (`FRJ/Saturate.lean`), with `abbrev` instantiations
+keeping every old name; the seven statement families became `SatStmtOf`,
+`AllMetOf`, `AllMetFOf`, `CircSupplyOf`, `GStmtOf`, `MaxStmtOf`,
+`PledgeSupplyOf` the same way.
+
+**What is NOT shared, and the reason is the direction of the divergence.**
+`metR_prime` and `metR_or` are the two declarations whose bodies differ, by
+one call each: FRJV's `joinAt` asks for **more** than the paper's — a
+`restrict_keptChain` premise and `joinCtxAt_eq_base` in the context equation.
+The Gbu note applies in the unfavourable direction: a weaker rule instantiates
+a stronger abstract field for free, a rule asking for more cannot. So
+`FRJr.axR`, `.joinAt` and `.joinOr` are deliberately absent from `SatRules`,
+and the two builders are ordinary **parameters** of the three recursions,
+typed `MPrimeOf Ri Rr` and `MOrOf Ri Rr`. That is rule 4 (the weakest
+hypotheses the call sites already supply), and it costs 14 lines of signature.
+
+
+**An axiom reading independent of the gate**, taken from the built
+environment with `#axioms_within` (the only sound oracle, CLAUDE.md rule 1),
+and negative-tested first so the check was watched failing:
+
+```
+$ lake env lean probe_axioms.lean      # 11 declarations, exit 0, no output
+$ lake env lean probe_neg.lean         # the same file with Quot.sound removed
+probe_neg.lean:5:0: error: 'FRJ.visit' depends on Quot.sound, which the
+  bound does not allow.  declared: [propext]
+```
+
+`FRJ.visit`, `FRJ.V.visit`, `FRJ.visit_core`, both `allMet_of_supply`, both
+`completeness_of_supply`, both `completeness_of_endpoints` and the two rule
+instances are all within `[propext, Quot.sound]`: no `sorryAx`, no
+`Classical.choice`, no native taint. The layer was built to stay
+`Classical.choice`-free and still is.
+
+**Two adapters, and why they are there.** `MPrimeOf`/`MOrOf` declare their
+leading binders **strict implicit**, which is what makes an instantiation one
+line; but `metR_prime` and `metR_or` are pre-existing declarations and their
+binders were left exactly as they were, because changing a binder annotation
+changes a signature. `mPrime`/`mOr` (four lines per family) bridge the two.
+A `fun` against a strict-implicit expected type must name those binders: a
+bare `fun hloc … =>` binds `hloc` to `K` and fails with *argument `hloc` has
+type `Kripke` of sort `Type 1`*.
+
+| | before | after |
+|---|--:|--:|
+| `FRJ/Saturate.lean` | 1,559 | 1,886 |
+| `FRJ/SaturateV.lean` | 1,331 | 613 |
+| `FRJ/Minimal.lean` | 531 | 538 |
+| total | 3,421 | 3,037 |
+
+**384 lines**, and the figure to read is the **718 that left `SaturateV`**,
+which was duplication only: `provableV_root_countermodel`,
+`not_pledgeFam_of_circ_mem`, `metI_circO`, `metI_circ_syn`, `metR_prime`,
+`metR_or` and the V completeness wrappers are V-specific and untouched. The
+net is smaller because the paper bodies did not vanish — they BECAME the
+cores. **Byte-identical shared declarations: 33 before, 0 after**; all 50
+remaining shared names are one-line `abbrev` instantiations of a single core.
+
+Verified: `lake build` green (8,748 jobs); the ledger gate reports 229
+GONE and no SORRY/AXIOM/NATIVE line, which is read out below.
+
+### The gate: 229 GONE, and the gate has not learned RENAME
+
+`scripts/check-ledger.sh --built-only` **exits 1**, and this is reported
+rather than worked around:
+
+```
+ledger: 28205 declarations from 598 modules (45 loaded separately)
+ledger: 229 REGRESSION(S)
+  GONE        FRJ.IrrWit.casesOn  (FRJ.Minimal) — declaration no longer in the build
+  GONE        FRJ.IrrWit.cov  (FRJ.Minimal) — declaration no longer in the build
+  …
+  GONE        FRJ.MRWit.toFree  (FRJ.Saturate) — declaration no longer in the build
+  …
+  GONE        FRJ.V.PledgeFam.mk.sizeOf_spec  (FRJ.SaturateV) — declaration no longer in the build
+  … and 29 more
+ledger: 199 addition(s)/improvement(s) — regenerate `docs/status-ledger.jsonl`
+```
+
+**Every one of the 229 is GONE. There is no SORRY, no AXIOM, no NATIVE and
+no `MOVED*` line**, which is the reading that matters: nothing gained an
+axiom, a `sorryAx` or a `native_decide` taint. The 229 classify exhaustively:
+
+* **206** are auto-generated names of the five renamed records —
+  `mk`, `rec`, `recOn`, `casesOn`, `ctorIdx`, `noConfusion(Type)`,
+  `mk.inj`/`.injEq`/`.sizeOf_spec`/`.congr_simp`, and one per field. They
+  exist under `…Of`: `FRJ.IrrWitOf.der`, `FRJ.MRWitOf.der`,
+  `FRJ.FRWitOf.der`, `FRJ.OWitOf.der`, `FRJ.PledgeFamOf.dps` were checked
+  in the built environment. The V copies have no separate counterpart
+  BECAUSE THAT IS THE HOIST: 229 out and 199 in is the 30-declaration
+  de-duplication.
+* **23** are `X.congr_simp` and `X.eq_def` equation lemmas that Lean
+  generates for a `def` with a body and not for an `abbrev` that is a
+  partial application; the cores carry them as `X_core.eq_def`.
+* **Six of the 206 are hand-written**: `MRWit.toFree`, `.toOWit`,
+  `.weaken` in each of the two namespaces, now `MRWitOf.toFree`,
+  `.toOWit`, `.weaken`, one copy serving both. Their types were read back
+  from the environment and are the originals generalised over `Rr`.
+
+So the gate is reporting the de-duplication itself. It learned MOVE on
+2026-09-16 — same name, same axioms, different module — and the
+name-analogue is missing: a RENAME is a name that left and a name that
+arrived in the same module with the same axioms. Whether to teach it that,
+or to record these 229 by hand, is Matthew's call; `--update` was not run.
+
+**The sentence to carry forward, sharpening the one above.** Ask what is
+doubled — but when the doubled thing is an inductive family, ask next whether
+the layer *uses* it by introduction or by elimination. Introduction-only is
+the case the record reaches, and it is not rare: `SoundCore`, the Gbu W-copy
+hoist and this one are all introduction-only, while every refusal on this
+list that turned on an inductive family (G4/G4H/G4P, `gbuInv14`) turned on a
+`cases`.
 
 ## Refused: the LJF `aSound` triple (candidate 2, ~1,900 lines)
 

@@ -21,40 +21,208 @@ namespace FRJ
 `wld ≥ a` whose `Λ*` the context covers, with the tag consumable by the
 modal rules (`circIn`/`circNotIn`/the ⋈^◯ family all gate on exactly
 this disjunction). -/
-structure MRWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
+structure MRWitOf (Rr : Form → Tag → List Form → Form → Type)
+    (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
   t : Tag
   ctx : List Form
-  der : FRJr G t ctx C
+  der : Rr G t ctx C
   tOK : t = .barren ∨ ∃ W, t = .chain W ∧ Covers ctx W C
   wld : K.W
   wle : K.le a wld
   wfal : ¬ K.Fal wld
   cov : lamStar K wld G ⊆ ctx
 
+/-- The paper instantiation. -/
+abbrev MRWit := MRWitOf FRJr
+
 /-- The FREE-grade regular wit: as `MRWit` but with no tag certificate.
 Consumed where any tag serves (`impNotIn` premises, the root).  The
 fallible joins produce these unconditionally at circ-carrying worlds. -/
-structure FRWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
+structure FRWitOf (Rr : Form → Tag → List Form → Form → Type)
+    (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
   t : Tag
   ctx : List Form
-  der : FRJr G t ctx C
+  der : Rr G t ctx C
   wld : K.W
   wle : K.le a wld
   wfal : ¬ K.Fal wld
   cov : lamStar K wld G ⊆ ctx
 
+/-- The paper instantiation. -/
+abbrev FRWit := FRWitOf FRJr
+
+/-! ## The rule interface
+
+The saturation layer only ever INTRODUCES: no declaration below
+eliminates a derivation (no `cases d`, no `induction d`), so the sixteen
+constructors it applies can be taken as fields rather than resolved by
+dot notation against a fixed family.  That is what lets one proof serve
+both `FRJi`/`FRJr` and the repaired `FRJVi`/`FRJVr`, whose sixteen
+signatures are identical modulo the family name — the design of the
+`FRJ/Gbu` W-copy hoist (`AxRRule`/`AtRule`/`OrRule`/`CircRule`), bundled
+here because the visit applies most of them.
+
+`FRJVi.liftI` and `FRJr.axR`/`joinAt`/`joinOr` are deliberately absent:
+the declarations that use them are the ones the two files do NOT share
+(`metI_circ_syn`, `metR_prime`, `metR_or` and the V lift route), and
+they stay per-family. -/
+structure SatRules (Ri : Form → List Form → List Form → Form → Type)
+    (Rr : Form → Tag → List Form → Form → Type) : Type where
+  /-- `Ax^I` -/
+  axI : ∀ {G : Form} (F : Form), F.isPrime → F ∈ sfR G →
+    ∀ {Th' : List Form}, Th' ≐ (rm (gAt G) F) ++ gImp G ++ gCirc G →
+    Ri G [] Th' F
+  /-- `Ax^I◯` -/
+  axIC : ∀ {G : Form} (F : Form) (ats : List Form), ats ⊆ gAt G →
+    classForce ats F = false → Form.circ F ∈ sfR G →
+    ∀ {Th' : List Form}, Th' ≐ vacZoneA G ats → Ri G [] Th' (.circ F)
+  /-- `∧` (irregular), `k = 1` -/
+  andI1 : ∀ {G : Form} {St Th : List Form} {A₁ A₂ : Form},
+    Ri G St Th A₁ → Form.and A₁ A₂ ∈ sfR G → Ri G St Th (.and A₁ A₂)
+  /-- `∧` (irregular), `k = 2` -/
+  andI2 : ∀ {G : Form} {St Th : List Form} {A₁ A₂ : Form},
+    Ri G St Th A₂ → Form.and A₁ A₂ ∈ sfR G → Ri G St Th (.and A₁ A₂)
+  /-- `∨` (irregular) -/
+  orI : ∀ {G : Form} {St₁ Th₁ St₂ Th₂ : List Form} {C₁ C₂ : Form},
+    Ri G St₁ Th₁ C₁ → Ri G St₂ Th₂ C₂ →
+    St₁ ⊆ St₂ ++ Th₂ → St₂ ⊆ St₁ ++ Th₁ → Form.or C₁ C₂ ∈ sfR G →
+    ∀ {St' Th' : List Form}, St' ≐ St₁ ++ St₂ → Th' ≐ cap Th₁ Th₂ →
+    Ri G St' Th' (.or C₁ C₂)
+  /-- `⊃∈` (irregular) -/
+  impInI : ∀ {G : Form} {St Th Lam ThLam : List Form} {A B : Form},
+    Ri G St ThLam B → ThLam ≐ Th ++ Lam → cap Th Lam = [] →
+    Clo (St ++ Lam) A → Form.imp A B ∈ sfR G →
+    ∀ {St' Th' : List Form}, St' ≐ St ++ Lam → Th' ≐ Th →
+    Ri G St' Th' (.imp A B)
+  /-- `⊃∉` -/
+  impNotIn : ∀ {G : Form} {t : Tag} {Γ Th : List Form} {A B : Form},
+    Rr G t Γ B → (∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) →
+    Clo Γ A → ¬ Clo Th A → Form.imp A B ∈ sfR G → Ri G [] Th (.imp A B)
+  /-- `◯∉` -/
+  circNotIn : ∀ {G : Form} {t : Tag} {Γ Th : List Form} {Z : Form},
+    Rr G t Γ Z → (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z) →
+    (∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) → Form.circ Z ∈ sfR G →
+    Ri G [] Th (.circ Z)
+  /-- `∧` (regular), `k = 1` -/
+  andR1 : ∀ {G : Form} {t : Tag} {Γ : List Form} {A₁ A₂ : Form},
+    Rr G t Γ A₁ → Form.and A₁ A₂ ∈ sfR G → Rr G t Γ (.and A₁ A₂)
+  /-- `∧` (regular), `k = 2` -/
+  andR2 : ∀ {G : Form} {t : Tag} {Γ : List Form} {A₁ A₂ : Form},
+    Rr G t Γ A₂ → Form.and A₁ A₂ ∈ sfR G → Rr G t Γ (.and A₁ A₂)
+  /-- `◯∈` -/
+  circIn : ∀ {G : Form} {t : Tag} {Γ : List Form} {Z : Form},
+    Rr G t Γ Z → (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z) →
+    Form.circ Z ∈ sfR G → Rr G t Γ (.circ Z)
+  /-- `⊃∈` (regular) -/
+  impIn : ∀ {G : Form} {t : Tag} {Γ : List Form} {A B : Form},
+    Rr G t Γ B → Clo Γ A → Form.imp A B ∈ sfR G → Rr G t Γ (.imp A B)
+  /-- `⋈^At,f` — the FALLIBLE atomic join -/
+  joinAtF : ∀ {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {F : Form},
+    (∀ j, Ri G (stab j) (th j) (rhs j)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    ∀ {Γ' : List Form}, Γ' ≐ joinCtxAtF stab th rhs F →
+    Rr G .blocked Γ' F
+  /-- `⋈^At,p` — the PROMISE atomic join -/
+  joinAtP : ∀ {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {F : Form} {t' : Tag}
+    {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form},
+    (∀ j, Ri G (stab j) (th j) (rhs j)) →
+    (∀ i, Rr G (tps i) (Δs i) (Ds i)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
+    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    ∀ {Γ' : List Form}, Γ' ≐ joinCtxAtP stab th rhs F Δs → Rr G t' Γ' F
+  /-- `⋈^∨,f` — the FALLIBLE disjunctive join -/
+  joinOrF : ∀ {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form},
+    (∀ j, Ri G (stab j) (th j) (rhs j)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) → Form.or C₁ C₂ ∈ sfR G →
+    ∀ {Γ' : List Form}, Γ' ≐ joinCtxOrF stab th rhs →
+    Rr G .blocked Γ' (.or C₁ C₂)
+  /-- `⋈^∨,p` — the PROMISE disjunctive join -/
+  joinOrP : ∀ {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {t' : Tag}
+    {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form},
+    (∀ j, Ri G (stab j) (th j) (rhs j)) →
+    (∀ i, Rr G (tps i) (Δs i) (Ds i)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
+    (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) → Form.or C₁ C₂ ∈ sfR G →
+    ∀ {Γ' : List Form}, Γ' ≐ joinCtxOrP stab th rhs Δs →
+    Rr G t' Γ' (.or C₁ C₂)
+
+/-- The paper family's rule interface. -/
+def satRulesR : SatRules FRJi FRJr where
+  axI := @FRJi.axI; axIC := @FRJi.axIC
+  andI1 := @FRJi.andI1; andI2 := @FRJi.andI2; orI := @FRJi.orI
+  impInI := @FRJi.impInI; impNotIn := @FRJi.impNotIn
+  circNotIn := @FRJi.circNotIn
+  andR1 := @FRJr.andR1; andR2 := @FRJr.andR2
+  circIn := @FRJr.circIn; impIn := @FRJr.impIn
+  joinAtF := @FRJr.joinAtF; joinAtP := @FRJr.joinAtP
+  joinOrF := @FRJr.joinOrF; joinOrP := @FRJr.joinOrP
+
+/-- The type of the prime-demand builder.  It is a PARAMETER of the
+visit rather than a field of `SatRules`, because `metR_prime` is one of
+the two declarations the paper and repaired families do not share:
+`FRJVr.joinAt` asks for MORE than `FRJr.joinAt` (a `restrict_keptChain`
+premise, and `joinCtxAt_eq_base` in the context equation), and a rule
+asking for more cannot instantiate an abstract field. -/
+abbrev MPrimeOf (Ri : Form → List Form → List Form → Form → Type)
+    (Rr : Form → Tag → List Form → Form → Type) :=
+  ∀ ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C : Form⦄,
+    circPart (lamStar K a G) = [] → C.isPrime → C ∈ sfR G → ¬ K.force a C →
+    (∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWitOf Ri K G a A) →
+    MRWitOf Rr K G a C
+
+/-- The type of the disjunctive-demand builder, a parameter for the same
+reason as `MPrimeOf`. -/
+abbrev MOrOf (Ri : Form → List Form → List Form → Form → Type)
+    (Rr : Form → Tag → List Form → Form → Type) :=
+  ∀ ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C₁ C₂ : Form⦄,
+    circPart (lamStar K a G) = [] → Form.or C₁ C₂ ∈ sfR G →
+    ¬ K.force a (.or C₁ C₂) →
+    (∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWitOf Ri K G a A) →
+    MRWitOf Rr K G a (.or C₁ C₂)
+
 /-- Certified wits weaken to free ones. -/
-def MRWit.toFree {K : Kripke} {G : Form} {a : K.W} {C : Form}
-    (w : MRWit K G a C) : FRWit K G a C :=
+def MRWitOf.toFree {Rr : Form → Tag → List Form → Form → Type}
+    {K : Kripke} {G : Form} {a : K.W} {C : Form}
+    (w : MRWitOf Rr K G a C) : FRWitOf Rr K G a C :=
   ⟨w.t, w.ctx, w.der, w.wld, w.wle, w.wfal, w.cov⟩
 
 /-- **The demand closure.**  Every refuted right-signature formula at
 every world of `K` has both an irregular and a (tag-admissible) regular
 wit.  `¬ force a C` already yields `¬ Fal a` (a fallible world forces
 everything), so no separate infallibility hypothesis is needed. -/
-def AllMet (K : Kripke) (G : Form) : Prop :=
+def AllMetOf (Ri : Form → List Form → List Form → Form → Type)
+    (Rr : Form → Tag → List Form → Form → Type) (K : Kripke) (G : Form) : Prop :=
   ∀ a : K.W, ∀ C ∈ sfR G, ¬ K.force a C →
-    Nonempty (IrrWit K G a C) ∧ Nonempty (MRWit K G a C)
+    Nonempty (IrrWitOf Ri K G a C) ∧ Nonempty (MRWitOf Rr K G a C)
+
+/-- The paper instantiation. -/
+abbrev AllMet := AllMetOf FRJi FRJr
 
 /-- **Completeness, given the closure**: statement (A) of the W4 targets
 follows from `AllMet` in one step, at the root demand for `G` itself. -/
@@ -105,63 +273,80 @@ so the layer stays `Classical.choice`-free like the landed `minMod`. -/
 
 /-- **The irregular ◯-demand** (`◯∉`), from a regular `Z`-wit anywhere
 above `a`.  The §9 bad edge — its supplier is now an input. -/
-def metI_circ {K : Kripke} {G : Form} {a : K.W} {Z : Form}
+def metI_circ_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃Z : Form⦄
     (hgoal : Form.circ Z ∈ sfR G)
-    (w : MRWit K G a Z) : IrrWit K G a (.circ Z) where
+    (w : MRWitOf Rr K G a Z) : IrrWitOf Ri K G a (.circ Z) where
   stab := []
   th := lamStar K a G
-  der := .circNotIn w.der w.tOK
+  der := RR.circNotIn w.der w.tOK
     (fun X hX =>
       ⟨clo_mono w.cov (lamStar_mono w.wfal w.wle X hX), lamStar_subset_gHat hX⟩) hgoal
   sub := List.nil_subset _
   cov := fun _ hX => hX
 
+/-- The paper instantiation. -/
+abbrev metI_circ := metI_circ_core satRulesR
+
 /-- The irregular atomic demand — supplier-free (`Ax^I` with the full
 complement zone), ported from `minMod` unchanged: it never used `hcf`. -/
-def metI_atom {K : Kripke} {G : Form} {a : K.W} {p : String}
+def metI_atom_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃p : String⦄
     (hC : Form.atom p ∈ sfR G) (hnf : ¬ K.force a (.atom p)) :
-    IrrWit K G a (.atom p) where
+    IrrWitOf Ri K G a (.atom p) where
   stab := []
   th := (rm (gAt G) (.atom p)) ++ gImp G ++ gCirc G
-  der := .axI (.atom p) rfl hC (CtxEq.refl _)
+  der := RR.axI (.atom p) rfl hC (CtxEq.refl _)
   sub := fun _ h => absurd h List.not_mem_nil
   cov := fun _ hx => lamStar_subset_axI hnf hx
+
+/-- The paper instantiation. -/
+abbrev metI_atom := metI_atom_core satRulesR
 
 /-- The irregular `⊥`-demand — supplier-free. -/
-def metI_bot {K : Kripke} {G : Form} {a : K.W}
+def metI_bot_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄
     (hC : Form.bot ∈ sfR G) (hnf : ¬ K.force a .bot) :
-    IrrWit K G a .bot where
+    IrrWitOf Ri K G a .bot where
   stab := []
   th := (rm (gAt G) .bot) ++ gImp G ++ gCirc G
-  der := .axI .bot rfl hC (CtxEq.refl _)
+  der := RR.axI .bot rfl hC (CtxEq.refl _)
   sub := fun _ h => absurd h List.not_mem_nil
   cov := fun _ hx => lamStar_subset_axI hnf hx
 
+/-- The paper instantiation. -/
+abbrev metI_bot := metI_bot_core satRulesR
+
 /-- The irregular `∧`-demand, from a wit for whichever conjunct fails. -/
-def metI_and {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+def metI_and_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C₁ C₂ : Form⦄
     (hC : Form.and C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.and C₁ C₂))
-    (sup₁ : ¬ K.force a C₁ → IrrWit K G a C₁)
-    (sup₂ : K.force a C₁ → ¬ K.force a C₂ → IrrWit K G a C₂) :
-    IrrWit K G a (.and C₁ C₂) :=
+    (sup₁ : ¬ K.force a C₁ → IrrWitOf Ri K G a C₁)
+    (sup₂ : K.force a C₁ → ¬ K.force a C₂ → IrrWitOf Ri K G a C₂) :
+    IrrWitOf Ri K G a (.and C₁ C₂) :=
   if h1 : K.force a C₁ then
     let w := sup₂ h1 (fun hc => hnf ⟨h1, hc⟩)
-    { stab := w.stab, th := w.th, der := .andI2 w.der hC
+    { stab := w.stab, th := w.th, der := RR.andI2 w.der hC
       sub := w.sub, cov := w.cov }
   else
     let w := sup₁ h1
-    { stab := w.stab, th := w.th, der := .andI1 w.der hC
+    { stab := w.stab, th := w.th, der := RR.andI1 w.der hC
       sub := w.sub, cov := w.cov }
 
+/-- The paper instantiation. -/
+abbrev metI_and := metI_and_core satRulesR
+
 /-- The irregular `∨`-demand, from wits for both disjuncts. -/
-def metI_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+def metI_or_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C₁ C₂ : Form⦄
     (hC : Form.or C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.or C₁ C₂))
-    (sup₁ : ¬ K.force a C₁ → IrrWit K G a C₁)
-    (sup₂ : ¬ K.force a C₂ → IrrWit K G a C₂) :
-    IrrWit K G a (.or C₁ C₂) := by
+    (sup₁ : ¬ K.force a C₁ → IrrWitOf Ri K G a C₁)
+    (sup₂ : ¬ K.force a C₂ → IrrWitOf Ri K G a C₂) :
+    IrrWitOf Ri K G a (.or C₁ C₂) := by
   let w₁ := sup₁ (fun hc => hnf (Or.inl hc))
   let w₂ := sup₂ (fun hc => hnf (Or.inr hc))
   refine { stab := w₁.stab ++ w₂.stab, th := cap w₁.th w₂.th
-           der := .orI w₁.der w₂.der (fun X hX => w₂.cov (w₁.sub hX))
+           der := RR.orI w₁.der w₂.der (fun X hX => w₂.cov (w₁.sub hX))
                     (fun X hX => w₁.cov (w₂.sub hX)) hC (CtxEq.refl _)
                     (CtxEq.refl _)
            sub := ?_, cov := ?_ }
@@ -178,16 +363,20 @@ def metI_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
           ⟨(List.mem_append.mp (w₁.cov hX)).resolve_left hx1,
            (List.mem_append.mp (w₂.cov hX)).resolve_left hx2⟩)
 
+/-- The paper instantiation. -/
+abbrev metI_or := metI_or_core satRulesR
+
 /-- The irregular `⊃`-demand.  Two suppliers: the `⊃∈` route (an
 irregular `B`-wit at `a` itself, used when `a` forces `A`) and the
 `⊃∉` float (a regular `B`-wit at the minEta world, which is then
 strictly above `a`). -/
-def metI_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
+def metI_imp_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃A B : Form⦄
     (hC : Form.imp A B ∈ sfR G) (hnf : ¬ K.force a (.imp A B))
-    (supI : K.force a A → ¬ K.force a B → IrrWit K G a B)
+    (supI : K.force a A → ¬ K.force a B → IrrWitOf Ri K G a B)
     (supR : ∀ e : K.W, K.le a e → e ≠ a → K.force e A → ¬ K.force e B →
-      FRWit K G e B) :
-    IrrWit K G a (.imp A B) := by
+      FRWitOf Rr K G e B) :
+    IrrWitOf Ri K G a (.imp A B) := by
   obtain ⟨hA, hB⟩ := sfR_imp hC
   have hfa : ¬ K.Fal a := fun hf => hnf (K.fal_force _ hf)
   let m := minEta hnf
@@ -222,7 +411,7 @@ def metI_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
       clo_mono hStLam (mem_clo_lamStar hfa hA heA)
     refine { stab := w.stab ++ sdiff (lamStar K a G) w.stab
              th := sdiff w.th (sdiff (lamStar K a G) w.stab)
-             der := .impInI w.der hzone cap_sdiff_eq_nil hAclo hC
+             der := RR.impInI w.der hzone cap_sdiff_eq_nil hAclo hC
                       (CtxEq.refl _) (CtxEq.refl _)
              sub := ?_, cov := ?_ }
     · intro X hX
@@ -236,7 +425,7 @@ def metI_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
     let w := supR m.e m.le hea m.fA m.nfB
     have hab : K.le a w.wld := K.le_trans m.le w.wle
     exact { stab := [], th := lamStar K a G
-            der := .impNotIn w.der
+            der := RR.impNotIn w.der
               (fun X hX => ⟨clo_mono w.cov (lamStar_mono w.wfal hab X hX),
                 lamStar_subset_gHat hX⟩)
               (clo_mono w.cov (mem_clo_lamStar w.wfal hA (K.force_mono w.wle m.fA)))
@@ -244,52 +433,68 @@ def metI_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
             sub := fun _ h => absurd h List.not_mem_nil
             cov := fun _ hx => hx }
 
+/-- The paper instantiation. -/
+abbrev metI_imp := metI_imp_core satRulesR
+
 /-- Tag admissibility threads through `∧`-introduction via `Covers.andL/R`. -/
-def metR_and {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+def metR_and_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr)
+    ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C₁ C₂ : Form⦄
     (hC : Form.and C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.and C₁ C₂))
-    (sup₁ : ¬ K.force a C₁ → MRWit K G a C₁)
-    (sup₂ : K.force a C₁ → ¬ K.force a C₂ → MRWit K G a C₂) :
-    MRWit K G a (.and C₁ C₂) :=
+    (sup₁ : ¬ K.force a C₁ → MRWitOf Rr K G a C₁)
+    (sup₂ : K.force a C₁ → ¬ K.force a C₂ → MRWitOf Rr K G a C₂) :
+    MRWitOf Rr K G a (.and C₁ C₂) :=
   if h1 : K.force a C₁ then
     let w := sup₂ h1 (fun hc => hnf ⟨h1, hc⟩)
-    ⟨w.t, w.ctx, .andR2 w.der hC,
+    ⟨w.t, w.ctx, RR.andR2 w.der hC,
       w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .andR hcov⟩),
       w.wld, w.wle, w.wfal, w.cov⟩
   else
     let w := sup₁ h1
-    ⟨w.t, w.ctx, .andR1 w.der hC,
+    ⟨w.t, w.ctx, RR.andR1 w.der hC,
       w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .andL hcov⟩),
       w.wld, w.wle, w.wfal, w.cov⟩
+
+/-- PROBE 3a: the instantiation as a bare `abbrev`. -/
+abbrev metR_and := metR_and_core satRulesR
 
 /-- Tag admissibility threads through `⊃`-introduction via `Covers.imp`,
 whose `Clo` side condition is the same one `impIn` itself consumes.  The
 minEta float and the stay-at-`a` case share one body. -/
-def metR_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
+def metR_imp_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃A B : Form⦄
     (hC : Form.imp A B ∈ sfR G) (hnf : ¬ K.force a (.imp A B))
     (sup : ∀ e : K.W, K.le a e → K.force e A → ¬ K.force e B →
-      MRWit K G e B) :
-    MRWit K G a (.imp A B) :=
+      MRWitOf Rr K G e B) :
+    MRWitOf Rr K G a (.imp A B) :=
   let m := minEta hnf
   let w := sup m.e m.le m.fA m.nfB
   let hAclo : Clo w.ctx A :=
     clo_mono w.cov (mem_clo_lamStar w.wfal (sfR_imp hC).1 (K.force_mono w.wle m.fA))
-  ⟨w.t, w.ctx, .impIn w.der hAclo hC,
+  ⟨w.t, w.ctx, RR.impIn w.der hAclo hC,
     w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .imp hcov hAclo⟩),
     w.wld, K.le_trans m.le w.wle, w.wfal, w.cov⟩
+
+/-- The paper instantiation. -/
+abbrev metR_imp := metR_imp_core satRulesR
 
 /-- The regular `◯`-demand, by `◯∈` over a `Z`-wit at the minZeta world.
 No modal join is needed: `circIn` preserves any admissible tag, and the
 measure cycle that forced the ⋈^◯ route in the recursive organisation
 does not exist here — the supplier is an input. -/
-def metR_circ {K : Kripke} {G : Form} {a : K.W} {Z : Form}
+def metR_circ_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃Z : Form⦄
     (hC : Form.circ Z ∈ sfR G) (hnf : ¬ K.force a (.circ Z))
-    (sup : ∀ e : K.W, K.le a e → ¬ K.force e Z → MRWit K G e Z) :
-    MRWit K G a (.circ Z) :=
+    (sup : ∀ e : K.W, K.le a e → ¬ K.force e Z → MRWitOf Rr K G e Z) :
+    MRWitOf Rr K G a (.circ Z) :=
   let mz := minZeta hnf
   let w := sup mz.e mz.le (mz.cone _ (K.rm_refl _))
-  ⟨w.t, w.ctx, .circIn w.der w.tOK hC,
+  ⟨w.t, w.ctx, RR.circIn w.der w.tOK hC,
     w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .circ hcov⟩),
     w.wld, K.le_trans mz.le w.wle, w.wfal, w.cov⟩
+
+/-- The paper instantiation. -/
+abbrev metR_circ := metR_circ_core satRulesR
 
 /-! ### The origin-indexed certified interface (build β2, target type)
 
@@ -302,18 +507,23 @@ the one provably-unsatisfiable pledge instance (docs §13). -/
 /-- The origin-indexed certified wit: a tagged row grounding the
 origin's `Λ*`.  No anchor fields — the anchor is dissolved into
 `ground`. -/
-structure OWit (K : Kripke) (G : Form) (b : K.W) (C : Form) : Type where
+structure OWitOf (Rr : Form → Tag → List Form → Form → Type)
+    (K : Kripke) (G : Form) (b : K.W) (C : Form) : Type where
   t : Tag
   ctx : List Form
-  der : FRJr G t ctx C
+  der : Rr G t ctx C
   tOK : t = .barren ∨ ∃ W, t = .chain W ∧ Covers ctx W C
   ground : ∀ X ∈ lamStar K b G, Clo ctx X
+
+/-- The paper instantiation. -/
+abbrev OWit := OWitOf FRJr
 
 /-- Every anchored certified wit above `b` yields an origin-indexed one:
 the transport `lamStar_mono` ∘ `clo_mono` is packaged once and for all.
 The converse fails — `OWit` is strictly weaker, which is the point. -/
-def MRWit.toOWit {K : Kripke} {G : Form} {b : K.W} {C : Form}
-    (w : MRWit K G b C) : OWit K G b C :=
+def MRWitOf.toOWit {Rr : Form → Tag → List Form → Form → Type}
+    {K : Kripke} {G : Form} {b : K.W} {C : Form}
+    (w : MRWitOf Rr K G b C) : OWitOf Rr K G b C :=
   ⟨w.t, w.ctx, w.der, w.tOK,
     fun X hX => clo_mono w.cov (lamStar_mono w.wfal w.wle X hX)⟩
 
@@ -523,6 +733,20 @@ def metR_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
       · exact absurd ((List.mem_filter.mp h).2)
           (fun hc => lamStar_not_circ_loc hloc hX hc)
 
+
+/-- `metR_prime` and `metR_or` are the two builders the paper and repaired
+families do NOT share, so the visit takes them as parameters.  These two
+adapters supply them at the strict-implicit binders `MPrimeOf`/`MOrOf`
+use, which exist so that an instantiation is one line rather than a
+restated signature; the two builders themselves keep the binders they
+have always had. -/
+def mPrime : MPrimeOf FRJi FRJr :=
+  fun _K _G _a _C hloc hCp hC hnf ih => metR_prime hloc hCp hC hnf ih
+
+/-- `metR_or` at the binders `MOrOf` uses.  See `mPrime`. -/
+def mOr : MOrOf FRJi FRJr :=
+  fun _K _G _a _C₁ _C₂ hloc hC hnf ih => metR_or hloc hC hnf ih
+
 /-! ### The promise-mode joins (build γ): circ-carrying worlds
 
 `Λ*`-circs must be retained (their bodies are unforced, so no `Clo`
@@ -536,33 +760,42 @@ the demanding world's modal cone. -/
 with admissible tags, whose contexts `Clo`-contain `Λ*_a` (hence hJ7s
 and the stable zones) and some member of which grounds each
 `Λ*`-circ-body (hence hJ5 and the θ-circ restriction). -/
-structure PledgeFam (K : Kripke) (G : Form) (a : K.W) (F : Form) : Type where
+structure PledgeFamOf (Rr : Form → Tag → List Form → Form → Type)
+    (K : Kripke) (G : Form) (a : K.W) (F : Form) : Type where
   k : Nat
   tps : Fin (k + 1) → Tag
   Δs : Fin (k + 1) → List Form
-  dps : ∀ i, FRJr G (tps i) (Δs i) F
+  dps : ∀ i, Rr G (tps i) (Δs i) F
   htps : ∀ i, tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W F
   hlam : ∀ i, ∀ X ∈ lamStar K a G, Clo (Δs i) X
   hbody : ∀ Y : Form, Form.circ Y ∈ lamStar K a G → ∃ i, Clo (Δs i) Y
 
+/-- The paper instantiation. -/
+abbrev PledgeFam := PledgeFamOf FRJr
+
 /-- **The second named supply**: pledge families at circ-carrying
 worlds, for prime and disjunctive demands. -/
-def PledgeSupply (K : Kripke) (G : Form) : Type :=
+def PledgeSupplyOf (Rr : Form → Tag → List Form → Form → Type)
+    (K : Kripke) (G : Form) : Type :=
   ∀ a : K.W, ∀ F : Form, F ∈ sfR G → ¬ K.force a F →
-    circPart (lamStar K a G) ≠ [] → PledgeFam K G a F
+    circPart (lamStar K a G) ≠ [] → PledgeFamOf Rr K G a F
+
+/-- The paper instantiation. -/
+abbrev PledgeSupply := PledgeSupplyOf FRJr
 
 /-- The prime regular demand at a circ-carrying world: the promise
 `⋈^At,p`, pledging the goal. -/
-def metR_primeP {K : Kripke} {G : Form} {a : K.W} {C : Form}
-    (pf : PledgeFam K G a C)
+def metR_primeP_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C : Form⦄
+    (pf : PledgeFamOf Rr K G a C)
     (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force a C)
-    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
-    MRWit K G a C := by
+    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWitOf Ri K G a A) :
+    MRWitOf Rr K G a C := by
   let U := C :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
   have hfmem : ∀ j, f j ∈ U := E.f_mem
-  let wit : ∀ j, IrrWit K G a (f j) := fun j =>
+  let wit : ∀ j, IrrWitOf Ri K G a (f j) := fun j =>
     if h1 : f j = C then by rw [h1]; exact ih C hC hnf
     else
       have hm : f j ∈ upsPrime K a G := by
@@ -575,7 +808,7 @@ def metR_primeP {K : Kripke} {G : Form} {a : K.W} {C : Form}
   refine ⟨.chain C, joinCtxAtP stab th f C pf.Δs, ?_,
     Or.inr ⟨C, rfl, .refl⟩, a, K.le_refl a,
     fun hf => hnf (K.fal_force _ hf), ?_⟩
-  · refine .joinAtP (Ds := fun _ => C) (fun j => (wit j).der) pf.dps
+  · refine RR.joinAtP (Ds := fun _ => C) (fun j => (wit j).der) pf.dps
       (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
       (fun A B hmem => ?_)
       (fun Y hmem => ?_)
@@ -626,20 +859,24 @@ def metR_primeP {K : Kripke} {G : Form} {a : K.W} {C : Form}
             refine mem_restrictC.mpr ⟨mem_interAll.mpr (fun j =>
               List.mem_filter.mpr ⟨hallTh j, rfl⟩), pf.hbody Y hX⟩
 
+/-- The paper instantiation. -/
+abbrev metR_primeP := metR_primeP_core satRulesR
+
 /-- The `∨`-regular demand at a circ-carrying world: the promise
 `⋈^∨,p`, pledging the disjunction itself. -/
-def metR_orP {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
-    (pf : PledgeFam K G a (.or C₁ C₂))
+def metR_orP_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C₁ C₂ : Form⦄
+    (pf : PledgeFamOf Rr K G a (.or C₁ C₂))
     (hC : Form.or C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.or C₁ C₂))
-    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
-    MRWit K G a (.or C₁ C₂) := by
+    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWitOf Ri K G a A) :
+    MRWitOf Rr K G a (.or C₁ C₂) := by
   have hn1 : ¬ K.force a C₁ := fun hc => hnf (Or.inl hc)
   have hn2 : ¬ K.force a C₂ := fun hc => hnf (Or.inr hc)
   let U := C₁ :: C₂ :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
   have hfmem : ∀ j, f j ∈ U := E.f_mem
-  let wit : ∀ j, IrrWit K G a (f j) := fun j =>
+  let wit : ∀ j, IrrWitOf Ri K G a (f j) := fun j =>
     if h1 : f j = C₁ then by rw [h1]; exact ih C₁ (sfR_or hC).1 hn1
     else if h2 : f j = C₂ then by rw [h2]; exact ih C₂ (sfR_or hC).2 hn2
     else
@@ -655,7 +892,7 @@ def metR_orP {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
   refine ⟨.chain (.or C₁ C₂), joinCtxOrP stab th f pf.Δs, ?_,
     Or.inr ⟨.or C₁ C₂, rfl, .refl⟩, a, K.le_refl a,
     fun hf => hnf (K.fal_force _ hf), ?_⟩
-  · refine .joinOrP (Ds := fun _ => .or C₁ C₂) (fun j => (wit j).der) pf.dps
+  · refine RR.joinOrP (Ds := fun _ => .or C₁ C₂) (fun j => (wit j).der) pf.dps
       (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
       (fun A B hmem => ?_)
       (fun Y hmem => ?_)
@@ -705,44 +942,56 @@ def metR_orP {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
             refine mem_restrictC.mpr ⟨mem_interAll.mpr (fun j =>
               List.mem_filter.mpr ⟨hallTh j, rfl⟩), pf.hbody Y hX⟩
 
+/-- The paper instantiation. -/
+abbrev metR_orP := metR_orP_core satRulesR
+
 
 /-- Free-grade `∧`-threading (no tag lift needed). -/
-def metR_andF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+def metR_andF_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C₁ C₂ : Form⦄
     (hC : Form.and C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.and C₁ C₂))
-    (sup₁ : ¬ K.force a C₁ → FRWit K G a C₁)
-    (sup₂ : K.force a C₁ → ¬ K.force a C₂ → FRWit K G a C₂) :
-    FRWit K G a (.and C₁ C₂) :=
+    (sup₁ : ¬ K.force a C₁ → FRWitOf Rr K G a C₁)
+    (sup₂ : K.force a C₁ → ¬ K.force a C₂ → FRWitOf Rr K G a C₂) :
+    FRWitOf Rr K G a (.and C₁ C₂) :=
   if h1 : K.force a C₁ then
     let w := sup₂ h1 (fun hc => hnf ⟨h1, hc⟩)
-    ⟨w.t, w.ctx, .andR2 w.der hC, w.wld, w.wle, w.wfal, w.cov⟩
+    ⟨w.t, w.ctx, RR.andR2 w.der hC, w.wld, w.wle, w.wfal, w.cov⟩
   else
     let w := sup₁ h1
-    ⟨w.t, w.ctx, .andR1 w.der hC, w.wld, w.wle, w.wfal, w.cov⟩
+    ⟨w.t, w.ctx, RR.andR1 w.der hC, w.wld, w.wle, w.wfal, w.cov⟩
+
+/-- The paper instantiation. -/
+abbrev metR_andF := metR_andF_core satRulesR
 
 /-- Free-grade `⊃`-threading. -/
-def metR_impF {K : Kripke} {G : Form} {a : K.W} {A B : Form}
+def metR_impF_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃A B : Form⦄
     (hC : Form.imp A B ∈ sfR G) (hnf : ¬ K.force a (.imp A B))
     (sup : ∀ e : K.W, K.le a e → K.force e A → ¬ K.force e B →
-      FRWit K G e B) :
-    FRWit K G a (.imp A B) :=
+      FRWitOf Rr K G e B) :
+    FRWitOf Rr K G a (.imp A B) :=
   let m := minEta hnf
   let w := sup m.e m.le m.fA m.nfB
   let hAclo : Clo w.ctx A :=
     clo_mono w.cov (mem_clo_lamStar w.wfal (sfR_imp hC).1 (K.force_mono w.wle m.fA))
-  ⟨w.t, w.ctx, .impIn w.der hAclo hC, w.wld, K.le_trans m.le w.wle, w.wfal, w.cov⟩
+  ⟨w.t, w.ctx, RR.impIn w.der hAclo hC, w.wld, K.le_trans m.le w.wle, w.wfal, w.cov⟩
+
+/-- The paper instantiation. -/
+abbrev metR_impF := metR_impF_core satRulesR
 
 /-- The prime regular demand at a circ-carrying world, FREE grade: the
 FALLIBLE `⋈^At,⊥`, whose conclusion keeps the whole modal zone with no
 side condition — no pledge needed. -/
-def metR_primeF {K : Kripke} {G : Form} {a : K.W} {C : Form}
+def metR_primeF_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C : Form⦄
     (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force a C)
-    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
-    FRWit K G a C := by
+    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWitOf Ri K G a A) :
+    FRWitOf Rr K G a C := by
   let U := C :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
   have hfmem : ∀ j, f j ∈ U := E.f_mem
-  let wit : ∀ j, IrrWit K G a (f j) := fun j =>
+  let wit : ∀ j, IrrWitOf Ri K G a (f j) := fun j =>
     if h1 : f j = C then by rw [h1]; exact ih C hC hnf
     else
       have hm : f j ∈ upsPrime K a G := by
@@ -754,7 +1003,7 @@ def metR_primeF {K : Kripke} {G : Form} {a : K.W} {C : Form}
   let th := fun j => (wit j).th
   refine ⟨.blocked, joinCtxAtF stab th f C, ?_, a, K.le_refl a,
     fun hf => hnf (K.fal_force _ hf), ?_⟩
-  · refine .joinAtF (fun j => (wit j).der)
+  · refine RR.joinAtF (fun j => (wit j).der)
       (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
       (fun A B hmem => ?_) hCp (fun hmem => ?_) hC (CtxEq.refl _)
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
@@ -795,19 +1044,23 @@ def metR_primeF {K : Kripke} {G : Form} {a : K.W} {C : Form}
           (mem_interAll.mpr (fun j =>
             List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩)))
 
+/-- The paper instantiation. -/
+abbrev metR_primeF := metR_primeF_core satRulesR
+
 /-- The `∨`-regular demand at a circ-carrying world, FREE grade: the
 fallible `⋈^∨,⊥`. -/
-def metR_orF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+def metR_orF_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃C₁ C₂ : Form⦄
     (hC : Form.or C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.or C₁ C₂))
-    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
-    FRWit K G a (.or C₁ C₂) := by
+    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWitOf Ri K G a A) :
+    FRWitOf Rr K G a (.or C₁ C₂) := by
   have hn1 : ¬ K.force a C₁ := fun hc => hnf (Or.inl hc)
   have hn2 : ¬ K.force a C₂ := fun hc => hnf (Or.inr hc)
   let U := C₁ :: C₂ :: upsPrime K a G
   let E := enumOf U (by simp [U])
   let f := E.f
   have hfmem : ∀ j, f j ∈ U := E.f_mem
-  let wit : ∀ j, IrrWit K G a (f j) := fun j =>
+  let wit : ∀ j, IrrWitOf Ri K G a (f j) := fun j =>
     if h1 : f j = C₁ then by rw [h1]; exact ih C₁ (sfR_or hC).1 hn1
     else if h2 : f j = C₂ then by rw [h2]; exact ih C₂ (sfR_or hC).2 hn2
     else
@@ -822,7 +1075,7 @@ def metR_orF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
   let th := fun j => (wit j).th
   refine ⟨.blocked, joinCtxOrF stab th f, ?_, a, K.le_refl a,
     fun hf => hnf (K.fal_force _ hf), ?_⟩
-  · refine .joinOrF (fun j => (wit j).der)
+  · refine RR.joinOrF (fun j => (wit j).der)
       (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
       (fun A B hmem => ?_) ⟨?_, ?_⟩ hC (CtxEq.refl _)
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
@@ -862,6 +1115,9 @@ def metR_orF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
           (mem_interAll.mpr (fun j =>
             List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩)))
 
+/-- The paper instantiation. -/
+abbrev metR_orF := metR_orF_core satRulesR
+
 /-! ## The gluing (slice 3)
 
 The visit that assembles the builders.  Measure `(ht, t, size)` — the
@@ -874,8 +1130,9 @@ explicit supply (`CircSupply`), which is thereby THE open kernel of
 FRJ◯ completeness. -/
 
 /-- Anchor weakening: a wit for a demand at `b` serves any `a ≤ b`. -/
-def MRWit.weaken {K : Kripke} {G : Form} {a b : K.W} {C : Form}
-    (hab : K.le a b) (w : MRWit K G b C) : MRWit K G a C :=
+def MRWitOf.weaken {Rr : Form → Tag → List Form → Form → Type}
+    {K : Kripke} {G : Form} {a b : K.W} {C : Form}
+    (hab : K.le a b) (w : MRWitOf Rr K G b C) : MRWitOf Rr K G a C :=
   ⟨w.t, w.ctx, w.der, w.tOK, w.wld, K.le_trans hab w.wle, w.wfal, w.cov⟩
 
 /-- minZeta with the opposite preference: a NON-self candidate whenever
@@ -949,104 +1206,116 @@ candidate; it is the weakest corner the visit cannot route around.)
 The `IrrWit` may be produced by any route — `metI_circ_syn` over a
 tagged grounding row, or the generalised `Ax^I◯` at maximal worlds
 (`circWit_of_maximal` below). -/
-def CircSupply (K : Kripke) (G : Form) : Type :=
+def CircSupplyOf (Ri : Form → List Form → List Form → Form → Type)
+    (K : Kripke) (G : Form) : Type :=
   ∀ a : K.W, ∀ Z : Form, Form.circ Z ∈ sfR G → ¬ K.force a (.circ Z) →
     (∀ u, K.le a u → u ≠ a → K.force u Z) →
-    IrrWit K G a (.circ Z)
+    IrrWitOf Ri K G a (.circ Z)
+
+/-- The paper instantiation. -/
+abbrev CircSupply := CircSupplyOf FRJi
 
 /-- The statement family: `t = 0` the irregular wit, else the regular. -/
-def SatStmt (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
+def SatStmtOf (Ri : Form → List Form → List Form → Form → Type)
+    (Rr : Form → Tag → List Form → Form → Type)
+    (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
   match t with
-  | 0 => IrrWit K G a C
-  | 1 => MRWit K G a C
-  | _ + 2 => FRWit K G a C
+  | 0 => IrrWitOf Ri K G a C
+  | 1 => MRWitOf Rr K G a C
+  | _ + 2 => FRWitOf Rr K G a C
+
+/-- The paper instantiation. -/
+abbrev SatStmt := SatStmtOf FRJi FRJr
 
 /-- **The visit.**  Well-founded on `(ht, t, size)`; total given the two
 named conditions (`hloc`: `Λ*` circ-free at every world, so the barren
 joins suffice; `hsup`: the sole-candidate supply). -/
-def visit (K : Kripke) (G : Form)
-    (psup : PledgeSupply K G)
-    (hsup : CircSupply K G)
+def visit_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr)
+    (mprime : MPrimeOf Ri Rr) (mor : MOrOf Ri Rr)
+    (K : Kripke) (G : Form)
+    (psup : PledgeSupplyOf Rr K G)
+    (hsup : CircSupplyOf Ri K G)
     (a : K.W) (t : Nat) (C : Form)
-    (hC : C ∈ sfR G) (hnf : ¬ K.force a C) : SatStmt K G a t C := by
+    (hC : C ∈ sfR G) (hnf : ¬ K.force a C) : SatStmtOf Ri Rr K G a t C := by
   match t, C with
-  | 0, .atom p => exact metI_atom hC hnf
-  | 0, .bot => exact metI_bot hC hnf
+  | 0, .atom p => exact metI_atom_core RR hC hnf
+  | 0, .bot => exact metI_bot_core RR hC hnf
   | 0, .and C₁ C₂ =>
-      exact metI_and hC hnf
-        (fun h1 => visit K G psup hsup a 0 C₁ (sfR_and hC).1 h1)
-        (fun _ h2 => visit K G psup hsup a 0 C₂ (sfR_and hC).2 h2)
+      exact metI_and_core RR hC hnf
+        (fun h1 => visit_core RR mprime mor K G psup hsup a 0 C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visit_core RR mprime mor K G psup hsup a 0 C₂ (sfR_and hC).2 h2)
   | 0, .or C₁ C₂ =>
-      exact metI_or hC hnf
-        (fun h1 => visit K G psup hsup a 0 C₁ (sfR_or hC).1 h1)
-        (fun h2 => visit K G psup hsup a 0 C₂ (sfR_or hC).2 h2)
+      exact metI_or_core RR hC hnf
+        (fun h1 => visit_core RR mprime mor K G psup hsup a 0 C₁ (sfR_or hC).1 h1)
+        (fun h2 => visit_core RR mprime mor K G psup hsup a 0 C₂ (sfR_or hC).2 h2)
   | 0, .imp A B =>
-      exact metI_imp hC hnf
-        (fun _ hB => visit K G psup hsup a 0 B (sfR_imp hC).2 hB)
-        (fun e _ hne _ hB => visit K G psup hsup e 2 B (sfR_imp hC).2 hB)
+      exact metI_imp_core RR hC hnf
+        (fun _ hB => visit_core RR mprime mor K G psup hsup a 0 B (sfR_imp hC).2 hB)
+        (fun e _ hne _ hB => visit_core RR mprime mor K G psup hsup e 2 B (sfR_imp hC).2 hB)
   | 0, .circ Z =>
       have hnfZ : ¬ K.force a Z := fun hf => hnf (fun b hab =>
         ⟨b, K.rm_refl b, K.force_mono hab hf⟩)
       let mr := minRef hnfZ
       by_cases hea : mr.e = a
       · exact hsup a Z hC hnf (mr.sole hea)
-      · exact metI_circ hC
-          ((visit K G psup hsup mr.e 1 Z (sfR_circ hC) mr.nfZ).weaken mr.le)
+      · exact metI_circ_core RR hC
+          ((visit_core RR mprime mor K G psup hsup mr.e 1 Z (sfR_circ hC) mr.nfZ).weaken mr.le)
   | 1, .atom p =>
       by_cases hloc : circPart (lamStar K a G) = []
-      · exact metR_prime hloc rfl hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
-      · exact metR_primeP (psup a _ hC hnf hloc) rfl hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+      · exact mprime hloc rfl hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
+      · exact metR_primeP_core RR (psup a _ hC hnf hloc) rfl hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
   | 1, .bot =>
       by_cases hloc : circPart (lamStar K a G) = []
-      · exact metR_prime hloc rfl hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
-      · exact metR_primeP (psup a _ hC hnf hloc) rfl hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+      · exact mprime hloc rfl hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
+      · exact metR_primeP_core RR (psup a _ hC hnf hloc) rfl hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
   | 1, .and C₁ C₂ =>
-      exact metR_and hC hnf
-        (fun h1 => visit K G psup hsup a 1 C₁ (sfR_and hC).1 h1)
-        (fun _ h2 => visit K G psup hsup a 1 C₂ (sfR_and hC).2 h2)
+      exact metR_and_core RR hC hnf
+        (fun h1 => visit_core RR mprime mor K G psup hsup a 1 C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visit_core RR mprime mor K G psup hsup a 1 C₂ (sfR_and hC).2 h2)
   | 1, .or C₁ C₂ =>
       by_cases hloc : circPart (lamStar K a G) = []
-      · exact metR_or hloc hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
-      · exact metR_orP (psup a _ hC hnf hloc) hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+      · exact mor hloc hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
+      · exact metR_orP_core RR (psup a _ hC hnf hloc) hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
   | 1, .imp A B =>
-      exact metR_imp hC hnf
-        (fun e hle _ hB => visit K G psup hsup e 1 B (sfR_imp hC).2 hB)
+      exact metR_imp_core RR hC hnf
+        (fun e hle _ hB => visit_core RR mprime mor K G psup hsup e 1 B (sfR_imp hC).2 hB)
   | 1, .circ Z =>
-      exact metR_circ hC hnf
-        (fun e hle hZ => visit K G psup hsup e 1 Z (sfR_circ hC) hZ)
+      exact metR_circ_core RR hC hnf
+        (fun e hle hZ => visit_core RR mprime mor K G psup hsup e 1 Z (sfR_circ hC) hZ)
   | n + 2, .atom p =>
       by_cases hloc : circPart (lamStar K a G) = []
-      · exact (metR_prime hloc rfl hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)).toFree
-      · exact metR_primeF rfl hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+      · exact (mprime hloc rfl hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)).toFree
+      · exact metR_primeF_core RR rfl hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
   | n + 2, .bot =>
       by_cases hloc : circPart (lamStar K a G) = []
-      · exact (metR_prime hloc rfl hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)).toFree
-      · exact metR_primeF rfl hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+      · exact (mprime hloc rfl hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)).toFree
+      · exact metR_primeF_core RR rfl hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
   | n + 2, .and C₁ C₂ =>
-      exact metR_andF hC hnf
-        (fun h1 => visit K G psup hsup a (n + 2) C₁ (sfR_and hC).1 h1)
-        (fun _ h2 => visit K G psup hsup a (n + 2) C₂ (sfR_and hC).2 h2)
+      exact metR_andF_core RR hC hnf
+        (fun h1 => visit_core RR mprime mor K G psup hsup a (n + 2) C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visit_core RR mprime mor K G psup hsup a (n + 2) C₂ (sfR_and hC).2 h2)
   | n + 2, .or C₁ C₂ =>
       by_cases hloc : circPart (lamStar K a G) = []
-      · exact (metR_or hloc hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)).toFree
-      · exact metR_orF hC hnf
-          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+      · exact (mor hloc hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)).toFree
+      · exact metR_orF_core RR hC hnf
+          (fun A hA hnA => visit_core RR mprime mor K G psup hsup a 0 A hA hnA)
   | n + 2, .imp A B =>
-      exact metR_impF hC hnf
-        (fun e hle _ hB => visit K G psup hsup e (n + 2) B (sfR_imp hC).2 hB)
+      exact metR_impF_core RR hC hnf
+        (fun e hle _ hB => visit_core RR mprime mor K G psup hsup e (n + 2) B (sfR_imp hC).2 hB)
   | n + 2, .circ Z =>
-      exact (visit K G psup hsup a 1 (.circ Z) hC hnf).toFree
+      exact (visit_core RR mprime mor K G psup hsup a 1 (.circ Z) hC hnf).toFree
 termination_by (ht K a, t, C.size)
 decreasing_by
   all_goals
@@ -1071,12 +1340,21 @@ decreasing_by
            | omega
            | (simp only [Form.size]; omega))
 
+/-- The paper instantiation. -/
+abbrev visit := visit_core satRulesR mPrime mOr
+
 /-- **`AllMet` from the two named supplies.** -/
-theorem allMet_of_supply {K : Kripke} {G : Form}
-    (psup : PledgeSupply K G)
-    (hsup : CircSupply K G) : AllMet K G :=
+theorem allMet_of_supply_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr)
+    (mprime : MPrimeOf Ri Rr) (mor : MOrOf Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄
+    (psup : PledgeSupplyOf Rr K G)
+    (hsup : CircSupplyOf Ri K G) : AllMetOf Ri Rr K G :=
   fun a C hC hnf =>
-    ⟨⟨visit K G psup hsup a 0 C hC hnf⟩, ⟨visit K G psup hsup a 1 C hC hnf⟩⟩
+    ⟨⟨visit_core RR mprime mor K G psup hsup a 0 C hC hnf⟩,
+      ⟨visit_core RR mprime mor K G psup hsup a 1 C hC hnf⟩⟩
+
+/-- The paper instantiation. -/
+abbrev allMet_of_supply := allMet_of_supply_core satRulesR mPrime mOr
 
 /-- **FRJ◯ completeness, modulo the two supplies**: statement (A) for
 every model providing pledge families at circ-carrying worlds and the
@@ -1090,10 +1368,14 @@ theorem completeness_of_supply {K : Kripke} {G : Form}
   completeness_of_allMet (allMet_of_supply psup hsup) hK
 
 /-- World-wise circ-free `Λ*` discharges the pledge supply vacuously. -/
-def pledgeSupply_of_locFree {K : Kripke} {G : Form}
+def pledgeSupply_of_locFree_core {Rr : Form → Tag → List Form → Form → Type}
+    ⦃K : Kripke⦄ ⦃G : Form⦄
     (hloc : ∀ b : K.W, circPart (lamStar K b G) = []) :
-    PledgeSupply K G :=
+    PledgeSupplyOf Rr K G :=
   fun a _ _ _ hne => absurd (hloc a) hne
+
+/-- The paper instantiation. -/
+abbrev pledgeSupply_of_locFree := @pledgeSupply_of_locFree_core FRJr
 
 /-! ### Discharging the kernel at maximal worlds
 
@@ -1187,10 +1469,11 @@ theorem force_classForce {K : Kripke} {G : Form} {a : K.W}
 
 /-- **The kernel discharged at maximal worlds**, by the generalised
 `Ax^I◯` over the world's classical theory. -/
-def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
+def circWit_of_maximal_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a : K.W⦄ ⦃Z : Form⦄
     (hmax : ∀ u, K.le a u → u = a)
     (hZ : Form.circ Z ∈ sfR G) (hnf : ¬ K.force a (.circ Z)) :
-    IrrWit K G a (.circ Z) :=
+    IrrWitOf Ri K G a (.circ Z) :=
   have hinf : ¬ K.Fal a := fun hf => hnf (K.fal_force _ hf)
   have hnfZ : ¬ K.force a Z := fun hf => hnf (fun b hab =>
     ⟨b, K.rm_refl b, K.force_mono hab hf⟩)
@@ -1201,13 +1484,16 @@ def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
         exact absurd ((force_classForce hmax hinf Z).2 (sfR_circ hZ) hcZ) hnfZ
   { stab := []
     th := vacZoneA G (clAts K G a)
-    der := .axIC Z (clAts K G a) clAts_subset hFf hZ (CtxEq.refl _)
+    der := RR.axIC Z (clAts K G a) clAts_subset hFf hZ (CtxEq.refl _)
     sub := List.nil_subset _
     cov := fun X hX => by
       obtain ⟨hsfL, hstar⟩ := mem_lamStar.mp hX
       refine List.mem_append_right _ ?_
       exact List.mem_filter.mpr ⟨lamStar_subset_gHat hX,
         (force_classForce hmax hinf X).1 hsfL (K.forceStar_force hstar)⟩ }
+
+/-- The paper instantiation. -/
+abbrev circWit_of_maximal := circWit_of_maximal_core satRulesR
 
 /-! ### The kernel's own hypothesis makes the corner cone-trivial
 
@@ -1339,66 +1625,78 @@ def endpoints_of_coneGrounded {K : Kripke} (hg : K.ConeGrounded) : K.Endpoints :
 
 /-- `◯∈` from a `Z`-wit at a NAMED world above the demand — `metR_circ`
 with the `minZeta` choice hoisted out. -/
-def metR_circAt {K : Kripke} {G : Form} {a e : K.W} {Z : Form}
-    (hC : Form.circ Z ∈ sfR G) (hle : K.le a e) (w : MRWit K G e Z) :
-    MRWit K G a (.circ Z) :=
-  ⟨w.t, w.ctx, .circIn w.der w.tOK hC,
+def metR_circAt_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr) ⦃K : Kripke⦄ ⦃G : Form⦄ ⦃a e : K.W⦄ ⦃Z : Form⦄
+    (hC : Form.circ Z ∈ sfR G) (hle : K.le a e) (w : MRWitOf Rr K G e Z) :
+    MRWitOf Rr K G a (.circ Z) :=
+  ⟨w.t, w.ctx, RR.circIn w.der w.tOK hC,
     w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .circ hcov⟩),
     w.wld, K.le_trans hle w.wle, w.wfal, w.cov⟩
+
+/-- The paper instantiation. -/
+abbrev metR_circAt := metR_circAt_core satRulesR
 
 /-- The two-tier statement family at a maximal world: `t = 0` irregular,
 otherwise the TAGGED regular wit.  The free grade never arises there —
 its only producer, the `⊃∉` float, needs a world strictly above. -/
-def MaxStmt (K : Kripke) (G : Form) (m : K.W) (t : Nat) (C : Form) : Type :=
+def MaxStmtOf (Ri : Form → List Form → List Form → Form → Type)
+    (Rr : Form → Tag → List Form → Form → Type)
+    (K : Kripke) (G : Form) (m : K.W) (t : Nat) (C : Form) : Type :=
   match t with
-  | 0 => IrrWit K G m C
-  | _ => MRWit K G m C
+  | 0 => IrrWitOf Ri K G m C
+  | _ => MRWitOf Rr K G m C
+
+/-- The paper instantiation. -/
+abbrev MaxStmt := MaxStmtOf FRJi FRJr
 
 /-- **The local recursion at a maximal world.**  Measure `(t, |C|)`; no
 world ever changes, `hloc` holds throughout, and no supply is consumed. -/
-def visitMax (K : Kripke) (G : Form) (m : K.W) (hmax : ∀ u, K.le m u → u = m)
+def visitMax_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr)
+    (mprime : MPrimeOf Ri Rr) (mor : MOrOf Ri Rr)
+    (K : Kripke) (G : Form) (m : K.W) (hmax : ∀ u, K.le m u → u = m)
     (t : Nat) (C : Form) (hC : C ∈ sfR G) (hnf : ¬ K.force m C) :
-    MaxStmt K G m t C := by
+    MaxStmtOf Ri Rr K G m t C := by
   have hloc : circPart (lamStar K m G) = [] := circPart_lamStar_nil_of_maximal hmax
   match t, C with
-  | 0, .atom p => exact metI_atom hC hnf
-  | 0, .bot => exact metI_bot hC hnf
+  | 0, .atom p => exact metI_atom_core RR hC hnf
+  | 0, .bot => exact metI_bot_core RR hC hnf
   | 0, .and C₁ C₂ =>
-      exact metI_and hC hnf
-        (fun h1 => visitMax K G m hmax 0 C₁ (sfR_and hC).1 h1)
-        (fun _ h2 => visitMax K G m hmax 0 C₂ (sfR_and hC).2 h2)
+      exact metI_and_core RR hC hnf
+        (fun h1 => visitMax_core RR mprime mor K G m hmax 0 C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visitMax_core RR mprime mor K G m hmax 0 C₂ (sfR_and hC).2 h2)
   | 0, .or C₁ C₂ =>
-      exact metI_or hC hnf
-        (fun h1 => visitMax K G m hmax 0 C₁ (sfR_or hC).1 h1)
-        (fun h2 => visitMax K G m hmax 0 C₂ (sfR_or hC).2 h2)
+      exact metI_or_core RR hC hnf
+        (fun h1 => visitMax_core RR mprime mor K G m hmax 0 C₁ (sfR_or hC).1 h1)
+        (fun h2 => visitMax_core RR mprime mor K G m hmax 0 C₂ (sfR_or hC).2 h2)
   | 0, .imp A B =>
-      exact metI_imp hC hnf
-        (fun _ hB => visitMax K G m hmax 0 B (sfR_imp hC).2 hB)
+      exact metI_imp_core RR hC hnf
+        (fun _ hB => visitMax_core RR mprime mor K G m hmax 0 B (sfR_imp hC).2 hB)
         (fun e hle hne _ _ => absurd (hmax e hle) hne)
-  | 0, .circ Z => exact circWit_of_maximal hmax hC hnf
+  | 0, .circ Z => exact circWit_of_maximal_core RR hmax hC hnf
   | n + 1, .atom p =>
-      exact metR_prime hloc rfl hC hnf
-        (fun A hA hnA => visitMax K G m hmax 0 A hA hnA)
+      exact mprime hloc rfl hC hnf
+        (fun A hA hnA => visitMax_core RR mprime mor K G m hmax 0 A hA hnA)
   | n + 1, .bot =>
-      exact metR_prime hloc rfl hC hnf
-        (fun A hA hnA => visitMax K G m hmax 0 A hA hnA)
+      exact mprime hloc rfl hC hnf
+        (fun A hA hnA => visitMax_core RR mprime mor K G m hmax 0 A hA hnA)
   | n + 1, .and C₁ C₂ =>
-      exact metR_and hC hnf
-        (fun h1 => visitMax K G m hmax (n + 1) C₁ (sfR_and hC).1 h1)
-        (fun _ h2 => visitMax K G m hmax (n + 1) C₂ (sfR_and hC).2 h2)
+      exact metR_and_core RR hC hnf
+        (fun h1 => visitMax_core RR mprime mor K G m hmax (n + 1) C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visitMax_core RR mprime mor K G m hmax (n + 1) C₂ (sfR_and hC).2 h2)
   | n + 1, .or C₁ C₂ =>
-      exact metR_or hloc hC hnf
-        (fun A hA hnA => visitMax K G m hmax 0 A hA hnA)
+      exact mor hloc hC hnf
+        (fun A hA hnA => visitMax_core RR mprime mor K G m hmax 0 A hA hnA)
   | n + 1, .imp A B =>
-      exact metR_imp hC hnf
+      exact metR_imp_core RR hC hnf
         (fun e hle _ hB => by
           have he : e = m := hmax e hle
           have hem : K.le e m := by rw [he]; exact K.le_refl m
           have hB' : ¬ K.force m B := by rw [← he]; exact hB
-          exact MRWit.weaken hem (visitMax K G m hmax (n + 1) B (sfR_imp hC).2 hB'))
+          exact MRWitOf.weaken hem (visitMax_core RR mprime mor K G m hmax (n + 1) B (sfR_imp hC).2 hB'))
   | n + 1, .circ Z =>
-      exact metR_circAt hC (K.le_refl m)
-        (visitMax K G m hmax (n + 1) Z (sfR_circ hC)
+      exact metR_circAt_core RR hC (K.le_refl m)
+        (visitMax_core RR mprime mor K G m hmax (n + 1) Z (sfR_circ hC)
           (fun hf => hnf (fun b hab => ⟨b, K.rm_refl b, K.force_mono hab hf⟩)))
 termination_by (t, C.size)
 decreasing_by
@@ -1407,60 +1705,71 @@ decreasing_by
       | (apply Prod.Lex.left; omega)
       | (apply Prod.Lex.right; simp only [Form.size]; omega)
 
+/-- The paper instantiation. -/
+abbrev visitMax := visitMax_core satRulesR mPrime mOr
+
 /-- The global statement family: `t = 0` irregular, otherwise the FREE
 regular wit.  The tagged grade is absent — it lives in `visitMax`. -/
-def GStmt (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
+def GStmtOf (Ri : Form → List Form → List Form → Form → Type)
+    (Rr : Form → Tag → List Form → Form → Type)
+    (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
   match t with
-  | 0 => IrrWit K G a C
-  | _ => FRWit K G a C
+  | 0 => IrrWitOf Ri K G a C
+  | _ => FRWitOf Rr K G a C
+
+/-- The paper instantiation. -/
+abbrev GStmt := GStmtOf FRJi FRJr
 
 /-- **The global recursion.**  Measure `(ht a, t, |C|)`.  Both `◯` cases
 are LEAVES: they route to `visitMax` at the maximal refuter supplied by
 `maxRef_of_not_circ`, so no same-world irregular→regular edge remains. -/
-def visitG (K : Kripke) (G : Form) (hep : K.Endpoints)
+def visitG_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr)
+    (mprime : MPrimeOf Ri Rr) (mor : MOrOf Ri Rr)
+    (K : Kripke) (G : Form) (hep : K.Endpoints)
     (a : K.W) (t : Nat) (C : Form)
-    (hC : C ∈ sfR G) (hnf : ¬ K.force a C) : GStmt K G a t C := by
+    (hC : C ∈ sfR G) (hnf : ¬ K.force a C) : GStmtOf Ri Rr K G a t C := by
   match t, C with
-  | 0, .atom p => exact metI_atom hC hnf
-  | 0, .bot => exact metI_bot hC hnf
+  | 0, .atom p => exact metI_atom_core RR hC hnf
+  | 0, .bot => exact metI_bot_core RR hC hnf
   | 0, .and C₁ C₂ =>
-      exact metI_and hC hnf
-        (fun h1 => visitG K G hep a 0 C₁ (sfR_and hC).1 h1)
-        (fun _ h2 => visitG K G hep a 0 C₂ (sfR_and hC).2 h2)
+      exact metI_and_core RR hC hnf
+        (fun h1 => visitG_core RR mprime mor K G hep a 0 C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visitG_core RR mprime mor K G hep a 0 C₂ (sfR_and hC).2 h2)
   | 0, .or C₁ C₂ =>
-      exact metI_or hC hnf
-        (fun h1 => visitG K G hep a 0 C₁ (sfR_or hC).1 h1)
-        (fun h2 => visitG K G hep a 0 C₂ (sfR_or hC).2 h2)
+      exact metI_or_core RR hC hnf
+        (fun h1 => visitG_core RR mprime mor K G hep a 0 C₁ (sfR_or hC).1 h1)
+        (fun h2 => visitG_core RR mprime mor K G hep a 0 C₂ (sfR_or hC).2 h2)
   | 0, .imp A B =>
-      exact metI_imp hC hnf
-        (fun _ hB => visitG K G hep a 0 B (sfR_imp hC).2 hB)
-        (fun e _ hne _ hB => visitG K G hep e 1 B (sfR_imp hC).2 hB)
+      exact metI_imp_core RR hC hnf
+        (fun _ hB => visitG_core RR mprime mor K G hep a 0 B (sfR_imp hC).2 hB)
+        (fun e _ hne _ hB => visitG_core RR mprime mor K G hep e 1 B (sfR_imp hC).2 hB)
   | 0, .circ Z =>
       exact
         let mx := maxRef_of_not_circ hep hnf
-        metI_circ hC
-          ((visitMax K G mx.m mx.max 1 Z (sfR_circ hC) mx.nfZ).weaken mx.le)
+        metI_circ_core RR hC
+          ((visitMax_core RR mprime mor K G mx.m mx.max 1 Z (sfR_circ hC) mx.nfZ).weaken mx.le)
   | n + 1, .atom p =>
-      exact metR_primeF rfl hC hnf
-        (fun A hA hnA => visitG K G hep a 0 A hA hnA)
+      exact metR_primeF_core RR rfl hC hnf
+        (fun A hA hnA => visitG_core RR mprime mor K G hep a 0 A hA hnA)
   | n + 1, .bot =>
-      exact metR_primeF rfl hC hnf
-        (fun A hA hnA => visitG K G hep a 0 A hA hnA)
+      exact metR_primeF_core RR rfl hC hnf
+        (fun A hA hnA => visitG_core RR mprime mor K G hep a 0 A hA hnA)
   | n + 1, .and C₁ C₂ =>
-      exact metR_andF hC hnf
-        (fun h1 => visitG K G hep a (n + 1) C₁ (sfR_and hC).1 h1)
-        (fun _ h2 => visitG K G hep a (n + 1) C₂ (sfR_and hC).2 h2)
+      exact metR_andF_core RR hC hnf
+        (fun h1 => visitG_core RR mprime mor K G hep a (n + 1) C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visitG_core RR mprime mor K G hep a (n + 1) C₂ (sfR_and hC).2 h2)
   | n + 1, .or C₁ C₂ =>
-      exact metR_orF hC hnf
-        (fun A hA hnA => visitG K G hep a 0 A hA hnA)
+      exact metR_orF_core RR hC hnf
+        (fun A hA hnA => visitG_core RR mprime mor K G hep a 0 A hA hnA)
   | n + 1, .imp A B =>
-      exact metR_impF hC hnf
-        (fun e hle _ hB => visitG K G hep e (n + 1) B (sfR_imp hC).2 hB)
+      exact metR_impF_core RR hC hnf
+        (fun e hle _ hB => visitG_core RR mprime mor K G hep e (n + 1) B (sfR_imp hC).2 hB)
   | n + 1, .circ Z =>
       exact
         let mx := maxRef_of_not_circ hep hnf
-        (metR_circAt hC mx.le
-          (visitMax K G mx.m mx.max 1 Z (sfR_circ hC) mx.nfZ)).toFree
+        (metR_circAt_core RR hC mx.le
+          (visitMax_core RR mprime mor K G mx.m mx.max 1 Z (sfR_circ hC) mx.nfZ)).toFree
 termination_by (ht K a, t, C.size)
 decreasing_by
   all_goals
@@ -1483,22 +1792,36 @@ decreasing_by
            | omega
            | (simp only [Form.size]; omega))
 
+/-- The paper instantiation. -/
+abbrev visitG := visitG_core satRulesR mPrime mOr
+
 /-- The demand closure with the regular half at the FREE grade.  This is
 all completeness consumes: the root reads only the derivation, never the
 tag. -/
-def AllMetF (K : Kripke) (G : Form) : Prop :=
+def AllMetFOf (Ri : Form → List Form → List Form → Form → Type)
+    (Rr : Form → Tag → List Form → Form → Type) (K : Kripke) (G : Form) : Prop :=
   ∀ a : K.W, ∀ C ∈ sfR G, ¬ K.force a C →
-    Nonempty (IrrWit K G a C) ∧ Nonempty (FRWit K G a C)
+    Nonempty (IrrWitOf Ri K G a C) ∧ Nonempty (FRWitOf Rr K G a C)
+
+/-- The paper instantiation. -/
+abbrev AllMetF := AllMetFOf FRJi FRJr
 
 theorem completeness_of_allMetF {K : Kripke} {G : Form}
     (h : AllMetF K G) (hK : ¬ K.valid G) : Provable G := by
   obtain ⟨w⟩ := (h K.root G (sfR_self G) hK).2
   exact ⟨w.t, w.ctx, ⟨w.der⟩⟩
 
-theorem allMetF_of_endpoints {K : Kripke} {G : Form} (hep : K.Endpoints) :
-    AllMetF K G :=
+theorem allMetF_of_endpoints_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr)
+    (mprime : MPrimeOf Ri Rr) (mor : MOrOf Ri Rr)
+    ⦃K : Kripke⦄ ⦃G : Form⦄ (hep : K.Endpoints) : AllMetFOf Ri Rr K G :=
   fun a C hC hnf =>
-    ⟨⟨visitG K G hep a 0 C hC hnf⟩, ⟨visitG K G hep a 1 C hC hnf⟩⟩
+    ⟨⟨visitG_core RR mprime mor K G hep a 0 C hC hnf⟩,
+      ⟨visitG_core RR mprime mor K G hep a 1 C hC hnf⟩⟩
+
+/-- The paper instantiation. -/
+abbrev allMetF_of_endpoints :=
+  allMetF_of_endpoints_core satRulesR mPrime mOr
 
 /-- **FRJ◯ COMPLETENESS OVER ENDPOINT-SEEING MODELS, UNCONDITIONAL.**
 Statement (A) of the W4 targets for every model whose modal relation is a
@@ -1512,10 +1835,14 @@ theorem completeness_of_endpoints {K : Kripke} {G : Form} (hep : K.Endpoints)
 /-- **The kernel discharged on cone-grounded frames.**  The corner
 forces cone-triviality, the frame condition turns that into maximality,
 and the generalised `Ax^I◯` closes it. -/
-def circSupply_of_coneGrounded {K : Kripke} {G : Form}
-    (hg : K.ConeGrounded) : CircSupply K G :=
+def circSupply_of_coneGrounded_core {Ri : Form → List Form → List Form → Form → Type}
+    {Rr : Form → Tag → List Form → Form → Type} (RR : SatRules Ri Rr)
+    ⦃K : Kripke⦄ ⦃G : Form⦄ (hg : K.ConeGrounded) : CircSupplyOf Ri K G :=
   fun a Z hZ hnf hsole =>
-    circWit_of_maximal (hg a (coneTrivial_of_corner hnf hsole)) hZ hnf
+    circWit_of_maximal_core RR (hg a (coneTrivial_of_corner hnf hsole)) hZ hnf
+
+/-- The paper instantiation. -/
+abbrev circSupply_of_coneGrounded := circSupply_of_coneGrounded_core satRulesR
 
 /-- **Completeness over cone-grounded models.**  An instance of
 `completeness_of_endpoints`: no supply of either kind, no condition on

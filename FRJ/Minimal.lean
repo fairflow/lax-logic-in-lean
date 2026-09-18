@@ -96,12 +96,19 @@ theorem mem_upsPrime {K : Kripke} {a : K.W} {G A B : Form}
 `Λ*_a ⊆ Σ, Θ`.  No canonicity field: the `⊃∈` step below splits the zone
 EXTENSIONALLY (`Θ₁ ≐ Θ ++ Λ`), which is what the paper's "contexts denote
 sets" means, so nothing has to be normalised first. -/
-structure IrrWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
+structure IrrWitOf (Ri : Form → List Form → List Form → Form → Type)
+    (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
   stab : List Form
   th : List Form
-  der : FRJi G stab th C
+  der : Ri G stab th C
   sub : stab ⊆ lamStar K a G
   cov : lamStar K a G ⊆ stab ++ th
+
+/-- The paper instantiation.  `IrrWitOf` exists so that the repaired
+family `FRJVi` reuses the record and everything proved about it
+(`FRJ/SaturateV.lean`) instead of declaring a second copy; the two
+instantiations stay distinct types, which is the point. -/
+abbrev IrrWit := IrrWitOf FRJi
 
 /-- The regular half: a derivation of `Γ ⇒ C` and a world `b ≥ a` whose
 `Λ*` the context covers. -/
