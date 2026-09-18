@@ -238,7 +238,9 @@ needed, and weak termination + a complete strategy suffices.
 
 ## THE LADDER IS COMPLETE (2026-07-09, evening)
 
-`SelfAbsorb` is **proved outright** (`PLLG4HCut.selfAbsorb_aux`), by
+`SelfAbsorb` is **proved outright** (`PLLND.G4c.selfAbsorb_aux`,
+`LaxLogic/PLL/G4/G4HCut.lean`; the public wrapper is
+`PLLND.G4c.selfAbsorb`), by
 plain structural induction on the `◯A`-derivation — no cut, no
 measure.  The resolution is poetic: the `laxL` ending that walled
 every previous attempt is *exactly the firing shape of `L◯→″`* — the

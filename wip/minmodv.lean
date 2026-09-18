@@ -582,7 +582,7 @@ cone-trivial, the frame condition makes it maximal, and the generalised
 def circSupplyV_of_coneGrounded {K : Kripke} {G : Form}
     (hg : K.ConeGrounded) : CircSupplyV K G :=
   fun _ _ hZ hnf hsole =>
-    (circWit_of_maximal (hg _ (coneTrivial_of_corner hnf hsole)) hZ hnf).toV
+    IrrWit.toV (circWit_of_maximal (hg _ (coneTrivial_of_corner hnf hsole)) hZ hnf)
 
 /-- **Round-1 completeness with NO supply hypothesis** on cone-grounded
 frames (in particular on every `Rm = ≤` model and every discrete
