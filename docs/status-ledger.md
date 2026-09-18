@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-17 17:45 BST from `ce2ab6a` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-18 17:31 BST from `1ab1015` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**28226 declarations** in **573 modules**: 12951 theorems, 15275 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**28249 declarations** in **573 modules**: 12962 theorems, 15287 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -34,7 +34,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.ExtractV` | 16 | 9 | 16 |  |  |
 | `FRJ.ExtractW` | 16 | 9 | 16 |  |  |
 | `FRJ.Fallible` | 69 | 34 | 69 |  |  |
-| `FRJ.Gbu` | 1106 | 566 | 1106 |  |  |
+| `FRJ.Gbu` | 1129 | 577 | 1129 |  |  |
 | `FRJ.Minimal` | 82 | 37 | 82 |  |  |
 | `FRJ.Modal` | 88 | 18 | 88 |  |  |
 | `FRJ.Model` | 21 | 7 | 21 |  |  |
@@ -362,8 +362,8 @@ Every distinct axiom set in the estate, most common first.
 | axioms | declarations |
 |---|--:|
 | *(none — axiom-free)* | 12337 |
-| `propext`, `Quot.sound` | 8136 |
-| `propext` | 5302 |
+| `propext`, `Quot.sound` | 8139 |
+| `propext` | 5322 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2419 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
