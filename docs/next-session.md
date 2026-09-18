@@ -1,3 +1,61 @@
+# WHILE YOU WERE AWAY (2026-09-16 → 18) — read this first
+
+Branch `ledger`, fast-forwarded into `main` at every verified milestone; CI
+green on every push. Everything below is in `HANDOFF.md` in full, dated, and in
+`docs/proof-simplification-plan-2026-09-16.md`, which now opens with a
+scoreboard.
+
+**The one-line summary.** The proof-status ledger is running in CI, **2,673
+lines of duplicated proof are gone with zero regressions anywhere in the
+estate**, five refactors were refused with written mechanisms, and one import
+line was found to have been hiding thirty modules and a documented PROVED
+result since the merge.
+
+**What needs YOU, and nothing else does:**
+
+1. **Should the record count elaborator plumbing?** 19.2% of it — 5,417 of
+   28,249 rows — are names Lean mints from another declaration's name
+   (`casesOn`, `noConfusion`, `sizeOf_spec`, field projections, …).
+   `scripts/ledger.lean`'s `skip?` already drops `f.eq_3` and `f.match_1` on
+   exactly that reasoning. Dropping the rest would end a recurring class of
+   false regression — three structural refactors in two days each made the gate
+   cry loss at declarations nobody wrote — but it changes a headline number by
+   a fifth. That is a redefinition of the unit of account, so it was left to
+   you. Plan document, §"For Matthew".
+2. **The `identity_mpt`-only G4 exception**, ~140 lines. The G4/G4H/G4P
+   triplication is refused, but `identity_mpt` never eliminates a derivation
+   and would fit a record of the 17 introduction rules. It touches the ladder
+   documents, so it is your call.
+3. **`wipshared` is still red** and still the FRJW and FRJX lines meeting:
+   `wip/frjw_gcc.lean:44` names a `V.WCounter` lemma absent from the merged
+   tree. `frjw-dev` is not mine to touch.
+4. **`batch/` (112 files), `_probe/` (13) and `Archive/` (8)** are covered by
+   no build target, and 64 `wip/` files carry bare imports that cannot resolve.
+   Pre-existing, not merge damage; a decision about the estate, not a repair.
+
+**What is now mechanical and standing**, so you need not remember it:
+
+* `scripts/check-ledger.sh` — the estate gate, in CI. Exit 1 is a REGRESSION
+  and fails the build; exit 2 means the record is owed an `--update`.
+* `scripts/check-imports.py` — NEW, in CI ahead of the gate: every `import`
+  names a module that exists. One second, no build. It exists because the
+  failure it catches is silent.
+* `scripts/claim-scan.py` + `scripts/reconcile-claims.py` — the prose against
+  the record. Currently 3,370 claims, **1,426 CONFIRMED, 2 CONTRADICTED (both
+  the same accurate sentence), 180 DANGLING, 16 STALE-OPEN (all line-local
+  artefacts)**. All three are registered in `TOOLS.md` §7.
+
+**The lesson worth keeping**, and it earned its place four times: ask what is
+*doubled*, not how similar the text is — and if the doubled thing is a
+**function**, it abstracts for free; if it is an inductive family, a recursion,
+or a termination argument, it does not. The recurring failure mode is
+**reduction**: an abstraction stops something reducing that the concrete form
+reduced by iota, and whether that is repairable decides the whole design. One
+equation per stepped variable saved `itp_step_mono`; no equation can cross a
+`Type`-valued index, which is why the `LaxND` congruence split was refused.
+
+---
+
 # THE DICTIONARY MODULE (2026-08-20): `LaxLogic/RN/Reps.lean`
 
 The fifteen RN(◯,{}) representatives now have ONE stable home outside
