@@ -304,6 +304,15 @@ HANDOFF.md	4406	OPEN		none	axioms, and which are OPEN — and a conflict-free me
 HANDOFF.md	4442	machine-checked		none	"""machine-checked modulo two named holes"". The number that matters is the 2,513"
 HANDOFF.md	4451	unverified		none	unverified modules into one is Matthew's call.
 HANDOFF.md	4468	PROVED	Meta,RNDB,Certified,DecideTools,Tools,FRJO	near	`docs/disproof-handoff.md`'s PROVED claim about `FRJO/Recon.lean` had sat
+HANDOFF.md	4619	proved	preR_closed	line	Branch `ledger`. `preR_closed` was proved three times — `FRJ/Extract.lean:657`,
+HANDOFF.md	4700	sorry-free	FRJ.tag_cone,V.tag_cone,W.tag_cone	near	sorry-free.
+HANDOFF.md	4739	proved	enumOf,coverOf,refutedCleanly_at,refutedCleanly_or,refutedCleanly_circ,gbuInv7	near	declarations were proved twice**, once over FRJV in `FRJ/Gbu/DB.lean` +
+HANDOFF.md	4793	PROVED		none	## 2026-09-18 — a PROVED result the ledger could not see, and one broken import
+HANDOFF.md	4797	OPEN		none	1,751 of them citing a declaration (51%), 1,013 CONFIRMED, 70 STALE-OPEN, 3
+HANDOFF.md	4799	machine-checked		none	"(""machine-checked **modulo two named holes**"", whose holes share the line with"
+HANDOFF.md	4803	PROVED	hasUI_of_stabilises	near	`stabilises_of_hasUI′` — **PROVED both ways `[propext, Classical.choice,
+HANDOFF.md	4819	PROVED	FRJO	line	This is the `FRJO` hole a second time**: a documented PROVED result sitting
+HANDOFF.md	4837	sorry-free	sorryAx,SemUI	near	They are sorry-free.** Over the environment they generate — 29,214
 LaxBlueprint/Chapters/Development.lean	126	theorem	PLLND.conservativity	line	"theorem ""conservativity"""
 LaxBlueprint/Chapters/Development.lean	127	provable		none	PLL is conservative over IPL: a modality-free formula is provable in the lax
 LaxBlueprint/Chapters/Development.lean	128	provable		none	system exactly when it is provable intuitionistically. So the modality adds
@@ -511,8 +520,13 @@ TOOLS.md	44	REFUTED	checkClosed,decideOfStore,FRJ.Arity.decideDataByEngine,PLLND
 TOOLS.md	46	kernel-checked	sepEntry,nleEntry,frjCertEntry,escEntry,sweepMain	line	... its HIT/MISS against the RNDB banked `⊬` cells (`sepEntry`/`nleEntry`/`frjCertEntry`/`escEntry`, each a kernel-checked `¬ Deriv [ρi] ρj`, PLL-level). A **MISS on ...
 TOOLS.md	54	OPEN	RNDB	line	... banked evidence: every entry carries its certificate (`ok` cannot be sorried); OPEN claims get **no entry** — the frontier lists ...
 TOOLS.md	77	unverified	sorryAx,defaultTargets,LaxLogic.Belief.Examples	line	... broken for weeks, and why a UI-line refutation (`wip/coverfail.lean`) was silently unverified. Held out of Production as of 2026-09-04: `LaxLogic.Belief.Examples` ...
-TOOLS.md	94	OPEN		none	`FRJO/` — dormant by decision; its `def … : Prop` pattern for OPEN
-TOOLS.md	97	UNVERIFIED		none	"runs, ""FRJ◯ is the most efficient refutation engine"" is UNVERIFIED."
+TOOLS.md	91	PROVED	hasUI_of_stabilises	line	... `wip/ui_routeB_*` modules from the estate for two days, so a documented PROVED result (`hasUI_of_stabilises`) sat outside every check and a ...
+TOOLS.md	92	PROVED	HANDOFF.md,METHOD.md,TOOLS.md	line	| `scripts/claim-scan.py`, `scripts/reconcile-claims.py` | The prose against the record: every PROVED/REFUTED/OPEN claim in `docs/`, `HANDOFF.md`, `METHOD.md`, `TOOLS.md` and the Verso ...
+TOOLS.md	92	REFUTED	HANDOFF.md,METHOD.md,TOOLS.md	line	| `scripts/claim-scan.py`, `scripts/reconcile-claims.py` | The prose against the record: every PROVED/REFUTED/OPEN claim in `docs/`, `HANDOFF.md`, `METHOD.md`, `TOOLS.md` and the Verso ...
+TOOLS.md	92	OPEN	HANDOFF.md,METHOD.md,TOOLS.md	line	| `scripts/claim-scan.py`, `scripts/reconcile-claims.py` | The prose against the record: every PROVED/REFUTED/OPEN claim in `docs/`, `HANDOFF.md`, `METHOD.md`, `TOOLS.md` and the Verso ...
+TOOLS.md	92	machine-checked	HANDOFF.md,METHOD.md,TOOLS.md	line	"... read every verdict as a prompt, not a judgment — ""machine-checked modulo the holes `a` and `b`"" is flagged CONTRADICTED ..."
+TOOLS.md	102	OPEN		none	`FRJO/` — dormant by decision; its `def … : Prop` pattern for OPEN
+TOOLS.md	105	UNVERIFIED		none	"runs, ""FRJ◯ is the most efficient refutation engine"" is UNVERIFIED."
 docs/SUBMIT_TO_MATHLIB.md	7	Conjecture		none	"Prepared from:** the ""Rethlas+Archon Solved A Conjecture with Formal"
 docs/SUBMIT_TO_MATHLIB.md	15	machine-checked		none	machine-checked Lean 4 result and having it independently verified**, plus a
 docs/SUBMIT_TO_MATHLIB.md	85	proved		none	Agent, which re-strategises. Independent obligations can be proved in
@@ -2385,9 +2399,17 @@ docs/pqhard-cases.md	166	OPEN	andimpConjMemP,cimpConjMemP	near	station. **Where 
 docs/pqhard-cases.md	169	PROVED	interpG_monoE,interpG_monoA	near	4. **Fuel monotonicity is no longer missing.** Stage 1 is PROVED for both
 docs/pqhard-cases.md	178	OPEN		none	`PQHard p` is **OPEN**, unchanged and unweakened: no term of that type is
 docs/proof-simplification-plan-2026-09-16.md	9	proved		none	The rule this plan obeys: **a simplification must not change what is proved.**
-docs/proof-simplification-plan-2026-09-16.md	21	proved		none	of them are the *same construction proved three times* — once for each of a
-docs/proof-simplification-plan-2026-09-16.md	50	proved	aSound	near	that the ledger gate and the build loop are proved out on easy cases before
-docs/proof-simplification-plan-2026-09-16.md	221	machine-checked	contraction_not_admissible	line	`contraction_not_admissible`), machine-checked *about Iemhoff's Figure 2.3 as
+docs/proof-simplification-plan-2026-09-16.md	59	proved		none	of them are the *same construction proved three times* — once for each of a
+docs/proof-simplification-plan-2026-09-16.md	88	proved	aSound	near	that the ledger gate and the build loop are proved out on easy cases before
+docs/proof-simplification-plan-2026-09-16.md	231	proved	tag_cone	line	`tag_cone` was proved three times at 165 lines and pairwise similarity
+docs/proof-simplification-plan-2026-09-16.md	355	proved	OFuelSound,OFuelPSound,stationCircF,stationUpF,stationCircP,stationUpP	near	at 42 and 67 — differing only in which goal they proved. Each file now has two
+docs/proof-simplification-plan-2026-09-16.md	393	proved		none	`LaxLogic/PLL/UI/G4UITrunc.lean` proved
+docs/proof-simplification-plan-2026-09-16.md	475	machine-checked	contraction_not_admissible	line	`contraction_not_admissible`), machine-checked *about Iemhoff's Figure 2.3 as
+docs/proof-simplification-plan-2026-09-16.md	864	refuted	Ms	near	`cases hle` were stuck, the design is refuted outright.
+docs/proof-simplification-plan-2026-09-16.md	902	proved	EvalI,WEvalI,_circ	near	`W/CircDB.lean`: seven declarations proved twice, once over FRJV and once
+docs/proof-simplification-plan-2026-09-16.md	1014	PROVED	hasUI_of_stabilises	line	`docs/ui-routeB-blueprint.md:57`, marks N3 — `hasUI_of_stabilises` — **PROVED
+docs/proof-simplification-plan-2026-09-16.md	1036	sorry-free	sorryAx	line	They are sorry-free.** The counts are still 23 `sorryAx` and 2
+docs/proof-simplification-plan-2026-09-16.md	1043	PROVED	FRJO	line	This is the `FRJO` hole a second time** — a documented PROVED result
 docs/publication-plan.md	57	sorry-free		none	`Meta/`, `FRJO/` are **entirely sorry-free**.
 docs/publication-plan.md	136	sorry-free	LaxLogic.PLL.SemUI.SemUILayered,Interd,PLLSemUILayered	near	`LaxLogic/PLL/SemUI/SemUIFrag.lean` (682 lines, **sorry-free**, and the home
 docs/publication-plan.md	183	proved		none	shelved UI modules. Cheapest, and it loses nothing that is proved —

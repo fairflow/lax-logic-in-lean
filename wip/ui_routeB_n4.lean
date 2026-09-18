@@ -49,7 +49,7 @@ and `polInvL` re-focalises.
 -/
 import wip.ui_routeB_n3_cut
 import wip.ui_routeB_n4_lit
-import LJF.Complete
+import LaxLogic.Focusing.LJFComplete
 import Meta.Audit
 
 set_option autoImplicit false

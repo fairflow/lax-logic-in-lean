@@ -4789,3 +4789,85 @@ only — `gbuInv9`, `pledge_of_le` and the pledged-lookup layer are W-specific
 and untouched. The net is smaller because the V bodies did not vanish, they
 BECAME the cores; the price of naming what differs is 62 lines of rule-field
 signature. No statement changed, and no recursion moved.
+
+## 2026-09-18 — a PROVED result the ledger could not see, and one broken import
+
+Branch `ledger`. The prose-vs-record reconciliation was re-run over the merged
+tree (`scripts/claim-scan.py`, `scripts/reconcile-claims.py`): **3,370 claims,
+1,751 of them citing a declaration (51%), 1,013 CONFIRMED, 70 STALE-OPEN, 3
+CONTRADICTED.** Two of the three are the one accurate sentence already known
+("machine-checked **modulo two named holes**", whose holes share the line with
+the verdict word). The third was real, and it is worth recording in full.
+
+`docs/ui-routeB-blueprint.md:57` marks N3 — `hasUI_of_stabilises`,
+`stabilises_of_hasUI′` — **PROVED both ways `[propext, Classical.choice,
+Quot.sound]`**, citing `wip/ui_routeB_n4.lean`. The ledger said `sorryAx`.
+
+**The claim was true and the ledger could not see it.** `wip/ui_routeB_n4.lean`
+imported `LJF.Complete`, a module the 2026-09-16 merge deleted in favour of
+`LaxLogic/Focusing/LJFComplete.lean`, so the file has not compiled since the
+merge and is not in the estate. The only declaration of that name the ledger
+could find was the **blueprint stub** in `wip/ui_routeB_blueprint.lean`, which
+carries a `sorry` because that is what a blueprint file is for. One import line
+repaired, the module builds (8,613 jobs), and the ledger now says
+
+    LJFO.hasUI_of_stabilises  def  sorry:false
+      axioms [propext, Classical.choice, Quot.sound]
+
+exactly as the blueprint table claims.
+
+**This is the `FRJO` hole a second time**: a documented PROVED result sitting
+outside every check because nothing built its module. The difference is that
+this one was *caused* by the merge, and the sorried stub of the same name made
+it look like a contradiction rather than an absence.
+
+A static sweep of every `import` line in the tree against every module that
+exists finds **exactly one** other unresolvable name outside `Archive/`, the
+Verso dependency and the `FrontierSampler` sub-tree: none. `LJF.Complete` was
+the merge's only orphan.
+
+**And the one import was holding thirty modules, not one.** With `LJF.Complete`
+repointed, every `wip/ui_routeB_*` module outside the estate builds — all
+**thirty** of them, in 4½ minutes: the whole halted `interpR` line
+(`r_bind`, `r_bound`, `r_esc`/`esc2`/`escd`/`escw`, `r_guard`, `r_meas`,
+`r_mono`, `r_proc`/`procd`, `r_refute`, `r_rows`, `r_seenmono`, `r_sound`,
+`r_ui`, the `n4q_*` loop-checked route, `pqequiv`, `pqmono`, `wp4`). They had
+been invisible to every check since 2026-09-16.
+
+**They are sorry-free.** Over the environment they generate — 29,214
+declarations — the counts are still **23 `sorryAx` and 2 `native_decide`**, and
+not one of the 23 is in a restored module (they are the four `SemUI` holes, the
+two `Obligation.Examples` demonstrations, four `ToolkitTest` fixtures, and
+`wip/{G4conf, cascadeBox, ui_routeB_blueprint}`). The halted search's working
+files pass their open cases as typed obligations, exactly as CLAUDE.md rule 1
+requires, and none of them asserts anything with a `sorry`.
+
+**What the restoration did to the reconciliation.** Re-running the scan against
+the regenerated record (29,214 declarations, 628 modules, still 23 `sorryAx`
+and 2 `native_decide`):
+
+| | before | after |
+|---|--:|--:|
+| CONTRADICTED | 3 | **2** |
+| DANGLING (cited name not in the estate) | 523 | **180** |
+| CONFIRMED | 1,013 | **1,309** |
+| STALE-OPEN | 70 | 133 |
+
+The third contradiction was `hasUI_of_stabilises` and it is gone. **343 of the
+523 dangling citations were not dangling at all** — they named declarations in
+the thirty modules nothing had built. The two remaining CONTRADICTED rows are
+the single accurate sentence "machine-checked **modulo two named holes**",
+whose holes share a line with the verdict word.
+
+The rise in STALE-OPEN from 70 to 133 is the same effect seen from the other
+side: prose that says OPEN about declarations the ledger can now see are
+kernel-clean. Those 133 are a reading list, not a defect — each is a sentence
+that may have been overtaken, and the halted UI route is exactly where one
+would expect that.
+
+**`scripts/check-imports.py` is new**, registered in `TOOLS.md` §7 and wired
+into CI ahead of the ledger step: every `import` in the tree names a module
+that exists — 2,343 imports across 1,030 modules, one second, no build. Watched
+failing on the historical case (restore `import LJF.Complete` and it names the
+file). `TOOLS.md` gains a §7 registering it beside `check-ledger.sh` and the
+two reconciliation scripts, which had never been in the register.

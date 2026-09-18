@@ -83,6 +83,14 @@ content others import splits — content in the library module, entry point
 in a thin `_run` root beside it (`oracle2_run`, `rho_order_run`,
 `rnc_probe_run`).
 
+## 7 · The proof-status estate (`scripts/`)
+
+| tool | use | version |
+|---|---|---|
+| `scripts/check-ledger.sh` (`--update`, `--built-only`) | THE estate check: `Lean.collectAxioms` over every declaration of every BUILT module, compared against `docs/status-ledger.jsonl`. Exit 0 clean, 1 REGRESSION (a new `sorryAx`, a new axiom, a new `native_decide` taint, or a declaration lost), 2 STALE, 3 broken. `--update` rewrites the record and the module list; `--built-only` is the CI mode and implies `--no-stale-check --scope-fresh`. The classifier distinguishes MOVED (same name and axioms, new module), `MOVED*` (a move whose axioms changed — still a regression) and DUPE (a duplicate record dropped while the same declaration and axioms survive elsewhere). Watched failing in `scripts/test-ledger-diff.py`, eleven cases including the silent ones. | `ledger @ HEAD · 2026-09-18` |
+| `scripts/check-imports.py` | Every `import` in the tree names a module that EXISTS — static, one second, no build. It exists because a merge deleted `LJF/Complete.lean` and left one file importing the old name, which silently removed **thirty** `wip/ui_routeB_*` modules from the estate for two days, so a documented PROVED result (`hasUI_of_stabilises`) sat outside every check and a sorried blueprint stub of the same name made the reconciliation call it CONTRADICTED. Run it after EVERY merge, before the expensive check. It does not check that a module builds; `check-ledger.sh` is that check. Watched failing on the historical case. | `ledger @ HEAD · 2026-09-18` |
+| `scripts/claim-scan.py`, `scripts/reconcile-claims.py` | The prose against the record: every PROVED/REFUTED/OPEN claim in `docs/`, `HANDOFF.md`, `METHOD.md`, `TOOLS.md` and the Verso documents, paired with the declarations named on its line, classified CONFIRMED / CONTRADICTED / DANGLING / STALE-OPEN / UNCITED into `docs/claim-reconciliation.md`. The scan is LINE-LOCAL, so read every verdict as a prompt, not a judgment — "machine-checked modulo the holes `a` and `b`" is flagged CONTRADICTED and is exactly right. The number that means something is how many claims cite nothing at all. | `ledger @ HEAD · 2026-09-18` |
+
 ## Superseded / dormant (pointers, not deletions)
 
 - The D₁₅/D₁₆ representative dictionary and its open-cell lists — the

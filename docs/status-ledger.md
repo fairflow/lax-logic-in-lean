@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-18 17:31 BST from `1ab1015` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-18 21:05 BST from `1bd4113` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**28249 declarations** in **573 modules**: 12962 theorems, 15287 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**29214 declarations** in **603 modules**: 13409 theorems, 15805 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -342,13 +342,43 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.ui_routeB_blueprint` | 47 | 12 | 42 | 5 |  |
 | `wip.ui_routeB_n3` | 95 | 54 | 95 |  |  |
 | `wip.ui_routeB_n3_cut` | 3 | 0 | 3 |  |  |
+| `wip.ui_routeB_n4` | 57 | 33 | 57 |  |  |
 | `wip.ui_routeB_n4_cells` | 33 | 22 | 33 |  |  |
 | `wip.ui_routeB_n4_lit` | 38 | 29 | 38 |  |  |
 | `wip.ui_routeB_n4q` | 26 | 14 | 26 |  |  |
+| `wip.ui_routeB_n4q_bound` | 34 | 29 | 34 |  |  |
 | `wip.ui_routeB_n4q_cells` | 55 | 39 | 55 |  |  |
+| `wip.ui_routeB_n4q_clos` | 52 | 51 | 52 |  |  |
+| `wip.ui_routeB_n4q_cong` | 8 | 8 | 8 |  |  |
+| `wip.ui_routeB_n4q_gate` | 9 | 4 | 9 |  |  |
+| `wip.ui_routeB_n4q_meas` | 36 | 7 | 36 |  |  |
+| `wip.ui_routeB_n4q_thm` | 23 | 2 | 23 |  |  |
+| `wip.ui_routeB_pqequiv` | 91 | 36 | 91 |  |  |
+| `wip.ui_routeB_pqmono` | 57 | 8 | 57 |  |  |
+| `wip.ui_routeB_r_bind` | 42 | 15 | 42 |  |  |
+| `wip.ui_routeB_r_bindcell` | 27 | 10 | 27 |  |  |
+| `wip.ui_routeB_r_bound` | 21 | 18 | 21 |  |  |
 | `wip.ui_routeB_r_cells` | 49 | 43 | 49 |  |  |
+| `wip.ui_routeB_r_cong` | 16 | 7 | 16 |  |  |
 | `wip.ui_routeB_r_def` | 31 | 16 | 31 |  |  |
+| `wip.ui_routeB_r_esc` | 12 | 3 | 12 |  |  |
+| `wip.ui_routeB_r_esc2` | 24 | 6 | 24 |  |  |
+| `wip.ui_routeB_r_escd` | 41 | 14 | 41 |  |  |
+| `wip.ui_routeB_r_escw` | 47 | 18 | 47 |  |  |
+| `wip.ui_routeB_r_gate` | 20 | 7 | 20 |  |  |
+| `wip.ui_routeB_r_grow` | 7 | 5 | 7 |  |  |
+| `wip.ui_routeB_r_guard` | 5 | 1 | 5 |  |  |
+| `wip.ui_routeB_r_meas` | 73 | 50 | 73 |  |  |
+| `wip.ui_routeB_r_mono` | 31 | 5 | 31 |  |  |
+| `wip.ui_routeB_r_proc` | 12 | 5 | 12 |  |  |
+| `wip.ui_routeB_r_procd` | 10 | 7 | 10 |  |  |
+| `wip.ui_routeB_r_refute` | 26 | 17 | 26 |  |  |
+| `wip.ui_routeB_r_rows` | 28 | 28 | 28 |  |  |
+| `wip.ui_routeB_r_seenmono` | 32 | 7 | 32 |  |  |
+| `wip.ui_routeB_r_sound` | 61 | 32 | 61 |  |  |
+| `wip.ui_routeB_r_ui` | 7 | 2 | 7 |  |  |
 | `wip.ui_routeB_statements` | 12 | 0 | 12 |  |  |
+| `wip.ui_routeB_wp4` | 56 | 12 | 56 |  |  |
 | `wip.visible` | 65 | 45 | 65 |  |  |
 | `wip.witOut` | 28 | 15 | 28 |  |  |
 | `wip.witTripleC` | 51 | 27 | 51 |  |  |
@@ -361,10 +391,10 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12337 |
-| `propext`, `Quot.sound` | 8139 |
-| `propext` | 5322 |
-| `propext`, `Classical.choice`, `Quot.sound` | 2419 |
+| *(none — axiom-free)* | 12622 |
+| `propext`, `Quot.sound` | 8397 |
+| `propext` | 5614 |
+| `propext`, `Classical.choice`, `Quot.sound` | 2548 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
 | `propext`, `Classical.choice` | 5 |
@@ -373,6 +403,7 @@ Every distinct axiom set in the estate, most common first.
 | `propext`, `sorryAx`, `Quot.sound` | 2 |
 | `propext`, `Classical.choice`, `Quot.sound`, `BeliefLax.boolean22_card._native.native_decide.ax_1_1` | 1 |
 | `propext`, `Classical.choice`, `Quot.sound`, `BeliefLax.chain4_card._native.native_decide.ax_1_1` | 1 |
+| `Quot.sound` | 1 |
 
 ## OPEN: every declaration carrying `sorryAx`
 

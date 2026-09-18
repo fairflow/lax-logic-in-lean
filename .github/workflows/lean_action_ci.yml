@@ -31,6 +31,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
 
+      # Every `import` names a module that exists.  Static, one second, and it
+      # runs BEFORE the expensive check because it catches the failure that
+      # actually follows a merge: on 2026-09-16 a deleted module left one file
+      # importing the old name, which silently removed thirty `wip/` modules
+      # from the estate — no build failed, because none of them is a default
+      # target, and a documented PROVED result sat outside every check.
+      - name: Imports resolve
+        run: scripts/check-imports.py
+
       # The proof-status gate (`docs/ledger-campaign-2026-09-16.md`).  It reads
       # the `.olean`s the step above produced, so `--built-only`: CI builds the
       # default targets, not the papers or `wip/`, and the gate compares within

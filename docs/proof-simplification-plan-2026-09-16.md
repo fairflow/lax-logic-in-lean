@@ -1003,6 +1003,53 @@ the (DB2) tail. Each arm is three lines in each family now, and the 52-line
 bodies are 25 and 24 — the residue is the `cases` itself, which is where the
 two calculi actually differ.
 
+## 2026-09-18: one import line was hiding thirty modules
+
+Not a simplification — a restoration, and it belongs here because it was found
+by the campaign's own machinery.
+
+Re-running the prose-vs-record reconciliation over the merged tree gave 3,370
+claims, 1,751 of them citing a declaration (51%), and **three CONTRADICTED**.
+Two are the one accurate sentence already known. The third,
+`docs/ui-routeB-blueprint.md:57`, marks N3 — `hasUI_of_stabilises` — **PROVED
+both ways `[propext, Classical.choice, Quot.sound]`**, and the ledger said
+`sorryAx`.
+
+**The claim was true and the ledger could not see it.**
+`wip/ui_routeB_n4.lean` imported `LJF.Complete`, which the 2026-09-16 merge
+deleted in favour of `LaxLogic/Focusing/LJFComplete.lean`. The file has not
+compiled since, so it was outside the estate, and the only declaration of that
+name the ledger could find was the **blueprint stub** in
+`wip/ui_routeB_blueprint.lean` — which carries a `sorry` because that is what a
+blueprint file is for. One import line repaired, and:
+
+    LJFO.hasUI_of_stabilises  def  sorry:false
+      axioms [propext, Classical.choice, Quot.sound]
+
+**The one import was holding thirty modules.** Every `wip/ui_routeB_*` module
+outside the estate now builds — all thirty, in 4½ minutes: the whole halted
+`interpR` line, the `n4q_*` loop-checked route, `pqequiv`, `pqmono`, `wp4`.
+They had been invisible to every check since the merge. The estate goes from
+598 modules and 28,249 declarations to **628 and 29,214 — 965 additions and
+zero regressions.**
+
+**They are sorry-free.** The counts are still 23 `sorryAx` and 2
+`native_decide`, and not one of the 23 is in a restored module. The halted
+search's working files pass their open cases as typed obligations, exactly as
+CLAUDE.md rule 1 requires.
+
+Two lessons, both already paid for once:
+
+* **This is the `FRJO` hole a second time** — a documented PROVED result
+  outside every check because nothing built its module. The difference is that
+  this one was *caused* by the merge, and a sorried stub of the same name made
+  an absence look like a contradiction.
+* **A static sweep is cheap and should be standing.** Every `import` line in
+  the tree, checked against every module that exists, finds exactly one
+  unresolvable name outside `Archive/`, the Verso dependency and the
+  `FrontierSampler` sub-tree: `LJF.Complete`. That sweep takes seconds and
+  would have caught this on the day of the merge.
+
 ## The rules that keep this honest
 
 1. **No statement moves.** If a refactor would change a theorem's statement, it
