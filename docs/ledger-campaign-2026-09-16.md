@@ -183,6 +183,16 @@ theorem carries a hypothesis — `PledgeSupply`/`CircSupply`
 condition, or ◯-freeness — and there is no unconditional
 `completenessV`. OPEN is right.
 
+*Refined 2026-09-18, once the thirty restored `wip/` modules entered the
+estate.* A declaration named exactly `FRJ.completenessV` **does** exist —
+`wip/minmodv_assembly.lean:774`, `[propext, Quot.sound]` — and it is
+conditional, as the sentence above says: it takes
+`hloc : ∀ b : K.W, circPart (lamStar K b G) = []`, the ◯-freeness of the λ\*
+context, alongside `K.Infallible` and `¬ K.valid G`. The ledger records axioms,
+not hypotheses, so a conditional theorem is kernel-clean and the reconciliation
+flags the OPEN sentence beside it; the hypothesis is the answer, and it is
+named here so the next reader does not have to find it again.
+
 **The ledger could not speak to the FRJO half at all, and that was the finding.**
 `FRJO` is a library that nothing had built, so not one of its declarations was
 in the estate: a documented PROVED result sat outside the record entirely. The

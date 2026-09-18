@@ -65,7 +65,15 @@ def classify(verdict, rows):
     if v in PROVED:
         return "CONFIRMED" if clean else "CONTRADICTED"
     if v in OPEN:
-        return "STALE-OPEN" if clean else "CONFIRMED"
+        # A `def` that STATES a property is kernel-clean by construction:
+        # writing down `StabilisationAllP` proves nothing about it, and a
+        # sentence calling it OPEN is not stale.  Only a clean THEOREM of the
+        # cited name can overtake an OPEN claim.  Without this the bucket is
+        # dominated by statement-shaped definitions — 133 rows on 2026-09-18,
+        # of which the great majority were `def`s.
+        if any(r["kind"] == "theorem" for r in clean):
+            return "STALE-OPEN"
+        return "CONFIRMED"
     return "CONFIRMED" if clean else "CONTRADICTED"
 
 
