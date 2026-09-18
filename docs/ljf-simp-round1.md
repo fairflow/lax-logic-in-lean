@@ -77,6 +77,21 @@ the `UStab` side, and the termination indices; the `interpA_*_eq` equation
 family stays as the safety net, per §2.6's warning. This is the opening
 move of the next session, not a late-evening edit.
 
+**Picked up 2026-09-18, and the design as written is REFUTED** — see
+`docs/ljf-round-d-2026-09-18.md`. An emission *record* means passing a mutual
+sibling as a function argument, and the termination checker must then bound the
+recursion at an arbitrary argument (`⊢ sizeOf a✝ < 1 + sizeOf a + sizeOf b`;
+nine-line certificate in that file). Same mechanism as the `OCore`
+station-factoring refusal — and it explains why the identical move *succeeded*
+in the fuel files: there the measure is the fuel, `f < f + 1` holds for every
+argument, so throwing away the call site costs nothing. **The goal is still
+reachable**: index ONE family by a mode and dispatch with `match m`, so every
+recursive call stays syntactic, with the result type and the measure both
+computed from the mode — which is exactly what lets the E and A first
+components coexist. That variant compiles, `[propext, Quot.sound]`. The pair
+order and the one trap (a computed result type must be `abbrev`, not `def`, or
+instance synthesis fails) are in the new file.
+
 ## Metrics (Rule 4)
 
 | state | lines | clean `lake build LaxLogic.Focusing.LJF` |
