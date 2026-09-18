@@ -813,10 +813,21 @@ bullet group is the same boundary as G5, in disguise: **one `if`, one
 collapse; one matcher, one `cases`.** Reverted in all three files; 96 is the
 floor this design reaches, not a parser deficiency.
 
-The one group that is still mechanically open is the **8 cascades whose live
-leaf is a `List.mem_append` alternation**, which needs a second alternation
-level in the pattern builder — worth perhaps 30 lines, and genuinely a parser
-limitation rather than a boundary of the design.
+**Checked 2026-09-18, and the last group is not open either.** The 8 cascades
+whose live leaf is a `List.mem_append` alternation were recorded above as a
+parser limitation worth perhaps 30 more lines. They are not: `List.mem_append`
+is already in the `mem_tbl` set, so the alternation is not the obstacle —
+**every one of the eight reaches `cases b with` within three lines**
+(`G4UITrunc.lean:923→926, 1174→1177, 1437→1440, 1644→1647, 1907→1910,
+2310→2313, 2751→2754, 3059→3062`). Hoisting a `mem_tbl` above them would put it
+above the budget matcher, which is the designed failure.
+
+So **candidate 7 is finished at 96 sites**, and all 96 are bounded by a matcher
+— the budget `match b with` in the G5 group, and `match C with` in the group
+written with `·` bullets, whose nine compile failures said so in as many words
+(`Dependent elimination failed … (match C with …)`). One `if`, one collapse;
+one matcher, one `cases`. There is nothing left in these three files that this
+design reaches.
 
 ## Done 2026-09-17: a 445-row table written out twice
 
