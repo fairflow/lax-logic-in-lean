@@ -4789,3 +4789,167 @@ only — `gbuInv9`, `pledge_of_le` and the pledged-lookup layer are W-specific
 and untouched. The net is smaller because the V bodies did not vanish, they
 BECAME the cores; the price of naming what differs is 62 lines of rule-field
 signature. No statement changed, and no recursion moved.
+
+## 2026-09-18 — `Saturate` ↔ `SaturateV`: the other 34, and a family abstracted through its constructors
+
+Branch `worktree-agent-aa0efe3983bc6584a`, cut from `ledger` at `1bd4113`.
+Stage B of `docs/proof-simplification-plan-2026-09-16.md` finished. The
+2026-09-16 pass had deleted the 21 declarations that were redundant outright
+and stopped at the other 34, which are byte-identical text for genuinely
+different theorems: five witness records differ in exactly one field, the
+derivation field, `FRJr` against `FRJVr`, and deleting the declarations that
+mention them would have silently retyped the V layer to the paper calculus.
+Nothing was deleted here. The records were parameterised over the family and
+the declarations are now proved once.
+
+**The measurements reproduce.** On `1bd4113`, post-deletion: **51 shared
+declaration names** (72 − 21) and **33 byte-identical** (34 by the earlier
+parse). All 33 are genuinely different theorems — the six whose own text
+names no witness record state their results in `SatStmt`/`GStmt`/`AllMet`/
+`CircSupply`, which are doubled in turn. The sixteen constructors the layer
+applies were extracted and diffed: **identical signatures in `FRJi`/`FRJr`
+and `FRJVi`/`FRJVr`**, which is what made the design cheap, and it was
+checked rather than inferred from the similarity score.
+
+### Four probes, each compiled alone before the next, all four PASSED
+
+The declared hazard was the recorded `OCore` mechanism — `visit`, `visitG`
+and `visitMax` are well-founded recursions whose `decreasing_by` farms
+discharge obligations with bare `assumption` (`FRJ/Saturate.lean:1051-1062`
+at HEAD). It did not fire, and the reason is the useful part: the `OCore`
+failure came from putting a recursive call **under a lambda**, which removes
+the call-site variables the farm reads. Nothing here moves a call; the
+change is to the recursion's RESULT TYPE and to three leading arguments, and
+the measure `(ht K a, t, C.size)` never mentions the witness type.
+
+1. `MRWitOf` beside `MRWit` with `abbrev`s at both families, plus an existing
+   declaration restated through the abbreviation. PASSED. A reducible
+   `abbrev` is transparent to dot notation both ways: `.andR2` resolves
+   against the field type `Rr G t ctx C₂` once `Rr` is instantiated, and
+   `w.weaken` finds `MRWitOf.weaken`.
+2. `visit`'s farm with the parameterised type at its call sites. PASSED,
+   exit 0, zero errors.
+3. **A third probe the brief did not call for, and it was necessary.** Probes
+   1 and 2 clear only the type level; **17 of the 33 apply a constructor of
+   the doubled inductive family**, which record-parameterisation does not
+   reach. `metR_and_core` over abstract `Ri`/`Rr` with the constructors as
+   fields: PASSED. The instantiation form matters — `abbrev metR_and :=
+   metR_and_core satRulesR` fails (*don't know how to synthesize implicit
+   argument `K`*: a bare implicit binder is instantiated eagerly), and
+   **strict implicit** leading binders (`⦃K : Kripke⦄`) fix it, buying a
+   one-line instantiation instead of a six-line restated signature — about
+   200 lines over the file pair.
+4. `visit_core`, the recursion itself over the abstract family. PASSED; the
+   only error in that compile was probe 3's eager-implicit fault at the
+   instantiation line, and the farm closed.
+
+### Why this one worked where G4 and `gbuInv14` were refused
+
+**The layer only INTRODUCES.** No declaration in either file does `cases d`
+or `induction d` on a derivation; every elimination is on a membership proof,
+a formula or a decidable proposition. That is exactly the condition the two
+inductive-family refusals identify as missing: a record supplies
+introduction forms, so an introduction-only layer abstracts over the family
+through a record of its constructors, and an elimination does not.
+
+`SatRules Ri Rr` (`FRJ/Saturate.lean`, 16 fields, 106 lines) carries those
+constructors, each field the constructor's type verbatim; two instances
+`satRulesR`/`satRulesV`, eight lines each. The five records are `IrrWitOf`
+(`FRJ/Minimal.lean`), `MRWitOf`, `FRWitOf`, `OWitOf`, `PledgeFamOf`
+(`FRJ/Saturate.lean`); the seven statement families became `SatStmtOf`,
+`AllMetOf`, `AllMetFOf`, `CircSupplyOf`, `GStmtOf`, `MaxStmtOf`,
+`PledgeSupplyOf`. Every old name survives as an `abbrev`, so no call site
+outside the two files changed.
+
+**What is NOT shared, and the direction is the reason.** `metR_prime` and
+`metR_or` differ by one call each: FRJV's `joinAt` asks for MORE than the
+paper's — a `restrict_keptChain` premise and `joinCtxAt_eq_base` in the
+context equation. The Gbu finding applies in the unfavourable direction here:
+a weaker rule instantiates a stronger abstract field for free, a rule asking
+for more cannot. So `FRJr.axR`, `.joinAt` and `.joinOr` are deliberately
+absent from `SatRules`, and the two builders are ordinary parameters of the
+three recursions, typed `MPrimeOf Ri Rr` and `MOrOf Ri Rr` — 14 lines of
+signature, and rule 4 of the plan (the weakest hypotheses the call sites
+already supply).
+
+**An axiom reading independent of the gate**, taken from the built
+environment with `#axioms_within` (the only sound oracle, CLAUDE.md rule 1),
+and negative-tested first so the check was watched failing:
+
+```
+$ lake env lean probe_axioms.lean      # 11 declarations, exit 0, no output
+$ lake env lean probe_neg.lean         # the same file with Quot.sound removed
+probe_neg.lean:5:0: error: 'FRJ.visit' depends on Quot.sound, which the
+  bound does not allow.  declared: [propext]
+```
+
+`FRJ.visit`, `FRJ.V.visit`, `FRJ.visit_core`, both `allMet_of_supply`, both
+`completeness_of_supply`, both `completeness_of_endpoints` and the two rule
+instances are all within `[propext, Quot.sound]`: no `sorryAx`, no
+`Classical.choice`, no native taint. The layer was built to stay
+`Classical.choice`-free and still is.
+
+Two adapters carry the cost of the strict-implicit binders: `MPrimeOf`/`MOrOf`
+declare theirs strict implicit (that is what buys the one-line
+instantiation), while `metR_prime` and `metR_or` keep the binders they have
+always had, since a binder annotation is part of a signature. `mPrime`/`mOr`,
+four lines per family, bridge them — and a `fun` against a strict-implicit
+expected type must name those binders, or `hloc` binds to `K` and the
+elaborator reports *argument `hloc` has type `Kripke` of sort `Type 1`*.
+
+**Numbers.** `FRJ/Saturate.lean` 1,559 → 1,886, `FRJ/SaturateV.lean`
+1,331 → 613, `FRJ/Minimal.lean` 531 → 538; total 3,421 → 3,037, **384 lines**.
+The figure to read is the **718 that left `SaturateV`**, duplication only —
+`provableV_root_countermodel`, `not_pledgeFam_of_circ_mem`, `metI_circO`,
+`metI_circ_syn`, `metR_prime`, `metR_or` and the V completeness wrappers are
+V-specific and untouched. **Byte-identical shared declarations: 33 before,
+0 after**; all 50 remaining shared names are one-line `abbrev`
+instantiations of a single core. No statement changed and no recursion moved.
+
+### The gate: 229 GONE, and the gate has not learned RENAME
+
+`scripts/check-ledger.sh --built-only` **exits 1**, and this is reported
+rather than worked around:
+
+```
+ledger: 28205 declarations from 598 modules (45 loaded separately)
+ledger: 229 REGRESSION(S)
+  GONE        FRJ.IrrWit.casesOn  (FRJ.Minimal) — declaration no longer in the build
+  GONE        FRJ.IrrWit.cov  (FRJ.Minimal) — declaration no longer in the build
+  …
+  GONE        FRJ.MRWit.toFree  (FRJ.Saturate) — declaration no longer in the build
+  …
+  GONE        FRJ.V.PledgeFam.mk.sizeOf_spec  (FRJ.SaturateV) — declaration no longer in the build
+  … and 29 more
+ledger: 199 addition(s)/improvement(s) — regenerate `docs/status-ledger.jsonl`
+```
+
+**Every one of the 229 is GONE. There is no SORRY, no AXIOM, no NATIVE and
+no `MOVED*` line**, which is the reading that matters: nothing gained an
+axiom, a `sorryAx` or a `native_decide` taint. The 229 classify exhaustively:
+
+* **206** are auto-generated names of the five renamed records —
+  `mk`, `rec`, `recOn`, `casesOn`, `ctorIdx`, `noConfusion(Type)`,
+  `mk.inj`/`.injEq`/`.sizeOf_spec`/`.congr_simp`, and one per field. They
+  exist under `…Of`: `FRJ.IrrWitOf.der`, `FRJ.MRWitOf.der`,
+  `FRJ.FRWitOf.der`, `FRJ.OWitOf.der`, `FRJ.PledgeFamOf.dps` were checked
+  in the built environment. The V copies have no separate counterpart
+  BECAUSE THAT IS THE HOIST: 229 out and 199 in is the 30-declaration
+  de-duplication.
+* **23** are `X.congr_simp` and `X.eq_def` equation lemmas that Lean
+  generates for a `def` with a body and not for an `abbrev` that is a
+  partial application; the cores carry them as `X_core.eq_def`.
+* **Six of the 206 are hand-written**: `MRWit.toFree`, `.toOWit`,
+  `.weaken` in each of the two namespaces, now `MRWitOf.toFree`,
+  `.toOWit`, `.weaken`, one copy serving both. Their types were read back
+  from the environment and are the originals generalised over `Rr`.
+
+So the gate is reporting the de-duplication itself. It learned MOVE on
+2026-09-16 — same name, same axioms, different module — and the
+name-analogue is missing: a RENAME is a name that left and a name that
+arrived in the same module with the same axioms. Whether to teach it that,
+or to record these 229 by hand, is Matthew's call; `--update` was not run.
+
+One incidental repair: the 2026-09-16 Stage B deletion left `MinZetaNS`'s
+docstring stranded in `FRJ/SaturateV.lean`, where it had attached itself to
+`CircSupply` and documented the wrong declaration. Replaced.
