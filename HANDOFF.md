@@ -5120,3 +5120,86 @@ Four citation repairs; DANGLING 180 → 177, CONFIRMED 1,426 → 1,427.
 Gate, triage oleans removed so it measures the committed change alone:
 `lake build` green (8,748 jobs), `check-ledger.sh --built-only` →
 `ledger: clean — 29170 declarations, unchanged`, exit 0.
+
+## 2026-09-19 (01:50) — Round D executed and measured, and the ledger's third gate defect
+
+Two things landed on `ledger` in the small hours; both are in the record with
+certificates.
+
+**1. Round D of `docs/ljf-simp-round1.md`: refuted as written, repaired, run
+for one pair, and then measured into a recommendation not to do the rest.**
+Document: `docs/ljf-round-d-2026-09-18.md`.
+
+Round D asked for one family parametrised by an emission RECORD, instantiated
+twice. That cannot be implemented, and the obstruction belongs to termination,
+not to Lean: handing a mutual sibling to a function throws away the call site,
+so the checker must bound the recursion at an *arbitrary* argument, and a
+syntactic measure cannot. The certificate is a nine-line `Tree` file in the
+document. The same move *succeeds* in `LJF/OFuelSound.lean` because there the
+measure is the **fuel**, and `f < f + 1` holds for every argument. **A
+recursive call passed under a lambda survives a fuel measure and not a
+syntactic one** — this is the sharpest statement yet of the mechanism behind
+the `OCore` station refusal and the `aSound` half-refusal.
+
+The repair keeps every recursive call syntactic and indexes the family by a
+**mode**. `TLF`/`ULF` → `XLF` over `LFMode`, whose `A` constructor carries the
+A-side's extra data (`L`, `hV`, the two membership oracles) and whose `E`
+carries none; the target positive is computed by `LFMode.target`; the
+lexicographic measure's first component is a `match` on the mode, written
+inline. Removed bodies verbatim in `Archive/ljf-round-d-superseded.lean`.
+
+Four traps, each one compile, each in the document: `set_option
+maxHeartbeats … in` binds to the NEXT command (a declaration inserted between
+it and the `mutual` silently dropped the block to 200,000, and the symptom was
+a `simp` timeout in an unrelated member); the measure must be written inline,
+because the farms' `simp only` has no clause for a named `LFMode.rank`;
+mode-polymorphic arms leave `m` a variable, so `decreasing_by` opens with
+`all_goals (try cases m)`; a computed *result* type must be `abbrev`.
+
+**The measurement is the result.** The file GREW 23 lines (4,462 → 4,485): the
+mode is ~50 lines of fixed overhead. Body sharing for the other six pairs,
+measured: `TpElim`/`UpElim` 0.47 (34 lines), `TInv`/`UInvG` 0.33 (14),
+`TpInv`/`UpInvG` 0.27 (13), `TStab`/`UStab` 0.24 (18), `TpLF`/`UpLF` 0.08 (2),
+`TRF`/`URF` 0.04 — **one** line, their `.init` arms doing different
+mathematics. **Round D's 350–500-line estimate is not supported; do none of
+the six.** What the change is kept for is TIME: the slowest single file in the
+repository falls **11 min 27 s → 9 min 42 s, −15%**, same-day, same imports.
+The campaign's standing lesson for the fifth time: *similarity of the clause
+patterns overstates what can be shared; the number that matters is how much of
+the body is common.*
+
+Gate: 4 GONE (`LJF.TLF`, `LJF.ULF`, and their elaborator-generated `.eq_def`
+lemmas), 22 NEW (`LFMode` and its eliminators, `LFMode.target`, `XLF`), and
+nothing else — no SORRY, no AXIOM, no NATIVE, no `MOVED*`, and **not one
+CHANGED line**, so every other declaration in the 4,485-line file kept its
+exact axiom set. `lake build` green at 8,748 jobs.
+
+**2. The ledger could not see a `private` declaration. Third gate defect, now
+fixed.** Found from the other end by the triage above (§4c).
+
+Lean mangles `private theorem foo` in `M` to `_private.M.0.foo`. `skip?` tested
+that mangled name, and two of its five tests fire for reasons that have nothing
+to do with the declaration: `isInternal` matches the leading `_` of `_private`,
+and `isInternalDetail` returns `true` on any `.num _ _` component. So **every
+`private` declaration in the repository was dropped from the record**. Counted
+from source, inside `docs/ledger-modules.txt` alone: **366 declarations, 225 of
+them theorems, in 73 modules** — `FRJ.Gbu.Circ` 24, `LaxLogic.PLL.Sequent.Craig`
+21, `FRJ.Gbu.W.Search` 21, `FRJ.Gbu.Search` 17.
+
+This is a defect, not the unit-of-account question left open for Matthew, and
+`skip?`'s own docstring settles it: generated equation and matcher lemmas are
+excluded "because they carry no content of their own — they inherit their
+definition's axioms". A `private theorem` is hand-written mathematics with its
+own proof and its own axiom set.
+
+`skip?` now applies every test to `privateToUserName n`, and the row is
+recorded **under the name the prose cites** with `"private":true`. One
+consequence closed in the same change: `ledger-diff.py` keys on
+`(module, decl)` in a dict, and un-mangling makes a collision possible for the
+first time (a module may hold both `private theorem foo` and `theorem foo`), so
+`ledger.lean` scans the sorted rows for a duplicate key and reports it rather
+than let one row overwrite the other and read as drift later.
+
+Watched on one module before paying for the estate: `LaxLogic.PLL.Sequent.Craig`
+**14 recorded declarations → 35**, exactly the 21 the source scan counts, every
+one `[propext, Quot.sound]` and clean.

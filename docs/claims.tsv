@@ -313,6 +313,13 @@ HANDOFF.md	4799	machine-checked		none	"(""machine-checked **modulo two named hol
 HANDOFF.md	4803	PROVED	hasUI_of_stabilises	near	`stabilises_of_hasUI′` — **PROVED both ways `[propext, Classical.choice,
 HANDOFF.md	4819	PROVED	FRJO	line	This is the `FRJO` hole a second time**: a documented PROVED result sitting
 HANDOFF.md	4837	sorry-free	sorryAx,SemUI	near	They are sorry-free.** Over the environment they generate — 29,214
+HANDOFF.md	4854	OPEN	hasUI_of_stabilises	near	| STALE-OPEN | 70 | 133 |
+HANDOFF.md	4859	machine-checked		none	"the single accurate sentence ""machine-checked **modulo two named holes**"","
+HANDOFF.md	4862	OPEN		none	The rise in STALE-OPEN from 70 to 133 is the same effect seen from the other
+HANDOFF.md	4863	OPEN		none	side: prose that says OPEN about declarations the ledger can now see are
+HANDOFF.md	4885	proved		none	the declarations are now proved once.
+HANDOFF.md	5114	sorry-free	sorryAx,Name.isInternal	near	sorry-free FRJLax development (587; its archiving in `2c18829` checked, holds).
+HANDOFF.md	5129	refuted		none	1. Round D of `docs/ljf-simp-round1.md`: refuted as written, repaired, run
 LaxBlueprint/Chapters/Development.lean	126	theorem	PLLND.conservativity	line	"theorem ""conservativity"""
 LaxBlueprint/Chapters/Development.lean	127	provable		none	PLL is conservative over IPL: a modality-free formula is provable in the lax
 LaxBlueprint/Chapters/Development.lean	128	provable		none	system exactly when it is provable intuitionistically. So the modality adds
@@ -775,18 +782,18 @@ docs/catpart-lean-design.md	456	unverified	AdmissibleFrame	near	1. **Verified-ou
 docs/catpart-lean-design.md	463	kernel-checked	Decidable	near	proof-search tooling (untrusted search, trusted, kernel-checked
 docs/catpart-lean-design.md	595	unverified	Coverable,IsTWaySelection	near	"definitions and the ""verified-output, unverified-construction"" posture"
 docs/chain-strictness.md	5	proved		none	## The statement to be proved
-docs/chain-strictness.md	44	sorry-free	PLLKripke.soundness	line	Soundness** (`PLLKripke.soundness`, sorry-free): a natural-deduction
-docs/chain-strictness.md	58	proved	force_oBot,Skel.transfer	near	exactly for `w ∈ U`. Two facts are already proved for it:
-docs/chain-strictness.md	72	proved	Skel.box_force	line	This is `Skel.box_force` below, proved once for all skeletons and all
-docs/chain-strictness.md	111	CONJECTURED	force_oBot	near	for `k ≥ 2` the world `1` witnesses that it does not. CONJECTURED
-docs/chain-strictness.md	117	sorry-free		none	Everything below is to be sorry-free with pinned axiom audits;
-docs/chain-strictness.md	118	kernel-checked		none	searcher output, if any is used, enters only as kernel-checked pinned
-docs/chain-strictness.md	119	PROVED		none	terms. PROVED / REFUTED / OPEN kept distinct throughout; the
-docs/chain-strictness.md	119	REFUTED		none	terms. PROVED / REFUTED / OPEN kept distinct throughout; the
-docs/chain-strictness.md	119	OPEN		none	terms. PROVED / REFUTED / OPEN kept distinct throughout; the
-docs/chain-strictness.md	120	conjecture		none	conjecture above stays labelled OPEN until the second lift is built.
-docs/chain-strictness.md	120	OPEN		none	conjecture above stays labelled OPEN until the second lift is built.
-docs/chain-strictness.md	127	sorry-free		none	second lift) both compiled on first attempt, sorry-free, audits
+docs/chain-strictness.md	45	sorry-free	PLLND.soundness	near	sorry-free): a natural-deduction
+docs/chain-strictness.md	59	proved	force_oBot,Skel.transfer	near	exactly for `w ∈ U`. Two facts are already proved for it:
+docs/chain-strictness.md	73	proved	Skel.box_force	line	This is `Skel.box_force` below, proved once for all skeletons and all
+docs/chain-strictness.md	112	CONJECTURED	force_oBot	near	for `k ≥ 2` the world `1` witnesses that it does not. CONJECTURED
+docs/chain-strictness.md	118	sorry-free		none	Everything below is to be sorry-free with pinned axiom audits;
+docs/chain-strictness.md	119	kernel-checked		none	searcher output, if any is used, enters only as kernel-checked pinned
+docs/chain-strictness.md	120	PROVED		none	terms. PROVED / REFUTED / OPEN kept distinct throughout; the
+docs/chain-strictness.md	120	REFUTED		none	terms. PROVED / REFUTED / OPEN kept distinct throughout; the
+docs/chain-strictness.md	120	OPEN		none	terms. PROVED / REFUTED / OPEN kept distinct throughout; the
+docs/chain-strictness.md	121	conjecture		none	conjecture above stays labelled OPEN until the second lift is built.
+docs/chain-strictness.md	121	OPEN		none	conjecture above stays labelled OPEN until the second lift is built.
+docs/chain-strictness.md	128	sorry-free		none	second lift) both compiled on first attempt, sorry-free, audits
 docs/checkclosed-checks.md	47	PROVED	joinAt,joinOr,ctxAt_sub,ctxOr_sub	line	... | cliques of stored irregular rows with distinct goals: arity ≤ |Sf^R| | B1: `ctxAt_sub`, `ctxOr_sub` PROVED | reduced |
 docs/checkclosed-checks.md	48	proved	joinCirc	line	... same | B1 by induction on formula size: PLAUSIBLE, cell passes, NOT yet proved (§3) | build item 1 |
 docs/checkclosed-checks.md	49	PROVED	joinAtF,joinOrF,joinCtxAtF_sub,joinCtxOrF_sub	line	| `joinAtF`, `joinOrF` | irregular families | same | B1: `joinCtxAtF_sub`, `joinCtxOrF_sub` PROVED | reduced |
@@ -1243,7 +1250,7 @@ docs/frj-promise-join.md	228	machine-checked	provable_neg_circ_bot	line	Cells, m
 docs/frj-promise-join.md	239	OPEN	forceStar,minMod	near	OPEN (W4)**: completeness with modal goals — `Λ*` does not yet carry
 docs/frj-w3.md	4	machine-checked		none	Everything below is machine-checked in `FRJ/`; `lake build FRJ` is green,
 docs/frj-w3.md	42	PROVED	valid_neg_circ_bot_of_infallible	line	PROVED** `valid_neg_circ_bot_of_infallible` : every infallible model
-docs/frj-w3.md	48	PROVED	not_provable_neg_circ_bot	line	PROVED** `not_provable_neg_circ_bot` : `¬ Provable (¬◯⊥)`.
+docs/frj-w3.md	48	PROVED	FRJ.not_provable_barren_neg_circ_bot	line	PROVED** `FRJ.not_provable_barren_neg_circ_bot` : `¬ Provable (¬◯⊥)`.
 docs/frj-w3.md	60	proved	PreModel.toKripke,toKripke_force_circ	near	barren, its only modal successor is itself. The consequence, proved as
 docs/frj-w3.md	81	PROVED		none	PROVED**: the `◯∈` case of Lemma 3.9(i), hence Theorem 3.10 and Theorem
 docs/frj-w3.md	112	Machine-checked	Screen.silent	line	proper subrelation of `≤`. Machine-checked as `Screen.silent`: two worlds
@@ -1599,8 +1606,8 @@ docs/g4p-ladder.md	116	provable	open_boxes_R	near	that it is provable for single
 docs/g4p-ladder.md	145	proved	G4c.contract	near	Contraction is proved, cut-free** (`PLLG4HCtr.lean`,
 docs/g4p-ladder.md	219	KERNEL-CHECKED	G4c.cut',andR_inv	near	IMPLEMENTED AND KERNEL-CHECKED (same day, `PLLG4HCut.lean`):**
 docs/g4p-ladder.md	223	proved	SelfAbsorb	line	First compile. So: **cut is fully proved, conditional on `SelfAbsorb` alone** — no
-docs/g4p-ladder.md	241	proved	SelfAbsorb,PLLG4HCut.selfAbsorb_aux	line	`SelfAbsorb` is **proved outright** (`PLLG4HCut.selfAbsorb_aux`), by
-docs/g4p-ladder.md	252	kernel-checked	sorryAx	near	Hence, unconditional and kernel-checked, each with pinned axiom audits
+docs/g4p-ladder.md	241	proved	SelfAbsorb,PLLND.G4c.selfAbsorb_aux	line	`SelfAbsorb` is **proved outright** (`PLLND.G4c.selfAbsorb_aux`,
+docs/g4p-ladder.md	254	kernel-checked	sorryAx	near	Hence, unconditional and kernel-checked, each with pinned axiom audits
 docs/gbu-adoption-plan.md	140	refuted	GbuOps	line	an explicit `GbuOps`-instance that is refuted by the corpus, watched
 docs/gbu-adoption-plan.md	183	proved	Clo,FRJ	near	proved (the earlier `pdftotext` extract truncated at six). Sorry-free;
 docs/gbu-adoption-plan.md	193	OPEN	saturated_fderivable	near	Stage 4 (the runnable procedure) — OPEN.** What is missing is the
@@ -1678,17 +1685,19 @@ docs/ledger-campaign-2026-09-16.md	5	machine-checked		none	machine-checked *in t
 docs/ledger-campaign-2026-09-16.md	5	OPEN		none	machine-checked *in the merged tree*, under which axioms, and which are OPEN.
 docs/ledger-campaign-2026-09-16.md	99	OPEN	sorryAx	line	The 81 `sorryAx` declarations are the OPEN list, named in
 docs/ledger-campaign-2026-09-16.md	121	PROVED	FRJO	line	`FRJO` had never been built, and a PROVED claim lived there.** That is how a
-docs/ledger-campaign-2026-09-16.md	178	OPEN	TOOLS.md	near	and `docs/calculus-map.md` say FRJV completeness is OPEN. The first sentence is
-docs/ledger-campaign-2026-09-16.md	184	OPEN	completenessV	line	`completenessV`. OPEN is right.
-docs/ledger-campaign-2026-09-16.md	188	PROVED	FRJO	near	in the estate: a documented PROVED result sat outside the record entirely. The
-docs/ledger-campaign-2026-09-16.md	193	machine-checked	wit_pbisim,wit_force,sorryAx	near	"sentence.** `docs/ui-proof-status-report.md` says ""machine-checked **modulo two"
-docs/ledger-campaign-2026-09-16.md	202	PROVED	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
-docs/ledger-campaign-2026-09-16.md	202	REFUTED	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
-docs/ledger-campaign-2026-09-16.md	202	OPEN	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
-docs/ledger-campaign-2026-09-16.md	202	machine-checked	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
-docs/ledger-campaign-2026-09-16.md	202	kernel-checked	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
-docs/ledger-campaign-2026-09-16.md	203	sorry-free	HANDOFF.md,METHOD.md,TOOLS.md	near	sorry-free variants. **Only 838 of them (25%) name a Lean declaration**; the
-docs/ledger-campaign-2026-09-16.md	207	OPEN	TOOLS.md	line	`TOOLS.md` and `docs/calculus-map.md` say FRJV completeness is OPEN. Both are
+docs/ledger-campaign-2026-09-16.md	174	sorry-free	_private.M.0.foo	near	declarations that exist, compile, and are sorry-free, and dangled anyway.
+docs/ledger-campaign-2026-09-16.md	241	OPEN	TOOLS.md	near	and `docs/calculus-map.md` say FRJV completeness is OPEN. The first sentence is
+docs/ledger-campaign-2026-09-16.md	247	OPEN	completenessV	line	`completenessV`. OPEN is right.
+docs/ledger-campaign-2026-09-16.md	256	OPEN	K.Infallible	near	flags the OPEN sentence beside it; the hypothesis is the answer, and it is
+docs/ledger-campaign-2026-09-16.md	261	PROVED	FRJO	near	in the estate: a documented PROVED result sat outside the record entirely. The
+docs/ledger-campaign-2026-09-16.md	266	machine-checked	wit_pbisim,wit_force,sorryAx	near	"sentence.** `docs/ui-proof-status-report.md` says ""machine-checked **modulo two"
+docs/ledger-campaign-2026-09-16.md	275	PROVED	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
+docs/ledger-campaign-2026-09-16.md	275	REFUTED	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
+docs/ledger-campaign-2026-09-16.md	275	OPEN	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
+docs/ledger-campaign-2026-09-16.md	275	machine-checked	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
+docs/ledger-campaign-2026-09-16.md	275	kernel-checked	HANDOFF.md,METHOD.md,TOOLS.md	near	PROVED 1,241, REFUTED 715, OPEN 422, plus the machine-checked / kernel-checked /
+docs/ledger-campaign-2026-09-16.md	276	sorry-free	HANDOFF.md,METHOD.md,TOOLS.md	near	sorry-free variants. **Only 838 of them (25%) name a Lean declaration**; the
+docs/ledger-campaign-2026-09-16.md	280	OPEN	TOOLS.md	line	`TOOLS.md` and `docs/calculus-map.md` say FRJV completeness is OPEN. Both are
 docs/letter-to-mendler.md	14	proved		none	and the cut-free sequent calculus, all proved equivalent; cut
 docs/letter-to-mendler.md	22	proved		none	me in LEGO at the LFCS all those years ago — now proved fully constructively.
 docs/letter-to-mendler.md	27	machine-checked		none	there is a machine-checked PLL-derivable sequent it cannot derive, and
@@ -1696,9 +1705,12 @@ docs/letter-to-mendler.md	43	proved		none	replaced by an iterated appeal to the 
 docs/letter-to-mendler.md	47	proved		none	is proved without AC.
 docs/letter-to-mendler.md	52	machine-checked		none	asserted beyond its machine-checked status, axiom audits recorded per
 docs/letter-to-mendler.md	56	provable		none	the failure being provable.
-docs/ljf-simp-round1.md	104	proved	interpFire_eq	line	`interpFire_eq`, the goal-generic fire equation stated once and proved by
-docs/ljf-simp-round1.md	108	proved	eMinF	near	needs a hand-stated generic equation, proved by cases.
-docs/ljf-simp-round1.md	120	provable	Prod.Lex	near	displayed goal is provable, the real one isn't of that type.
+docs/ljf-round-d-2026-09-18.md	1	refuted		none	# Round D, refuted as written and repaired — the p-fire eliminator families
+docs/ljf-round-d-2026-09-18.md	32	Refuted		none	## Refuted as written: an emission RECORD cannot carry the recursive calls
+docs/ljf-simp-round1.md	80	REFUTED		none	Picked up 2026-09-18, and the design as written is REFUTED** — see
+docs/ljf-simp-round1.md	119	proved	interpFire_eq	line	`interpFire_eq`, the goal-generic fire equation stated once and proved by
+docs/ljf-simp-round1.md	123	proved	eMinF	near	needs a hand-stated generic equation, proved by cases.
+docs/ljf-simp-round1.md	135	provable	Prod.Lex	near	displayed goal is provable, the real one isn't of that type.
 docs/ljf-simplification-pass.md	4	proved		none	characteristic properties plus the saturated case proved, zero errors,
 docs/ljf-simplification-pass.md	5	sorry-free		none	sorry-free). Three parts: what should be simplified, the proof read
 docs/ljf-simplification-pass.md	18	machine-checked		none	four characteristic properties are machine-checked, unconditionally:
@@ -2127,51 +2139,56 @@ docs/next-session-2026-08-29.md	74	refuted	corner_lamStar_mem,not_pledgeFam_of_c
 docs/next-session-2026-08-29.md	98	refuted		none	| stratum | refuted | circ-carrying targets | target misses |
 docs/next-session-2026-08-29.md	113	OPEN	TagLeafV	near	## OPEN (rigidly)
 docs/next-session-2026-08-29.md	120	kernel-checked		none	retention), or (b) find a kernel-checked separating cell — which
-docs/next-session.md	26	PROVED	frj_iff_not_IPL,completeness_of_supply	near	on branch `claude/frj-redevelopment-69005f`: ◯-free completeness PROVED
-docs/next-session.md	28	OPEN	completeness_of_supply	line	conditional `completeness_of_supply` — the two supply kernels are OPEN and
-docs/next-session.md	95	OPEN	completeness_of_supply	near	completeness; (A) OPEN, minMod-as-recursion REFUTED, supplies
-docs/next-session.md	95	REFUTED	completeness_of_supply	near	completeness; (A) OPEN, minMod-as-recursion REFUTED, supplies
-docs/next-session.md	108	REFUTED	ClosedCollapse	line	closed-fragment probe REFUTED `ClosedCollapse`, so stage 2's kernels
-docs/next-session.md	109	OPEN	StableCore,CornerCoreW	line	(`StableCore`, `CornerCoreW`) are OPEN again and the live repair is
-docs/next-session.md	144	PROVED	not_joinPrime_rnSub_odd	near	property, and a visible element names a point of the Esakia dual. **PROVED**
-docs/next-session.md	145	REFUTED	not_joinPrime_rnSub_odd,laxL	near	visible: `⊤`, `t1`, `t2`, `t4`, `t6`, and the first gap. **REFUTED** for the
-docs/next-session.md	152	REFUTED		none	`D_n ∪ ◯D_n`. Collapse at depth 2 is **REFUTED**; `◯g₁` has class depth
-docs/next-session.md	153	conjecture		none	exactly 3. The PCLL conjecture falls with it.
-docs/next-session.md	182	machine-checked		none	The machine-checked mandate.** Every theoretical claim that will
-docs/next-session.md	183	sorry-free		none	stand in a paper must be Lean-checked, sorry-free, with a pinned
-docs/next-session.md	184	OPEN		none	`#print axioms`. Anything else is OPEN or a conjecture, labelled so.
-docs/next-session.md	184	conjecture		none	`#print axioms`. Anything else is OPEN or a conjecture, labelled so.
-docs/next-session.md	214	proved	eSound,aSound	line	E1 (`eSound`) and A1 (`aSound`) proved outright**, the G4iLL-blocker
-docs/next-session.md	223	sorry-free	satE2,satA2	line	minimality development — **E2/A2 (`satE2`/`satA2`) sorry-free and
-docs/next-session.md	224	machine-checked	LJFORows,satE2,satA2,CimpAnt,DykAnt	near	machine-checked, conditional on the single isolated typed obligation
-docs/next-session.md	248	OPEN	interpF	near	Claim discipline:** UI for PLL remains OPEN. Nothing in this thread
-docs/next-session.md	289	proved	LJFOSearch.search	near	against the proved `∃p.φ★ = ¬¬◯⊥`. The focused kernel search is the
-docs/next-session.md	334	proved	toH,ofH	line	height-indexed presentation is proved equivalent (`toH`/`ofH`). What
-docs/next-session.md	337	proved	interpF	near	be proved afresh; the existing `interp` results stand unchanged
-docs/next-session.md	364	provable		none	→ provable s`. Built once; works in every later campaign.
-docs/next-session.md	433	provable		none	two sub-lemmas provable; that pick is the first task of the campaign.
-docs/next-session.md	457	PROVED		none	whose IPC completeness is PROVED on paper (TOCL 2020). So the fragment
-docs/next-session.md	512	REFUTED	route3_blocked	near	(A⊃w)⊃◯w, A = p∨(p⊃q)); route 3 (chosen valuation) REFUTED by
-docs/next-session.md	535	proved		none	(divergence V5, docs/refat-plan.md); soundnessV re-proved FIRST PASS via
-docs/next-session.md	554	kernel-checked		none	relaxation re-enters only with a kernel-checked separating cell. THE
-docs/next-session.md	561	refuted		none	Clo(base++kept); refuted → RefAt), plain size induction since every
-docs/next-session.md	565	PROVED	keptOf_saturated	near	FLIGHT BRICKS PROVED (2026-08-28 19:45, commit cf82e83):
-docs/next-session.md	570	refuted	corner_coverage,CornerSupply,corner_lamStar_clo	near	sfL-members are Clo-derivable and refuted sfR-members RefAt-refutable
-docs/next-session.md	577	refuted		none	CornerSupply (Ax^I rows for refuted atoms; ⊃∉ floats for imps refuted
-docs/next-session.md	590	refuted		none	The corner fell to two semantic vacuities (refuted imp → refuted
-docs/next-session.md	591	refuted		none	consequent; refuted ◯ → refuted body: no ◯-cell is ever demanded, seen
-docs/next-session.md	592	refuted		none	machinery retired) + the thin family (axI rows for refuted primes, ⊃∉
-docs/next-session.md	615	refuted	corner_lamStar_mem	near	refuted antecedents by forceStar, so keptOf_saturated adopts them;
-docs/next-session.md	617	refuted		none	Pledge-existence is moot on this route: cone-refuted Z never has
-docs/next-session.md	635	refuted		none	cone-refuted at its anchor — but structural descent through
-docs/next-session.md	651	refuted		none	the goal is refuted but forced at some proper Rm-successor), vacuous
-docs/next-session.md	655	refuted		none	tagPrimeP_join/tagOrP_join (pledged promise joins for cone-refuted
-docs/next-session.md	659	refuted		none	Probe (frjvprobe): strata ≤7 = 16696 refuted, 1027 circ-carrying
-docs/next-session.md	661	refuted		none	00:05-ish, 6-model battery): 86957 refuted, 9277 circ-carrying
-docs/next-session.md	666	kernel-checked		none	constructible, or find the kernel-checked separating cell (next
-docs/next-session.md	676	proved		none	## 10. LJF UI proved — the state as of 2026-08-09 evening
-docs/next-session.md	678	machine-checked	eSound,aSound,eMinF	near	The landmark**: uniform interpolation for LJF is machine-checked and
-docs/next-session.md	681	sorry-free	aMinF,satE2,satA2,dykAnt	line	`aMinF`, `satE2`, `satA2`, `dykAnt` sorry-free, axioms pinned. Scope
+docs/next-session.md	12	PROVED		none	thirty modules and a documented PROVED result, one module of the declared
+docs/next-session.md	39	sorry-free	sorryAx	line	theorems, zero `sorryAx`) and two sorry-free theorems the prose calls
+docs/next-session.md	40	kernel-checked	LJFO.completeness_of_construction	line	kernel-checked (`LJFO.completeness_of_construction`,
+docs/next-session.md	45	PROVED		none	plan-table targets whose status column reads PROVED as an *aim*, three are
+docs/next-session.md	60	OPEN		none	sentence), 177 DANGLING, 16 STALE-OPEN (all line-local artefacts)**, and
+docs/next-session.md	101	PROVED	frj_iff_not_IPL,completeness_of_supply	near	on branch `claude/frj-redevelopment-69005f`: ◯-free completeness PROVED
+docs/next-session.md	103	OPEN	completeness_of_supply	line	conditional `completeness_of_supply` — the two supply kernels are OPEN and
+docs/next-session.md	170	OPEN	completeness_of_supply	near	completeness; (A) OPEN, minMod-as-recursion REFUTED, supplies
+docs/next-session.md	170	REFUTED	completeness_of_supply	near	completeness; (A) OPEN, minMod-as-recursion REFUTED, supplies
+docs/next-session.md	183	REFUTED	ClosedCollapse	line	closed-fragment probe REFUTED `ClosedCollapse`, so stage 2's kernels
+docs/next-session.md	184	OPEN	StableCore,CornerCoreW	line	(`StableCore`, `CornerCoreW`) are OPEN again and the live repair is
+docs/next-session.md	219	PROVED	not_joinPrime_rnSub_odd	near	property, and a visible element names a point of the Esakia dual. **PROVED**
+docs/next-session.md	220	REFUTED	not_joinPrime_rnSub_odd,laxL	near	visible: `⊤`, `t1`, `t2`, `t4`, `t6`, and the first gap. **REFUTED** for the
+docs/next-session.md	227	REFUTED		none	`D_n ∪ ◯D_n`. Collapse at depth 2 is **REFUTED**; `◯g₁` has class depth
+docs/next-session.md	228	conjecture		none	exactly 3. The PCLL conjecture falls with it.
+docs/next-session.md	257	machine-checked		none	The machine-checked mandate.** Every theoretical claim that will
+docs/next-session.md	258	sorry-free		none	stand in a paper must be Lean-checked, sorry-free, with a pinned
+docs/next-session.md	259	OPEN		none	`#print axioms`. Anything else is OPEN or a conjecture, labelled so.
+docs/next-session.md	259	conjecture		none	`#print axioms`. Anything else is OPEN or a conjecture, labelled so.
+docs/next-session.md	289	proved	eSound,aSound	line	E1 (`eSound`) and A1 (`aSound`) proved outright**, the G4iLL-blocker
+docs/next-session.md	298	sorry-free	satE2,satA2	line	minimality development — **E2/A2 (`satE2`/`satA2`) sorry-free and
+docs/next-session.md	299	machine-checked	LJFORows,satE2,satA2,CimpAnt,DykAnt	near	machine-checked, conditional on the single isolated typed obligation
+docs/next-session.md	323	OPEN	interpF	near	Claim discipline:** UI for PLL remains OPEN. Nothing in this thread
+docs/next-session.md	364	proved	LJFOSearch.search	near	against the proved `∃p.φ★ = ¬¬◯⊥`. The focused kernel search is the
+docs/next-session.md	409	proved	toH,ofH	line	height-indexed presentation is proved equivalent (`toH`/`ofH`). What
+docs/next-session.md	412	proved	interpF	near	be proved afresh; the existing `interp` results stand unchanged
+docs/next-session.md	439	provable		none	→ provable s`. Built once; works in every later campaign.
+docs/next-session.md	508	provable		none	two sub-lemmas provable; that pick is the first task of the campaign.
+docs/next-session.md	532	PROVED		none	whose IPC completeness is PROVED on paper (TOCL 2020). So the fragment
+docs/next-session.md	587	REFUTED	route3_blocked	near	(A⊃w)⊃◯w, A = p∨(p⊃q)); route 3 (chosen valuation) REFUTED by
+docs/next-session.md	610	proved		none	(divergence V5, docs/refat-plan.md); soundnessV re-proved FIRST PASS via
+docs/next-session.md	629	kernel-checked		none	relaxation re-enters only with a kernel-checked separating cell. THE
+docs/next-session.md	636	refuted		none	Clo(base++kept); refuted → RefAt), plain size induction since every
+docs/next-session.md	640	PROVED	keptOf_saturated	near	FLIGHT BRICKS PROVED (2026-08-28 19:45, commit cf82e83):
+docs/next-session.md	645	refuted	corner_coverage,CornerSupply,corner_lamStar_clo	near	sfL-members are Clo-derivable and refuted sfR-members RefAt-refutable
+docs/next-session.md	652	refuted		none	CornerSupply (Ax^I rows for refuted atoms; ⊃∉ floats for imps refuted
+docs/next-session.md	665	refuted		none	The corner fell to two semantic vacuities (refuted imp → refuted
+docs/next-session.md	666	refuted		none	consequent; refuted ◯ → refuted body: no ◯-cell is ever demanded, seen
+docs/next-session.md	667	refuted		none	machinery retired) + the thin family (axI rows for refuted primes, ⊃∉
+docs/next-session.md	690	refuted	corner_lamStar_mem	near	refuted antecedents by forceStar, so keptOf_saturated adopts them;
+docs/next-session.md	692	refuted		none	Pledge-existence is moot on this route: cone-refuted Z never has
+docs/next-session.md	710	refuted		none	cone-refuted at its anchor — but structural descent through
+docs/next-session.md	726	refuted		none	the goal is refuted but forced at some proper Rm-successor), vacuous
+docs/next-session.md	730	refuted		none	tagPrimeP_join/tagOrP_join (pledged promise joins for cone-refuted
+docs/next-session.md	734	refuted		none	Probe (frjvprobe): strata ≤7 = 16696 refuted, 1027 circ-carrying
+docs/next-session.md	736	refuted		none	00:05-ish, 6-model battery): 86957 refuted, 9277 circ-carrying
+docs/next-session.md	741	kernel-checked		none	constructible, or find the kernel-checked separating cell (next
+docs/next-session.md	751	proved		none	## 10. LJF UI proved — the state as of 2026-08-09 evening
+docs/next-session.md	753	machine-checked	eSound,aSound,eMinF	near	The landmark**: uniform interpolation for LJF is machine-checked and
+docs/next-session.md	756	sorry-free	aMinF,satE2,satA2,dykAnt	line	`aMinF`, `satE2`, `satA2`, `dykAnt` sorry-free, axioms pinned. Scope
 docs/nuclei-noncomplete-lit.md	76	UNVERIFIED		none	Status of the theorem statement: UNVERIFIED (paywalled).** I did not reach the paper, a
 docs/nuclei-noncomplete-lit.md	108	proved		none	arbitrary non-complete `H`. I cannot exclude that Macnab proved something sharper for the
 docs/nuclei-noncomplete-lit.md	113	UNVERIFIED		none	A single-equation characterisation attributed to Macnab (UNVERIFIED):** secondary mentions
@@ -2399,17 +2416,18 @@ docs/pqhard-cases.md	166	OPEN	andimpConjMemP,cimpConjMemP	near	station. **Where 
 docs/pqhard-cases.md	169	PROVED	interpG_monoE,interpG_monoA	near	4. **Fuel monotonicity is no longer missing.** Stage 1 is PROVED for both
 docs/pqhard-cases.md	178	OPEN		none	`PQHard p` is **OPEN**, unchanged and unweakened: no term of that type is
 docs/proof-simplification-plan-2026-09-16.md	9	proved		none	The rule this plan obeys: **a simplification must not change what is proved.**
-docs/proof-simplification-plan-2026-09-16.md	59	proved		none	of them are the *same construction proved three times* — once for each of a
-docs/proof-simplification-plan-2026-09-16.md	88	proved	aSound	near	that the ledger gate and the build loop are proved out on easy cases before
-docs/proof-simplification-plan-2026-09-16.md	231	proved	tag_cone	line	`tag_cone` was proved three times at 165 lines and pairwise similarity
-docs/proof-simplification-plan-2026-09-16.md	355	proved	OFuelSound,OFuelPSound,stationCircF,stationUpF,stationCircP,stationUpP	near	at 42 and 67 — differing only in which goal they proved. Each file now has two
-docs/proof-simplification-plan-2026-09-16.md	393	proved		none	`LaxLogic/PLL/UI/G4UITrunc.lean` proved
-docs/proof-simplification-plan-2026-09-16.md	475	machine-checked	contraction_not_admissible	line	`contraction_not_admissible`), machine-checked *about Iemhoff's Figure 2.3 as
-docs/proof-simplification-plan-2026-09-16.md	864	refuted	Ms	near	`cases hle` were stuck, the design is refuted outright.
-docs/proof-simplification-plan-2026-09-16.md	902	proved	EvalI,WEvalI,_circ	near	`W/CircDB.lean`: seven declarations proved twice, once over FRJV and once
-docs/proof-simplification-plan-2026-09-16.md	1014	PROVED	hasUI_of_stabilises	line	`docs/ui-routeB-blueprint.md:57`, marks N3 — `hasUI_of_stabilises` — **PROVED
-docs/proof-simplification-plan-2026-09-16.md	1036	sorry-free	sorryAx	line	They are sorry-free.** The counts are still 23 `sorryAx` and 2
-docs/proof-simplification-plan-2026-09-16.md	1043	PROVED	FRJO	line	This is the `FRJO` hole a second time** — a documented PROVED result
+docs/proof-simplification-plan-2026-09-16.md	70	proved		none	of them are the *same construction proved three times* — once for each of a
+docs/proof-simplification-plan-2026-09-16.md	99	proved	aSound	near	that the ledger gate and the build loop are proved out on easy cases before
+docs/proof-simplification-plan-2026-09-16.md	242	proved	tag_cone	line	`tag_cone` was proved three times at 165 lines and pairwise similarity
+docs/proof-simplification-plan-2026-09-16.md	330	proved		none	mention them are now proved once.
+docs/proof-simplification-plan-2026-09-16.md	553	proved	OFuelSound,OFuelPSound,stationCircF,stationUpF,stationCircP,stationUpP	near	at 42 and 67 — differing only in which goal they proved. Each file now has two
+docs/proof-simplification-plan-2026-09-16.md	591	proved		none	`LaxLogic/PLL/UI/G4UITrunc.lean` proved
+docs/proof-simplification-plan-2026-09-16.md	673	machine-checked	contraction_not_admissible	line	`contraction_not_admissible`), machine-checked *about Iemhoff's Figure 2.3 as
+docs/proof-simplification-plan-2026-09-16.md	1073	refuted	Ms	near	`cases hle` were stuck, the design is refuted outright.
+docs/proof-simplification-plan-2026-09-16.md	1111	proved	EvalI,WEvalI,_circ	near	`W/CircDB.lean`: seven declarations proved twice, once over FRJV and once
+docs/proof-simplification-plan-2026-09-16.md	1223	PROVED	hasUI_of_stabilises	line	`docs/ui-routeB-blueprint.md:57`, marks N3 — `hasUI_of_stabilises` — **PROVED
+docs/proof-simplification-plan-2026-09-16.md	1245	sorry-free	sorryAx	line	They are sorry-free.** The counts are still 23 `sorryAx` and 2
+docs/proof-simplification-plan-2026-09-16.md	1252	PROVED	FRJO	line	This is the `FRJO` hole a second time** — a documented PROVED result
 docs/publication-plan.md	57	sorry-free		none	`Meta/`, `FRJO/` are **entirely sorry-free**.
 docs/publication-plan.md	136	sorry-free	LaxLogic.PLL.SemUI.SemUILayered,Interd,PLLSemUILayered	near	`LaxLogic/PLL/SemUI/SemUIFrag.lean` (682 lines, **sorry-free**, and the home
 docs/publication-plan.md	183	proved		none	shelved UI modules. Cheapest, and it loses nothing that is proved —
@@ -2483,9 +2501,9 @@ docs/qll-herbrand-horn-plan.md	295	PROVED	Derives	near	Every item of §5 is PROV
 docs/qll-herbrand-horn-plan.md	295	sorry-free	Derives	near	Every item of §5 is PROVED, sorry-free, with pinned axioms, except the
 docs/qll-herbrand-horn-plan.md	298	proved	Derives,Form.size,size_openAt	near	| file | commit | what is proved | axioms |
 docs/qll-herbrand-horn-plan.md	310	kernel-checked	LHM_eq_lfp,lem_HTrue,lem_not_prv,or_no_least_model	near	The two designed cells of §7 are kernel-checked in the repository:
-docs/qll-herbrand-horn-plan.md	334	proved	Kit.freshFor_notMem	line	`Kit.freshFor_notMem`, the fresh-name lemma behind `∀I` and `∃E`, was proved
-docs/qll-herbrand-horn-plan.md	335	proved	String.length,String.toList,Classical.choice,Kit.freshFor_notMem,String.utf8ByteSize,freshFor,Prv.sound,Prv.soundT	near	by counting characters. It is now proved by UTF-8 byte size instead
-docs/qll-herbrand-horn-plan.md	348	proved	HTrue_LHM_form	line	`I = M_P` (`HTrue_LHM_form`). It is now proved for every `I`
+docs/qll-herbrand-horn-plan.md	335	proved	String.length,String.toList,Classical.choice,LaxLogic.QLL.freshFor_notMem,String.utf8ByteSize,freshFor	near	lemma behind `∀I` and `∃E`, was proved
+docs/qll-herbrand-horn-plan.md	336	proved	LaxLogic.QLL.freshFor_notMem,String.utf8ByteSize,freshFor,Prv.sound,Prv.soundT	near	by counting characters. It is now proved by UTF-8 byte size instead
+docs/qll-herbrand-horn-plan.md	349	proved	HTrue_LHM_form	line	`I = M_P` (`HTrue_LHM_form`). It is now proved for every `I`
 docs/qll-model-theory.md	1	proved		none	# QLL model theory: what is proved, and what the first-order case needs
 docs/qll-model-theory.md	9	Proved		none	## Proved, sorry-free
 docs/qll-model-theory.md	9	sorry-free		none	## Proved, sorry-free

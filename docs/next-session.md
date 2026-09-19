@@ -1,4 +1,4 @@
-# WHILE YOU WERE AWAY (2026-09-16 → 18) — read this first
+# WHILE YOU WERE AWAY (2026-09-16 → 19) — read this first
 
 Branch `ledger`, fast-forwarded into `main` at every verified milestone; CI
 green on every push. Everything below is in `HANDOFF.md` in full, dated, and in
@@ -7,9 +7,11 @@ scoreboard.
 
 **The one-line summary.** The proof-status ledger is running in CI, **2,673
 lines of duplicated proof are gone with zero regressions anywhere in the
-estate**, five refactors were refused with written mechanisms, and one import
-line was found to have been hiding thirty modules and a documented PROVED
-result since the merge.
+estate**, five refactors were refused with written mechanisms, and **three
+holes in the checking itself** were found and closed — one import line hiding
+thirty modules and a documented PROVED result, one module of the declared
+estate that had silently stopped compiling, and the discovery that the ledger
+could not see a `private` declaration at all (366 of them, 225 theorems).
 
 **What needs YOU, and nothing else does:**
 
@@ -32,6 +34,19 @@ result since the merge.
 4. **`batch/` (112 files), `_probe/` (13) and `Archive/` (8)** are covered by
    no build target, and 64 `wip/` files carry bare imports that cannot resolve.
    Pre-existing, not merge damage; a decision about the estate, not a repair.
+5. **Seventeen modules that no target names build green**, 790 declarations, 3
+   `sorryAx` — including the archived FRJLax development (587 declarations, 208
+   theorems, zero `sorryAx`) and two sorry-free theorems the prose calls
+   kernel-checked (`LJFO.completeness_of_construction`,
+   `FRJ80.not_CompletenessFRJ`). Nothing was added to `lakefile.toml`: what the
+   estate *is* is yours to decide. Evidence per module in
+   `docs/dangling-triage-2026-09-18.md` §4a.
+6. **Ten citations name declarations that genuinely do not exist** — four are
+   plan-table targets whose status column reads PROVED as an *aim*, three are
+   design names from the halted UI search, two name objects whose built
+   counterparts are differently named, and one is the known FRJW/FRJX collision
+   on `frjw-dev`. None is a relabelling I may make. §"What is left for a human"
+   of the same document.
 
 **What is now mechanical and standing**, so you need not remember it:
 
@@ -41,9 +56,11 @@ result since the merge.
   names a module that exists. One second, no build. It exists because the
   failure it catches is silent.
 * `scripts/claim-scan.py` + `scripts/reconcile-claims.py` — the prose against
-  the record. Currently 3,370 claims, **1,426 CONFIRMED, 2 CONTRADICTED (both
-  the same accurate sentence), 180 DANGLING, 16 STALE-OPEN (all line-local
-  artefacts)**. All three are registered in `TOOLS.md` §7.
+  the record. **1,427 CONFIRMED, 2 CONTRADICTED (both the same accurate
+  sentence), 177 DANGLING, 16 STALE-OPEN (all line-local artefacts)**, and
+  every one of the 180 dangling rows now has a written classification in
+  `docs/dangling-triage-2026-09-18.md`. All three are registered in
+  `TOOLS.md` §7.
 
 **The lesson worth keeping**, and it earned its place four times: ask what is
 *doubled*, not how similar the text is — and if the doubled thing is a

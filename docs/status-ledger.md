@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-18 22:04 BST from `ae44f5a` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-19 02:53 BST from `8a888d8` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**29170 declarations** in **603 modules**: 13355 theorems, 15815 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**29590 declarations** in **603 modules**: 13589 theorems, 16001 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -16,8 +16,8 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 
 | area | decls | theorems | kernel-clean | `sorryAx` | native |
 |---|--:|--:|--:|--:|--:|
-| `BiLax` | 625 | 270 | 625 |  |  |
-| `CLPPaper` | 85 | 9 | 85 |  |  |
+| `BiLax` | 629 | 270 | 629 |  |  |
+| `CLPPaper` | 89 | 9 | 89 |  |  |
 | `Certified` | 1502 | 1130 | 1502 |  |  |
 | `FRJ.Basic` | 240 | 127 | 240 |  |  |
 | `FRJ.Bridge` | 15 | 12 | 15 |  |  |
@@ -34,7 +34,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.ExtractV` | 16 | 9 | 16 |  |  |
 | `FRJ.ExtractW` | 16 | 9 | 16 |  |  |
 | `FRJ.Fallible` | 69 | 34 | 69 |  |  |
-| `FRJ.Gbu` | 1129 | 577 | 1129 |  |  |
+| `FRJ.Gbu` | 1210 | 630 | 1210 |  |  |
 | `FRJ.Minimal` | 83 | 37 | 83 |  |  |
 | `FRJ.Modal` | 88 | 18 | 88 |  |  |
 | `FRJ.Model` | 21 | 7 | 21 |  |  |
@@ -42,7 +42,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.RefAt` | 65 | 27 | 65 |  |  |
 | `FRJ.Saturate` | 293 | 93 | 293 |  |  |
 | `FRJ.SaturateV` | 53 | 10 | 53 |  |  |
-| `FRJ.Search` | 500 | 75 | 500 |  |  |
+| `FRJ.Search` | 504 | 75 | 504 |  |  |
 | `FRJ.Sound` | 14 | 14 | 14 |  |  |
 | `FRJ.SoundCore` | 33 | 30 | 33 |  |  |
 | `FRJ.SoundCoreV` | 2 | 2 | 2 |  |  |
@@ -69,15 +69,15 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.Belief.Normality` | 2 | 2 | 2 |  |  |
 | `LaxLogic.Belief.NucleusJoin` | 6 | 5 | 6 |  |  |
 | `LaxLogic.Belief.OpenClosed` | 5 | 4 | 5 |  |  |
-| `LaxLogic.Belief.Realisability` | 153 | 73 | 153 |  |  |
+| `LaxLogic.Belief.Realisability` | 154 | 73 | 154 |  |  |
 | `LaxLogic.ClosedFragmentLattice` | 18 | 5 | 18 |  |  |
 | `LaxLogic.CubeEmbedding` | 8 | 7 | 8 |  |  |
 | `LaxLogic.Deriv` | 15 | 14 | 15 |  |  |
 | `LaxLogic.Focusing.IPCFocused` | 276 | 95 | 276 |  |  |
-| `LaxLogic.Focusing.LJF` | 527 | 255 | 527 |  |  |
+| `LaxLogic.Focusing.LJF` | 545 | 258 | 545 |  |  |
 | `LaxLogic.Focusing.LJFComplete` | 45 | 27 | 45 |  |  |
 | `LaxLogic.Interd` | 9 | 8 | 9 |  |  |
-| `LaxLogic.Obligation.Adder` | 21 | 16 | 21 |  |  |
+| `LaxLogic.Obligation.Adder` | 23 | 18 | 23 |  |  |
 | `LaxLogic.Obligation.BeliefLink` | 5 | 5 | 5 |  |  |
 | `LaxLogic.Obligation.Budget` | 12 | 9 | 12 |  |  |
 | `LaxLogic.Obligation.Connectives` | 28 | 16 | 28 |  |  |
@@ -90,22 +90,22 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.Obligation.Modality` | 43 | 28 | 43 |  |  |
 | `LaxLogic.Obligation.Modular` | 19 | 13 | 19 |  |  |
 | `LaxLogic.Obligation.PLLBridge` | 11 | 8 | 11 |  |  |
-| `LaxLogic.Obligation.Postpone` | 9 | 0 | 9 |  |  |
-| `LaxLogic.Obligation.Solve` | 9 | 3 | 9 |  |  |
+| `LaxLogic.Obligation.Postpone` | 14 | 0 | 14 |  |  |
+| `LaxLogic.Obligation.Solve` | 12 | 3 | 12 |  |  |
 | `LaxLogic.Obligation.StdCtxBridge` | 12 | 8 | 12 |  |  |
 | `LaxLogic.Obligation.Tactics` | 5 | 0 | 5 |  |  |
 | `LaxLogic.Obligation.Timing` | 6 | 5 | 6 |  |  |
-| `LaxLogic.PLL.G4` | 567 | 252 | 567 |  |  |
-| `LaxLogic.PLL.ND` | 546 | 211 | 546 |  |  |
-| `LaxLogic.PLL.Normalisation` | 386 | 162 | 386 |  |  |
-| `LaxLogic.PLL.Realisability` | 111 | 40 | 111 |  |  |
-| `LaxLogic.PLL.Search` | 388 | 70 | 388 |  |  |
-| `LaxLogic.PLL.SemUI` | 716 | 428 | 711 | 5 |  |
-| `LaxLogic.PLL.Semantics` | 576 | 324 | 576 |  |  |
-| `LaxLogic.PLL.Sequent` | 245 | 95 | 245 |  |  |
-| `LaxLogic.PLL.Syntax` | 391 | 141 | 391 |  |  |
-| `LaxLogic.PLL.Timing` | 130 | 42 | 130 |  |  |
-| `LaxLogic.PLL.UI` | 293 | 199 | 293 |  |  |
+| `LaxLogic.PLL.G4` | 604 | 285 | 604 |  |  |
+| `LaxLogic.PLL.ND` | 555 | 218 | 555 |  |  |
+| `LaxLogic.PLL.Normalisation` | 398 | 170 | 398 |  |  |
+| `LaxLogic.PLL.Realisability` | 112 | 40 | 112 |  |  |
+| `LaxLogic.PLL.Search` | 437 | 74 | 437 |  |  |
+| `LaxLogic.PLL.SemUI` | 717 | 428 | 712 | 5 |  |
+| `LaxLogic.PLL.Semantics` | 585 | 333 | 585 |  |  |
+| `LaxLogic.PLL.Sequent` | 266 | 116 | 266 |  |  |
+| `LaxLogic.PLL.Syntax` | 394 | 143 | 394 |  |  |
+| `LaxLogic.PLL.Timing` | 133 | 42 | 133 |  |  |
+| `LaxLogic.PLL.UI` | 308 | 214 | 308 |  |  |
 | `LaxLogic.PLLInstanceBound` | 27 | 9 | 27 |  |  |
 | `LaxLogic.PLLSubformulaSet` | 10 | 3 | 10 |  |  |
 | `LaxLogic.QLL.Abstract` | 21 | 18 | 21 |  |  |
@@ -121,8 +121,8 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.QLL.CLPMachine` | 377 | 98 | 377 |  |  |
 | `LaxLogic.QLL.CLPOper` | 70 | 23 | 70 |  |  |
 | `LaxLogic.QLL.Certify` | 13 | 9 | 13 |  |  |
-| `LaxLogic.QLL.CertifyTests` | 1 | 0 | 1 |  |  |
-| `LaxLogic.QLL.Complete` | 94 | 64 | 94 |  |  |
+| `LaxLogic.QLL.CertifyTests` | 3 | 0 | 3 |  |  |
+| `LaxLogic.QLL.Complete` | 96 | 66 | 96 |  |  |
 | `LaxLogic.QLL.Complete1` | 45 | 27 | 45 |  |  |
 | `LaxLogic.QLL.CompleteTests` | 21 | 11 | 21 |  |  |
 | `LaxLogic.QLL.Countable` | 21 | 15 | 21 |  |  |
@@ -149,7 +149,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.QLL.Prov` | 49 | 7 | 49 |  |  |
 | `LaxLogic.QLL.ProvFresh` | 6 | 6 | 6 |  |  |
 | `LaxLogic.QLL.RefineIncomplete` | 2 | 2 | 2 |  |  |
-| `LaxLogic.QLL.Rename` | 61 | 53 | 61 |  |  |
+| `LaxLogic.QLL.Rename` | 65 | 57 | 65 |  |  |
 | `LaxLogic.QLL.Saturate` | 62 | 44 | 62 |  |  |
 | `LaxLogic.QLL.Size` | 3 | 2 | 3 |  |  |
 | `LaxLogic.QLL.Smoke` | 4 | 0 | 4 |  |  |
@@ -157,7 +157,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.QLL.SoundTests` | 11 | 5 | 11 |  |  |
 | `LaxLogic.QLL.Surface` | 288 | 82 | 288 |  |  |
 | `LaxLogic.QLL.Syntax` | 285 | 95 | 285 |  |  |
-| `LaxLogic.QLL.Weaken` | 13 | 9 | 13 |  |  |
+| `LaxLogic.QLL.Weaken` | 16 | 12 | 16 |  |  |
 | `LaxLogic.RN.Reps` | 18 | 1 | 18 |  |  |
 | `LaxLogic.RN.Rho` | 8 | 0 | 8 |  |  |
 | `LaxLogic.ToolkitTest.Challenge` | 4 | 4 | 0 | 4 |  |
@@ -166,17 +166,17 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.ToolkitTest.Solved` | 328 | 123 | 328 |  |  |
 | `LaxLogic.Util.Connectives` | 38 | 3 | 38 |  |  |
 | `LaxLogic.Util.FormattingUtils` | 3 | 0 | 3 |  |  |
-| `LaxLogic.Util.GuardMsgsShow` | 1 | 0 | 1 |  |  |
-| `LaxLogic.Util.KleeneBrouwer` | 7 | 4 | 7 |  |  |
+| `LaxLogic.Util.GuardMsgsShow` | 2 | 0 | 2 |  |  |
+| `LaxLogic.Util.KleeneBrouwer` | 9 | 6 | 9 |  |  |
 | `LaxLogic.Util.Turnstile` | 122 | 8 | 122 |  |  |
 | `LaxLogic.Util.TurnstileTests` | 1 | 1 | 1 |  |  |
 | `LaxPaper` | 10 | 0 | 10 |  |  |
-| `Meta` | 36 | 7 | 36 |  |  |
-| `RNDB` | 2147 | 93 | 2147 |  |  |
+| `Meta` | 74 | 13 | 74 |  |  |
+| `RNDB` | 2149 | 95 | 2149 |  |  |
 | `Reject` | 224 | 116 | 224 |  |  |
 | `Rewrite` | 113 | 62 | 113 |  |  |
-| `tools` | 897 | 131 | 897 |  |  |
-| `wip.G4conf` | 51 | 7 | 49 | 2 |  |
+| `tools` | 901 | 131 | 901 |  |  |
+| `wip.G4conf` | 62 | 18 | 60 | 2 |  |
 | `wip.ascRefute` | 25 | 10 | 25 |  |  |
 | `wip.atomForce` | 6 | 6 | 6 |  |  |
 | `wip.atomProbe` | 11 | 11 | 11 |  |  |
@@ -188,7 +188,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.bandRefute` | 5 | 5 | 5 |  |  |
 | `wip.bandStabilise` | 12 | 6 | 12 |  |  |
 | `wip.bandW` | 8 | 7 | 8 |  |  |
-| `wip.boxSnd` | 37 | 31 | 37 |  |  |
+| `wip.boxSnd` | 40 | 34 | 40 |  |  |
 | `wip.boxSndTight` | 12 | 11 | 12 |  |  |
 | `wip.boxTop` | 5 | 5 | 5 |  |  |
 | `wip.boxedBranchS1` | 13 | 3 | 13 |  |  |
@@ -197,7 +197,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.boxq11` | 14 | 13 | 14 |  |  |
 | `wip.branchdia` | 60 | 48 | 60 |  |  |
 | `wip.canonFinC` | 32 | 22 | 32 |  |  |
-| `wip.cascadeBox` | 13 | 9 | 8 | 5 |  |
+| `wip.cascadeBox` | 31 | 27 | 26 | 5 |  |
 | `wip.chainOff` | 9 | 7 | 9 |  |  |
 | `wip.chainStrict` | 9 | 8 | 9 |  |  |
 | `wip.check_closed` | 10 | 3 | 10 |  |  |
@@ -222,19 +222,19 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.families` | 42 | 40 | 42 |  |  |
 | `wip.fiveWorld` | 20 | 20 | 20 |  |  |
 | `wip.floor` | 18 | 17 | 18 |  |  |
-| `wip.floorGoals` | 7 | 3 | 7 |  |  |
+| `wip.floorGoals` | 8 | 4 | 8 |  |  |
 | `wip.floorImp` | 7 | 2 | 7 |  |  |
 | `wip.floorRefute` | 16 | 10 | 16 |  |  |
 | `wip.freshAnt` | 10 | 4 | 10 |  |  |
 | `wip.frjx` | 83 | 9 | 83 |  |  |
-| `wip.g4confGap` | 13 | 7 | 13 |  |  |
+| `wip.g4confGap` | 14 | 8 | 14 |  |  |
 | `wip.gap2` | 24 | 23 | 24 |  |  |
 | `wip.gapWidth` | 14 | 13 | 14 |  |  |
 | `wip.gbu_ljfo` | 97 | 56 | 97 |  |  |
-| `wip.gbu_ljfo_support` | 23 | 18 | 23 |  |  |
+| `wip.gbu_ljfo_support` | 27 | 18 | 27 |  |  |
 | `wip.gbu_ljfo_transport` | 12 | 10 | 12 |  |  |
-| `wip.gbu_ndrules` | 4 | 0 | 4 |  |  |
-| `wip.gbu_search_circ` | 46 | 19 | 46 |  |  |
+| `wip.gbu_ndrules` | 5 | 1 | 5 |  |  |
+| `wip.gbu_search_circ` | 73 | 39 | 73 |  |  |
 | `wip.gbu_weakening` | 10 | 8 | 10 |  |  |
 | `wip.goalDesc` | 14 | 13 | 14 |  |  |
 | `wip.guardstretch` | 42 | 32 | 42 |  |  |
@@ -271,7 +271,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.offImage` | 10 | 10 | 10 |  |  |
 | `wip.omegaFix` | 1 | 0 | 1 |  |  |
 | `wip.oracle2` | 64 | 8 | 64 |  |  |
-| `wip.overlap` | 21 | 19 | 21 |  |  |
+| `wip.overlap` | 22 | 19 | 22 |  |  |
 | `wip.paramfork` | 159 | 123 | 159 |  |  |
 | `wip.pcll1pv_stage0` | 5 | 1 | 5 |  |  |
 | `wip.pcll1pv_stage1` | 6 | 5 | 6 |  |  |
@@ -283,7 +283,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.pcll1pv_stage2i` | 4 | 3 | 4 |  |  |
 | `wip.pcll1pv_stage2j` | 7 | 7 | 7 |  |  |
 | `wip.pcll1pv_stage3` | 1 | 1 | 1 |  |  |
-| `wip.pcll1pv_stage3b` | 9 | 5 | 9 |  |  |
+| `wip.pcll1pv_stage3b` | 10 | 6 | 10 |  |  |
 | `wip.pcll1pv_stage4` | 3 | 2 | 3 |  |  |
 | `wip.phispade` | 108 | 68 | 108 |  |  |
 | `wip.phistar` | 50 | 38 | 50 |  |  |
@@ -296,7 +296,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.rankedResidue` | 3 | 2 | 3 |  |  |
 | `wip.rbar` | 1 | 1 | 1 |  |  |
 | `wip.rcells` | 443 | 442 | 443 |  |  |
-| `wip.rcells_hand` | 3 | 2 | 3 |  |  |
+| `wip.rcells_hand` | 13 | 2 | 13 |  |  |
 | `wip.residueGrowth` | 14 | 10 | 14 |  |  |
 | `wip.rho_engines` | 36 | 8 | 36 |  |  |
 | `wip.rho_order` | 160 | 24 | 160 |  |  |
@@ -328,7 +328,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.semSpecW` | 6 | 4 | 6 |  |  |
 | `wip.semui_ctx_core` | 41 | 4 | 41 |  |  |
 | `wip.stabilise` | 42 | 19 | 42 |  |  |
-| `wip.starve` | 11 | 11 | 11 |  |  |
+| `wip.starve` | 13 | 13 | 13 |  |  |
 | `wip.tagleaf_refute` | 23 | 20 | 23 |  |  |
 | `wip.task5` | 3 | 1 | 3 |  |  |
 | `wip.toweratoms` | 6 | 5 | 6 |  |  |
@@ -391,13 +391,13 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12622 |
-| `propext`, `Quot.sound` | 8398 |
-| `propext` | 5569 |
-| `propext`, `Classical.choice`, `Quot.sound` | 2548 |
+| *(none — axiom-free)* | 12783 |
+| `propext`, `Quot.sound` | 8459 |
+| `propext` | 5668 |
+| `propext`, `Classical.choice`, `Quot.sound` | 2646 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
-| `propext`, `Classical.choice` | 5 |
+| `propext`, `Classical.choice` | 6 |
 | `propext`, `sorryAx` | 5 |
 | `Classical.choice` | 2 |
 | `propext`, `sorryAx`, `Quot.sound` | 2 |

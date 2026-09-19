@@ -34,6 +34,16 @@ vanished.
 | 2026-09-17 | `tagConeP_core`: `tag_cone` 165 → 82 lines in each of three files | 175 |
 | 2026-09-17 | the `FRJ/Gbu` W-copy hoist: seven W copies, 1,110 → 814 | 296 |
 | 2026-09-18 | `Saturate` ↔ `SaturateV`: the other 34, via the rule record | 384 |
+| 2026-09-19 | Round D: `TLF`/`ULF` → `XLF` over a mode — **−15% compile time, +23 lines** | −23 |
+
+The last row is the only one that costs lines, and it is here because the
+scoreboard's unit was wrong for it: `docs/ljf-round-d-2026-09-18.md` trades 23
+lines for **1 min 45 s** off the compile of the slowest single file in the
+repository, and the round-1 rule that made compile time a first-class metric is
+what says to take that. The same document measures the remaining six pairs'
+body sharing and recommends doing **none** of them: Round D's 350–500-line
+estimate rested on "the same clause skeleton", which is true of the clause
+patterns and false of the bodies (`TRF`/`URF` share one line).
 
 **Refused, each with a written reason and, since 2026-09-17, a designed watched
 failure**: the G4/G4H/G4P triplication (eliminations cannot be abstracted over

@@ -167,6 +167,69 @@ The estate is what *builds*: 406 modules with an `.olean`. The repository holds
   documented in `tools/README.md` since 2026-08-21, still unresolved. It does
   not reach the default targets.
 
+### The third gate defect: `private` was invisible (2026-09-19, FIXED)
+
+Found from the other end, by the dangling-citation triage
+(`docs/dangling-triage-2026-09-18.md` §4c): seven prose citations named
+declarations that exist, compile, and are sorry-free, and dangled anyway.
+
+Lean mangles `private theorem foo` in module `M` to `_private.M.0.foo`
+(`Lean/PrivateName.lean`, `mkPrivateNameCore`). `skip?` tested that mangled
+name, and two of its five tests fire on it for reasons that have nothing to do
+with the declaration: `isInternal` matches because the component `_private`
+starts with `_`, and `isInternalDetail` matches because a `.num _ 0` component
+returns `true` outright. So **every `private` declaration in the repository was
+dropped from the record**, built or not. Counted from source inside
+`docs/ledger-modules.txt` alone:
+
+    366 private declarations, 225 of them theorems, across 73 modules
+
+the largest blocks in `FRJ.Gbu.Circ` (24), `LaxLogic.PLL.Sequent.Craig` (21),
+`FRJ.Gbu.W.Search` (21), `FRJ.Gbu.Search` (17), `LaxLogic.PLL.Search.Diagram`
+(14).
+
+This is a defect and not a unit-of-account choice, and `skip?`'s own docstring
+is what settles it: the ledger excludes generated equation and matcher lemmas
+"because they carry no content of their own — they inherit their definition's
+axioms". A `private theorem` is hand-written mathematics with its own proof and
+its own axiom set. It was excluded only because the mangling collides with the
+internal-name convention.
+
+`skip?` now applies every test to `privateToUserName n`, and a private
+declaration is recorded **under the name the prose cites**, with
+`"private":true` to say which it is. One consequence had to be closed in the
+same change: `ledger-diff.py` keys rows on `(module, decl)` in a dict, and
+un-mangling makes a collision possible for the first time (a module may hold
+both `private theorem foo` and `theorem foo`), so `ledger.lean` now scans the
+sorted rows for a duplicate key and reports it rather than let one row
+overwrite the other and read as drift later.
+
+One thing the first full run taught, and it shapes the change. Testing the user
+name *alone* admitted **706 `f.match_1.splitter` rows**: Lean emits a matcher's
+splitter `private`, so un-mangling exposes the generated children of private
+parents, and a splitter slips past `isInternalDetail` (which asks only about the
+LAST component and then falls back to `isInternalOrNum` on the prefix, false for
+`f.match_1.splitter`). Those are precisely the class the exclusion exists for.
+So the private branch tests **every** component, and **the public branch is left
+byte-for-byte as it was**.
+
+The asymmetry is deliberate and is not a fudge. Applying the stronger test to
+public names too would be right by the same reasoning — and would drop 111
+recorded `f.match_N.congr_eq_M` rows. That is the elaborator-plumbing question
+already open for Matthew (§"For Matthew" of the simplification plan: 19.2% of
+the record is names Lean mints from another declaration's name), so this change
+does not answer it.
+
+Watched on two modules before paying for the estate:
+
+| module | recorded | after |
+|---|--:|--:|
+| `LaxLogic.PLL.Sequent.Craig` (21 `private`) | 14 | **35** |
+| `FRJ.Basic` (no `private`) | 240 | **240** |
+
+zero `.splitter` rows in either, and every one of Craig's 21
+`[propext, Quot.sound]` and clean.
+
 ## What the reconciliation actually settled
 
 Two contradictions were reported by the first scan. Neither survives inspection,
