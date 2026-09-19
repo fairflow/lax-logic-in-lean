@@ -1,11 +1,12 @@
 # Round D, refuted as written and repaired — the p-fire eliminator families
 
 *2026-09-18. `docs/ljf-simp-round1.md` §"Round D — designed, not yet executed
-(§2.1)" is the only simplification the LJF campaign designed and never ran. It
-is still unexecuted, and this file is what happened when it was picked up: the
-design as written cannot be implemented, the obstruction is a real one and not
-a tooling defect, and a different design reaching the same goal compiles. Both
-verdicts carry a nine-line certificate anyone can paste and run.*
+(§2.1)" is the only simplification the LJF campaign designed and never ran.
+This file is what happened when it was picked up: the design as written cannot
+be implemented, the obstruction is a real one and not a tooling defect, a
+different design reaching the same goal compiles and was carried out for one
+pair — and then the measurement said the prize the round was estimating is not
+there. Every verdict below carries a certificate anyone can paste and run.*
 
 ## What Round D asks for
 
@@ -24,7 +25,9 @@ Measured today, so the prize is known:
 | `LaxLogic/Focusing/LJF.lean` | 258 | 397 | **655** |
 | `LJF/O.lean` | 293 | 547 | **840** |
 
-Both copies are still in the tree; neither has been touched.
+`LJF/O.lean` is untouched. In `LaxLogic/Focusing/LJF.lean` one pair —
+`TLF`/`ULF` — has since been unified; see the last two sections for what that
+cost, what it bought, and why the other six are not worth doing.
 
 ## Refuted as written: an emission RECORD cannot carry the recursive calls
 
@@ -141,6 +144,82 @@ than a term's, decided whether a design compiles.
   `LaxLogic/Focusing/LJF.lean` first, because it is the zero-import IPC
   control and its failure is cheapest to read; `LJF/O.lean` second, where the
   same shapes carry the lax flag.
+
+## Executed: `TLF`/`ULF`, and then measured — the prize is not there
+
+The repair was carried out on `LaxLogic/Focusing/LJF.lean` for the one pair the
+design fits best. `TLF` and `ULF` are gone; in their place is `XLF` over
+`LFMode`, with the two call sites (inside `TStab` and `UStab`) passing `.E hp`
+and `.A _ hV qmem dmem`. The removed bodies are kept verbatim in
+`Archive/ljf-round-d-superseded.lean`, per round 1's rule.
+
+**It compiles, and the axioms are unchanged** — every `#guard_msgs`-guarded
+`#print axioms` at the foot of the file passes untouched, and `lake build` is
+green at 8,748 jobs.
+
+Four things had to be got right, and each is worth carrying:
+
+1. **`set_option maxHeartbeats 8000000 in` governs the `mutual` that follows
+   it.** Inserting the mode declaration between the two silently dropped the
+   block to the default 200,000 and the farm timed out in `whnf`. The symptom
+   (a `simp` timeout in an unrelated member) points nowhere near the cause.
+2. **The measure must be written inline, not as a named function.** With
+   `termination_by … => (m.rank, sizeOf lf)` the obligations read
+   `sum3 done < (LFMode.E hp).rank` — the farms' `simp only [sum3, …]` has no
+   clause for `LFMode.rank`, so nothing reduces. Written as a `match m with …`
+   in the measure itself, it iota-reduces per obligation.
+3. **The mode-polymorphic arms leave `m` a variable**, so even inline the match
+   is stuck for the calls that do not mention the mode. `decreasing_by` opens
+   with `all_goals (try cases m)`.
+4. A computed *result* type must be `abbrev` (above).
+
+**And then the measurement, which is the real result.** Round D justified
+itself by "the *same* clause skeleton" across all seven pairs. That is true of
+the clause *patterns* and false of the bodies:
+
+| pair | E lines | A lines | similarity | identical lines |
+|---|--:|--:|--:|--:|
+| `TpElim`/`UpElim` | 63 | 83 | 0.47 | 34 |
+| `TInv`/`UInvG` | 39 | 47 | 0.33 | 14 |
+| `TpInv`/`UpInvG` | 39 | 56 | 0.27 | 13 |
+| `TStab`/`UStab` | 45 | 105 | 0.24 | 18 |
+| `TpLF`/`UpLF` | 20 | 33 | 0.08 | 2 |
+| `TRF`/`URF` | 21 | 32 | 0.04 | 1 |
+
+The A-side runs 1.5–2.3× longer and a quarter to a half of the lines coincide.
+`TRF`/`URF` share **one** line: their `.init` arms do different mathematics —
+`TRF` assembles an atom conjunct through `atomAssemble`, `URF` rewrites by
+`interpA_atom_eq` and introduces into the aggregate. **Round D's estimate of
+350–500 lines is not supported**, and the one pair that did fit cost
+**+23 lines**, because the mode declaration is a fixed overhead of about fifty
+that only amortises over pairs that genuinely share.
+
+This is the campaign's standing lesson arriving for the fifth time, now about a
+*skeleton* rather than a text: **similarity of the clause patterns overstates
+what can be shared; the number that matters is how much of the body is common.**
+
+## Why the change was kept anyway
+
+Not for lines. For time. Measured on this machine, same imports, same day:
+
+| | wall clock |
+|---|--:|
+| `LaxLogic/Focusing/LJF.lean` at `HEAD` | **11 min 27 s** |
+| the same file with `XLF` | **9 min 42 s** |
+
+**−1 min 45 s, −15%**, on the slowest single file in the repository. Round 1
+made compile time a first-class metric (its Rule 4) and attributed what
+remained to "the mega-mutual's WF-compilation and the farms'
+failing-alternative search". That is exactly what one fewer member in the
+mutual, and one fewer farm to search, buys. The +23 lines are the price of the
+mode; the mode is also the "single carrier for the lax flag" that round 1
+wanted for the ◯ extension, so the next pair costs nothing to declare.
+
+**Recommendation for the remaining six pairs: do not.** On the measurement
+above, only `TpElim`/`UpElim` (34 shared lines of 63/83) could repay the work,
+and it is the pair with the most delicate termination indices — the one round 1
+itself called "the deepest refactor". The rest would add mode machinery to
+bodies that do not coincide.
 
 ## What is NOT changed by any of this
 

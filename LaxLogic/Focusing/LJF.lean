@@ -3149,6 +3149,7 @@ the full hypothesis are manufactured from the residual, because under the
 antecedent's own inversion the goal-branch is in context (Dyckhoff's
 observation, in focused form). -/
 
+
 mutual
 
 /-- CPS release of a stable `↓M`-proof. -/
@@ -3475,6 +3476,36 @@ theorem interpA_and_eq {p : String} {done : List Neg}
 
 variable {p : String}
 
+/-- **Round D**: the mode of the shared `LFoc`-congruence family `XLF`.
+
+`E` is the `∃p` side and carries the target's `p`-freeness; `A` is the `∀p`
+side and carries the aggregate decomposition together with the two membership
+oracles that only it needs.  Putting them in the mode — rather than in an
+emission record of functions — is what keeps every recursive call syntactic;
+see `docs/ljf-round-d-2026-09-18.md`. -/
+inductive LFMode (p : String) (done : List Neg) : Pos → Type where
+  | E {P : Pos} : PFreeN p (.up P) → LFMode p done P
+  | A {P₀ : Pos} (L : List Neg) :
+      interp p [] done (some (.up P₀)) = nOrAll L →
+      (∀ {c : String} {Nc : Neg} {rest : List Neg},
+        (Neg.imp (.atom c) Nc, rest) ∈ splits done →
+        pGuard p c nBot (nAnd (.up (.atom c))
+          (interp p [Nc] rest (some (.up P₀)))) ∈ L) →
+      (∀ {Q' : Pos} {N' N : Neg} {rest : List Neg},
+        (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done →
+        nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+             (interp p [N] rest (some (.up P₀))) ∈ L) →
+      LFMode p done P₀
+
+/-- The target positive the family produces.  REDUCIBLE on purpose: it appears
+in `XLF`'s result type, and a plain `def` there defeats instance synthesis
+(`failed to synthesize OfNat (Res Mode.E) 0` in the probe). -/
+@[reducible] def LFMode.target {p : String} {done : List Neg} :
+    ∀ {P : Pos}, LFMode p done P → Pos
+  | P, .E _ => P
+  | _, .A L _ _ _ => orChain L
+
+
 set_option maxHeartbeats 8000000 in
 mutual
 
@@ -3640,8 +3671,8 @@ def TStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | .and _ _, hpk, _, _ => nomatch hpk
       else
         .lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
-          (TLF done hsat hP hm hm2 hK
-            (hK _ ((hm _ h).resolve_left hd)) hp lf)
+          (XLF done hsat hP (.E hp) hm hm2 hK
+            (hK _ ((hm _ h).resolve_left hd)) lf)
   termination_by Γ' K P hm hm2 hK hp s => (2 * sum3 [] + sum3 done, sizeOf s)
   decreasing_by ljf_dec_e
 
@@ -3670,25 +3701,47 @@ def TRF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   decreasing_by ljf_dec_e
 
 
-/-- Left-focus traversal on a kept hypothesis. -/
-def TLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
-    ∀ {Γ' K : List Neg} {H : Neg} {P : Pos},
+/-- **Round D, the mode-indexed form**: the `LFoc`-congruence skeleton that
+`TLF` and `ULF` used to carry twice.
+
+The mode carries exactly what differed — the `∃p` side's target-freeness, the
+`∀p` side's aggregate decomposition `hV` and its two membership oracles — so
+that both the RESULT TYPE (`m.target`) and the MEASURE are computed
+from it.  Every recursive call therefore stays a syntactic call the equation
+compiler can see.
+
+Round D asked for an emission *record* of continuations instead; that is
+refused, because handing a mutual sibling to a helper as a function argument
+throws the call site away and the checker must then bound the recursion at an
+arbitrary argument.  Certificate and the repair: `docs/ljf-round-d-2026-09-18.md`. -/
+def XLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
+    ∀ {Γ' K : List Neg} {P : Pos} (m : LFMode p done P) {H : Neg},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      PFreeN p H → PFreeP p P →
-      LFoc Γ' H P → LFoc (interp p [] done none :: K) H P
-  | _, _, _, _, hm, hm2, hK, hH, hp, .rel d =>
+      PFreeN p H →
+      LFoc Γ' H P → LFoc (interp p [] done none :: K) H m.target
+  | _, _, _, .E hp, _, hm, hm2, hK, hH, .rel d =>
       .rel (TInv done hsat hP hm hm2 hK
         (PFreeΩ.cons hH PFreeΩ.nil) hp d)
-  | _, _, _, _, hm, hm2, hK, hH, hp, .impL s lf =>
+  | _, _, _, .A _ hV qmem dmem, _, hm, hm2, hK, hH, .rel d =>
+      .rel (UInvG done hsat hP hm hm2 hK hV qmem dmem
+        (PFreeΩ.cons hH PFreeΩ.nil) d)
+  | _, _, _, m, _, hm, hm2, hK, hH, .impL s lf =>
       .impL (TStab done hsat hP hm hm2 hK hH.1 s)
-            (TLF done hsat hP hm hm2 hK hH.2 hp lf)
-  | _, _, _, _, hm, hm2, hK, hH, hp, .and1 lf =>
-      .and1 (TLF done hsat hP hm hm2 hK hH.1 hp lf)
-  | _, _, _, _, hm, hm2, hK, hH, hp, .and2 lf =>
-      .and2 (TLF done hsat hP hm hm2 hK hH.2 hp lf)
-  termination_by Γ' K H P hm hm2 hK hH hp lf => (2 * sum3 [] + sum3 done, sizeOf lf)
-  decreasing_by ljf_dec_e
-
+            (XLF done hsat hP m hm hm2 hK hH.2 lf)
+  | _, _, _, m, _, hm, hm2, hK, hH, .and1 lf =>
+      .and1 (XLF done hsat hP m hm hm2 hK hH.1 lf)
+  | _, _, _, m, _, hm, hm2, hK, hH, .and2 lf =>
+      .and2 (XLF done hsat hP m hm hm2 hK hH.2 lf)
+  termination_by Γ' K P m H hm hm2 hK hH lf =>
+    ((match m with
+      | .E _ => 2 * sum3 [] + sum3 done
+      | .A _ _ _ _ => 2 * sum3 [] + sum3 done + 3 ^ wPos P + 2), sizeOf lf)
+  decreasing_by
+    -- the three mode-polymorphic arms leave `m` a variable, so the measure's
+    -- `match` does not iota-reduce; split it, then each side is the obligation
+    -- the corresponding farm was written for.
+    all_goals (try cases m)
+    all_goals first | ljf_dec_e | ljf_dec_a
 
 /-- The `p`-fire eliminator: a main-line proof of the atom `p`, plus the
 outer `p ⊃ M` package, yields the target directly — `init` on `↑p` is
@@ -4036,7 +4089,7 @@ def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       else
         (nOrAll_eq _).symm ▸
           Inv.stable (.lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
-            (ULF done hsat hP hm hm2 hK hV qmem dmem
+            (XLF done hsat hP (.A _ hV qmem dmem) hm hm2 hK
               (hK _ ((hm _ h).resolve_left hd)) lf))
   termination_by Γ' K P₀ L hm hm2 hK hV qmem dmem s =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf s)
@@ -4115,36 +4168,6 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         (UEntry done hsat hP hm hm2 hK M dI)
   termination_by Γ' K P₀ hm hm2 hK r =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf r)
-  decreasing_by ljf_dec_a
-
-
-/-- Left focus on a kept hypothesis, `∀p` mode. -/
-def ULF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
-    ∀ {Γ' K : List Neg} {P₀ : Pos} {L : List Neg} {H : Neg},
-      (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      interp p [] done (some (.up P₀)) = nOrAll L →
-      (∀ {c : String} {Nc : Neg} {rest : List Neg},
-        (Neg.imp (.atom c) Nc, rest) ∈ splits done →
-        pGuard p c nBot (nAnd (.up (.atom c))
-          (interp p [Nc] rest (some (.up P₀)))) ∈ L) →
-      (∀ {Q' : Pos} {N' N : Neg} {rest : List Neg},
-        (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done →
-        nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-             (interp p [N] rest (some (.up P₀))) ∈ L) →
-      PFreeN p H →
-      LFoc Γ' H P₀ → LFoc (interp p [] done none :: K) H (orChain L)
-  | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, hH, .rel d =>
-      .rel (UInvG done hsat hP hm hm2 hK hV qmem dmem
-        (PFreeΩ.cons hH PFreeΩ.nil) d)
-  | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, hH, .impL s lf =>
-      .impL (TStab done hsat hP hm hm2 hK hH.1 s)
-            (ULF done hsat hP hm hm2 hK hV qmem dmem hH.2 lf)
-  | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, hH, .and1 lf =>
-      .and1 (ULF done hsat hP hm hm2 hK hV qmem dmem hH.1 lf)
-  | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, hH, .and2 lf =>
-      .and2 (ULF done hsat hP hm hm2 hK hV qmem dmem hH.2 lf)
-  termination_by Γ' K P₀ L H hm hm2 hK hV qmem dmem hH lf =>
-    (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf lf)
   decreasing_by ljf_dec_a
 
 
