@@ -61,6 +61,21 @@ macro "mem_tbl" loc:(Lean.Parser.Tactic.location)? : tactic =>
   `(tactic| simp only [mem_ite_list, List.not_mem_nil, List.mem_singleton,
       List.mem_cons, List.mem_append, and_false, false_or, or_false] $(loc)?)
 
+/-- Close a `Finset` insert-tower inclusion — the argument of
+`G4s.weaken_subset` at 128 sites across this file, `G4UIAdq` and `G4UITrunc`.
+
+The expansion is character for character the three lines it replaces, so the
+elaborator sees exactly what it saw before and no axiom pin can move. The lemma
+list is deliberately NOT widened past `Finset.mem_insert`: adding
+`Finset.mem_union` or `Finset.mem_singleton` would serve the ten sites that are
+not of this shape at the cost of over-reducing the 128 that are, which is the
+failure `mem_tbl` above was designed around. Those ten keep their explicit
+`simp only`. -/
+macro "fin_sub" : tactic =>
+  `(tactic| (intro _y _hy
+             simp only [Finset.mem_insert] at _hy ⊢
+             tauto))
+
 /-- Big conjunction; `[]` is `⊤ = ⊥→⊥`. -/
 def andAll : List PLLFormula → PLLFormula
   | [] => truePLL
@@ -288,14 +303,8 @@ theorem andAll_elim : ∀ {l : List PLLFormula} {φ : PLLFormula}, φ ∈ l →
           (Finset.insert_subset_insert _ (Finset.subset_insert _ _)))
       · refine andL_ins ?_
         have h' : G4s (insert φ (insert x Δ)) D :=
-          h.weaken_subset (by
-            intro y hy
-            simp only [Finset.mem_insert] at hy ⊢
-            tauto)
-        exact (ih hmem' h').weaken_subset (by
-          intro y hy
-          simp only [Finset.mem_insert] at hy ⊢
-          tauto)
+          h.weaken_subset (by fin_sub)
+        exact (ih hmem' h').weaken_subset (by fin_sub)
 
 theorem orAll_elim : ∀ {l : List PLLFormula} {Δ : Finset PLLFormula}
     {C : PLLFormula}, (∀ φ ∈ l, G4s (insert φ Δ) C) →
@@ -376,81 +385,48 @@ theorem impR_inv : ∀ {n : Nat} {Γ : Finset PLLFormula} {C : PLLFormula},
       intro A B hC
       subst hC
       refine .andL (Finset.mem_insert_of_mem h) ?_
-      exact (ih rfl).weaken_subset (by
-        intro y hy
-        simp only [Finset.mem_insert] at hy ⊢
-        tauto)
+      exact (ih rfl).weaken_subset (by fin_sub)
   | @orL _ Γ₀ A₀ B₀ C₀ h _ _ ih₁ ih₂ =>
       intro A B hC
       subst hC
       refine .orL (Finset.mem_insert_of_mem h) ?_ ?_
-      · exact (ih₁ rfl).weaken_subset (by
-          intro y hy
-          simp only [Finset.mem_insert] at hy ⊢
-          tauto)
-      · exact (ih₂ rfl).weaken_subset (by
-          intro y hy
-          simp only [Finset.mem_insert] at hy ⊢
-          tauto)
+      · exact (ih₁ rfl).weaken_subset (by fin_sub)
+      · exact (ih₂ rfl).weaken_subset (by fin_sub)
   | @impLProp _ Γ₀ a B₀ C₀ h ha _ ih =>
       intro A B hC
       subst hC
       refine .impLProp (Finset.mem_insert_of_mem h)
         (Finset.mem_insert_of_mem ha) ?_
-      exact (ih rfl).weaken_subset (by
-        intro y hy
-        simp only [Finset.mem_insert] at hy ⊢
-        tauto)
+      exact (ih rfl).weaken_subset (by fin_sub)
   | @impLAnd _ Γ₀ A₀ B₀ D₀ C₀ h _ ih =>
       intro A B hC
       subst hC
       refine .impLAnd (Finset.mem_insert_of_mem h) ?_
-      exact (ih rfl).weaken_subset (by
-        intro y hy
-        simp only [Finset.mem_insert] at hy ⊢
-        tauto)
+      exact (ih rfl).weaken_subset (by fin_sub)
   | @impLOr _ Γ₀ A₀ B₀ D₀ C₀ h _ ih =>
       intro A B hC
       subst hC
       refine .impLOr (Finset.mem_insert_of_mem h) ?_
-      exact (ih rfl).weaken_subset (by
-        intro y hy
-        simp only [Finset.mem_insert] at hy ⊢
-        tauto)
+      exact (ih rfl).weaken_subset (by fin_sub)
   | @impLImp _ Γ₀ A₀ B₀ D₀ C₀ h d₁ _ _ ih₂ =>
       intro A B hC
       subst hC
       refine .impLImp (Finset.mem_insert_of_mem h) ?_ ?_
-      · exact d₁.weaken_subset (by
-          intro y hy
-          simp only [Finset.mem_insert] at hy ⊢
-          tauto)
-      · exact (ih₂ rfl).weaken_subset (by
-          intro y hy
-          simp only [Finset.mem_insert] at hy ⊢
-          tauto)
+      · exact d₁.weaken_subset (by fin_sub)
+      · exact (ih₂ rfl).weaken_subset (by fin_sub)
   | @impLLax _ Γ₀ A₀ B₀ C₀ h d₁ _ _ ih₂ =>
       intro A B hC
       subst hC
       refine .impLLax (Finset.mem_insert_of_mem h)
         (d₁.weaken_subset (Finset.subset_insert _ _)) ?_
-      exact (ih₂ rfl).weaken_subset (by
-        intro y hy
-        simp only [Finset.mem_insert] at hy ⊢
-        tauto)
+      exact (ih₂ rfl).weaken_subset (by fin_sub)
   | @impLLaxLax _ Γ₀ A₀ B₀ X₀ C₀ h hX d₁ _ _ ih₂ =>
       intro A B hC
       subst hC
       refine .impLLaxLax (Finset.mem_insert_of_mem h)
         (Finset.mem_insert_of_mem hX) ?_ ?_
-      · exact d₁.weaken_subset (by
-          intro y hy
-          simp only [Finset.mem_insert] at hy ⊢
-          tauto)
-      · exact (ih₂ rfl).weaken_subset (by
-          intro y hy
-          simp only [Finset.mem_insert] at hy ⊢
-          tauto)
+      · exact d₁.weaken_subset (by fin_sub)
+      · exact (ih₂ rfl).weaken_subset (by fin_sub)
 
 end G4sh
 
@@ -1022,14 +998,8 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                       (Y := interA p fuel (B₁.ifThen B :: Γ) (A₁.ifThen B₁))
                       (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
                       ?_ ?_
-                    · exact ihe'.weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
-                    · exact iha'.weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
+                    · exact ihe'.weaken_subset (by fin_sub)
+                    · exact iha'.weaken_subset (by fin_sub)
                   · exact ihd.weaken_subset
                       (Finset.insert_subset_insert _
                         (Finset.subset_insert _ _))
@@ -1055,14 +1025,8 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                       · refine G4s.mp_adm (X := interE p fuel Γ)
                           (Y := interA p fuel Γ A₁.somehow)
                           (Finset.mem_insert_self _ _) ?_ ?_
-                        · exact (ihE Γ).weaken_subset (by
-                            intro y hy
-                            simp only [Finset.mem_insert] at hy ⊢
-                            tauto)
-                        · exact (ihA Γ A₁.somehow).weaken_subset (by
-                            intro y hy
-                            simp only [Finset.mem_insert] at hy ⊢
-                            tauto)
+                        · exact (ihE Γ).weaken_subset (by fin_sub)
+                        · exact (ihA Γ A₁.somehow).weaken_subset (by fin_sub)
                       · exact ihe.weaken_subset
                           (Finset.insert_subset_insert _
                             (Finset.subset_insert _ _))
@@ -1090,14 +1054,8 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                               (Y := interA p fuel (x :: Γ) A₁.somehow)
                               (Finset.mem_insert_of_mem
                                 (Finset.mem_insert_self _ _)) ?_ ?_
-                            · exact ihe'.weaken_subset (by
-                                intro y hy
-                                simp only [Finset.mem_insert] at hy ⊢
-                                tauto)
-                            · exact iha'.weaken_subset (by
-                                intro y hy
-                                simp only [Finset.mem_insert] at hy ⊢
-                                tauto)
+                            · exact ihe'.weaken_subset (by fin_sub)
+                            · exact iha'.weaken_subset (by fin_sub)
                           · exact ihe.weaken_subset
                               (Finset.insert_subset_insert _
                                 (Finset.subset_insert _ _))
@@ -1145,14 +1103,8 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                 (Y := interA p fuel (C₁ :: Γ) C₂)
                 (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
                 ?_ ?_
-              · exact ihe.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
-              · exact iha.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+              · exact ihe.weaken_subset (by fin_sub)
+              · exact iha.weaken_subset (by fin_sub)
           | somehow D =>
               rcases List.mem_cons.mp hφ with rfl | hφ'
               · -- basic ◯(E ⇢ A(Γ⇒D))
@@ -1160,28 +1112,16 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                 refine G4s.mp_adm (X := interE p fuel Γ)
                   (Y := interA p fuel Γ D)
                   (Finset.mem_insert_self _ _) ?_ ?_
-                · exact (ihE Γ).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact (G4s.laxR (ihA Γ D)).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact (ihE Γ).weaken_subset (by fin_sub)
+                · exact (G4s.laxR (ihA Γ D)).weaken_subset (by fin_sub)
               · rcases List.mem_singleton.mp hφ' with rfl
                 -- self-referential ◯(E ⇢ A(Γ⇒◯D))
                 refine G4s.laxL (Finset.mem_insert_self _ _) ?_
                 refine G4s.mp_adm (X := interE p fuel Γ)
                   (Y := interA p fuel Γ D.somehow)
                   (Finset.mem_insert_self _ _) ?_ ?_
-                · exact (ihE Γ).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact (ihA Γ D.somehow).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact (ihE Γ).weaken_subset (by fin_sub)
+                · exact (ihA Γ D.somehow).weaken_subset (by fin_sub)
         · -- the context clauses
           obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
           cases F with
@@ -1198,10 +1138,7 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
               refine G4s.andL (Finset.mem_insert_of_mem (memF hFΓ)) ?_
               have ih' := ihA (A :: B :: Γ) C
               rw [List.toFinset_cons, List.toFinset_cons] at ih'
-              exact ih'.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact ih'.weaken_subset (by fin_sub)
           | or A B =>
               rcases List.mem_singleton.mp hin with rfl
               refine G4s.andL_ins ?_
@@ -1215,14 +1152,8 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                   (Y := interA p fuel (A :: Γ) C)
                   (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
                   ?_ ?_
-                · exact ihe.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact iha.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact ihe.weaken_subset (by fin_sub)
+                · exact iha.weaken_subset (by fin_sub)
               · have ihe := ihE (B :: Γ)
                 rw [List.toFinset_cons] at ihe
                 have iha := ihA (B :: Γ) C
@@ -1231,14 +1162,8 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                   (Y := interA p fuel (B :: Γ) C)
                   (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
                     (Finset.mem_insert_self _ _))) ?_ ?_
-                · exact ihe.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact iha.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact ihe.weaken_subset (by fin_sub)
+                · exact iha.weaken_subset (by fin_sub)
           | somehow χ =>
               simp only at hin
               split at hin
@@ -1251,10 +1176,7 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                 have ihe := ihE (χ :: Γ)
                 rw [List.toFinset_cons] at ihe
                 exact G4s.mp_adm (Finset.mem_insert_self _ _)
-                  (ihe.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto))
+                  (ihe.weaken_subset (by fin_sub))
                   ((ihA (χ :: Γ) _).weaken_subset (by
                     intro y hy
                     simp only [Finset.mem_insert, List.mem_toFinset,
@@ -1271,10 +1193,7 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                       (Finset.mem_insert_of_mem (memF hg)) ?_
                     have ih' := ihA (B :: Γ) C
                     rw [List.toFinset_cons] at ih'
-                    exact ih'.weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
+                    exact ih'.weaken_subset (by fin_sub)
                   · refine G4s.andL_ins ?_
                     refine G4s.impLProp
                       (Finset.mem_insert_of_mem
@@ -1282,10 +1201,7 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                       (Finset.mem_insert_self _ _) ?_
                     have ih' := ihA (B :: Γ) C
                     rw [List.toFinset_cons] at ih'
-                    exact ih'.weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
+                    exact ih'.weaken_subset (by fin_sub)
               | falsePLL => cases hin
               | and A₁ B₁ =>
                   rcases List.mem_singleton.mp hin with rfl
@@ -1293,20 +1209,14 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                     (Finset.mem_insert_of_mem (memF hFΓ)) ?_
                   have ih' := ihA (A₁.ifThen (B₁.ifThen B) :: Γ) C
                   rw [List.toFinset_cons] at ih'
-                  exact ih'.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact ih'.weaken_subset (by fin_sub)
               | or A₁ B₁ =>
                   rcases List.mem_singleton.mp hin with rfl
                   refine G4s.impLOr
                     (Finset.mem_insert_of_mem (memF hFΓ)) ?_
                   have ih' := ihA (A₁.ifThen B :: B₁.ifThen B :: Γ) C
                   rw [List.toFinset_cons, List.toFinset_cons] at ih'
-                  exact ih'.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact ih'.weaken_subset (by fin_sub)
               | ifThen A₁ B₁ =>
                   rcases List.mem_singleton.mp hin with rfl
                   refine G4s.andL_ins ?_
@@ -1322,20 +1232,11 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                       (Y := interA p fuel (B₁.ifThen B :: Γ) (A₁.ifThen B₁))
                       (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
                       ?_ ?_
-                    · exact ihe.weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
-                    · exact iha.weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
+                    · exact ihe.weaken_subset (by fin_sub)
+                    · exact iha.weaken_subset (by fin_sub)
                   · have ih' := ihA (B :: Γ) C
                     rw [List.toFinset_cons] at ih'
-                    exact ih'.weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
+                    exact ih'.weaken_subset (by fin_sub)
               | somehow A₁ =>
                   rcases List.mem_cons.mp hin with rfl | hin'
                   · -- head: A(Γ⇒A₁) ∧ A(B::Γ⇒C)
@@ -1348,10 +1249,7 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                           (Finset.subset_insert _ _))
                     · have ih' := ihA (B :: Γ) C
                       rw [List.toFinset_cons] at ih'
-                      exact ih'.weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
+                      exact ih'.weaken_subset (by fin_sub)
                   · rcases List.mem_cons.mp hin' with rfl | hin''
                     · -- γ-form: the ◯-guard is its own witness
                       refine G4s.andL_ins ?_
@@ -1362,20 +1260,11 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                       · refine G4s.mp_adm (X := interE p fuel Γ)
                           (Y := interA p fuel Γ A₁.somehow)
                           (Finset.mem_insert_self _ _) ?_ ?_
-                        · exact (ihE Γ).weaken_subset (by
-                            intro y hy
-                            simp only [Finset.mem_insert] at hy ⊢
-                            tauto)
-                        · exact (ihA Γ A₁.somehow).weaken_subset (by
-                            intro y hy
-                            simp only [Finset.mem_insert] at hy ⊢
-                            tauto)
+                        · exact (ihE Γ).weaken_subset (by fin_sub)
+                        · exact (ihA Γ A₁.somehow).weaken_subset (by fin_sub)
                       · have ih' := ihA (B :: Γ) C
                         rw [List.toFinset_cons] at ih'
-                        exact ih'.weaken_subset (by
-                          intro y hy
-                          simp only [Finset.mem_insert] at hy ⊢
-                          tauto)
+                        exact ih'.weaken_subset (by fin_sub)
                     · obtain ⟨X, hXΓ, heq⟩ := List.mem_filterMap.mp hin''
                       cases X with
                       | somehow x =>
@@ -1400,20 +1289,11 @@ theorem inter_sound (p : String) : ∀ (fuel : Nat),
                               (Y := interA p fuel (x :: Γ) A₁.somehow)
                               (Finset.mem_insert_of_mem
                                 (Finset.mem_insert_self _ _)) ?_ ?_
-                            · exact ihe.weaken_subset (by
-                                intro y hy
-                                simp only [Finset.mem_insert] at hy ⊢
-                                tauto)
-                            · exact iha.weaken_subset (by
-                                intro y hy
-                                simp only [Finset.mem_insert] at hy ⊢
-                                tauto)
+                            · exact ihe.weaken_subset (by fin_sub)
+                            · exact iha.weaken_subset (by fin_sub)
                           · have ih' := ihA (B :: Γ) C
                             rw [List.toFinset_cons] at ih'
-                            exact ih'.weaken_subset (by
-                              intro y hy
-                              simp only [Finset.mem_insert] at hy ⊢
-                              tauto)
+                            exact ih'.weaken_subset (by fin_sub)
                       | prop _ => cases heq
                       | falsePLL => cases heq
                       | and _ _ => cases heq

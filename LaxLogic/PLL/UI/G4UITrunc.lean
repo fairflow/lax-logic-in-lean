@@ -1850,15 +1850,9 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                   (Y := itpA p S fuel b' Γ (A₁.ifThen B₁))
                                   (Finset.mem_insert_of_mem
                                     (Finset.mem_insert_self _ _)) ?_ ?_
-                                · exact (ihE b' Γ).weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
+                                · exact (ihE b' Γ).weaken_subset (by fin_sub)
                                 · exact (ihA b' Γ
-                                      (A₁.ifThen B₁)).weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
+                                      (A₁.ifThen B₁)).weaken_subset (by fin_sub)
                               · exact ihd.weaken_subset
                                   (Finset.insert_subset_insert _
                                     (Finset.subset_insert _ _))
@@ -1884,14 +1878,8 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                 (A₁.ifThen B₁))
                               (Finset.mem_insert_of_mem
                                 (Finset.mem_insert_self _ _)) ?_ ?_
-                            · exact ihe'.weaken_subset (by
-                                intro y hy
-                                simp only [Finset.mem_insert] at hy ⊢
-                                tauto)
-                            · exact iha'.weaken_subset (by
-                                intro y hy
-                                simp only [Finset.mem_insert] at hy ⊢
-                                tauto)
+                            · exact ihe'.weaken_subset (by fin_sub)
+                            · exact iha'.weaken_subset (by fin_sub)
                           · exact ihd.weaken_subset
                               (Finset.insert_subset_insert _
                                 (Finset.subset_insert _ _))
@@ -1933,15 +1921,9 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                     (X := itpE p S fuel b' Γ)
                                     (Y := itpA p S fuel b' Γ A₁.somehow)
                                     (Finset.mem_insert_self _ _) ?_ ?_
-                                  · exact (ihE b' Γ).weaken_subset (by
-                                      intro y hy
-                                      simp only [Finset.mem_insert] at hy ⊢
-                                      tauto)
+                                  · exact (ihE b' Γ).weaken_subset (by fin_sub)
                                   · exact (ihA b' Γ
-                                        A₁.somehow).weaken_subset (by
-                                      intro y hy
-                                      simp only [Finset.mem_insert] at hy ⊢
-                                      tauto)
+                                        A₁.somehow).weaken_subset (by fin_sub)
                                 · exact ihe.weaken_subset
                                     (Finset.insert_subset_insert _
                                       (Finset.subset_insert _ _))
@@ -1975,14 +1957,8 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                   (Y := itpA p S fuel b (x :: Γ) A₁.somehow)
                                   (Finset.mem_insert_of_mem
                                     (Finset.mem_insert_self _ _)) ?_ ?_
-                                · exact ihe'.weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
-                                · exact iha'.weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
+                                · exact ihe'.weaken_subset (by fin_sub)
+                                · exact iha'.weaken_subset (by fin_sub)
                               · exact ihe.weaken_subset
                                   (Finset.insert_subset_insert _
                                     (Finset.subset_insert _ _))
@@ -2040,14 +2016,8 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                       (Y := itpA p S fuel (b' + 1) (C₁ :: Γ) C₂)
                       (Finset.mem_insert_of_mem
                         (Finset.mem_insert_self _ _)) ?_ ?_
-                    · exact ihe.weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
-                    · exact iha.weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
+                    · exact ihe.weaken_subset (by fin_sub)
+                    · exact iha.weaken_subset (by fin_sub)
               next =>
                 rcases List.mem_singleton.mp hφ with rfl
                 refine G4s.impR ?_
@@ -2059,14 +2029,8 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                   (Y := itpA p S fuel b (C₁ :: Γ) C₂)
                   (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
                   ?_ ?_
-                · exact ihe.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact iha.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact ihe.weaken_subset (by fin_sub)
+                · exact iha.weaken_subset (by fin_sub)
           | somehow D =>
               simp only [itpAgoal] at hφ
               cases b with
@@ -2077,14 +2041,8 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                   refine G4s.mp_adm (X := itpE p S fuel b' Γ)
                     (Y := itpA p S fuel (b' + 1) Γ D)
                     (Finset.mem_insert_self _ _) ?_ ?_
-                  · exact (ihE b' Γ).weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
-                  · exact (G4s.laxR (ihA (b' + 1) Γ D)).weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
+                  · exact (ihE b' Γ).weaken_subset (by fin_sub)
+                  · exact (G4s.laxR (ihA (b' + 1) Γ D)).weaken_subset (by fin_sub)
         -- the context-directed disjuncts
         have hENV : ∀ φ ∈ itpAenv p S fuel b Γ C,
             G4s (insert φ Γ.toFinset) C := by
@@ -2106,10 +2064,7 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
               refine G4s.andL (Finset.mem_insert_of_mem (memF hFΓ)) ?_
               have ih' := ihA b (A :: B :: Γ) C
               rw [List.toFinset_cons, List.toFinset_cons] at ih'
-              exact ih'.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact ih'.weaken_subset (by fin_sub)
           | or A B =>
               mem_tbl at hin
               obtain ⟨_, _, rfl⟩ := hin
@@ -2124,14 +2079,8 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                   (Y := itpA p S fuel b (A :: Γ) C)
                   (Finset.mem_insert_of_mem
                     (Finset.mem_insert_self _ _)) ?_ ?_
-                · exact ihe.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact iha.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact ihe.weaken_subset (by fin_sub)
+                · exact iha.weaken_subset (by fin_sub)
               · have ihe := ihE b (B :: Γ)
                 rw [List.toFinset_cons] at ihe
                 have iha := ihA b (B :: Γ) C
@@ -2140,14 +2089,8 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                   (Y := itpA p S fuel b (B :: Γ) C)
                   (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
                     (Finset.mem_insert_self _ _))) ?_ ?_
-                · exact ihe.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact iha.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact ihe.weaken_subset (by fin_sub)
+                · exact iha.weaken_subset (by fin_sub)
           | somehow χ =>
               simp only at hin
               split at hin
@@ -2164,10 +2107,7 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                   have ihe := ihE b (χ :: Γ)
                   rw [List.toFinset_cons] at ihe
                   exact G4s.mp_adm (Finset.mem_insert_self _ _)
-                    (ihe.weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto))
+                    (ihe.weaken_subset (by fin_sub))
                     ((ihA b (χ :: Γ) _).weaken_subset (by
                       intro y hy
                       simp only [Finset.mem_insert, List.mem_toFinset,
@@ -2184,10 +2124,7 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                       (Finset.mem_insert_of_mem (memF hq)) ?_
                     have ih' := ihA b (B :: Γ) C
                     rw [List.toFinset_cons] at ih'
-                    exact ih'.weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
+                    exact ih'.weaken_subset (by fin_sub)
                   · refine G4s.andL_ins ?_
                     refine G4s.impLProp
                       (Finset.mem_insert_of_mem
@@ -2195,10 +2132,7 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                       (Finset.mem_insert_self _ _) ?_
                     have ih' := ihA b (B :: Γ) C
                     rw [List.toFinset_cons] at ih'
-                    exact ih'.weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
+                    exact ih'.weaken_subset (by fin_sub)
               | falsePLL => cases hin
               | and A₁ B₁ =>
                   mem_tbl at hin
@@ -2207,10 +2141,7 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                     (Finset.mem_insert_of_mem (memF hFΓ)) ?_
                   have ih' := ihA b (A₁.ifThen (B₁.ifThen B) :: Γ) C
                   rw [List.toFinset_cons] at ih'
-                  exact ih'.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact ih'.weaken_subset (by fin_sub)
               | or A₁ B₁ =>
                   mem_tbl at hin
                   obtain ⟨_, _, rfl⟩ := hin
@@ -2218,10 +2149,7 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                     (Finset.mem_insert_of_mem (memF hFΓ)) ?_
                   have ih' := ihA b (A₁.ifThen B :: B₁.ifThen B :: Γ) C
                   rw [List.toFinset_cons, List.toFinset_cons] at ih'
-                  exact ih'.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact ih'.weaken_subset (by fin_sub)
               | ifThen A₁ B₁ =>
                   simp only at hin
                   split at hin
@@ -2248,21 +2176,12 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                   (Y := itpA p S fuel b' Γ (A₁.ifThen B₁))
                                   (Finset.mem_insert_of_mem
                                     (Finset.mem_insert_self _ _)) ?_ ?_
-                                · exact (ihE b' Γ).weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
+                                · exact (ihE b' Γ).weaken_subset (by fin_sub)
                                 · exact (ihA b' Γ
-                                      (A₁.ifThen B₁)).weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
+                                      (A₁.ifThen B₁)).weaken_subset (by fin_sub)
                               · have ih' := ihA (b' + 1) (B :: Γ) C
                                 rw [List.toFinset_cons] at ih'
-                                exact ih'.weaken_subset (by
-                                  intro y hy
-                                  simp only [Finset.mem_insert] at hy ⊢
-                                  tauto)
+                                exact ih'.weaken_subset (by fin_sub)
                         next => cases hin
                       next =>
                         split at hin
@@ -2284,20 +2203,11 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                 (A₁.ifThen B₁))
                               (Finset.mem_insert_of_mem
                                 (Finset.mem_insert_self _ _)) ?_ ?_
-                            · exact ihe.weaken_subset (by
-                                intro y hy
-                                simp only [Finset.mem_insert] at hy ⊢
-                                tauto)
-                            · exact iha.weaken_subset (by
-                                intro y hy
-                                simp only [Finset.mem_insert] at hy ⊢
-                                tauto)
+                            · exact ihe.weaken_subset (by fin_sub)
+                            · exact iha.weaken_subset (by fin_sub)
                           · have ih' := ihA b (B :: Γ) C
                             rw [List.toFinset_cons] at ih'
-                            exact ih'.weaken_subset (by
-                              intro y hy
-                              simp only [Finset.mem_insert] at hy ⊢
-                              tauto)
+                            exact ih'.weaken_subset (by fin_sub)
                         next => cases hin
                     next => cases hin
               | somehow A₁ =>
@@ -2325,10 +2235,7 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                       (Finset.subset_insert _ _))
                                 · have ih' := ihA (b' + 1) (B :: Γ) C
                                   rw [List.toFinset_cons] at ih'
-                                  exact ih'.weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
+                                  exact ih'.weaken_subset (by fin_sub)
                               · rcases List.mem_singleton.mp hin' with rfl
                                 -- γ-form: the ◯-guard is its own witness
                                 refine G4s.andL_ins ?_
@@ -2340,21 +2247,12 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                     (X := itpE p S fuel b' Γ)
                                     (Y := itpA p S fuel b' Γ A₁.somehow)
                                     (Finset.mem_insert_self _ _) ?_ ?_
-                                  · exact (ihE b' Γ).weaken_subset (by
-                                      intro y hy
-                                      simp only [Finset.mem_insert] at hy ⊢
-                                      tauto)
+                                  · exact (ihE b' Γ).weaken_subset (by fin_sub)
                                   · exact (ihA b' Γ
-                                        A₁.somehow).weaken_subset (by
-                                      intro y hy
-                                      simp only [Finset.mem_insert] at hy ⊢
-                                      tauto)
+                                        A₁.somehow).weaken_subset (by fin_sub)
                                 · have ih' := ihA (b' + 1) (B :: Γ) C
                                   rw [List.toFinset_cons] at ih'
-                                  exact ih'.weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
+                                  exact ih'.weaken_subset (by fin_sub)
                         next => cases hin
                       · obtain ⟨X, hXΓ, heq⟩ := List.mem_filterMap.mp hin
                         cases X with
@@ -2385,20 +2283,11 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                                   (Y := itpA p S fuel b (x :: Γ) A₁.somehow)
                                   (Finset.mem_insert_of_mem
                                     (Finset.mem_insert_self _ _)) ?_ ?_
-                                · exact ihe.weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
-                                · exact iha.weaken_subset (by
-                                    intro y hy
-                                    simp only [Finset.mem_insert] at hy ⊢
-                                    tauto)
+                                · exact ihe.weaken_subset (by fin_sub)
+                                · exact iha.weaken_subset (by fin_sub)
                               · have ih' := ihA b (B :: Γ) C
                                 rw [List.toFinset_cons] at ih'
-                                exact ih'.weaken_subset (by
-                                  intro y hy
-                                  simp only [Finset.mem_insert] at hy ⊢
-                                  tauto)
+                                exact ih'.weaken_subset (by fin_sub)
                         | prop _ => cases heq
                         | falsePLL => cases heq
                         | and _ _ => cases heq
@@ -2435,16 +2324,10 @@ theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
                     refine G4s.mp_adm (X := itpE p S fuel b' Γ)
                       (Y := orAll (itpAoth p S fuel (b' + 1) Γ D.somehow))
                       (Finset.mem_insert_self _ _) ?_ ?_
-                    · exact (ihE b' Γ).weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
+                    · exact (ihE b' Γ).weaken_subset (by fin_sub)
                     · refine G4s.orAll_elim ?_
                       intro ψ hψ
-                      exact (hOTH ψ hψ).weaken_subset (by
-                        intro y hy
-                        simp only [Finset.mem_insert] at hy ⊢
-                        tauto)
+                      exact (hOTH ψ hψ).weaken_subset (by fin_sub)
         | prop q => simp only [itpAfull] at hφ; exact hOTH φ hφ
         | falsePLL => simp only [itpAfull] at hφ; exact hOTH φ hφ
         | and C₁ C₂ => simp only [itpAfull] at hφ; exact hOTH φ hφ

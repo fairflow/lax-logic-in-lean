@@ -77,9 +77,7 @@ theorem E_step {p : String} {fuel : Nat} {Γ : List PLLFormula}
     simp only [Finset.mem_insert]
     tauto
   refine G4s.cut_adm hm (h.weaken_subset ?_)
-  intro y hy
-  simp only [Finset.mem_insert] at hy ⊢
-  tauto
+  fin_sub
 
 /-- **The adequacy pair** (Pitts E2/A2, iSL `pq_correct` shape), at
 height-dominated fuel: `n < fuel` is the whole invariant. -/
@@ -224,10 +222,7 @@ theorem inter_adequate (p : String) :
         have hres := (IH m (Nat.lt_succ_self m) fuel Γ (insert A Δ) B hm dδ
           (pfree_insert hCp.1 hΔ)).1 hCp.2
         refine G4s.impR ?_
-        exact hres.weaken_subset (by
-          intro y hy
-          simp only [Finset.mem_insert] at hy ⊢
-          tauto)
+        exact hres.weaken_subset (by fin_sub)
       · cases fuel with
         | zero => exact absurd hfuel (Nat.not_lt_zero _)
         | succ f =>
@@ -239,10 +234,7 @@ theorem inter_adequate (p : String) :
             refine G4s.orAll_intro
               (List.mem_append.mpr (Or.inl (.head _))) ?_
             refine G4s.impR ?_
-            exact hres.weaken_subset (by
-              intro y hy
-              simp only [Finset.mem_insert] at hy ⊢
-              tauto)
+            exact hres.weaken_subset (by fin_sub)
   | @laxR m _ A d₁ =>
       have hm : m < fuel := Nat.lt_of_succ_lt hfuel
       constructor
@@ -259,10 +251,7 @@ theorem inter_adequate (p : String) :
             refine G4s.orAll_intro
               (List.mem_append.mpr (Or.inl (.head _))) ?_
             refine G4s.laxR (G4s.impR ?_)
-            exact hres.weaken_subset (by
-              intro y hy
-              simp only [Finset.mem_insert] at hy ⊢
-              tauto)
+            exact hres.weaken_subset (by fin_sub)
   | @laxL m _ A B h d₁ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -283,10 +272,7 @@ theorem inter_adequate (p : String) :
               · exact List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                   ⟨A.somehow, hγl, .head _⟩))
               · refine G4s.laxL (Finset.mem_insert_self _ _) ?_
-                exact (ihp.1 hCp).weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                exact (ihp.1 hCp).weaken_subset (by fin_sub)
             · simp only [interA]
               refine G4s.orAll_intro
                 (φ := ((interE p f (A :: Γ)).ifThen
@@ -294,10 +280,7 @@ theorem inter_adequate (p : String) :
                 (List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                   ⟨A.somehow, hγl, by simp⟩))) ?_
               refine G4s.laxR (G4s.impR ?_)
-              exact ihp.2.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact ihp.2.weaken_subset (by fin_sub)
           · -- witness box on the p-free side
             have hAp : p ∉ A.atoms := by
               have := hΔ _ hδ
@@ -311,10 +294,7 @@ theorem inter_adequate (p : String) :
               have hres := (IH m (Nat.lt_succ_self m) (f + 1) Γ
                 (insert A Δ) B.somehow hm dδ hΔ').1 hCp
               refine G4s.laxL (Finset.mem_insert_of_mem hδ) ?_
-              exact hres.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact hres.weaken_subset (by fin_sub)
             · -- the self-referential ◯-disjunct
               have hres := (IH m (Nat.lt_succ_self m) f Γ
                 (insert A Δ) B.somehow hmf dδ hΔ').2
@@ -323,10 +303,7 @@ theorem inter_adequate (p : String) :
                 (List.mem_append.mpr (Or.inl (.tail _ (.head _)))) ?_
               refine G4s.laxL (Finset.mem_insert_of_mem hδ) ?_
               refine G4s.laxR (G4s.impR ?_)
-              exact hres.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact hres.weaken_subset (by fin_sub)
   | @andL m _ A B _ h d₁ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -363,15 +340,9 @@ theorem inter_adequate (p : String) :
             constructor
             · intro hCp
               refine G4s.andL (Finset.mem_insert_of_mem hδ) ?_
-              exact (ihp.1 hCp).weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact (ihp.1 hCp).weaken_subset (by fin_sub)
             · refine G4s.andL (Finset.mem_insert_of_mem hδ) ?_
-              exact ihp.2.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact ihp.2.weaken_subset (by fin_sub)
   | @orL m _ A B _ h d₁ d₂ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -393,29 +364,17 @@ theorem inter_adequate (p : String) :
               · exact List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                   ⟨A.or B, hγl, .head _⟩))
               · refine G4s.orL (Finset.mem_insert_self _ _) ?_ ?_
-                · exact (ih₁.1 hCp).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact (ih₂.1 hCp).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact (ih₁.1 hCp).weaken_subset (by fin_sub)
+                · exact (ih₂.1 hCp).weaken_subset (by fin_sub)
             · simp only [interA]
               refine G4s.orAll_intro
                 (List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                   ⟨A.or B, hγl, .head _⟩))) ?_
               refine G4s.andR ?_ ?_
               · refine G4s.impR ?_
-                exact ih₁.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                exact ih₁.2.weaken_subset (by fin_sub)
               · refine G4s.impR ?_
-                exact ih₂.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                exact ih₂.2.weaken_subset (by fin_sub)
           · have hABp := hΔ _ hδ
             rw [atoms_or, Finset.mem_union] at hABp
             push_neg at hABp
@@ -431,23 +390,11 @@ theorem inter_adequate (p : String) :
             constructor
             · intro hCp
               refine G4s.orL (Finset.mem_insert_of_mem hδ) ?_ ?_
-              · exact (ih₁.1 hCp).weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
-              · exact (ih₂.1 hCp).weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+              · exact (ih₁.1 hCp).weaken_subset (by fin_sub)
+              · exact (ih₂.1 hCp).weaken_subset (by fin_sub)
             · refine G4s.orL (Finset.mem_insert_of_mem hδ) ?_ ?_
-              · exact ih₁.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
-              · exact ih₂.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+              · exact ih₁.2.weaken_subset (by fin_sub)
+              · exact ih₂.2.weaken_subset (by fin_sub)
   | @impLProp m _ a B _ h ha d₁ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -511,10 +458,7 @@ theorem inter_adequate (p : String) :
                   · refine G4s.mp_adm (Finset.mem_insert_self _ _)
                       (G4s.init (Finset.mem_insert_of_mem
                         (Finset.mem_insert_of_mem haδ))) ?_
-                    exact (ihp.1 hCp).weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
+                    exact (ihp.1 hCp).weaken_subset (by fin_sub)
                 · simp only [interA, interE]
                   refine G4s.orAll_intro
                     (List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
@@ -533,10 +477,7 @@ theorem inter_adequate (p : String) :
                   · refine G4s.mp_adm (Finset.mem_insert_self _ _)
                       (G4s.init (Finset.mem_insert_of_mem
                         (Finset.mem_insert_of_mem haδ))) ?_
-                    exact ihp.2.weaken_subset (by
-                      intro y hy
-                      simp only [Finset.mem_insert] at hy ⊢
-                      tauto)
+                    exact ihp.2.weaken_subset (by fin_sub)
           · -- implication on the p-free side
             have hFp := hΔ _ hδ
             rw [atoms_ifThen, atoms_prop, Finset.mem_union] at hFp
@@ -566,10 +507,7 @@ theorem inter_adequate (p : String) :
                 · refine G4s.impLProp
                     (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hδ))
                     (Finset.mem_insert_self _ _) ?_
-                  exact hres.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact hres.weaken_subset (by fin_sub)
               · simp only [interE]
                 have hres := ihp.2
                 simp only [interE] at hres
@@ -581,25 +519,16 @@ theorem inter_adequate (p : String) :
                 · refine G4s.impLProp
                     (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hδ))
                     (Finset.mem_insert_self _ _) ?_
-                  exact hres.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact hres.weaken_subset (by fin_sub)
             · -- pure commute
               constructor
               · intro hCp
                 refine G4s.impLProp (Finset.mem_insert_of_mem hδ)
                   (Finset.mem_insert_of_mem haδ) ?_
-                exact (ihp.1 hCp).weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                exact (ihp.1 hCp).weaken_subset (by fin_sub)
               · refine G4s.impLProp (Finset.mem_insert_of_mem hδ)
                   (Finset.mem_insert_of_mem haδ) ?_
-                exact ihp.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                exact ihp.2.weaken_subset (by fin_sub)
   | @impLAnd m _ A B D₀ _ h d₁ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -637,15 +566,9 @@ theorem inter_adequate (p : String) :
             constructor
             · intro hCp
               refine G4s.impLAnd (Finset.mem_insert_of_mem hδ) ?_
-              exact (ihp.1 hCp).weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact (ihp.1 hCp).weaken_subset (by fin_sub)
             · refine G4s.impLAnd (Finset.mem_insert_of_mem hδ) ?_
-              exact ihp.2.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact ihp.2.weaken_subset (by fin_sub)
   | @impLOr m _ A B D₀ _ h d₁ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -686,15 +609,9 @@ theorem inter_adequate (p : String) :
             constructor
             · intro hCp
               refine G4s.impLOr (Finset.mem_insert_of_mem hδ) ?_
-              exact (ihp.1 hCp).weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact (ihp.1 hCp).weaken_subset (by fin_sub)
             · refine G4s.impLOr (Finset.mem_insert_of_mem hδ) ?_
-              exact ihp.2.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact ihp.2.weaken_subset (by fin_sub)
   | @impLImp m _ A B D₀ _ h d₁ d₂ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -737,10 +654,7 @@ theorem inter_adequate (p : String) :
                     intro y hy
                     simp only [Finset.mem_insert]
                     tauto)) ?_
-                exact (ih₂.1 hCp).weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                exact (ih₂.1 hCp).weaken_subset (by fin_sub)
             · simp only [interA, interE]
               refine G4s.orAll_intro
                 (List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
@@ -757,10 +671,7 @@ theorem inter_adequate (p : String) :
                     intro y hy
                     simp only [Finset.mem_insert]
                     tauto)) ?_
-                exact ih₂.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                exact ih₂.2.weaken_subset (by fin_sub)
           · -- p-free side: commute (the reset goal is p-free)
             have hFp := hΔ _ hδ
             have hABp : p ∉ (A.ifThen B).atoms := by
@@ -785,23 +696,11 @@ theorem inter_adequate (p : String) :
             constructor
             · intro hCp
               refine G4s.impLImp (Finset.mem_insert_of_mem hδ) ?_ ?_
-              · exact ih₁.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
-              · exact (ih₂.1 hCp).weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+              · exact ih₁.weaken_subset (by fin_sub)
+              · exact (ih₂.1 hCp).weaken_subset (by fin_sub)
             · refine G4s.impLImp (Finset.mem_insert_of_mem hδ) ?_ ?_
-              · exact ih₁.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
-              · exact ih₂.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+              · exact ih₁.weaken_subset (by fin_sub)
+              · exact ih₂.2.weaken_subset (by fin_sub)
   | @impLLax m _ A B _ h d₁ d₂ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -826,14 +725,8 @@ theorem inter_adequate (p : String) :
               · exact List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                   ⟨A.somehow.ifThen B, hγl, .head _⟩))
               · refine G4s.mp_adm (Finset.mem_insert_self _ _)
-                  (hant'.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)) ?_
-                exact (ih₂.1 hCp).weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                  (hant'.weaken_subset (by fin_sub)) ?_
+                exact (ih₂.1 hCp).weaken_subset (by fin_sub)
             · simp only [interA, interE]
               have hant' := hant
               simp only [interE] at hant'
@@ -846,14 +739,8 @@ theorem inter_adequate (p : String) :
               · exact List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                   ⟨A.somehow.ifThen B, hγl, .head _⟩))
               · refine G4s.mp_adm (Finset.mem_insert_self _ _)
-                  (hant'.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)) ?_
-                exact ih₂.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                  (hant'.weaken_subset (by fin_sub)) ?_
+                exact ih₂.2.weaken_subset (by fin_sub)
           · -- p-free side: commute (premise 1 keeps the context)
             have hFp := hΔ _ hδ
             have hAp : p ∉ A.atoms := by
@@ -871,15 +758,9 @@ theorem inter_adequate (p : String) :
             constructor
             · intro hCp
               refine G4s.impLLax (Finset.mem_insert_of_mem hδ) ih₁ ?_
-              exact (ih₂.1 hCp).weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact (ih₂.1 hCp).weaken_subset (by fin_sub)
             · refine G4s.impLLax (Finset.mem_insert_of_mem hδ) ih₁ ?_
-              exact ih₂.2.weaken_subset (by
-                intro y hy
-                simp only [Finset.mem_insert] at hy ⊢
-                tauto)
+              exact ih₂.2.weaken_subset (by fin_sub)
   | @impLLaxLax m _ A B X _ h hX d₁ d₂ =>
       cases fuel with
       | zero => exact absurd hfuel (Nat.not_lt_zero _)
@@ -925,10 +806,7 @@ theorem inter_adequate (p : String) :
                       intro y hy
                       simp only [Finset.mem_insert]
                       tauto)) ?_
-                  exact (ih₂.1 hCp).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact (ih₂.1 hCp).weaken_subset (by fin_sub)
               · simp only [interA, interE]
                 refine G4s.orAll_intro
                   (φ := (((interE p f (X :: Γ)).ifThen
@@ -952,10 +830,7 @@ theorem inter_adequate (p : String) :
                       intro y hy
                       simp only [Finset.mem_insert]
                       tauto)) ?_
-                  exact ih₂.2.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact ih₂.2.weaken_subset (by fin_sub)
             · -- witness on the p-free side: the γ-clause
               have hXp : p ∉ X.atoms := by
                 have := hΔ _ hXδ
@@ -993,10 +868,7 @@ theorem inter_adequate (p : String) :
                       intro y hy
                       simp only [Finset.mem_insert]
                       tauto)) ?_
-                  exact (ih₂.1 hCp).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact (ih₂.1 hCp).weaken_subset (by fin_sub)
               · simp only [interA, interE]
                 refine G4s.orAll_intro
                   (φ := (((interE p f Γ).ifThen
@@ -1018,10 +890,7 @@ theorem inter_adequate (p : String) :
                       intro y hy
                       simp only [Finset.mem_insert]
                       tauto)) ?_
-                  exact ih₂.2.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                  exact ih₂.2.weaken_subset (by fin_sub)
           · -- principal on the p-free side
             have hFp := hΔ _ hδ
             have hAp : p ∉ A.somehow.atoms := by
@@ -1059,20 +928,11 @@ theorem inter_adequate (p : String) :
                 refine G4s.impLLaxLax
                   (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hδ))
                   (Finset.mem_insert_self _ _) ?_ hT
-                exact ih₁.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto)
+                exact ih₁.weaken_subset (by fin_sub)
               constructor
               · intro hCp
-                exact hfire ((ih₂.1 hCp).weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto))
-              · exact hfire (ih₂.2.weaken_subset (by
-                  intro y hy
-                  simp only [Finset.mem_insert] at hy ⊢
-                  tauto))
+                exact hfire ((ih₂.1 hCp).weaken_subset (by fin_sub))
+              · exact hfire (ih₂.2.weaken_subset (by fin_sub))
             · -- both on the p-free side: pure commute
               have hXp : p ∉ X.atoms := by
                 have := hΔ _ hXδ
@@ -1085,24 +945,12 @@ theorem inter_adequate (p : String) :
               · intro hCp
                 refine G4s.impLLaxLax (Finset.mem_insert_of_mem hδ)
                   (Finset.mem_insert_of_mem hXδ) ?_ ?_
-                · exact ih₁.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact (ih₂.1 hCp).weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact ih₁.weaken_subset (by fin_sub)
+                · exact (ih₂.1 hCp).weaken_subset (by fin_sub)
               · refine G4s.impLLaxLax (Finset.mem_insert_of_mem hδ)
                   (Finset.mem_insert_of_mem hXδ) ?_ ?_
-                · exact ih₁.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
-                · exact ih₂.2.weaken_subset (by
-                    intro y hy
-                    simp only [Finset.mem_insert] at hy ⊢
-                    tauto)
+                · exact ih₁.weaken_subset (by fin_sub)
+                · exact ih₂.2.weaken_subset (by fin_sub)
 
 /--
 info: 'PLLND.inter_adequate' depends on axioms: [propext, Classical.choice, Quot.sound]
