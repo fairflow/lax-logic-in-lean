@@ -5090,3 +5090,33 @@ never added. Dropping them would end this class of false regression for good
 and make the count mean "declarations someone wrote" — but it changes a headline
 number by a fifth, which is a redefinition of the unit of account, not a bug
 fix. His call.
+
+## 2026-09-19 (00:15) — the 180 dangling citations, and a module of the estate that had stopped compiling
+
+Branch `worktree-agent-a6c1d9d9c54fb5303`, from `ledger` `d64965c`. Triage:
+`docs/dangling-triage-2026-09-18.md`. All 180 classified, no bucket empty:
+**31 outside the estate**, **14 genuinely absent**, **13 renamed**, **9
+deleted on purpose**, **113 not a declaration**.
+
+**The repair that matters is not a citation.** `wip/minmodv.lean` — in
+`docs/ledger-modules.txt`, 69 declarations in the record — has not compiled
+since `249c935` (yesterday, 20:42): parameterising the witness records made
+`FRJ.IrrWit` an `abbrev` for `IrrWitOf FRJr`, so dot notation resolves under
+`IrrWitOf` and the projection declared as `IrrWit.toV` (`:558`) no longer
+answers `.toV` (`:585`). One token repaired; the module builds, and the ledger
+over it returns **69 declarations, zero GONE, zero added, zero changed**. No
+gate saw it: the ledger reads `.olean`, the cached one predated the rename by
+two days, and every import resolves, so `check-imports.py` was blind too.
+What broke was a name.
+
+**Three classes in bucket 4, only one anticipated.** (a) 17 modules build that
+no target names: 790 declarations, 3 `sorryAx`, including the archived
+sorry-free FRJLax development (587; its archiving in `2c18829` checked, holds).
+(b) Two do not build. (c) **Seven citations are `private`, so the ledger
+cannot see them at all**: `skip?` drops `_private.…` by `Name.isInternal`.
+Building does not fix those.
+
+Four citation repairs; DANGLING 180 → 177, CONFIRMED 1,426 → 1,427.
+Gate, triage oleans removed so it measures the committed change alone:
+`lake build` green (8,748 jobs), `check-ledger.sh --built-only` →
+`ledger: clean — 29170 declarations, unchanged`, exit 0.

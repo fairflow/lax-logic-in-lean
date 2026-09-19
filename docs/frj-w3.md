@@ -45,7 +45,7 @@ successor forcing `⊥`, i.e. for a fallible world.
 
 Hence `IPL (¬◯⊥)`, and hence
 
-**PROVED** `not_provable_neg_circ_bot` : `¬ Provable (¬◯⊥)`.
+**PROVED** `FRJ.not_provable_barren_neg_circ_bot` : `¬ Provable (¬◯⊥)`.
 
 That is a genuine **incompleteness**, and it holds for *every* extension of
 the calculus whose extracted models are infallible, not just for the rules

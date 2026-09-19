@@ -41,7 +41,8 @@ clauses plus
 
     w ⊨ ◯N   iff   for every v with w Rᵢ v there is u with v Rₘ u and u ⊨ N.
 
-**Soundness** (`PLLKripke.soundness`, sorry-free): a natural-deduction
+**Soundness** (`PLLND.soundness`, `LaxLogic/PLL/Semantics/Kripke.lean`,
+sorry-free): a natural-deduction
 derivation of `Γ ⊢ φ` forces `φ` at every world of every constraint
 model forcing `Γ`.
 

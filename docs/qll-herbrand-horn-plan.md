@@ -331,7 +331,8 @@ On choice (updated later on 2026-09-11): stage H uses none, except through
 Mathlib's `lfp` in L4.  The soundness theorem `Prv.sound` used to carry it.
 The source was Lean's core `String` library, not the logic: in this toolchain
 `String.length` and `String.toList` depend on `Classical.choice`, and
-`Kit.freshFor_notMem`, the fresh-name lemma behind `∀I` and `∃E`, was proved
+`LaxLogic.QLL.freshFor_notMem` (`LaxLogic/QLL/Kit.lean`), the fresh-name
+lemma behind `∀I` and `∃E`, was proved
 by counting characters.  It is now proved by UTF-8 byte size instead
 (`String.utf8ByteSize` depends on no axioms), with `freshFor` itself
 unchanged.  `Prv.sound` and `Prv.soundT` are now `[propext, Quot.sound]`, and
