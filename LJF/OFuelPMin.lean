@@ -552,10 +552,7 @@ def aMinPP (sat : SatA2P p) :
         have hlf := Nat.le_trans (le_maxOver hmem) hf'
         refine (((aMinPP sat (b ++ todo) done Δ G hP hΔ
           ((invUp (d.wk subHeadOut) b hb).wk subChainIn)).2 f' f' hlf hlf).wk ?_)
-        intro Z hZ
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_self ..
-        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+        exact Sub.cons _ (Sub.grow _))
   | .up (.down M) :: todo, done, Δ, G, hP, hΔ, _, d =>
       let w := aMinPP sat (M :: todo) done Δ G hP hΔ
         (((invUp (d.wk subHeadOut) [M] (by simp [invertPos]))).wk subChainIn)

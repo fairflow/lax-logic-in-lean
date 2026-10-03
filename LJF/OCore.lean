@@ -140,6 +140,54 @@ theorem cons {Γ Γ' : List Neg} (X : Neg) (h : Sub Γ Γ') :
 theorem grow {Γ : List Neg} (X : Neg) : Sub Γ (X :: Γ) :=
   fun _ h => List.mem_cons_of_mem _ h
 
+/-! The five facts below are the structural inclusions this file's weakening
+sites were writing out by hand — a four-to-ten-line `rcases List.mem_cons.mp`
+walk ending in membership constructors, once per site.  They are named because
+the thing that is doubled is a FUNCTION on inclusions, which abstracts for free;
+`Sub` is a `Prop`, so proof irrelevance makes the replacement invisible to
+reduction and the iota hazard that refused the `LaxND` congruence split cannot
+arise.  Census and per-site counts:
+`docs/tactic-extraction-survey-2026-09-19.md` §"idiom A-pure, zero-Mathlib
+island". -/
+
+/-- Peel one hypothesis off the SOURCE. -/
+theorem peel {Γ Γ' : List Neg} {X : Neg} (hX : X ∈ Γ') (h : Sub Γ Γ') :
+    Sub (X :: Γ) Γ' := by
+  intro N hN
+  rcases List.mem_cons.mp hN with rfl | hN
+  · exact hX
+  · exact h N hN
+
+/-- Exchange at the head — the commonest shape in this file. -/
+theorem swap {Γ : List Neg} (X Y : Neg) : Sub (X :: Y :: Γ) (Y :: X :: Γ) := by
+  intro N hN
+  rcases List.mem_cons.mp hN with rfl | hN
+  · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+  · rcases List.mem_cons.mp hN with rfl | hN
+    · exact List.mem_cons_self ..
+    · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hN)
+
+/-- Rotate the first three. -/
+theorem rot3 {Γ : List Neg} (X Y Z : Neg) :
+    Sub (X :: Y :: Z :: Γ) (Y :: Z :: X :: Γ) :=
+  (swap X Y).trans (cons Y (swap X Z))
+
+/-- Both halves of an append land in one target. -/
+theorem app {Γ₁ Γ₂ Δ : List Neg} (h₁ : Sub Γ₁ Δ) (h₂ : Sub Γ₂ Δ) :
+    Sub (Γ₁ ++ Γ₂) Δ := by
+  intro N hN
+  rcases List.mem_append.mp hN with h | h
+  · exact h₁ N h
+  · exact h₂ N h
+
+/-- Grow the target on the right. -/
+theorem appL {Γ Δ : List Neg} (Δ' : List Neg) (h : Sub Γ Δ) : Sub Γ (Δ ++ Δ') :=
+  fun N hN => List.mem_append.mpr (.inl (h N hN))
+
+/-- Grow the target on the left. -/
+theorem appR {Γ Δ' : List Neg} (Δ : List Neg) (h : Sub Γ Δ') : Sub Γ (Δ ++ Δ') :=
+  fun N hN => List.mem_append.mpr (.inr (h N hN))
+
 end Sub
 
 /-! ## Weakening -/
@@ -2222,13 +2270,7 @@ def fireA {done : List Neg} {a : String} {N' : Neg}
         (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
           (atomMem_mem (findFire_atom hf)))))) lf))
     (Sub.cons _ (splits_sub (findFire_mem hf)))
-    (rec.wk (by
-      intro Z hZ
-      rcases List.mem_cons.mp hZ with rfl | hZ
-      · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-      · rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_self ..
-        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+    (rec.wk (Sub.swap _ _))
 
 /-- `fireA` at the fuel-free interpolant. -/
 def fireASound {p : String} {done : List Neg} {a : String} {N' : Neg}
@@ -2787,14 +2829,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       intro b hb
       simp only [invertPos, List.mem_singleton] at hb
       subst hb
-      exact (aSound p (M :: todo) done G).wk (by
-        intro Z hZ
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-        · rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_self ..
-          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-              (List.mem_cons_of_mem _ hZ)))
+      exact (aSound p (M :: todo) done G).wk ((Sub.swap _ _).trans (Sub.cons _ (Sub.cons _ (Sub.grow _))))
   | .and M N :: todo, done, G => by
       rw [interp]
       exact simHyp
@@ -2807,17 +2842,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
             .lfoc (hs _ (List.mem_cons_of_mem _
               (List.mem_cons_of_mem _ (List.mem_cons_self ..)))) (.and1 lf))
           (Sub.cons N (Sub.cons _ (Sub.grow _)))
-          ((aSound p (M :: N :: todo) done G).wk (by
-            intro Z hZ
-            rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                (List.mem_cons_self ..))
-            · rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_self ..
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                    (List.mem_cons_of_mem _ hZ)))))
+          ((aSound p (M :: N :: todo) done G).wk (Sub.rot3 _ _ _)))
   | .imp .fls N :: todo, done, G => by
       rw [interp]
       exact (aSound p todo done G).wk (Sub.cons _ (Sub.grow _))
@@ -2846,17 +2871,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   (List.mem_cons_of_mem _ (List.mem_cons_self ..))))
                   (.impL (stabOr1 s) lf1))
           (Sub.cons _ (Sub.cons _ (Sub.grow _)))
-          ((aSound p (.imp Q₁ N :: .imp Q₂ N :: todo) done G).wk (by
-            intro Z hZ
-            rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                (List.mem_cons_self ..))
-            · rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_self ..
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                    (List.mem_cons_of_mem _ hZ)))))
+          ((aSound p (.imp Q₁ N :: .imp Q₂ N :: todo) done G).wk (Sub.rot3 _ _ _)))
   | .imp (.down (.up P')) N :: todo, done, G => by
       rw [interp]
       exact simHyp (H := .imp P' N)
@@ -2865,14 +2880,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
                 (.impL (.rfoc (.rel (.stable s))) lf1))
         (Sub.refl _)
-        ((aSound p (.imp P' N :: todo) done G).wk (by
-          intro Z hZ
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                (List.mem_cons_of_mem _ hZ))))
+        ((aSound p (.imp P' N :: todo) done G).wk ((Sub.swap _ _).trans (Sub.cons _ (Sub.cons _ (Sub.grow _)))))
   | .imp (.down (.and M₁ M₂)) N :: todo, done, G => by
       rw [interp]
       exact simHyp (H := .imp (.down M₁) (.imp (.down M₂) N))
@@ -2890,14 +2898,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     (Sub.refl _) (s₂.wk hsb))
                 (Sub.refl _) s₁)
         (Sub.refl _)
-        ((aSound p (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done G).wk (by
-          intro Z hZ
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                (List.mem_cons_of_mem _ hZ))))
+        ((aSound p (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done G).wk ((Sub.swap _ _).trans (Sub.cons _ (Sub.cons _ (Sub.grow _)))))
   | .imp (.down (.imp Q' N')) N :: todo, done, G => by
       rw [interp]
       exact (aSound p todo (.imp (.down (.imp Q' N')) N :: done) G).wk

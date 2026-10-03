@@ -117,10 +117,7 @@ def boxAssembleP {f : Nat} {done rest K : List Neg} {Q P : Pos}
     Stab (interpP p (f + 1) [] done none :: K) .lax P :=
   .lfoc (List.mem_cons_self ..)
     (hE.symm ▸ lfocAndAll hmem
-      (.circL (.downL (δ.wk (fun Z hZ => by
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_self ..
-        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))))
+      (.circL (.downL (δ.wk (Sub.cons _ (Sub.grow _))))))
 
 /-! # Part 3: the `∀p` attack rows, in two-fuel form
 
@@ -504,23 +501,13 @@ def TInvQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
       (TInvQ done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons hM hK) hΩ.tail hC d).map (fun _ x =>
-        .downL (x.wk (fun Z hZ => by
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
+        .downL (x.wk (Sub.swap _ _)))
   | _, _, .atom a :: _, _, _, hm, hm2, hK, hΩ, hC, .atomL d =>
       (TInvQ done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons (show PFreeN p (.up (.atom a)) from hΩ.head) hK)
           hΩ.tail hC d).map (fun _ x =>
-        .atomL (x.wk (fun Z hZ => by
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
+        .atomL (x.wk (Sub.swap _ _)))
   termination_by Γ' K Ω C j hm hm2 hK hΩ hC d =>
     (hgtI d, 2 * sum3 [] + sum3 done, sizeOf d)
   decreasing_by ljf_dec_h
@@ -870,24 +857,14 @@ def TpInvQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons hM hK) hΩ.tail hpT ha hb hXpkg
           (lfP.wk (Sub.grow _)) d).map (fun _ x =>
-        .downL (x.wk (fun Z hZ => by
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
+        .downL (x.wk (Sub.swap _ _)))
   | _, _, _, _, .atom c :: _, _, _, _, hm, hm2, hK, hΩ, hpT, ha, hb, hXpkg,
       lfP, .atomL d =>
       (TpInvQ done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons (show PFreeN p (.up (.atom c)) from hΩ.head) hK)
           hΩ.tail hpT ha hb hXpkg (lfP.wk (Sub.grow _)) d).map (fun _ x =>
-        .atomL (x.wk (fun Z hZ => by
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
+        .atomL (x.wk (Sub.swap _ _)))
   termination_by Γ' K M P₀ Ω a b j hm hm2 hK hΩ hpT ha hb hXpkg lfP d =>
     (hgtI d + hgtL lfP, 2 * sum3 [] + sum3 done, sizeOf d)
   decreasing_by ljf_dec_h
@@ -939,10 +916,7 @@ def aMinQ : ∀ (todo done Δ : List Neg) (G : Neg), ParkedCtxP done →
         have hlf := Nat.le_trans (le_maxOver hmem) hf'
         refine (((aMinQ (b ++ todo) done Δ G hP hΔ
           ((invUp (d.wk subHeadOut) b hb).wk subChainIn)).2 f' f' hlf hlf).wk ?_)
-        intro Z hZ
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_self ..
-        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+        exact Sub.cons _ (Sub.grow _))
   | .up (.down M) :: todo, done, Δ, G, hP, hΔ, _, d =>
       let w := aMinQ (M :: todo) done Δ G hP hΔ
         (((invUp (d.wk subHeadOut) [M] (by simp [invertPos]))).wk subChainIn)
@@ -1050,10 +1024,7 @@ def UEntryQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 · exact List.mem_append_right _ hk))).2 f' f' hlf hlf
           rw [jGoal_tru] at haux
           refine (haux.wk ?_)
-          intro Z hZ
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_self ..
-          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+          exact Sub.cons _ (Sub.grow _))
   | _, _, hm, hm2, hK, .and M N, _, .andR d₁ d₂ =>
       let w₁ := UEntryQ done hsat hP hm hm2 hK M d₁
       let w₂ := UEntryQ done hsat hP hm hm2 hK N d₂
@@ -1540,23 +1511,13 @@ def UInvGQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
   | _, _, _, _, _, _, _, _, _, _, _, .flsL => ⟨0, fun _ _ _ _ => .flsL⟩
   | _, _, _, _, _, .down M₀ :: _, hm, hm2, hK, kit, hΩ, .downL d =>
       UpFrom2.map (fun _ _ x =>
-          .downL (x.wk (fun Z hZ => by
-            rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-            · rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_self ..
-              · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
+          .downL (x.wk (Sub.swap _ _)))
         (UInvGQ done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons hΩ.head hK) kit hΩ.tail d)
   | _, _, _, _, _, .atom a :: _, hm, hm2, hK, kit, hΩ, .atomL d =>
       UpFrom2.map (fun _ _ x =>
-          .atomL (x.wk (fun Z hZ => by
-            rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-            · rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_self ..
-              · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
+          .atomL (x.wk (Sub.swap _ _)))
         (UInvGQ done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons (show PFreeN p (.up (.atom a)) from hΩ.head) hK)
@@ -1749,12 +1710,7 @@ def UpInvGQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
   | _, _, _, _, _, _, .down M₀ :: _, _, _, hm, hm2, hK, kit, hΩ, ha, hb,
       hXpkg, lfP, .downL d =>
       UpFrom2.map (fun _ _ x =>
-          .downL (x.wk (fun Z hZ => by
-            rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-            · rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_self ..
-              · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
+          .downL (x.wk (Sub.swap _ _)))
         (UpInvGQ done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons hΩ.head hK) kit hΩ.tail ha hb hXpkg
@@ -1762,12 +1718,7 @@ def UpInvGQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
   | _, _, _, _, _, _, .atom c :: _, _, _, hm, hm2, hK, kit, hΩ, ha, hb,
       hXpkg, lfP, .atomL d =>
       UpFrom2.map (fun _ _ x =>
-          .atomL (x.wk (fun Z hZ => by
-            rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-            · rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_self ..
-              · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
+          .atomL (x.wk (Sub.swap _ _)))
         (UpInvGQ done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons (show PFreeN p (.up (.atom c)) from hΩ.head) hK)

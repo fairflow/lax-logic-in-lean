@@ -860,10 +860,7 @@ def boxAssembleN {done rest K : List Neg} {Q : Pos} {P : Pos}
     Stab (interp p [] done none :: K) .lax P :=
   .lfoc (List.mem_cons_self ..)
     (hE.symm ▸ lfocAndAll hmem
-      (.circL (.downL (δ.wk (fun Z hZ => by
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_self ..
-        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))))
+      (.circL (.downL (δ.wk (Sub.cons _ (Sub.grow _))))))
 
 /-- Fire the `◯`-implication conjunct: the antecedent's `∀p` from `sant`,
 the recursively interpolated body consumed through `δ`. -/
@@ -1034,22 +1031,12 @@ def TInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       have hM : PFreeN p M₀ := hΩ.head
       .downL (((TInv done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
-          (PFreeCtx.cons hM hK) hΩ.tail hC d)).wk (fun Z hZ => by
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-        · rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_self ..
-          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          (PFreeCtx.cons hM hK) hΩ.tail hC d)).wk (Sub.swap _ _))
   | _, _, .atom a :: _, _, _, hm, hm2, hK, hΩ, hC, .atomL d =>
       .atomL (((TInv done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons (show PFreeN p (.up (.atom a)) from hΩ.head) hK)
-          hΩ.tail hC d)).wk (fun Z hZ => by
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-        · rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_self ..
-          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          hΩ.tail hC d)).wk (Sub.swap _ _))
   termination_by Γ' K Ω C j hm hm2 hK hΩ hC d => (2 * sum3 [] + sum3 done, sizeOf d)
   decreasing_by ljf_dec_e
 
@@ -1292,22 +1279,12 @@ def TpInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       .downL (((TpInv done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons hM hK) hΩ.tail hpT ha hb hXpkg
-          (lfP.wk (Sub.grow _)) d)).wk (fun Z hZ => by
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-        · rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_self ..
-          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          (lfP.wk (Sub.grow _)) d)).wk (Sub.swap _ _))
   | _, _, _, _, .atom c :: _, _, _, _, hm, hm2, hK, hΩ, hpT, ha, hb, hXpkg, lfP, .atomL d =>
       .atomL (((TpInv done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons (show PFreeN p (.up (.atom c)) from hΩ.head) hK) hΩ.tail hpT ha hb hXpkg
-          (lfP.wk (Sub.grow _)) d)).wk (fun Z hZ => by
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-        · rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_self ..
-          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          (lfP.wk (Sub.grow _)) d)).wk (Sub.swap _ _))
   termination_by Γ' K M P₀ Ω a b j hm hm2 hK hΩ hpT ha hb hXpkg lfP d =>
     (2 * sum3 [] + sum3 done, sizeOf d)
   decreasing_by ljf_dec_e
@@ -1335,10 +1312,7 @@ def aMinF : ∀ (todo done Δ : List Neg) (G : Neg), ParkedCtx done →
       refine .impR (.downL ?_)
       refine ((aMinF (b ++ todo) done Δ G hP hΔ
         ((invUp (d.wk subHeadOut) b hb).wk subChainIn)).wk ?_)
-      intro Z hZ
-      rcases List.mem_cons.mp hZ with rfl | hZ
-      · exact List.mem_cons_self ..
-      · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)
+      exact Sub.cons _ (Sub.grow _)
   | .up (.down M) :: todo, done, Δ, G, hP, hΔ, _, d => by
       rw [interp, interp]
       exact aMinF (M :: todo) done Δ G hP hΔ
@@ -1426,10 +1400,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             · exact List.mem_append_right _ hk)))
       rw [jGoal_tru] at haux
       refine (haux.wk ?_)
-      intro Z hZ
-      rcases List.mem_cons.mp hZ with rfl | hZ
-      · exact List.mem_cons_self ..
-      · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)
+      exact Sub.cons _ (Sub.grow _)
   | _, _, hm, hm2, hK, .and M N, _, .andR d₁ d₂ => by
       show Inv _ [] .tru (interp p [] done (some (.and M N)))
       rw [interpA_and_eq hsat M N]
@@ -1617,10 +1588,7 @@ def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
                 (.stable (.lfoc (List.mem_cons_self ..)
                   (.rel (d.wk (Sub.grow _))))))
             exact emitJ .lax (bmem rfl hXr)
-              (.impR (.downL (haux.wk (fun Z hZ => by
-                rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))))
+              (.impR (.downL (haux.wk (Sub.cons _ (Sub.grow _)))))
         | .up .fls, hpk, _, _ => nomatch hpk
         | .up (.or _ _), hpk, _, _ => nomatch hpk
         | .up (.down _), hpk, _, _ => nomatch hpk
@@ -1794,23 +1762,13 @@ def UInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       .downL (((UInvG done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons hΩ.head hK) hV qmem dmem cmem bmem hΩ.tail d)).wk
-        (fun Z hZ => by
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+        (Sub.swap _ _))
   | _, _, _, _, _, .atom a :: _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hΩ, .atomL d =>
       .atomL (((UInvG done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons (show PFreeN p (.up (.atom a)) from hΩ.head) hK)
           hV qmem dmem cmem bmem hΩ.tail d)).wk
-        (fun Z hZ => by
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+        (Sub.swap _ _))
   termination_by Γ' K P₀ j L Ω hm hm2 hK hV qmem dmem cmem bmem hΩ d =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
   decreasing_by ljf_dec_a
@@ -2014,12 +1972,7 @@ def UpInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons hΩ.head hK) hV qmem dmem cmem bmem hΩ.tail ha hb hXpkg
           (lfP.wk (Sub.grow _)) d)).wk
-        (fun Z hZ => by
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+        (Sub.swap _ _))
   | _, _, _, _, _, _, .atom c :: _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hΩ, ha, hb, hXpkg,
       lfP, .atomL d =>
       .atomL (((UpInvG done hsat hP (hmConsK hm)
@@ -2027,12 +1980,7 @@ def UpInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           (PFreeCtx.cons (show PFreeN p (.up (.atom c)) from hΩ.head) hK)
           hV qmem dmem cmem bmem hΩ.tail ha hb hXpkg
           (lfP.wk (Sub.grow _)) d)).wk
-        (fun Z hZ => by
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+        (Sub.swap _ _))
   termination_by Γ' K M P₀ j L Ω a b hm hm2 hK hV qmem dmem cmem bmem hΩ ha hb hXpkg lfP d =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
   decreasing_by ljf_dec_a

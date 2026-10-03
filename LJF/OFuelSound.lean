@@ -490,14 +490,7 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
       intro b hb
       simp only [invertPos, List.mem_singleton] at hb
       subst hb
-      exact (aSoundF p f (M :: todo) done G).wk (by
-        intro Z hZ
-        rcases List.mem_cons.mp hZ with rfl | hZ
-        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-        · rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_self ..
-          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-              (List.mem_cons_of_mem _ hZ)))
+      exact (aSoundF p f (M :: todo) done G).wk ((Sub.swap _ _).trans (Sub.cons _ (Sub.cons _ (Sub.grow _))))
   | f+1, .and M N :: todo, done, G => by
       rw [interpF]
       exact simHyp
@@ -510,17 +503,7 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
             .lfoc (hs _ (List.mem_cons_of_mem _
               (List.mem_cons_of_mem _ (List.mem_cons_self ..)))) (.and1 lf))
           (Sub.cons N (Sub.cons _ (Sub.grow _)))
-          ((aSoundF p f (M :: N :: todo) done G).wk (by
-            intro Z hZ
-            rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                (List.mem_cons_self ..))
-            · rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_self ..
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                    (List.mem_cons_of_mem _ hZ)))))
+          ((aSoundF p f (M :: N :: todo) done G).wk (Sub.rot3 _ _ _)))
   | f+1, .imp .fls N :: todo, done, G => by
       rw [interpF]
       exact (aSoundF p f todo done G).wk (Sub.cons _ (Sub.grow _))
@@ -549,17 +532,7 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                   (List.mem_cons_of_mem _ (List.mem_cons_self ..))))
                   (.impL (stabOr1 s) lf1))
           (Sub.cons _ (Sub.cons _ (Sub.grow _)))
-          ((aSoundF p f (.imp Q₁ N :: .imp Q₂ N :: todo) done G).wk (by
-            intro Z hZ
-            rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                (List.mem_cons_self ..))
-            · rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_self ..
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                    (List.mem_cons_of_mem _ hZ)))))
+          ((aSoundF p f (.imp Q₁ N :: .imp Q₂ N :: todo) done G).wk (Sub.rot3 _ _ _)))
   | f+1, .imp (.down (.up P')) N :: todo, done, G => by
       rw [interpF]
       exact simHyp (H := .imp P' N)
@@ -568,14 +541,7 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
               .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
                 (.impL (.rfoc (.rel (.stable s))) lf1))
         (Sub.refl _)
-        ((aSoundF p f (.imp P' N :: todo) done G).wk (by
-          intro Z hZ
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                (List.mem_cons_of_mem _ hZ))))
+        ((aSoundF p f (.imp P' N :: todo) done G).wk ((Sub.swap _ _).trans (Sub.cons _ (Sub.cons _ (Sub.grow _)))))
   | f+1, .imp (.down (.and M₁ M₂)) N :: todo, done, G => by
       rw [interpF]
       exact simHyp (H := .imp (.down M₁) (.imp (.down M₂) N))
@@ -593,14 +559,7 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                     (Sub.refl _) (s₂.wk hsb))
                 (Sub.refl _) s₁)
         (Sub.refl _)
-        ((aSoundF p f (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done G).wk (by
-          intro Z hZ
-          rcases List.mem_cons.mp hZ with rfl | hZ
-          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-          · rcases List.mem_cons.mp hZ with rfl | hZ
-            · exact List.mem_cons_self ..
-            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-                (List.mem_cons_of_mem _ hZ))))
+        ((aSoundF p f (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done G).wk ((Sub.swap _ _).trans (Sub.cons _ (Sub.cons _ (Sub.grow _)))))
   | f+1, .imp (.down (.imp Q' N')) N :: todo, done, G => by
       rw [interpF]
       exact (aSoundF p f todo (.imp (.down (.imp Q' N')) N :: done) G).wk
