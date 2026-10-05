@@ -212,11 +212,9 @@ LaxLogic.PLL.SemUI.SemUI
 LaxLogic.PLL.SemUI.SemUIAdjoin
 LaxLogic.PLL.SemUI.SemUIAmalg
 LaxLogic.PLL.SemUI.SemUIBox
-LaxLogic.PLL.SemUI.SemUIChar
 LaxLogic.PLL.SemUI.SemUICtx
 LaxLogic.PLL.SemUI.SemUIDesc
 LaxLogic.PLL.SemUI.SemUIFrag
-LaxLogic.PLL.SemUI.SemUIHenkin
 LaxLogic.PLL.SemUI.SemUILaw
 LaxLogic.PLL.SemUI.SemUILayered
 LaxLogic.PLL.SemUI.SemUIOFree
@@ -543,7 +541,9 @@ wip.sealRefute
 wip.secondgen
 wip.seeds
 wip.semSpecW
+wip.semui_char
 wip.semui_ctx_core
+wip.semui_henkin
 wip.stabilise
 wip.starve
 wip.tagleaf_refute

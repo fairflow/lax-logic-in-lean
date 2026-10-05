@@ -20,7 +20,7 @@ r+2 over the rank-r list; `◯D₀` costs ≤ r+2, `◯⊥` costs 2, and
 (`bigAnd` is crank-free on cons); the empty-σ case needs no transfer —
 the reflexive `Rm` witness serves.
 -/
-import LaxLogic.PLL.SemUI.SemUIChar
+import wip.semui_char
 import LaxLogic.PLL.Semantics.Frames
 
 namespace PLLND

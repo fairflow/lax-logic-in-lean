@@ -1,6 +1,6 @@
 # Proof-status ledger
 
-Generated 2026-10-05 09:04 BST from `e7698b1` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-10-05 16:44 BST from `08fa4bb` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
@@ -100,7 +100,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.PLL.Normalisation` | 398 | 170 | 398 |  |  |
 | `LaxLogic.PLL.Realisability` | 112 | 40 | 112 |  |  |
 | `LaxLogic.PLL.Search` | 437 | 74 | 437 |  |  |
-| `LaxLogic.PLL.SemUI` | 717 | 428 | 712 | 5 |  |
+| `LaxLogic.PLL.SemUI` | 663 | 391 | 662 | 1 |  |
 | `LaxLogic.PLL.Semantics` | 585 | 333 | 585 |  |  |
 | `LaxLogic.PLL.Sequent` | 266 | 116 | 266 |  |  |
 | `LaxLogic.PLL.Syntax` | 394 | 143 | 394 |  |  |
@@ -326,7 +326,9 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.secondgen` | 7 | 6 | 7 |  |  |
 | `wip.seeds` | 14 | 13 | 14 |  |  |
 | `wip.semSpecW` | 6 | 4 | 6 |  |  |
+| `wip.semui_char` | 16 | 14 | 15 | 1 |  |
 | `wip.semui_ctx_core` | 41 | 4 | 41 |  |  |
+| `wip.semui_henkin` | 38 | 23 | 35 | 3 |  |
 | `wip.stabilise` | 42 | 19 | 42 |  |  |
 | `wip.starve` | 13 | 13 | 13 |  |  |
 | `wip.tagleaf_refute` | 23 | 20 | 23 |  |  |
@@ -411,10 +413,6 @@ Every distinct axiom set in the estate, most common first.
 |---|---|
 | `LaxLogic.Obligation.Examples.downstream` | `LaxLogic.Obligation.Examples` |
 | `LaxLogic.Obligation.Examples.sorried` | `LaxLogic.Obligation.Examples` |
-| `PLLND.SemUI.layered_of_frag_agree_W` | `LaxLogic.PLL.SemUI.SemUIChar` |
-| `PLLND.SemUI.amalgamation_assembled` | `LaxLogic.PLL.SemUI.SemUIHenkin` |
-| `PLLND.SemUI.wit_force` | `LaxLogic.PLL.SemUI.SemUIHenkin` |
-| `PLLND.SemUI.wit_pbisim` | `LaxLogic.PLL.SemUI.SemUIHenkin` |
 | `PLLND.SemUI.amalgamation` | `LaxLogic.PLL.SemUI.SemUILayered` |
 | `PLLND.conservativity_IPL` | `LaxLogic.ToolkitTest.Challenge.conservativity_IPL` |
 | `PLLND.isIPL_erase` | `LaxLogic.ToolkitTest.Challenge.isIPL_erase` |
@@ -427,6 +425,10 @@ Every distinct axiom set in the estate, most common first.
 | `PLLND.gammaPairFloorA_open` | `wip.cascadeBox` |
 | `PLLND.gammaPairFloorBox_open` | `wip.cascadeBox` |
 | `PLLND.jumpPairFloor_open` | `wip.cascadeBox` |
+| `PLLND.SemUI.layered_of_frag_agree_W` | `wip.semui_char` |
+| `PLLND.SemUI.amalgamation_assembled` | `wip.semui_henkin` |
+| `PLLND.SemUI.wit_force` | `wip.semui_henkin` |
+| `PLLND.SemUI.wit_pbisim` | `wip.semui_henkin` |
 | `LJFO.hasUI_of_stabilises` | `wip.ui_routeB_blueprint` |
 | `LJFO.ljfo_ui_of_stabilisation` | `wip.ui_routeB_blueprint` |
 | `LJFO.pll_ui_of_ljfo` | `wip.ui_routeB_blueprint` |

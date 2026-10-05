@@ -1,6 +1,6 @@
 import wip.witTripleC
 import wip.residueGrowth
-import LaxLogic.PLL.SemUI.SemUIChar
+import wip.semui_char
 
 /-!
 # The stabilisation lemma, via the cross-route plan

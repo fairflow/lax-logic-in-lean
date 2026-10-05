@@ -65,14 +65,26 @@ the whole estate, which is how a gate stops meaning anything.
   not machine-checked in the sense the rest of the estate is.  Either
   re-prove by `decide`, or move them out of the library.
 
-* `LaxLogic.PLL.SemUI.SemUILayered`, `LaxLogic.PLL.SemUI.SemUIChar`,
-  `LaxLogic.PLL.SemUI.SemUIHenkin` — five sorried declarations from the semantic
-  uniform-interpolation development shelved on 2026-08-07:
-  `SemUI.amalgamation`, `SemUI.layered_of_frag_agree_W`,
-  `SemUI.wit_force`, `SemUI.wit_pbisim`, `SemUI.amalgamation_assembled`.
-  A `sorry` ASSERTS, so as written these state the amalgamation lemma and
-  its supports as though they held.  Shelved work belongs in the
-  experimental estate, not in `LaxLogic/`.
+* `LaxLogic.PLL.SemUI.SemUILayered` — ONE sorried declaration,
+  `SemUI.amalgamation`, from the semantic uniform-interpolation development
+  shelved on 2026-08-07.  A `sorry` ASSERTS, so as written it states the
+  amalgamation lemma as though it held.
+
+  The other four went to `wip/` on 2026-10-05, acting on this list's own
+  sentence that shelved work belongs in the experimental estate and not in
+  `LaxLogic/`: `SemUIChar` -> `wip/semui_char.lean` and `SemUIHenkin` ->
+  `wip/semui_henkin.lean` carried `SemUI.layered_of_frag_agree_W`,
+  `SemUI.wit_force`, `SemUI.wit_pbisim` and `SemUI.amalgamation_assembled`
+  out of every library.  Both were LEAVES — only `LaxLogic.lean` and three
+  `wip/` files imported them.
+
+  `SemUILayered` CANNOT follow them, and the reason is worth recording:
+  `SemUIFrag` imports it, and `LaxLogic/Focusing/LJFComplete.lean` imports
+  `SemUIFrag`, so the module is upstream of a live completeness result.  Taking
+  the last sorry out of `LaxLogic/` therefore means moving the DECLARATION, not
+  the file — and `SemUI.amalgamation` is named by sixteen `wip/` files, so the
+  right repair is CLAUDE.md rule 1's: make it a typed obligation passed as a
+  parameter, not a sorried theorem.  That is a design decision, not a tidy-up.
 
 * `LaxLogic.Obligation.Examples` — `sorried` and `downstream` (2026-09-16).
   Unlike the entries above, these are not shelved work: the module's §5 exists
@@ -89,6 +101,5 @@ list should get shorter. -/
 
 #axiom_sweep [LaxLogic, FRJ, Rewrite, LJF]
   except [LaxLogic.Belief.Examples, LaxLogic.PLL.SemUI.SemUILayered,
-          LaxLogic.PLL.SemUI.SemUIChar, LaxLogic.PLL.SemUI.SemUIHenkin,
           LaxLogic.Obligation.Examples]
   allowing [propext, Classical.choice, Quot.sound]
