@@ -98,8 +98,8 @@ the docstring in `toolkit_config.py`.
 There are two routes, and they are not ranked. Install either or both:
 
 ```bash
-cp -r prover-toolkit/skill/prove-lemma        ~/.claude/skills/   # hosted API
-cp -r prover-toolkit/skill/prove-lemma-agent ~/.claude/skills/   # Claude proposes
+cp -r prover-toolkit/skill/prove-lemma       ~/.claude/skills/   # hosted API, costs money
+cp -r prover-toolkit/skill/prove-lemma-agent ~/.claude/skills/   # Claude proves it, with tools
 ```
 
 - **`prove-lemma`** hands the goal to a hosted model through `ax-prover`. It is

@@ -326,3 +326,49 @@ scan, and a file with "scratch" in its name.
 `tphols` is the one branch genuinely worth aligning, and it is **Matthew's** —
 he reviews in `~/Lean/qll-review` and agents do not touch it. It is 927 commits
 behind: `git -C ~/Lean/qll-review merge origin/main`.
+
+## 2026-10-05 (later) — the shim set picked; `publication/core` closed as a merge
+
+**The shim set is in**, completing the cherry-picks from `tooling`: `c91888b`,
+`a8eeae7`, `8a2981b`, `da9ac86`, all four clean. `main`'s `claude_shim.py` had
+**zero** mentions of live mode against `tooling`'s 21, so this was the one
+genuinely substantial piece left; it brings `prover-toolkit/test_claude_shim.sh`
+and `prover-toolkit/axprover/claude-shim-toolsoff.yaml`, both absent from `main`.
+The capability is the one the record calls built-but-blocked (ax-prover not
+installed, `claude` CLI OAuth expired) — the code is now here, the blockers are
+unchanged.
+
+`fcd91dc` (the FRJX field-test records) needed nothing: all four documents were
+already in `main`.
+
+**Nothing of substance remains on `tooling`.** No toolkit file exists there that
+`main` lacks, and the toolkit-path delta is 1,171 lines in `main`'s favour
+against 137. What is left is derived data the new `.gitignore` rule says never to
+commit (`corpora/items.jsonl`, `corpora/laxlogic.json` — benchmark corpora
+carrying absolute paths to whichever worktree generated them) plus the
+`SKIP_DIRS` line where `tooling` is simply behind.
+
+Diffing the toolkit paths *after* the picks caught two errors in `main`, one of
+them self-inflicted, both fixed in `58519e0`: a blanket rename `sed` had
+rewritten a sentence that is *about* the old name ("Named `prove-lemma-agent`
+until 2026-09-02…"), and `toolkit_cli.py`'s usage examples named a module that
+moved to `wip/` the same morning. **Check the residual diff after a pick run, not
+just that the picks applied.**
+
+### `publication/core`: no longer a merge candidate, and NOT retired
+
+Matthew, 2026-10-05: *"we will no longer even consider publication/core; it might
+be a decent template for a stripped-down Lax Logic repo, is all. Or we could
+cherry pick main into a fresh version. Leave it for now."*
+
+So the branch **stays on `origin`** — unlike the six retired above, it is kept
+deliberately, and for a reason that has nothing to do with merging. Its 13
+commits are a replay of the August restructuring that moved `Core.lean`, `FRJ/`
+and `FRJO/` to the repository root, which is why `merge-tree` predicts **424
+conflicts** including renames colliding with renames. As a merge it is dead. As a
+**layout sketch for a stripped-down repository** it may be worth something, and
+the second option Matthew names — cherry-pick `main` into a fresh tree shaped
+like it, rather than merge it into `main` — is the direction that would preserve
+whatever that value is.
+
+Do not propose merging it again. Do not delete it either.
