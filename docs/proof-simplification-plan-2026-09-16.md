@@ -35,6 +35,8 @@ vanished.
 | 2026-09-17 | the `FRJ/Gbu` W-copy hoist: seven W copies, 1,110 → 814 | 296 |
 | 2026-09-18 | `Saturate` ↔ `SaturateV`: the other 34, via the rule record | 384 |
 | 2026-09-19 | Round D: `TLF`/`ULF` → `XLF` over a mode — **−15% compile time, +23 lines** | −23 |
+| 2026-09-19 | tactic extraction step 1: `fin_sub`, 135 `Finset` sites in the three UI files | 389 |
+| 2026-09-19 | tactic extraction step 3: six `Sub` facts replace 51 inclusion walks | 209 |
 
 The last row is the only one that costs lines, and it is here because the
 scoreboard's unit was wrong for it: `docs/ljf-round-d-2026-09-18.md` trades 23

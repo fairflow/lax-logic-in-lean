@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-19 02:53 BST from `8a888d8` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-10-05 09:04 BST from `e7698b1` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**29590 declarations** in **603 modules**: 13589 theorems, 16001 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**29603 declarations** in **603 modules**: 13601 theorems, 16002 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -59,7 +59,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.WitnessV2013` | 35 | 2 | 35 |  |  |
 | `FRJ.WitnessV2018` | 41 | 2 | 41 |  |  |
 | `FRJO` | 273 | 92 | 273 |  |  |
-| `LJF` | 1542 | 766 | 1542 |  |  |
+| `LJF` | 1548 | 772 | 1548 |  |  |
 | `LaxBlueprint` | 10 | 0 | 10 |  |  |
 | `LaxLogic.Belief.BooleanIso` | 6 | 4 | 6 |  |  |
 | `LaxLogic.Belief.Collapse` | 5 | 4 | 5 |  |  |
@@ -74,7 +74,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.CubeEmbedding` | 8 | 7 | 8 |  |  |
 | `LaxLogic.Deriv` | 15 | 14 | 15 |  |  |
 | `LaxLogic.Focusing.IPCFocused` | 276 | 95 | 276 |  |  |
-| `LaxLogic.Focusing.LJF` | 545 | 258 | 545 |  |  |
+| `LaxLogic.Focusing.LJF` | 551 | 264 | 551 |  |  |
 | `LaxLogic.Focusing.LJFComplete` | 45 | 27 | 45 |  |  |
 | `LaxLogic.Interd` | 9 | 8 | 9 |  |  |
 | `LaxLogic.Obligation.Adder` | 23 | 18 | 23 |  |  |
@@ -105,7 +105,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.PLL.Sequent` | 266 | 116 | 266 |  |  |
 | `LaxLogic.PLL.Syntax` | 394 | 143 | 394 |  |  |
 | `LaxLogic.PLL.Timing` | 133 | 42 | 133 |  |  |
-| `LaxLogic.PLL.UI` | 308 | 214 | 308 |  |  |
+| `LaxLogic.PLL.UI` | 309 | 214 | 309 |  |  |
 | `LaxLogic.PLLInstanceBound` | 27 | 9 | 27 |  |  |
 | `LaxLogic.PLLSubformulaSet` | 10 | 3 | 10 |  |  |
 | `LaxLogic.QLL.Abstract` | 21 | 18 | 21 |  |  |
@@ -391,9 +391,9 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12783 |
+| *(none — axiom-free)* | 12784 |
 | `propext`, `Quot.sound` | 8459 |
-| `propext` | 5668 |
+| `propext` | 5680 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2646 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |

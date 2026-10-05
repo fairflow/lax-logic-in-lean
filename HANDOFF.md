@@ -5203,3 +5203,72 @@ than let one row overwrite the other and read as drift later.
 Watched on one module before paying for the estate: `LaxLogic.PLL.Sequent.Craig`
 **14 recorded declarations → 35**, exactly the 21 the source scan counts, every
 one `[propext, Quot.sound]` and clean.
+
+## 2026-10-05 — tactic extraction steps 1 and 3 gated, and `tooling` is cherry-pick only
+
+The 2026-09-19 session ended in an out-of-memory crash mid-build. Nothing was
+lost; this section closes it out.
+
+**The crash is explained, and it was not the subagents** (both were grep-and-read
+only, no builds). It was `lake build && lake build LJF` treated as one run.
+Measured on 2026-10-03, one module at a time, with a 5-second sampler:
+
+| build | wall clock | peak `lean` RSS | peak compressed | peak swap |
+|---|--:|--:|--:|--:|
+| `LJF.OFuelPFam` | 28 min | **17.8 GB** | 26.9 GB | 22.4 GB |
+| `LJF.OFuelPCofinal` (imports its 227 MB olean) | **3.2 s** | **0.2 GB** | 1.4 GB | 0 |
+| `scripts/ledger-run.py` over the whole estate | 34 min | 8.8 GB | 10.2 GB | 0 |
+
+Three things follow. The cost is **one module's elaboration**, not the import
+closure — a downstream file pays almost nothing for a 227 MB dependency. The
+full-estate ledger run, which imports ~600 modules into one environment, is only
+*half* as hungry as that single module. And **"one heavy run at a time" means one
+MODULE**: 17.8 GB of a 48 GB machine, with the compressor going 4 → 24 GB in
+ninety seconds and 22 GB of swap behind it, leaves no room for a second.
+Everything was released instantly on completion (free 9 → 38.6 GB); nothing
+leaked.
+
+**Steps 1 and 3 of `docs/tactic-extraction-survey-2026-09-19.md` are now gated
+together: 13 additions, ZERO regressions, exit 2.**
+
+```
+NEW  LJFO.Sub.{app,appL,appR,peel,rot3,swap}  (LJF.OCore)
+NEW  LJF.Sub.{app,appL,appR,peel,rot3,swap}   (LaxLogic.Focusing.LJF)
+NEW  PLLND.tacticFin_sub                      (LaxLogic.PLL.UI.G4UI)
+```
+
+**598 lines of proof removed and not one declaration in the estate changed
+status.** All twelve lemmas are `[propext]` only — the `tauto` in `fin_sub`
+introduced no `Classical.choice`, which was the one axiom risk the survey
+flagged. Record 29,590 → 29,603; `23 sorryAx / 2 native_decide` unchanged.
+
+**`tooling` is CHERRY-PICK ONLY, and must not reflect `main`** (Matthew,
+2026-10-05). On 2026-10-03 I recommended merging it — 33 commits, 16 predicted
+conflicts — which was wrong, and wrong against this repository's own record:
+`docs/branch-conventions.md` on `tooling` and the branch-layout note both
+already said the flow is one-way and that `tooling` stays separate by Matthew's
+decision. The 16-conflict figure is irrelevant because the merge is not the
+operation. Take wanted commits one at a time; never merge `main` into `tooling`
+either.
+
+**Where the campaign's lines actually went**, since this was misremembered in
+conversation. Net Lean change `a32bda1..HEAD` is **−5,333**; `LaxLogic/PLL/UI/`
+is **−1,335 of it, a quarter.** The rest is the FRJ soundness and saturation
+files, the LJF focusing line, and `tools/`. And `LaxLogic/PLL/UI/` is **not** in
+`wip/` — it is inside the `LaxLogic` library, a default target, so CI compiles it
+on every push.
+
+**One thing for Matthew that this turned up.** Five sorried declarations from the
+*halted* UI route sit in the shipped library, not in `wip/`:
+
+```
+LaxLogic.PLL.SemUI.SemUILayered :: PLLND.SemUI.amalgamation
+LaxLogic.PLL.SemUI.SemUIHenkin  :: PLLND.SemUI.amalgamation_assembled
+                                :: PLLND.SemUI.wit_force
+                                :: PLLND.SemUI.wit_pbisim
+LaxLogic.PLL.SemUI.SemUIChar    :: PLLND.SemUI.layered_of_frag_agree_W
+```
+
+Moving `SemUI/` to `wip/` would be a small clean change and is his call. The
+other two library sorries (`Obligation.Examples.{sorried,downstream}`) are
+deliberate demonstrations with pins and should stay.
