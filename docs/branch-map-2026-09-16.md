@@ -196,3 +196,133 @@ files git did **not** flag.
 exit 0.  Four `sorry` warnings, all the halted UI route (`SemUILayered`,
 `SemUIHenkin` ×2, `SemUIChar`), unchanged from baseline; every `#guard_msgs`
 axiom pin passes.
+
+---
+
+# 2026-10-05 — the map after the retirements
+
+Appended rather than rewritten, because the body above is the record of what was
+predicted and what the 2026-09-16 merge actually did. This section is the
+**current** state. Every figure from `git` on `origin` as fetched today.
+
+## The landscape: 35 remote branches → 29, and only two carry anything
+
+| branch | ahead of `main` | genuinely absent | what to do |
+|---|--:|--:|---|
+| `tooling` | 33 | **5** | **CHERRY-PICK ONLY** — see below |
+| `publication/core` | 13 | 13 | **424 conflicts**, renames colliding with renames. Not a merge. |
+
+Nothing else in the repository is ahead of `main`. The four lines of the body
+above are finished: `syntax-reorg`, `blueprint-dev-chapter` and `FRJX` became
+true ancestors of `main`, and `ljfo-dev` was merged today (one commit,
+`docs/ljfo-cost-review.md`, 241 lines, no conflict).
+
+## Retired today
+
+Six branches deleted from `origin` at Matthew's instruction, after checking each
+one's commits would still be reachable:
+
+| branch | why it was safe |
+|---|---|
+| `syntax-reorg` | true ancestor of `main` |
+| `FRJX` | true ancestor of `main` |
+| `ljfo-dev` | true ancestor of `main` (merged today) |
+| `blueprint-recipe` | ancestor of `tooling`, which is staying |
+| `paper/closed-fragment-ladder` | content already in `main` by patch-id; **tagged** `retired/paper-closed-fragment-ladder` |
+| `toolchain-main` | one unmerged July commit; **tagged** `retired/toolchain-main` |
+
+The two tags exist because those two commits were *not* ancestors of anything
+surviving, and SOUL.md says archive superseded work rather than delete it. Both
+tags are pushed; the content is recoverable with `git show retired/<name>`.
+
+**`blueprint-dev-chapter` was deliberately NOT retired**, although it is a true
+ancestor of `main` and therefore safe. The reason is operational: Matthew's main
+clone, `/Users/matthew/Lean/Sources/lax-logic-in-lean`, is checked out on that
+branch at `067457c`, about a thousand commits behind. Deleting the remote would
+leave his primary working copy tracking a branch that no longer exists. Switch
+the clone to `main` first:
+
+```bash
+git -C ~/Lean/Sources/lax-logic-in-lean switch main
+git -C ~/Lean/Sources/lax-logic-in-lean pull
+```
+
+then the branch can go.
+
+## `tooling` is cherry-pick only, in both directions
+
+Matthew's instruction, 2026-10-05: **never merge `tooling` into `main`, and never
+merge `main` into `tooling`.** It is an independent line carrying the toolkit,
+not a branch to be reconciled. The number that makes this obvious:
+`main → tooling` is **1,381 files and 294,543 deletions**, because `tooling`
+branched before the four lines merged and is far *behind* `main` on everything
+that is not the toolkit. `merge-tree` predicts "16 conflicts", which badly
+understates the divergence and is irrelevant anyway.
+
+**`git cherry` is not sufficient to choose picks.** It is patch-id based, and of
+the 31 non-merge commits it marked 13 as absent from `main`; testing each by
+CONTENT showed two of those were wrong in opposite directions:
+
+* `7687079` was a **no-op** — `main` already had the fix by another route.
+* `e888a3c` would have **regressed** `main`. `main` already had the whole
+  commit, and `main`'s `SKIP_DIRS` is strictly better: it also skips the frozen
+  `wipa`–`wipd` arms, which the pick would have deleted.
+
+Picked today, after verifying each against `main`'s content:
+
+| commit | what it fixes |
+|---|---|
+| `c829aa8` | gate 3 resolved source paths with `cfg.repo.rglob`, which in **this** clone matches 63 copies of a file across sibling worktrees, discards none (they are not `.lake`), and takes `hits[0]` in filesystem order — so the toolkit could print a body from another campaign's worktree at a different commit and say nothing about it. Also 11 s a call. |
+| `bfeab28` | the harness's retrieval block omitted the constructor list — a silent quality loss on every run |
+| `144469c` | the Verso Blueprint recipe (`BLUEPRINT-SETUP.md`, `blueprint-scaffold.sh`); both files were absent from `main`, so a clean add |
+| `0092df4` | `prove-lemma-inloop` → `prove-lemma-agent`; `main` still carried the old name |
+
+Two conflicts were resolved rather than taken wholesale: `.gitignore` as a union
+(keeping `main`'s rules and adding `*_items.jsonl`, with a note that it covers
+future corpora only because `.gitignore` does not untrack), and
+`prover-toolkit/README.md` resolved to **`main`'s** text, because `tooling`'s
+side would have imported the shim set that was not being picked.
+
+**Left on `tooling`, both optional:** the Claude-Code-as-endpoint shim and its
+live mode (`c91888b`, `a8eeae7`, `8a2981b`, `da9ac86` — the capability the record
+calls built-but-blocked), and the four FRJX field-test records (`fcd91dc`).
+
+## `publication/core`: do not merge it
+
+13 commits, **424 predicted conflicts**, including renames colliding with
+renames (`wip/frj_sat.lean → FRJ/Search/Engine.lean` against another path). It
+is a replay of the August restructuring that moved `Core.lean`, `FRJ/` and
+`FRJO/` to the repository root. Either cherry-pick what is still wanted, or
+declare it superseded — and if superseded, run
+`.claude/skills/constraint-supersession-check`, because a whole abandoned path
+is exactly the shape that skill exists for.
+
+## On "aligning the other agents" — measured, and the answer is don't
+
+35 worktrees, **31 of them ephemeral `agent-*`** (local-only by convention, never
+pushed), and **exactly one touched in the previous fourteen days** — the one
+being worked in. Every other worktree is 600–1,500 commits behind `main` and
+dormant since July or August. Merging `main` into them is ~34 conflict-laden
+merges into directories nobody is using, performed on top of their uncommitted
+files, which is the one way to actually lose that work.
+
+Two measurements make leaving them safe:
+
+* **Nothing can depend on an uncommitted file.** It exists in one working
+  directory; no branch holds it, no other worktree sees it, no build elsewhere
+  can import it. The dependency can only run the other way.
+* Of roughly **270 uncommitted files**, only **6 `.lean` files** held content
+  absent from `main`. The alarming case — 84 untracked `.lean` files in a
+  2026-07-29 worktree — was a false alarm: 78 are already in `main`, and the
+  other six (`PLLNoFall`, `PLLNoFallNF`, `PLLNoFallSep`, `PLLSearchNoFall`,
+  `PLLSearchPin`) are the *same files at pre-`syntax-reorg` paths*, line counts
+  matching `main` exactly (504, 437, 178, 288, 164).
+
+Of the six genuinely uncommitted files, the two that carried a result were
+rescued today (`wip/cutinv_screen.lean` + `cutinv_screen_cert.lean`, a REFUTED
+verdict on `PolInv`). The remaining four are two `_probe/` harnesses, a 46-line
+scan, and a file with "scratch" in its name.
+
+`tphols` is the one branch genuinely worth aligning, and it is **Matthew's** —
+he reviews in `~/Lean/qll-review` and agents do not touch it. It is 927 commits
+behind: `git -C ~/Lean/qll-review merge origin/main`.
