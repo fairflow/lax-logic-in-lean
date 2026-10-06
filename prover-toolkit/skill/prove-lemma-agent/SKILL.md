@@ -23,7 +23,7 @@ are an agent with tools, so the numbers are not comparable in either direction.
 To measure the harness cheaply, put Claude behind its endpoint with
 `prover-toolkit/claude_shim.py`; see the toolkit README.
 
-*(Named `prove-lemma-agent` until 2026-09-02. Renamed because "in loop" read
+*(Named `prove-lemma-inloop` until 2026-09-02. Renamed because "in loop" read
 as "the same thing, cheaply", which is exactly what it is not.)*
 
 ## Setup

@@ -5272,3 +5272,48 @@ LaxLogic.PLL.SemUI.SemUIChar    :: PLLND.SemUI.layered_of_frag_agree_W
 Moving `SemUI/` to `wip/` would be a small clean change and is his call. The
 other two library sorries (`Obligation.Examples.{sorried,downstream}`) are
 deliberate demonstrations with pins and should stay.
+
+## 2026-10-05 (later) — the branch landscape closed down: 35 remotes → 29, two left
+
+Full detail in `docs/branch-map-2026-09-16.md` §"2026-10-05 — the map after the
+retirements", appended rather than rewritten so the original prediction record
+survives.
+
+**Only two branches in the repository are now ahead of `main`**: `tooling` (5
+genuinely absent commits, both sets optional) and `publication/core` (13 commits,
+424 conflicts, needs adjudication not merging). Everything else is finished.
+
+**Merged:** `ljfo-dev`, one commit, `docs/ljfo-cost-review.md` (241 lines, no
+Lean, no conflict) — a reviewer's note on the LJF◯ edit-compile loop, topical
+again because this campaign measured that loop from the other end.
+
+**Retired from `origin`:** `syntax-reorg`, `FRJX`, `ljfo-dev` (all true ancestors
+of `main`), `blueprint-recipe` (ancestor of `tooling`, which stays),
+`paper/closed-fragment-ladder` and `toolchain-main` (not ancestors of anything
+surviving, so both **tagged** `retired/<name>` and pushed before deletion, per
+SOUL.md's rule to archive rather than delete).
+
+**`blueprint-dev-chapter` deliberately kept**, though safe to delete: Matthew's
+main clone is checked out on it at `067457c`. Switch that clone to `main` first,
+then it can go.
+
+**Cherry-picked from `tooling`** (never merged, in either direction — his
+instruction): `c829aa8`, `bfeab28`, `144469c`, `0092df4`. The method lesson is
+worth more than the picks: **`git cherry` is patch-id based and is not
+sufficient to choose them.** Of the 13 it marked absent, testing by CONTENT
+showed `7687079` was a no-op and `e888a3c` would have *regressed* `main` by
+deleting its `wipa`–`wipd` skips. Test each candidate against `main`'s content
+before picking.
+
+**Rescued:** `wip/cutinv_screen.lean` + `cutinv_screen_cert.lean`, untracked in
+an agent worktree since 2026-09-05 and holding a kernel-checked **REFUTED**
+verdict on `PolInv`, the route by which `CutInv` — the single typed obligation
+`wip/ui_routeB_n3.lean` proves N3 backward and N6 relative to — reaches the
+bridge. Plus two vacuity results for `CutInv` at lax implication and conjunction
+goals. Nothing in the repository recorded that these existed.
+
+**"Aligning the other agents" was measured and rejected**: 31 of 35 worktrees are
+ephemeral `agent-*`, and exactly one had been touched in fourteen days. Nothing
+can depend on an uncommitted file, and of ~270 of them only 6 `.lean` files held
+content absent from `main`. The one branch worth aligning is `tphols`, which is
+Matthew's.
