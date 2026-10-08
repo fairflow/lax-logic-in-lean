@@ -1,16 +1,191 @@
-# Propositional Lax Logic
+# Propositional Lax Logic, in Lean 4
 
-A Lean 4 implementation of the paper [Propositional Lax Logic](https://www.sciencedirect.com/science/article/pii/S0890540197926274) by Matt Fairtlough and Michael Mendler.
+A mechanisation of [Propositional Lax Logic](https://www.sciencedirect.com/science/article/pii/S0890540197926274)
+(Fairtlough and Mendler, *Information and Computation* 137, 1997) — and, well
+beyond it, of a family of calculi, deciders and structural results built on top.
 
-## Work in progress
+PLL extends intuitionistic propositional logic with one modality `◯`, read as
+"holds under some constraint". The paper's own results are all here; most of
+what follows them is not in the paper. `docs/calculus-map.md` is the provenance
+reference and settles which is which — read it before attributing a result.
 
-Tooling: [`docs/search-manual.md`](docs/search-manual.md) — proof search and
-countermodel search for PLL sequents (`LaxLogic/PLL/Search/Search.lean`, with the
-`#search` / `#refute` / `#refuteConf` / `#draw` commands in
-`LaxLogic/PLL/Search/SearchCmd.lean` and `LaxLogic/PLL/Search/DiagramCmd.lean`).  §0 of the
-manual is a one-table answer to "which command do I want?", and the trap it
-names is the important one: a countermodel refutes **PCLL** only if it is
-mutually confluent, so a PCLL claim wants `#refuteConf`, not `#refute`.
-`LaxLogic/PLL/Search/SearchDemo.lean` is the same manual as a file to step through in
-the info view.
+## How to read a claim in this repository
 
+Three statuses, kept rigidly apart:
+
+* **PROVED** means sorry-free in Lean with a pinned axiom set, where the axioms
+  come from `Lean.collectAxioms` — the only oracle trusted here. "Machine-checked"
+  is reserved for this and means nothing weaker.
+* **REFUTED** means a kernel-checked countermodel or a certificate of emptiness.
+  A disproof is a result, not a failure.
+* **OPEN** is everything else. A `sorry` *asserts* its statement, so an open
+  case is a typed obligation passed as a parameter, never a sorried theorem.
+
+`native_decide` does **not** count as a proof: it compiles the decision
+procedure and asserts the answer, so the kernel never sees the computation and
+the trusted base grows to include the compiler and runtime. Two declarations in
+the estate use it and both are held out by name.
+
+The whole estate is measured mechanically. `scripts/check-ledger.sh` runs
+`collectAxioms` over every declaration of every built module, compares the result
+against `docs/status-ledger.jsonl`, and fails on drift; it runs in CI.
+
+As of 2026-10-08:
+
+| | |
+|---|--:|
+| declarations recorded | 29,603 in 603 modules |
+| theorems | 13,601 |
+| axiom-free | 12,784 |
+| `[propext, Quot.sound]` | 8,459 |
+| `[propext]` | 5,680 |
+| using `Classical.choice` | 2,654 |
+| carrying `sorryAx` | **23** |
+| `native_decide`-tainted | **2** |
+
+The 23 `sorryAx` declarations break down as: **16 in `wip/`**, where a `sorry` is
+permitted and is the point of a blueprint file; **4 in `LaxLogic/ToolkitTest/`**,
+which are deliberately holed fixtures the prover toolkit is measured against;
+**2 demonstrations** in `LaxLogic/Obligation/Examples.lean`, whose §5 exists to
+show what one `sorry` does to everything downstream and which carry pins
+asserting `[sorryAx]` on purpose; and **exactly one unintended open case** in a
+library — `PLLND.SemUI.amalgamation`, from the shelved semantic
+uniform-interpolation route. `docs/status-ledger.md` names them all.
+
+## The top-level Lean files
+
+Each of these is a library root: a list of imports that defines what the library
+is. `lakefile.toml` builds `LaxLogic` and `FRJGbu` by default; the rest are built
+on demand.
+
+### `LaxLogic.lean` — the main library (81k lines, 210 files)
+
+The root of everything about PLL itself, and the only library the other roots
+depend on. The dependency direction is one-way throughout: `LJF`, `FRJ`, `BiLax`,
+`Reject` and `Rewrite` all import `LaxLogic`; it imports none of them. Its main
+lines, by size:
+
+* **`PLL/Syntax`, `PLL/ND`, `PLL/Semantics`** — the paper. Formulas, natural
+  deduction (`LaxND`, the reference system), the Hilbert presentation, the
+  constraint-model semantics with fallible worlds, soundness, completeness, the
+  finite model property. Our forcing definition reproduces theirs field for field.
+* **`PLL/Sequent`, `PLL/G4` (8.0k)** — the sequent side. F&M's cut-free calculus,
+  Iemhoff's `G3iLL`/`G4iLL`, and `G4c`: the *repaired* calculus, after a
+  machine-checked counterexample showed `G4iLL` incomplete. `G4c` is what the
+  decider and most later work actually run on. Cut, contraction, completeness and
+  the inter-calculus equivalences are proved for it.
+* **`PLL/Search` (5.1k)** — proof search and countermodel search, with the
+  `#search` / `#refute` / `#refuteConf` / `#draw` commands and the `laxrun` CLI.
+  See `docs/search-manual.md`; its §0 names the trap that matters — a
+  countermodel refutes **PCLL** only if it is mutually confluent, so a PCLL claim
+  wants `#refuteConf`, not `#refute`.
+* **`PLL/Normalisation` (3.7k)** — the proof-term calculus: Church–Rosser for the
+  full reduction via Newman's lemma, and strong normalisation by ⊤⊤-lifting.
+* **`PLL/UI` (8.0k) and `PLL/SemUI` (9.2k)** — uniform interpolation, syntactic
+  and semantic. The semantic route was **shelved** in August 2026; its one
+  remaining library `sorry` is the amalgamation lemma, and the rest of the
+  shelved work now lives in `wip/`.
+* **`PLL/Timing`, `PLL/Realisability`** — the paper's intended application:
+  constraints as timing, circuits verified against them.
+* **`QLL/` (17.3k, 55 files)** — the largest single line, and a different paper:
+  a deep embedding of the abstract logic of Fairtlough–Mendler–Cheng, *Abstraction
+  and refinement in higher order logic* (TPHOLs 2001), with the constraint logic
+  programming fragment and its machine.
+* **`Obligation/` (3.8k)** — the obligation library: the TPHOLs latch and the
+  repository's own adders rerun through a reusable interface.
+* **`Focusing/` (5.6k)** — LJF for IPC, and the completeness proof.
+  `LaxLogic/Focusing/LJF.lean` itself is deliberately **zero-import** — no Mathlib, no
+  other calculus carries any of it — because it is the ◯-free control case for
+  `LJF◯`, where the theorem is textbook and design faults show at a tenth of the
+  cost. `LJFComplete` and `IPCFocused` build on it and do import.
+* **`Belief/` (2.1k)** — PLL read as a logic of idealised evidential belief;
+  includes the sharp form of "classical belief is degenerate" (nuclei on a
+  Boolean algebra are order-isomorphic to it).
+* **`RN/`, `ClosedFragmentLattice`, `CubeEmbedding`, `Interd`** — the closed
+  fragment RN(◯,{}). All of this is ours: the Rieger–Nishimura ladder embedded by
+  `p ↦ ◯⊥`, the families, the gap antichain, a descending chain with no floor,
+  and the strict `◯`-depth hierarchy.
+
+### `LJF.lean` — the focused calculi and the modal interpolant (17.5k)
+
+`LJF◯`, the lax-flagged focused calculus: `OCore`, `ORows`, `OFuel`, `OSearch`,
+`OBridge`, and the fuel-indexed soundness and minimality families. The focusing
+discipline is LJF-style after Liang and Miller; the `◯` rules, the interpolant
+and everything proved about them are ours. Like `LaxLogic/Focusing/`, `OCore` is
+**zero-import** — which is load-bearing, not stylistic, and is why the two
+islands keep their own copies of small shared facts.
+
+This is also the most expensive code in the repository to compile: one module,
+`OFuelPFam`, peaks at 17.8 GB of `lean` resident memory and takes 28 minutes on
+a 48 GB machine. Build one heavy module at a time.
+
+### `FRJ.lean` — forward refutation, three generations (34.8k, 62 files)
+
+The refutation side: calculi that build a countermodel forward rather than
+searching for a proof. Objects here are **disproofs**, never "proofs". Three
+generations coexist: `FRJ`, `FRJV` (the `RefAt` repair, after paper-FRJ◯
+completeness was **refuted** here) and `FRJW` (the modal calculus). `FRJW` was
+built as a new calculus with fresh proofs of everything rather than by editing
+`FRJV`, and the `FRJV` files were left untouched, so the two lines can be
+compared rather than conflated.
+
+`FRJ/Gbu/` is built as its own default target **`FRJGbu`** (no top-level root; the
+lakefile globs it). It carries `Gbu◯`, the two-judgment provability calculus
+complete for PLL, and the `FRJW`/`GBUW` dichotomy that yields `decidePLL`.
+
+### The smaller roots
+
+| file | what it is | relevance |
+|---|---|---|
+| `FRJO.lean` | FRJ◯ reconstruction and completeness (1.7k) | the modal refutation line's completeness route; had never been built until the ledger campaign made the estate explicit |
+| `BiLax.lean` | the bi-lax extension (2.3k) | syntax, frames, Hilbert, soundness, labelled tableaux, a Hintikka construction and a refutation pipeline; `docs/bilax-plan.md` |
+| `Reject.lean` | a forward, model-generating refutation calculus for PLL (2.6k) | the IPC-level ancestor of the FRJ line; carries its own soundness, completeness, bisimulation and certificates |
+| `Rewrite.lean` | certified rewriting (1.4k) | banked interderivabilities used as simplifiers. No rule enters a simpset unless its cell is proved |
+| `Meta.lean` | audit tooling (0.9k) | the axiom sweep and the green-slime check. `Meta/Tactics.lean` is the register of tactics the proofs are allowed to use |
+| `Main.lean` | the `laxrun` CLI (65 lines) | argv → driver map onto `PLL/Search/Exec`; all computation lives there |
+| `pll_out.lean` | **generated** by `lake exe pll` | a pinned countermodel tableau; do not edit |
+| `LaxPaper.lean`, `CLPPaper.lean`, `LaxBlueprint.lean` (+ their `*Main.lean`) | Verso documents | the obligation-library write-up, the CLP paper, and the blueprint site. Each is the only target that pulls Verso into the import graph, so none is a default target |
+
+## Directories that are not libraries
+
+* **`wip/` (145k lines, 462 files)** — the experimental estate. Blueprint files,
+  probes, refutation screens, shelved routes. `sorry` is permitted here. Most of
+  it is outside the default build *by design*, which means it is also outside
+  the checks: `scripts/check-imports.py` and the ledger exist because that
+  boundary has twice hidden real work.
+* **`tools/` (7.1k)** — executables and generators, including the ρ-catalogue
+  table generators.
+* **`RNDB/` (6.3k), `Certified/` (8.4k)** — the RN(◯,{}) dictionary in layers: a
+  certification register of the theorems the database may cite, each re-pinned
+  with a checked `#print axioms`, and then the database itself as one object —
+  1,776 kernel-checked dictionary facts.
+* **`Audit/`** — the sweep gates (`Production`, `Experimental`), with every
+  hold-out named and justified. Each line in a hold-out list is a claim that
+  something is not meeting the bar; the list should get shorter.
+* **`prover-toolkit/`** — retrieval, a proving harness, and the challenge/ablation
+  set. Python, not part of any Lean target.
+* **`docs/` (157 documents)** — the written record.
+
+## Build and run
+
+```bash
+lake build                       # the default targets: LaxLogic, FRJGbu
+scripts/check-imports.py         # every import names a module that exists (1s, no build)
+scripts/check-ledger.sh          # the estate gate: 0 clean, 1 regression, 2 stale
+scripts/laxrun.sh help           # the CLI
+```
+
+`wip/` modules are not default targets and need building by name
+(`lake build wip.cutinv_screen`).
+
+## Where to look next
+
+| document | what it is |
+|---|---|
+| `docs/calculus-map.md` | **the provenance reference** — which calculus a result belongs to, and whose it is |
+| `METHOD.md` | the conjecture → statement → refutation → proof pipeline |
+| `TOOLS.md` | the register of recommended tools, with a version cell each |
+| `HANDOFF.md` | the standing handover, appended in dated sections |
+| `docs/next-session.md` | live threads and open decisions |
+| `docs/status-ledger.md` | the generated proof-status record |
+| `docs/search-manual.md` | proof and countermodel search |
