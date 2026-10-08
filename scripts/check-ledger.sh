@@ -3,7 +3,7 @@
 # compare it with the recorded one.
 #
 #     scripts/check-ledger.sh              # check; 0 clean, 1 regression, 2 stale
-#     scripts/check-ledger.sh --update     # rewrite the record and the report
+#     scripts/check-ledger.sh --update     # rewrite the record, the report and the README
 #     scripts/check-ledger.sh --built-only # check only the modules that are
 #                                          # built here (for CI, which builds
 #                                          # the default targets and no more)
@@ -50,7 +50,10 @@ print(f'ledger: {len(mods)} modules recorded in $MODS')
 " || exit 3
   trap - EXIT
   python3 scripts/ledger-report.py "$RECORD" "$REPORT" || exit 3
-  echo "ledger: $RECORD and $REPORT updated"
+  # The README quotes nine of these figures and a four-way breakdown of the
+  # `sorryAx` rows; keep them true from the same record rather than by memory.
+  python3 scripts/readme-figures.py "$RECORD" README.md || exit 3
+  echo "ledger: $RECORD, $REPORT and README.md updated"
   exit 0
 fi
 

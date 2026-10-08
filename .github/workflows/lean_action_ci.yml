@@ -40,6 +40,14 @@ jobs:
       - name: Imports resolve
         run: scripts/check-imports.py
 
+      # The README quotes nine ledger figures and a four-way breakdown of the
+      # `sorryAx` rows.  They are generated from `docs/status-ledger.jsonl` by
+      # `scripts/readme-figures.py`, which `--update` runs; this says so if the
+      # two have drifted apart.  It reads the COMMITTED record, so it needs no
+      # build and is build-independent.
+      - name: README figures match the record
+        run: scripts/readme-figures.py --check
+
       # The proof-status gate (`docs/ledger-campaign-2026-09-16.md`).  It reads
       # the `.olean`s the step above produced, so `--built-only`: CI builds the
       # default targets, not the papers or `wip/`, and the gate compares within
