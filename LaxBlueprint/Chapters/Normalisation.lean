@@ -7,6 +7,7 @@ import LaxLogic.PLL.Normalisation.Confluence
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open PLLND
 
 #doc (Manual) "Normal forms and confluence" =>
 

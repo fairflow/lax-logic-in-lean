@@ -6,6 +6,7 @@ import LaxLogic.PLL.Sequent.Craig
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open PLLND
 
 #doc (Manual) "Towards uniform interpolation" =>
 

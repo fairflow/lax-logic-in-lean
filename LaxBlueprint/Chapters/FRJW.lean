@@ -17,6 +17,7 @@ import wip.rbar
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open FRJ FRJ.Gbu FRJ.Gbu.W
 
 #doc (Manual) "The decision procedure" =>
 

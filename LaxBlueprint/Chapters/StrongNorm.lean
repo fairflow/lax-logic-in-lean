@@ -8,6 +8,7 @@ import LaxLogic.PLL.Normalisation.TopTop
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open PLLND
 
 #doc (Manual) "Strong normalisation" =>
 
