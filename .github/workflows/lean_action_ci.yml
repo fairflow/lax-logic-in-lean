@@ -74,3 +74,12 @@ jobs:
             1) echo "::error::the proof-status ledger reports a REGRESSION (see the log above)"; exit 1 ;;
             *) echo "::error::the proof-status ledger could not be generated (exit $rc)"; exit 1 ;;
           esac
+
+      # The LJF◯ modules the two-sided engine's proof side rests on (Matthew,
+      # 2026-10-09: "add LJF to CI").  NOT the whole `LJF` lib: its globs include
+      # `LJF.OFuelPFam` (and `OFuelPCofinal`, which imports it), measured at
+      # 25–28 min and 17.8 GB peak RSS, beyond the runner.  Add `LJF.OCheckDeriv`
+      # here when it lands.  Placed after the ledger so the ledger's scope is
+      # unchanged.
+      - name: LJF◯ search and bridge build
+        run: lake build LJF.OSearch LJF.OBridge
