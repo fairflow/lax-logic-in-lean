@@ -7,6 +7,7 @@ import CLPPaper.Math
 open Verso.Genre
 open Verso.Genre.Manual
 open CLPPaper CLPPaper.Math
+open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Solving constraints with certificates" =>
 
@@ -33,19 +34,19 @@ multiplier on some strict constraint.  Validity refutes the system.
 
 A checked witness satisfies every constraint.
 
-{stmt}`LaxLogic.QLL.LinQ.checkWitness_sound`
+{stmt}`LinQ.checkWitness_sound`
 
-{docstring LaxLogic.QLL.LinQ.checkWitness_sound +allowMissing}
+{docstring LinQ.checkWitness_sound +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LinQ.checkWitness_sound`
+{srcLink}`LinQ.checkWitness_sound`
 
 A checked Farkas certificate shows the system unsatisfiable.
 
-{stmt}`LaxLogic.QLL.LinQ.checkFarkas_unsat`
+{stmt}`LinQ.checkFarkas_unsat`
 
-{docstring LaxLogic.QLL.LinQ.checkFarkas_unsat +allowMissing}
+{docstring LinQ.checkFarkas_unsat +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LinQ.checkFarkas_unsat`
+{srcLink}`LinQ.checkFarkas_unsat`
 
 Fourier–Motzkin elimination, untrusted.  Each constraint becomes a row with
 its multiplier vector; while variables remain, the variable with the fewest
@@ -53,28 +54,28 @@ positive-negative pairs is eliminated, with a cap on the number of new rows;
 a contradiction row's multipliers are the Farkas certificate, and otherwise
 back-substitution builds a witness.
 
-{stmt}`LaxLogic.QLL.LinQ.fm`
+{stmt}`LinQ.fm`
 
-{docstring LaxLogic.QLL.LinQ.fm +allowMissing}
+{docstring LinQ.fm +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LinQ.fm`
+{srcLink}`LinQ.fm`
 
 A verdict `sat w` that passes certification has `w` a solution.
 
-{stmt}`LaxLogic.QLL.LinQ.certifyVerdict_sat`
+{stmt}`LinQ.certifyVerdict_sat`
 
-{docstring LaxLogic.QLL.LinQ.certifyVerdict_sat +allowMissing}
+{docstring LinQ.certifyVerdict_sat +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LinQ.certifyVerdict_sat`
+{srcLink}`LinQ.certifyVerdict_sat`
 
 A verdict `unsat λ̃` that passes certification has the system unsatisfiable.
 Any solver may produce the verdict, and none has to be trusted.
 
-{stmt}`LaxLogic.QLL.LinQ.certifyVerdict_unsat`
+{stmt}`LinQ.certifyVerdict_unsat`
 
-{docstring LaxLogic.QLL.LinQ.certifyVerdict_unsat +allowMissing}
+{docstring LinQ.certifyVerdict_unsat +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LinQ.certifyVerdict_unsat`
+{srcLink}`LinQ.certifyVerdict_unsat`
 
 # Entailment, least values, projection
 
@@ -87,29 +88,29 @@ least solution is given by longest paths, and the path attaining the value of
 
 Certified entailment by refutation.
 
-{stmt}`LaxLogic.QLL.Engine.entailsLe_sound`
+{stmt}`Engine.entailsLe_sound`
 
-{docstring LaxLogic.QLL.Engine.entailsLe_sound +allowMissing}
+{docstring Engine.entailsLe_sound +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Engine.entailsLe_sound`
+{srcLink}`Engine.entailsLe_sound`
 
 A checked lower-bound certificate gives $`z* \le \sigma (z)` for every solution `σ`;
 with a witness attaining `z*`, the least value is certified from both sides.
 
-{stmt}`LaxLogic.QLL.Engine.lowerBoundCert_sound`
+{stmt}`Engine.lowerBoundCert_sound`
 
-{docstring LaxLogic.QLL.Engine.lowerBoundCert_sound +allowMissing}
+{docstring Engine.lowerBoundCert_sound +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Engine.lowerBoundCert_sound`
+{srcLink}`Engine.lowerBoundCert_sound`
 
 If `z` has a non-positive coefficient in every inequality, raising `z`
 preserves solutions, so the projection onto `z` is exactly $`z \ge z*`.
 
-{stmt}`LaxLogic.QLL.Engine.upClosed_sound`
+{stmt}`Engine.upClosed_sound`
 
-{docstring LaxLogic.QLL.Engine.upClosed_sound +allowMissing}
+{docstring Engine.upClosed_sound +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Engine.upClosed_sound`
+{srcLink}`Engine.upClosed_sound`
 
 # The engine
 
@@ -121,19 +122,19 @@ transition.  Every answer carries its proof tree.
 
 The search, as a strategy over the rules of Table 2.
 
-{stmt}`LaxLogic.QLL.Engine.solveK`
+{stmt}`Engine.solveK`
 
-{docstring LaxLogic.QLL.Engine.solveK +allowMissing}
+{docstring Engine.solveK +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Engine.solveK`
+{srcLink}`Engine.solveK`
 
 An answer whose tree checks satisfies $`\Theta \vdash \mathit{constraint} \supset G`.
 
-{stmt}`LaxLogic.QLL.Engine.answer_sound`
+{stmt}`Engine.answer_sound`
 
-{docstring LaxLogic.QLL.Engine.answer_sound +allowMissing}
+{docstring Engine.answer_sound +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Engine.answer_sound`
+{srcLink}`Engine.answer_sound`
 
 # Wolfram as an untrusted oracle
 
