@@ -44,7 +44,7 @@ rev = "v4.31.0"
 [[require]]
 name = "lean-certify"
 git = "https://github.com/fairflow/lean-certify"
-rev = "v0.1.0"
+rev = "v0.1.1"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is
@@ -93,7 +93,8 @@ globs = ["LJF.OCore", "LJF.OUniverse", "LJF.ORows",
          "LJF.OFuelHeight",
          "LJF.OFuelP", "LJF.OFuelPSound", "LJF.OFuelPMin", "LJF.OFuelPCof",
          "LJF.OFuelPFamKit", "LJF.OFuelPFam", "LJF.OFuelPCofinal",
-         "LJF.OSearch", "LJF.OBridge", "LJF.OPolInv", "LJF.OAudit"]
+         "LJF.OSearch", "LJF.OBridge", "LJF.OPolInv", "LJF.OAudit",
+         "LJF.OCheckDeriv"]
 
 # RNDB: LAYER 3 — the dictionary database types (Claim/Evidence/Entry/
 # Frontier, the un-sorriable `ok` field).  Built by a delegated agent
@@ -863,3 +864,4 @@ root = "wip.ui_interpFS_run"
 # `lake build CertifyAdoption`.
 [[lean_lib]]
 name = "CertifyAdoption"
+globs = ["CertifyAdoption", "CertifyAdoption.CheckDeriv"]
