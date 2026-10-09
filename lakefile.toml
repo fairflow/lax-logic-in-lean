@@ -40,12 +40,11 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.31.0"
 
-# Lean certify: the certified-computation harness (Mathlib-free). Pinned by
-# commit until its v0.1.0 tag exists.
+# Lean certify: the certified-computation harness (Mathlib-free), pinned by tag.
 [[require]]
 name = "lean-certify"
 git = "https://github.com/fairflow/lean-certify"
-rev = "df1d01675452b86347fbd02adf0eeac9ae054e76"
+rev = "v0.1.0"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is
