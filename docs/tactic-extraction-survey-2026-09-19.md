@@ -396,6 +396,73 @@ it saw before. Confirmed rather than argued —
 `#guard_msgs in #print axioms inter_adequate` (`G4UIAdq.lean:958`) passes
 untouched, and `lake build` is green at 8,748 jobs.
 
+## Step 4, REFUTED 2026-10-09 — `mem_sub` would make Craig interpolation classical
+
+The designed watched failure was a timing test. It fired for a better reason
+than timing, and the refusal is a certificate rather than a judgement.
+
+**What was done.** `mem_sub` as specified in §3a, defined locally in
+`LaxLogic/PLL/Sequent/Craig.lean` (the densest single file, 14 sites by the
+census), applied to **five** sites whose shape is unambiguous — the `rcases
+List.mem_cons.mp` walk with `List.Mem` constructor leaves, inside
+`X.rename (by …)`. The proofs all went through: there is no correctness problem
+with the tactic.
+
+**What broke is the axiom profile.** Four of the file's own
+`#guard_msgs`-guarded `#print axioms` pins failed, and this is the diff:
+
+```
+- 'PLLND.SCh.maehara'          depends on axioms: [propext, Quot.sound]
++ 'PLLND.SCh.maehara'          depends on axioms: [propext, Classical.choice, Quot.sound]
+- 'PLLND.SC.maehara''          depends on axioms: [propext, Quot.sound]
++ 'PLLND.SC.maehara''          depends on axioms: [propext, Classical.choice, Quot.sound]
+- 'PLLND.craig_interpolation'' depends on axioms: [propext, Quot.sound]
++ 'PLLND.craig_interpolation'' depends on axioms: [propext, Classical.choice, Quot.sound]
+- 'PLLND.craig_implication''   depends on axioms: [propext, Quot.sound]
++ 'PLLND.craig_implication''   depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+**Five `tauto` calls are enough to make Craig interpolation classical.** And the
+primed names are not incidental: the file maintains BOTH variants on purpose —
+`craig_interpolation` at `[propext, Classical.choice, Quot.sound]` and
+`craig_interpolation'` at `[propext, Quot.sound]` — so the choice-free halves
+are a deliberate, pinned result. Twenty-six lines is not a price worth paying
+for them, and no amount of care at other sites changes the mechanism: `tauto`
+has no choice-free discipline, which is precisely why `mem_ite_list` was written
+with `cases inst` rather than `by_cases` back in candidate 7.
+
+**So step 4 is REFUSED**, and with it the 236-line estimate. The underlying
+population is real; the tactic that was proposed to take it is not admissible
+here.
+
+**Two corrections to §1's census, found by doing it.** Both are reasons to trust
+a token-level census less:
+
+* **The leaf shape is wrong.** In `Craig.lean` the leaves are `List.Mem`
+  *constructors* — `.head _`, `.tail _ (.tail _ h)` — not the
+  `List.mem_cons_self` / `List.mem_cons_of_mem` lemmas the census matched on.
+  `mem_sub` still handles them (`simp only [List.mem_cons]` covers both), but
+  the count was arrived at by matching text that is not there.
+* **The nesting is wrong, and it defeats bulk conversion.** Of the 13 blocks in
+  the file, 2 apply a context hypothesis `H` at a leaf and so belong to the
+  refused A-mixed class, and several are *pairs* of blocks in which one block's
+  final line also carries the closing parens of a sibling's enclosing `(by`. A
+  converter keyed on tokens and paren balance, ignoring bullet indentation,
+  flattens genuinely nested case splits into one block and loses arms; mine did,
+  producing `unexpected token '·'` at `:324`. Each site wants reading.
+
+**On the timing half**: not reportable. Two builds of byte-identical reverted
+source measured 5.33 s and 15.93 s wall clock, so wall clock on this machine is
+too noisy at this scale to carry a conclusion, and `user` time (3.15 s against
+5.74 s) is a single pair. The axiom result needs no help from it.
+
+**What survives of the plan.** Step 1 (`fin_sub`, 389 lines) and step 3 (the six
+`Sub` facts, 209 lines) are done and gated. Step 2 is unbuilt by Matthew's
+reading, and I agree it was the weakest. Step 4 is refused above. So the plan's
+outturn is **598 lines of its ~1,159 estimate**, and the gap is almost entirely
+step 4 — which was the step whose saving depended on a tactic the repository's
+axiom discipline does not permit.
+
 ## 4. Ranking, cheapest first, each with its designed watched failure
 
 Measured savings unless marked *(est.)*. The order is by risk and by blast
