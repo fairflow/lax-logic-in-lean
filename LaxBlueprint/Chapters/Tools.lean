@@ -96,3 +96,113 @@ without running anything.  It is the instrument for presenting this
 development to a co-developer, and the annotated proof-state files of the
 record are its output.
 :::
+
+:::group "tools_decide"
+Deciding a sequent and closing a goal.
+:::
+
+:::definition "pll_cli" (parent := "tools_decide")
+`lake exe pll "<formula>"` (`tools/Decide.lean`), with the command form
+`#decide φ to "out.svg"` (`tools/DecideCmd.lean`), is the user-facing
+decider.  The untrusted FRJW engine saturates a store; the verified checker
+`checkClosed` certifies that the store is closed, which settles the formula
+one way or the other.  A PROVED answer comes with a proof term and a
+snippet that re-elaborates it; a REFUTED answer comes with a countermodel,
+drawn as SVG, and a kernel certificate that is checked by default.  Exit
+codes 0–3 are checked, rejected (a defect), parse error, and
+not-closed-within-bound, which is a frontier and never a verdict.
+:::
+
+:::definition "pll_g4c" (parent := "tools_decide")
+`pll_g4c` (`LaxLogic/PLL/Search/Run.lean`) closes a concrete PLL
+derivability goal by certificate splicing: it runs the fuel-free searcher
+`G4cTm.find` as untrusted code, then re-elaborates the derivation it found as
+an explicit `G4cTm` term, which the kernel checks.  It replaced `pll_g4`,
+which ran the incomplete Iemhoff calculus under `native_decide`.
+:::
+
+:::group "tools_external"
+Tools shared with other developments.
+:::
+
+:::definition "lean_certify" (parent := "tools_external")
+Lean certify (`github.com/fairflow/lean-certify`, v0.1.0, a Lake
+dependency of this repository) is a generic harness for certified
+computation: an untrusted producer computes, a checker proved sound checks
+its output in the kernel, and termination arguments stay in the theory.  It
+grew out of this development's own practice (the oracle pattern of
+`FRJO/Core.lean`) and is shared with the locus project.  `CertifyAdoption.lean`
+is this repository's acceptance test: it packages `FinCM.checkB` and
+`not_provable_of_check`, unchanged, as a `Certify.Certifier`, reproduces one
+ρ-refutation through it, watches the gate reject corrupted models, and runs
+the harness's lints, which reject the `WellFounded.fix` decider `decideG4`
+and flag the `Finset` construction inside `decideFuel`.  The module is
+outside the default build targets.  Background:
+`docs/certified-computation-findings-2026-10-09.md`.
+:::
+
+:::definition "prover_toolkit" (parent := "tools_external")
+The prover toolkit (`prover-toolkit/`, also called ax-prover-cascade) is
+for attempting Lean goals with a language model and verifying the result
+properly.  It depends on nothing in this repository.  Its parts: a corpus
+index that serves this development's own declarations, notation included,
+in place of Mathlib search; an axiom gate that flags a proof whose axioms
+strictly exceed those of the proof it replaces; a checker (`verify.py`) that
+splices a proof under the verbatim statement and rejects `sorry` and
+`native_decide`; and a cost model per verified theorem.  It ships two
+skills: `prove-lemma`, which drives the external prover ax-prover through a
+hosted model API, and `prove-lemma-agent`, in which Claude proves the lemma
+itself with the toolkit's search and check.  Status: the hosted route has
+not been made to work here, and the substitute that would let ax-prover run
+on a Claude subscription (`claude_shim.py`) is incomplete: its live mode is
+built, but tool calls are not, and a run is blocked because ax-prover is not
+installed and the command-line Claude cannot sign in
+(`prover-toolkit/README.md`).  The corpus index, the checker and
+`prove-lemma-agent` work on their own.
+:::
+
+:::group "tools_record"
+Keeping the record and publishing it.
+:::
+
+:::definition "estate_scripts" (parent := "tools_record")
+The proof-status ledger: `scripts/check-ledger.sh` regenerates the status of
+every built declaration and fails on a regression (a new `sorry`, a new
+axiom, a new `native_decide`); `scripts/check-imports.py` checks that every
+import names a module that exists; `scripts/readme-figures.py --check`
+checks that the README's figures match the record; `scripts/claim-scan.py`
+and `scripts/reconcile-claims.py` reconcile claims in the prose against the
+record.  CI runs the first three on every push to `main`.
+:::
+
+:::definition "rndb_tools" (parent := "tools_record")
+The RN database (`RNDB/`) holds the certified facts about the closed
+fragment, each entry carrying its proof.  `lake exe rhocover` is the
+catalogue workbench (order matrix, operation tables, new-class probes);
+`lake exe frjcert` and `lake exe rnpin` emit and pin certificates;
+`tools/rho-hasse.sh` draws the Hasse diagram.  The catalogue page,
+`docs/rn-catalogue.html`, is published with this site.
+:::
+
+:::definition "verso_pipeline" (parent := "tools_record")
+The papers are Verso documents built from the compiled library, so every
+Lean statement they print is the statement the kernel checked.
+`scripts/verso-paper.sh` builds one as HTML and PDF (`scripts/clp-paper.sh`
+for the CLP paper); `scripts/ci-pages.sh` and `scripts/ci-papers.sh` build
+this site, the papers and the explorers for GitHub Pages.
+:::
+
+:::group "tools_skills"
+Procedures for Claude.
+:::
+
+:::definition "skills" (parent := "tools_skills")
+Written procedures that Claude follows in this repository, in
+`.claude/skills/`: `calculus-adoption` (adopt a proof system from the
+literature and mechanise it end to end); `iterate-to-goal` (run a
+mechanisation campaign as rounds converging on one stated goal);
+`verso-paper` (build a paper or blueprint with Verso);
+`constraint-supersession-check` (before retiring any design, check that its
+replacement discharges every constraint the old one did).  The two proving
+skills are in `prover-toolkit/skill/`.
+:::
