@@ -5317,3 +5317,56 @@ ephemeral `agent-*`, and exactly one had been touched in fourteen days. Nothing
 can depend on an uncommitted file, and of ~270 of them only 6 `.lean` files held
 content absent from `main`. The one branch worth aligning is `tphols`, which is
 Matthew's.
+
+## 2026-10-09 — a manager session; worktrees measured; the site, the papers and Lean certify
+
+A LaxLogic manager session (Matthew, 2026-10-09) took stock of the sessions
+and worktrees, and merged and published the day's work.  The record of each
+step is in the PRs and commits named here.
+
+**Worktrees and disk.**  `du` overstates APFS clones: removing four clean
+prover-toolkit subagent worktrees (≈62 GB by `du`) freed 2.6 GB, and ten FRJW
+subagent worktrees (≈113 GB by `du`) freed 8 GB, each with Matthew's explicit
+exception to the 2026-07-20 veto.  Never justify a removal by `du`; measure
+`df`.  Unused elan toolchains v4.32.0/.1/.2 and v4.33.1 freed 11.4 GB.  The
+remaining large disk users are outside Lean.  The FRJW session banked its
+worktrees' useful files first (`frjw-dev` 1b9c2af, merged).  Removing the
+remaining agent worktrees was blocked by the auto-mode safety check and is
+left to Matthew.
+
+**Certified computation.**  `docs/certified-computation-findings-2026-10-09.md`:
+the oracle pattern, the two costs of fuel (materialising `decideFuel`'s domain;
+the fuelled engine searching failing branches, `PROGRESS.md` §10), and the
+harness parameters.  Shared harness: `github.com/fairflow/lean-certify`
+(v0.1.1), a Lake dependency.  `CertifyAdoption.lean` packages
+`FinCM.checkB`/`not_provable_of_check` unchanged (branch certify-adoption, merged
+as f6bcb43).  Stage 2, `LJF/OCheckDeriv.lean`: fuel-free derivation-tree
+certificates for LJF◯, `provable_of_checkDeriv` [propext],
+`laxND_of_checkDeriv` [propext, Quot.sound]; exemplars under 40 ms against
+17.7–30.5 s for the f=44 fuelled search; corrupted trees pinned false (PR #28,
+4de06e9).  Rule 8 (fragment first) waived for it by Matthew.
+
+**The site.**  https://fairflow.github.io/lax-logic-in-lean/ is deployed from
+`main` by manual dispatch only.  It now carries the Blueprint (root), the two
+papers (`/clp-paper/`, `/lax-paper/`, HTML only) and five explorers (`/tools/`,
+`scripts/ci-papers.sh`; the lattice explorer is `rn-catalogue.html` v27).  New
+Blueprint chapter *Notation*; *Tools* gained `lake exe pll`, `pll_g4c`, Lean
+certify, the prover toolkit (status: hosted route not working, shim incomplete)
+and the skills (PR #22).  Rendered signatures now print short names and the
+library's notation: each document opens its namespaces (PRs #24–#26, from the
+Blueprint documentation session); qualified names in the CLP PDF 1,345 → 3,
+on the Blueprint 1,191 → 244.  A pull request's Pages run builds without
+deploying, so it is the test for a Blueprint change.
+
+**CI.**  Full-history checkout (the README-figures check had failed on every
+push since 9783484); `LeanCertify` added to `scripts/check-imports.py`; an
+LJF◯ build step (`LJF.OSearch LJF.OBridge LJF.OCheckDeriv`), pull requests
+only, since it costs 9–35 min.  The whole LJF lib is not built: `OFuelPFam`
+is 25–28 min and 17.8 GB.
+
+**Open.**  0333c19 (`freshFor` fix) is still not on `main`.  Optional Blueprint
+follow-ups: `open PLLND` in the FRJW chapter; shorter `(lean := …)` labels; a
+public statement in `LaxLogic/PLL/Timing/Constraints.lean` mentions private
+constants.  Merged remote branches awaiting deletion: certify-adoption,
+checkderiv, blueprint-notation, clp-open-namespaces, laxpaper-open-pllnd,
+blueprint-open-namespaces, ci-ljf.
