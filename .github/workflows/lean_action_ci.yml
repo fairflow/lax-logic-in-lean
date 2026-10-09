@@ -23,6 +23,13 @@ on:
       - main
   workflow_dispatch:
 
+# One run per branch or PR at a time: a newer push cancels the older run, which
+# its commit already contains.  Overlapping runs on `main` raced to save the same
+# cache (2026-10-09: three concurrent main runs within six minutes).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
