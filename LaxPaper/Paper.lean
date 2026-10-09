@@ -2,7 +2,6 @@ import Verso
 import VersoManual
 import VersoBlueprint
 import VersoBlueprint.Commands.Graph
-import VersoBlueprint.Commands.Summary
 import LaxPaper.Sections.Introduction
 import LaxPaper.Sections.Machinery
 import LaxPaper.Sections.Modularity
@@ -43,4 +42,3 @@ compiler rather than asserted here.
 {include 0 LaxPaper.Sections.Conclusion}
 
 {blueprint_graph}
-{blueprint_summary}

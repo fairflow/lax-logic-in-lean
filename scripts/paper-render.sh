@@ -24,13 +24,17 @@
 # On presenting declarations -- settled 2026-09-06, do not redo the experiment.
 # Three forms exist and were tried:
 #
-#   (lean := "X")            the blueprint node.  Its signature block prints the
+#   (lean := "X")            the blueprint node.  Its signature block printed the
 #                            declaration's CANONICAL name,
-#                            `def LaxLogic.Obligation.LaxAll.{u}`, and there is
-#                            no way to shorten it from a document: Verso's
-#                            `ppSignature` takes a `showNamespace` flag and uses
-#                            it for inductive constructors, but no block exposes
-#                            it.  Changing that needs an upstream patch.
+#                            `def LaxLogic.Obligation.LaxAll.{u}`, with no way to
+#                            shorten it from a document.  [Superseded 2026-10-09:
+#                            the verso fork (af0ddec7) exposes this as
+#                            `verso.docstring.showNamespace`, set false in
+#                            lakefile.toml, so the declaration's own name prints
+#                            short; names INSIDE its type follow the section's
+#                            `open` lines, which is why every section opens
+#                            `LaxLogic.Obligation`, and Adders/Models also open
+#                            `PLLND`.]
 #   {docstring X}            same renderer, same fully qualified name.
 #   ```anchor NAME```        SubVerso extraction of an anchored source region.
 #                            Renders AS WRITTEN, short names, and Verso checks
@@ -42,7 +46,10 @@
 #                            shorter names gain.  (Trial and its revert are in
 #                            git: 5708cff and its revert.)
 #
-# So: `(lean := ...)` everywhere, and the fully qualified names stay.
+# So: `(lean := ...)` everywhere, and the names are now short (above).  The
+# paper keeps {blueprint_graph} but has no {blueprint_summary} (dropped
+# 2026-10-09, Matthew): the summary lists every node by its canonical name,
+# which no `open` can shorten, and a paper does not need it.
 #
 # The output directory is REMOVED first: the renderer does not clean it, so
 # pages from a previous run with different settings survive and are served

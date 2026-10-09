@@ -7,6 +7,7 @@ import LaxLogic.Obligation.Budget
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open PLLND
 open LaxLogic.Obligation
 
 #doc (Manual) "Constraint models" =>
