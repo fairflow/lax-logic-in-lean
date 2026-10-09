@@ -44,8 +44,12 @@ document shows short names and notation exactly where its source file opens
 the namespace.  The PLL chapters of this Blueprint open `PLLND`, so their
 signatures use the PLL notation above, and an untagged `⊢` there is
 `PLLND.LaxND`, the namespace's `turnstile_default`; the decision-procedure
-chapter opens `FRJ`, `FRJ.Gbu` and `FRJ.Gbu.W`.  A chapter that opens
-neither shows signatures in long form, with fully qualified names.
+chapter opens `FRJ`, `FRJ.Gbu`, `FRJ.Gbu.W` and `PLLND`.  A chapter that opens
+neither shows signatures in long form, with fully qualified names.  The names
+written in `(lean := …)` are resolved in the same scope, so they too are
+written short, except where a short name would also denote something else:
+`PLLND.Ne` and `PLLND.Sub` keep their prefix because Lean has its own `Ne`
+and `Sub`.
 
 `#eval` is different again: it uses `toString`/`Repr`, which for
 `PLLFormula` still writes `⊃` for implication and `⊤` for `⊥ ⊃ ⊥`

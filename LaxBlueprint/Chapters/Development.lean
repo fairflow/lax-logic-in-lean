@@ -65,6 +65,10 @@ VERSO CHEAT SHEET — everything used in this file, and nothing else.
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+
+-- An unresolved or ambiguous `(lean := …)` name is a build error here, not a warning:
+-- otherwise a node silently loses its Lean attachment and the status that comes with it.
+set_option verso.blueprint.externalCode.strictResolve true
 open PLLND
 
 
@@ -109,22 +113,22 @@ warning.  That is the only reason this file once needed the option.)
 The proof system.
 :::
 
-:::definition "laxnd" (parent := "nd") (lean := "PLLND.LaxND")
+:::definition "laxnd" (parent := "nd") (lean := "LaxND")
 Natural deduction style lax proofs as an inductive type
 :::
 
 
-:::definition "iplnd" (parent := "nd") (lean := "PLLND.IPLND")
+:::definition "iplnd" (parent := "nd") (lean := "IPLND")
 The intuitionistic fragment, defined here as an inductive proposition
 :::
 
 
-:::definition "erase" (parent := "nd") (lean := "PLLND.erase, PLLND.isIPL")
+:::definition "erase" (parent := "nd") (lean := "PLLND.erase, isIPL")
 Erases the modality, and adds the predicate for being modality-free.
 :::
 
 
-:::theorem "conservativity" (parent := "nd") (lean := "PLLND.conservativity")
+:::theorem "conservativity" (parent := "nd") (lean := "conservativity")
 PLL is conservative over IPL: a modality-free formula is provable in the lax
 system exactly when it is provable intuitionistically.  So the modality adds
 expressive power without adding theorems in the old language — which is the
@@ -139,7 +143,7 @@ minimum any proposed modality must clear.  Depends on {uses "laxnd"}[] and
 Constraint models, after Fairtlough and Mendler.
 :::
 
-:::definition "model" (parent := "sem") (lean := "PLLND.ConstraintModel")
+:::definition "model" (parent := "sem") (lean := "ConstraintModel")
 Fairtlough–Mendler constraint models: an intuitionistic frame carrying a
 second, modal accessibility relation and a set of *fallible* worlds.  The
 fallible worlds are the departure from ordinary Kripke semantics, and they
@@ -147,7 +151,7 @@ are what let `◯⊥` be satisfiable without collapsing the model.
 :::
 
 
-:::definition "force" (parent := "sem") (lean := "PLLND.ConstraintModel.force")
+:::definition "force" (parent := "sem") (lean := "ConstraintModel.force")
 Forcing: the interpretation of {uses "formula"}[] in {uses "model"}[].  The
 `◯` clause is the one to read carefully — `w ⊩ ◯A` asks for `A` at every
 modally reachable world, so the modality quantifies over *constraints*, not
@@ -155,19 +159,19 @@ over time or knowledge.
 :::
 
 
-:::theorem "force_hered" (parent := "sem") (lean := "PLLND.ConstraintModel.force_hered")
+:::theorem "force_hered" (parent := "sem") (lean := "ConstraintModel.force_hered")
 Heredity: forcing is preserved upwards along the intuitionistic order.  The
 standard Kripke condition, and the reason the valuation carries its own
 monotonicity requirement.
 :::
 
 
-:::definition "consequence" (parent := "sem") (lean := "PLLND.Consequence")
+:::definition "consequence" (parent := "sem") (lean := "Consequence")
 Semantic consequence.
 :::
 
 
-:::theorem "soundness" (parent := "sem") (lean := "PLLND.soundness")
+:::theorem "soundness" (parent := "sem") (lean := "soundness")
 Soundness: everything derivable is valid.  The easy direction, proved by
 induction on the derivation.  Depends on {uses "laxnd"}[] and
 {uses "force"}[].
@@ -180,7 +184,7 @@ induction on the derivation.  Depends on {uses "laxnd"}[] and
 The canonical model construction.
 :::
 
-:::definition "maxconsistent" (parent := "compl") (lean := "PLLND.MaxConsistent")
+:::definition "maxconsistent" (parent := "compl") (lean := "MaxConsistent")
 Maximal consistent theories, obtained by Zorn.  Consistency here carries a
 nonemptiness guard on the finite choices, and that guard is doing real work:
 it is what makes the theory of *all* formulas consistent, and so — after
@@ -189,7 +193,7 @@ of {uses "canonical"}[].
 :::
 
 
-:::definition "canonical" (parent := "compl") (lean := "PLLND.canonical")
+:::definition "canonical" (parent := "compl") (lean := "canonical")
 The canonical model, built from {uses "maxconsistent"}[] and shown to be a
 {uses "model"}[].  Worlds are theories — triples of formulas validated,
 falsified, and falsified at every modal successor — and the third component
@@ -198,14 +202,14 @@ model does not have.
 :::
 
 
-:::theorem "truth_lemma" (parent := "compl") (lean := "PLLND.truth_lemma")
+:::theorem "truth_lemma" (parent := "compl") (lean := "truth_lemma")
 The truth lemma: in {uses "canonical"}[], a formula is forced at a theory
 exactly when the theory validates it.  The technical heart of the
 construction.  Depends on {uses "canonical"}[].
 :::
 
 
-:::theorem "completeness" (parent := "compl") (lean := "PLLND.completeness")
+:::theorem "completeness" (parent := "compl") (lean := "completeness")
 Completeness: everything valid is derivable.  Depends on
 {uses "truth_lemma"}[] — and, unavoidably on this route, on choice; see
 {uses "completeness_twice"}[].
@@ -232,7 +236,7 @@ point forward to it, because a reader meeting {uses "completeness"}[] here
 should not be left thinking choice is essential to it.
 :::
 
-:::theorem "adequacy" (parent := "compl") (lean := "PLLND.valid_iff_provable")
+:::theorem "adequacy" (parent := "compl") (lean := "valid_iff_provable")
 Adequacy: derivability and validity coincide.  Depends on
 {uses "soundness"}[] and {uses "completeness"}[].
 :::
