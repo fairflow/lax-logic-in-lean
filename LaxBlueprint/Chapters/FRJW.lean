@@ -19,6 +19,10 @@ open Verso.Genre.Manual
 open Informal
 open FRJ FRJ.Gbu FRJ.Gbu.W PLLND
 
+-- An unresolved or ambiguous `(lean := …)` name is a build error here, not a warning:
+-- otherwise a node silently loses its Lean attachment and the status that comes with it.
+set_option verso.blueprint.externalCode.strictResolve true
+
 #doc (Manual) "The decision procedure" =>
 
 These two calculi are one object and should be read as one.  `Gbu◯(G)`
@@ -68,12 +72,28 @@ irregular — and why {uses "lift_rule"}[] is needed to get from a regular
 disproof to a usable premise.
 :::
 
-:::theorem "duality_hole" (parent := "frjw_calc") (tags := "motivation") (lean := "FRJ.V.WCounter.no_irregular_circ_imp_self")
-FRJV has *no* irregular disproof of $`◯(◯Z ⊃ Z)`, for any `G`, `Z`, `Σ`,
-`Θ`.  Only $`◯∉` and $`Ax^{I◯}` conclude a `◯` goal; the former needs a
-cleanly tagged regular disproof of $`◯Z ⊃ Z`, and the latter needs
+:::theorem "duality_hole" (parent := "frjw_calc") (tags := "motivation") (lean := "V.WCounter.irregular_circ_imp_self_lifts")
+The hole, and what is left of it now that {uses "lift_rule"}[] fills it.
+Every irregular disproof of $`◯(◯Z ⊃ Z)` yields a regular disproof of the
+same goal, for any `G`, `Z`, `St`, `Th`:
+
+$$`\mathsf{FRJVi}\ G\ St\ Th\ (◯(◯Z ⊃ Z)) → ∃\, t\ Γ,\ \mathsf{Nonempty}\ (\mathsf{FRJVr}\ G\ t\ Γ\ (◯(◯Z ⊃ Z)))`
+
+pinned `[propext, Quot.sound]`.  The proof is a case split on the last rule.
+Four `FRJVi` rules can conclude a `◯` goal, and three cannot apply here:
+$`Ax^I` needs the goal prime; $`◯∉` needs a cleanly tagged regular disproof
+of $`◯Z ⊃ Z`, which `not_clean_imp_self` rules out; and $`Ax^{I◯}` needs
 `classForce` to reject a body of the form $`¬x ∨ x`, which it cannot,
-because `◯` is transparent to `classForce`.
+because `◯` is transparent to `classForce`.  What is left is Lift, which
+returns its own regular premise.  So in the extended calculus the only
+irregular disproofs of this goal are lifts.
+
+Before Lift, the last case did not exist and the same argument showed that
+FRJV had *no* irregular disproof of $`◯(◯Z ⊃ Z)` at all
+(`no_irregular_circ_imp_self`, proved 2026-08-31).  That was the hole: a
+goal with a regular disproof and no irregular one.  The statement is false
+of the extended calculus and was withdrawn on 2026-09-01 (`993ea74`); this
+theorem is what survives of it.
 :::
 
 :::theorem "gbu_gap" (parent := "frjw_calc") (tags := "motivation") (lean := "not_gbuIC_Gcc")
@@ -82,7 +102,7 @@ because `◯` is transparent to `classForce`.
 
 :::theorem "provable_gcc" (parent := "frjw_calc") (tags := "motivation") (lean := "provableV_Gcc, V.RBar.not_force_of_rootAbove")
 A *regular* FRJV disproof of $`◯(◯p ⊃ p)` does exist, by the barren
-$`⋈^◯` join — but it cannot be used where an irregular one is required.
+$`⋈^◯` join — but without Lift it cannot be used where an irregular one is required.
 Together with {uses "duality_hole"}[] and {uses "gbu_gap"}[] that is the
 mismatch {uses "lift_rule"}[] removes.
 

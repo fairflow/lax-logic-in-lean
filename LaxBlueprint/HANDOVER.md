@@ -159,14 +159,18 @@ packages, and every name verso and verso-blueprint declare. That is why
 
 **Strict resolution.** An unresolved or ambiguous `(lean := …)` name is, by
 default, only a *warning*: the build stays green and the node silently loses its
-Lean attachment and status. The six PLL chapters therefore set
-`verso.blueprint.externalCode.strictResolve true`, which makes it a build error.
-The decision-procedure chapter does not yet, because its `duality_hole` node
-names `FRJ.V.WCounter.no_irregular_circ_imp_self`, withdrawn on 2026-09-01
-(`993ea74`, restated as `irregular_circ_imp_self_lifts`), so it already fails
-to resolve. That node is a content decision for Matthew; once it is settled,
-turn strict mode on there too. To see the warnings without strict mode, grep a
-Pages build log for `could not be resolved` and `is ambiguous`.
+Lean attachment and status. Every chapter that attaches declarations therefore
+sets `verso.blueprint.externalCode.strictResolve true`, which makes it a build
+error. A new chapter with attachments should do the same.
+
+This is not hypothetical. Until 2026-10-09 the decision-procedure chapter's
+`duality_hole` node named `FRJ.V.WCounter.no_irregular_circ_imp_self`, which
+was withdrawn on 2026-09-01 (`993ea74`) when `(Lift)` made it false; the node
+had been silently unattached on the live site since, visible only as a warning
+in the Pages build log. It now states `irregular_circ_imp_self_lifts`, the
+theorem that survives (Matthew's decision), and records the withdrawn statement
+as history. To audit a site without strict mode, grep a Pages build log for
+`could not be resolved` and `is ambiguous`.
 
 The history of how this was diagnosed is in git, in this file's earlier versions.
 
