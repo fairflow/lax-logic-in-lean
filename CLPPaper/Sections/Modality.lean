@@ -7,6 +7,7 @@ import CLPPaper.Math
 open Verso.Genre
 open Verso.Genre.Manual
 open CLPPaper CLPPaper.Math
+open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "What the modality buys: placements and realisers" =>
 
@@ -22,11 +23,11 @@ Bodies are Σ-formulas, so $`\bigcirc` cannot occur in them.  What would it do? 
 answer turns on the head.
 
 With a plain head, a body $`\bigcirc` implies the same clause with the $`\bigcirc` deleted:
-{stmt}`LaxLogic.QLL.BodyCirc.body_circ_to_plain`
+{stmt}`BodyCirc.body_circ_to_plain`
 
-{docstring LaxLogic.QLL.BodyCirc.body_circ_to_plain +allowMissing}
+{docstring BodyCirc.body_circ_to_plain +allowMissing}
 
-{srcLink}`LaxLogic.QLL.BodyCirc.body_circ_to_plain`
+{srcLink}`BodyCirc.body_circ_to_plain`
 
 REFUTED converse: $`(A \land B) \supset P` does not prove $`(A \land \bigcirc B) \supset P`.  Two worlds
 $`w_0 \le w_1`, every arrow modal, nothing fallible, `A` everywhere, `B` and `P`
@@ -37,42 +38,42 @@ $`\vdash \bigcirc c`.  Read positively, $`\bigcirc B \supset P` says "if `B` is 
 abstraction, conclude `P` concretely": abstract derivability as a guard, a
 two-level program whose least-model theorem is OPEN.
 
-{stmt}`LaxLogic.QLL.BodyCirc.not_prv_plain_to_body_circ`
+{stmt}`BodyCirc.not_prv_plain_to_body_circ`
 
-{docstring LaxLogic.QLL.BodyCirc.not_prv_plain_to_body_circ +allowMissing}
+{docstring BodyCirc.not_prv_plain_to_body_circ +allowMissing}
 
-{srcLink}`LaxLogic.QLL.BodyCirc.not_prv_plain_to_body_circ`
+{srcLink}`BodyCirc.not_prv_plain_to_body_circ`
 
 With a modal head the two forms are interderivable, because $`\bigcirc E` absorbs the
 body's $`\bigcirc`: $`(A \land B) \supset \bigcirc P \vdash (A \land \bigcirc B) \supset \bigcirc P`, and conversely.
 
-{stmt}`LaxLogic.QLL.BodyCirc.clause4`
+{stmt}`BodyCirc.clause4`
 
-{docstring LaxLogic.QLL.BodyCirc.clause4 +allowMissing}
+{docstring BodyCirc.clause4 +allowMissing}
 
-{srcLink}`LaxLogic.QLL.BodyCirc.clause4`
+{srcLink}`BodyCirc.clause4`
 
 The same with the $`\bigcirc` under an existential, the shape a body actually has:
 $`\forall t. (\exists s. B s \land C s t) \supset \bigcirc P t \vdash \forall t. (\exists s. \bigcirc B s \land C s t) \supset \bigcirc P t`, and
 conversely.  So in an abstract program, whose heads are all modal, a body $`\bigcirc`
 adds nothing: it is `val`.
 
-{stmt}`LaxLogic.QLL.BodyCirc.fo_ex_II_to_I`
+{stmt}`BodyCirc.fo_ex_II_to_I`
 
-{docstring LaxLogic.QLL.BodyCirc.fo_ex_II_to_I +allowMissing}
+{docstring BodyCirc.fo_ex_II_to_I +allowMissing}
 
-{srcLink}`LaxLogic.QLL.BodyCirc.fo_ex_II_to_I`
+{srcLink}`BodyCirc.fo_ex_II_to_I`
 
 $`\bigcirc \bigcirc A \dashv\vdash \bigcirc A`: nesting one modality on itself is not a layering device.  But
 $`\bigcirc` under $`\supset` and $`\bot` does create structure — the variable-free fragment of
 intuitionistic logic has two classes and gains infinitely many when $`\bigcirc` is
 added — so layers are to be sought in negative positions, not in depth.
 
-{stmt}`LaxLogic.QLL.BodyCirc.circ_circ_iff`
+{stmt}`BodyCirc.circ_circ_iff`
 
-{docstring LaxLogic.QLL.BodyCirc.circ_circ_iff +allowMissing}
+{docstring BodyCirc.circ_circ_iff +allowMissing}
 
-{srcLink}`LaxLogic.QLL.BodyCirc.circ_circ_iff`
+{srcLink}`BodyCirc.circ_circ_iff`
 
 # `◯` over a conjunction: interderivable, not the same realisers
 
@@ -83,46 +84,46 @@ its own.  The two directions of the equivalence are the double strength
 $`\mathit{dstr} ((c_1,z_1),(c_2,z_2)) = (c_1 \land c_2, (z_1,z_2))` and the duplication
 `dup (c,(z₁,z₂)) = ((c,z₁),(c,z₂))`.
 
-{stmt}`LaxLogic.QLL.circ_and_split`
+{stmt}`circ_and_split`
 
-{docstring LaxLogic.QLL.circ_and_split +allowMissing}
+{docstring circ_and_split +allowMissing}
 
-{srcLink}`LaxLogic.QLL.circ_and_split`
+{srcLink}`circ_and_split`
 
-{stmt}`LaxLogic.QLL.circ_and_join`
+{stmt}`circ_and_join`
 
-{docstring LaxLogic.QLL.circ_and_join +allowMissing}
+{docstring circ_and_join +allowMissing}
 
-{srcLink}`LaxLogic.QLL.circ_and_join`
+{srcLink}`circ_and_join`
 
 $`\mathit{dstr} \circ \mathit{dup}` is the identity up to $`\dashv\vdash`.
 
-{stmt}`LaxLogic.QLL.dstr_dup`
+{stmt}`dstr_dup`
 
-{docstring LaxLogic.QLL.dstr_dup +allowMissing}
+{docstring dstr_dup +allowMissing}
 
-{srcLink}`LaxLogic.QLL.dstr_dup`
+{srcLink}`dstr_dup`
 
 REFUTED: $`\mathit{dup} \circ \mathit{dstr}` is not; $`((\top,\star),(\bot,\star))` comes back with first
 component $`(\top \land \bot, \star)`.  A clause body cannot be regrouped this way without
 changing what is extracted.
 
-{stmt}`LaxLogic.QLL.not_dup_dstr`
+{stmt}`not_dup_dstr`
 
-{docstring LaxLogic.QLL.not_dup_dstr +allowMissing}
+{docstring not_dup_dstr +allowMissing}
 
-{srcLink}`LaxLogic.QLL.not_dup_dstr`
+{srcLink}`not_dup_dstr`
 
 Fig. 3's $`\land \bigcirc` is `dstr`: the second subgoal's constraint never sees the
 first's witness.  A constraint relating two subgoals' witnesses can live only
 in the table entry of the enclosing clause — a design property of the draft,
 now visible.
 
-{stmt}`LaxLogic.QLL.AProof.ext_andC`
+{stmt}`AProof.ext_andC`
 
-{docstring LaxLogic.QLL.AProof.ext_andC +allowMissing}
+{docstring AProof.ext_andC +allowMissing}
 
-{srcLink}`LaxLogic.QLL.AProof.ext_andC`
+{srcLink}`AProof.ext_andC`
 
 # The inclusion lemma
 
@@ -133,28 +134,28 @@ table, and inclusion of entries gives entailment for every table.
 
 The table entries a derivation summons.
 
-{stmt}`LaxLogic.QLL.AProof.entries`
+{stmt}`AProof.entries`
 
-{docstring LaxLogic.QLL.AProof.entries +allowMissing}
+{docstring AProof.entries +allowMissing}
 
-{srcLink}`LaxLogic.QLL.AProof.entries`
+{srcLink}`AProof.entries`
 
 If every entry `a` summons is summoned by `a'`, then `a'`'s extracted
 constraint entails `a`'s, for every table.  Depends on `propext` only.
 
-{stmt}`LaxLogic.QLL.AProof.ext_prv_of_entries_subset`
+{stmt}`AProof.ext_prv_of_entries_subset`
 
-{docstring LaxLogic.QLL.AProof.ext_prv_of_entries_subset +allowMissing}
+{docstring AProof.ext_prv_of_entries_subset +allowMissing}
 
-{srcLink}`LaxLogic.QLL.AProof.ext_prv_of_entries_subset`
+{srcLink}`AProof.ext_prv_of_entries_subset`
 
 Equal entry sets give $`\dashv\vdash`.
 
-{stmt}`LaxLogic.QLL.AProof.ext_peq_of_entries_eq`
+{stmt}`AProof.ext_peq_of_entries_eq`
 
-{docstring LaxLogic.QLL.AProof.ext_peq_of_entries_eq +allowMissing}
+{docstring AProof.ext_peq_of_entries_eq +allowMissing}
 
-{srcLink}`LaxLogic.QLL.AProof.ext_peq_of_entries_eq`
+{srcLink}`AProof.ext_peq_of_entries_eq`
 
 This is what lets derivations be compared at the abstract level, before any
 constraint is looked at: prefer the derivation that summons fewer entries.
@@ -171,19 +172,19 @@ head.
 
 $`\forall x. (\exists y. x = f y \land S y) \supset P x` with $`\forall x. x = x` proves $`\forall y. S y \supset P(f y)`.
 
-{stmt}`LaxLogic.QLL.HeadFlatten.flat_to_orig`
+{stmt}`HeadFlatten.flat_to_orig`
 
-{docstring LaxLogic.QLL.HeadFlatten.flat_to_orig +allowMissing}
+{docstring HeadFlatten.flat_to_orig +allowMissing}
 
-{srcLink}`LaxLogic.QLL.HeadFlatten.flat_to_orig`
+{srcLink}`HeadFlatten.flat_to_orig`
 
 $`\forall y. S y \supset P(f y)` with $`\forall x y. x = y \supset P y \supset P x` proves the flattening.
 
-{stmt}`LaxLogic.QLL.HeadFlatten.orig_to_flat`
+{stmt}`HeadFlatten.orig_to_flat`
 
-{docstring LaxLogic.QLL.HeadFlatten.orig_to_flat +allowMissing}
+{docstring HeadFlatten.orig_to_flat +allowMissing}
 
-{srcLink}`LaxLogic.QLL.HeadFlatten.orig_to_flat`
+{srcLink}`HeadFlatten.orig_to_flat`
 
 The same with a $`\bigcirc P(f y)` head and the same plain substitutivity axiom:
 $`\bigcirc E` lifts it.  So the fact is native to the $`\bigcirc`-free fragment and unchanged
@@ -195,11 +196,11 @@ constructor heads as surface syntax elaborated to variable heads and `=`
 constraints, with unification an untrusted oracle whose certificate is the
 substitution.
 
-{stmt}`LaxLogic.QLL.HeadFlatten.orig_to_flat_circ`
+{stmt}`HeadFlatten.orig_to_flat_circ`
 
-{docstring LaxLogic.QLL.HeadFlatten.orig_to_flat_circ +allowMissing}
+{docstring HeadFlatten.orig_to_flat_circ +allowMissing}
 
-{srcLink}`LaxLogic.QLL.HeadFlatten.orig_to_flat_circ`
+{srcLink}`HeadFlatten.orig_to_flat_circ`
 
 # Decorating a disjunct
 
@@ -208,35 +209,35 @@ other does not: $`A \lor \bigcirc B`, "either `A` outright, or `B` up to a const
 Under an outer $`\bigcirc` the decoration collapses; as a plain goal it is a genuine
 weakening.
 
-{stmt}`LaxLogic.QLL.circ_or_circ_collapse`
+{stmt}`circ_or_circ_collapse`
 
-{docstring LaxLogic.QLL.circ_or_circ_collapse +allowMissing}
+{docstring circ_or_circ_collapse +allowMissing}
 
-{srcLink}`LaxLogic.QLL.circ_or_circ_collapse`
+{srcLink}`circ_or_circ_collapse`
 
 $`\bigcirc (A \lor B) \vdash \bigcirc (A \lor \bigcirc B)`: under $`\bigcirc` the two goals are the same.
 
-{stmt}`LaxLogic.QLL.circ_or_circ_expand`
+{stmt}`circ_or_circ_expand`
 
-{docstring LaxLogic.QLL.circ_or_circ_expand +allowMissing}
+{docstring circ_or_circ_expand +allowMissing}
 
-{srcLink}`LaxLogic.QLL.circ_or_circ_expand`
+{srcLink}`circ_or_circ_expand`
 
-{stmt}`LaxLogic.QLL.or_to_or_circ`
+{stmt}`or_to_or_circ`
 
-{docstring LaxLogic.QLL.or_to_or_circ +allowMissing}
+{docstring or_to_or_circ +allowMissing}
 
-{srcLink}`LaxLogic.QLL.or_to_or_circ`
+{srcLink}`or_to_or_circ`
 
 REFUTED converse: $`P \lor \bigcirc B` does not prove $`P \lor B`; in the two-world model the
 lax branch is the only one open.  So a plain decorated goal accepts the
 constraint-only route where the undecorated one does not.
 
-{stmt}`LaxLogic.QLL.BodyCirc.not_prv_or_circ_to_or`
+{stmt}`BodyCirc.not_prv_or_circ_to_or`
 
-{docstring LaxLogic.QLL.BodyCirc.not_prv_or_circ_to_or +allowMissing}
+{docstring BodyCirc.not_prv_or_circ_to_or +allowMissing}
 
-{srcLink}`LaxLogic.QLL.BodyCirc.not_prv_or_circ_to_or`
+{srcLink}`BodyCirc.not_prv_or_circ_to_or`
 
 Under extraction a disjunction is a sum and each branch's constraint sits
 inside its injection: the realiser of $`A \lor \bigcirc B` is $`|A| + (C \times |B|)`, one
@@ -247,41 +248,41 @@ entry.
 $`|\lor \bigcirc p| = (\pi _1|p| \land \top, \mathit{inl} \pi _2|p|)`: the branch's constraint travels with the
 injection.
 
-{stmt}`LaxLogic.QLL.AProof.ext_orL`
+{stmt}`AProof.ext_orL`
 
-{docstring LaxLogic.QLL.AProof.ext_orL +allowMissing}
+{docstring AProof.ext_orL +allowMissing}
 
-{srcLink}`LaxLogic.QLL.AProof.ext_orL`
+{srcLink}`AProof.ext_orL`
 
 A derivation whose summoned entries all have table value $`\top` extracts $`\top`.
 
-{stmt}`LaxLogic.QLL.AProof.ext_top_of_pure`
+{stmt}`AProof.ext_top_of_pure`
 
-{docstring LaxLogic.QLL.AProof.ext_top_of_pure +allowMissing}
+{docstring AProof.ext_top_of_pure +allowMissing}
 
-{srcLink}`LaxLogic.QLL.AProof.ext_top_of_pure`
+{srcLink}`AProof.ext_top_of_pure`
 
 A sound `once`: every other derivation's answer entails such a derivation's.
 Succeed on the free branch and no other branch can be more general — what
 Prolog's cut does by fiat and Andorra's quiet guards by entailment, obtained
 here from the type.
 
-{stmt}`LaxLogic.QLL.AProof.once_of_pure`
+{stmt}`AProof.once_of_pure`
 
-{docstring LaxLogic.QLL.AProof.once_of_pure +allowMissing}
+{docstring AProof.once_of_pure +allowMissing}
 
-{srcLink}`LaxLogic.QLL.AProof.once_of_pure`
+{srcLink}`AProof.once_of_pure`
 
 Kernel-run instance: $`Q(t) \subset R(t) \lor \exists s. B(s) \land t \ge s + 2` with `R`
 constraint-free.  The engine's first answer for `Q(z)` is $`\top` and its second
 is `B`'s constraint $`s \ge 5 \land z \ge s + 2`; the free branch extracts $`\top` under
 the $`\bigcirc` pass, and every other derivation's answer entails it.
 
-{stmt}`LaxLogic.QLL.BodyCirc.extD_top`
+{stmt}`BodyCirc.extD_top`
 
-{docstring LaxLogic.QLL.BodyCirc.extD_top +allowMissing}
+{docstring BodyCirc.extD_top +allowMissing}
 
-{srcLink}`LaxLogic.QLL.BodyCirc.extD_top`
+{srcLink}`BodyCirc.extD_top`
 
 # Placements not yet built
 

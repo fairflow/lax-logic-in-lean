@@ -7,6 +7,7 @@ import CLPPaper.Math
 open Verso.Genre
 open Verso.Genre.Manual
 open CLPPaper CLPPaper.Math
+open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Status, simplification, and what is not built" =>
 

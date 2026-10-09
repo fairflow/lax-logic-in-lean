@@ -7,6 +7,7 @@ import CLPPaper.Math
 open Verso.Genre
 open Verso.Genre.Manual
 open CLPPaper CLPPaper.Math
+open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Lax logic programs and their least models" =>
 
@@ -24,11 +25,11 @@ is instantiation.  A program `Θ` is a list of clauses.
 Definition 5.1's clauses: a Σ-body, a head predicate applied to the bound
 variables, and a flag for a modal head.
 
-{stmt}`LaxLogic.QLL.Clause`
+{stmt}`Clause`
 
-{docstring LaxLogic.QLL.Clause +allowMissing}
+{docstring Clause +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Clause`
+{srcLink}`Clause`
 
 The draft's indices `ind(S)` choose one disjunct at every $`\lor`, and `sel S g`
 is `S` at index `g`; a clause is provably equivalent to its Horn clauses, one
@@ -36,27 +37,27 @@ per index.
 
 $`g \in \mathit{ind} S` and $`\Gamma \vdash \mathit{sel} S g` give $`\Gamma \vdash S`.
 
-{stmt}`LaxLogic.QLL.Prv.of_sel`
+{stmt}`Prv.of_sel`
 
-{docstring LaxLogic.QLL.Prv.of_sel +allowMissing}
+{docstring Prv.of_sel +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Prv.of_sel`
+{srcLink}`Prv.of_sel`
 
 $`\Gamma \vdash S` gives $`\Gamma \vdash \bigvee \mathit{sel} S g` over $`g \in \mathit{ind} S`.
 
-{stmt}`LaxLogic.QLL.Prv.disj_sel`
+{stmt}`Prv.disj_sel`
 
-{docstring LaxLogic.QLL.Prv.disj_sel +allowMissing}
+{docstring Prv.disj_sel +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Prv.disj_sel`
+{srcLink}`Prv.disj_sel`
 
 A clause follows from its Horn clauses.
 
-{stmt}`LaxLogic.QLL.Clause.prv_of_toHorn`
+{stmt}`Clause.prv_of_toHorn`
 
-{docstring LaxLogic.QLL.Clause.prv_of_toHorn +allowMissing}
+{docstring Clause.prv_of_toHorn +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Clause.prv_of_toHorn`
+{srcLink}`Clause.prv_of_toHorn`
 
 # The least Herbrand model
 
@@ -67,104 +68,104 @@ operator.
 
 The least Herbrand model relative to built-ins.
 
-{stmt}`LaxLogic.QLL.LHM`
+{stmt}`LHM`
 
-{docstring LaxLogic.QLL.LHM +allowMissing}
+{docstring LHM +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LHM`
+{srcLink}`LHM`
 
 `Tp(LHM) = LHM`.
 
-{stmt}`LaxLogic.QLL.Tp_LHM`
+{stmt}`Tp_LHM`
 
-{docstring LaxLogic.QLL.Tp_LHM +allowMissing}
+{docstring Tp_LHM +allowMissing}
 
-{srcLink}`LaxLogic.QLL.Tp_LHM`
+{srcLink}`Tp_LHM`
 
 $`\mathit{Tp}(I) \subseteq I` implies $`\mathit{LHM} \subseteq I`.
 
-{stmt}`LaxLogic.QLL.LHM_least`
+{stmt}`LHM_least`
 
-{docstring LaxLogic.QLL.LHM_least +allowMissing}
+{docstring LHM_least +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LHM_least`
+{srcLink}`LHM_least`
 
 `LHM = ⋃ₙ Tpⁿ(∅)`.
 
-{stmt}`LaxLogic.QLL.LHM_iff_Tpow`
+{stmt}`LHM_iff_Tpow`
 
-{docstring LaxLogic.QLL.LHM_iff_Tpow +allowMissing}
+{docstring LHM_iff_Tpow +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LHM_iff_Tpow`
+{srcLink}`LHM_iff_Tpow`
 
 `LHM = lfp Tp` in the sense of `OrderHom.lfp`; this is the one result that
 uses `Classical.choice`, through Mathlib's lattice.
 
-{stmt}`LaxLogic.QLL.LHM_eq_lfp`
+{stmt}`LHM_eq_lfp`
 
-{docstring LaxLogic.QLL.LHM_eq_lfp +allowMissing}
+{docstring LHM_eq_lfp +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LHM_eq_lfp`
+{srcLink}`LHM_eq_lfp`
 
 $`\mathit{Tp}(I) \subseteq I` iff $`R \subseteq I` and $`I \models \Theta`.
 
-{stmt}`LaxLogic.QLL.prefixpoint_iff_model`
+{stmt}`prefixpoint_iff_model`
 
-{docstring LaxLogic.QLL.prefixpoint_iff_model +allowMissing}
+{docstring prefixpoint_iff_model +allowMissing}
 
-{srcLink}`LaxLogic.QLL.prefixpoint_iff_model`
+{srcLink}`prefixpoint_iff_model`
 
-{stmt}`LaxLogic.QLL.LHM_iff_all_models`
+{stmt}`LHM_iff_all_models`
 
-{docstring LaxLogic.QLL.LHM_iff_all_models +allowMissing}
+{docstring LHM_iff_all_models +allowMissing}
 
-{srcLink}`LaxLogic.QLL.LHM_iff_all_models`
+{srcLink}`LHM_iff_all_models`
 
 Lloyd's theorems for non-modal Horn programs and closed Σ-queries follow.
 
 $`\Theta \vdash S` iff `S` is true in the least model.
 
-{stmt}`LaxLogic.QLL.lloyd_prv_iff`
+{stmt}`lloyd_prv_iff`
 
-{docstring LaxLogic.QLL.lloyd_prv_iff +allowMissing}
+{docstring lloyd_prv_iff +allowMissing}
 
-{srcLink}`LaxLogic.QLL.lloyd_prv_iff`
+{srcLink}`lloyd_prv_iff`
 
 $`\Theta \vdash S` iff $`\Theta \Vdash S`.
 
-{stmt}`LaxLogic.QLL.lloyd_consequence_iff`
+{stmt}`lloyd_consequence_iff`
 
-{docstring LaxLogic.QLL.lloyd_consequence_iff +allowMissing}
+{docstring lloyd_consequence_iff +allowMissing}
 
-{srcLink}`LaxLogic.QLL.lloyd_consequence_iff`
+{srcLink}`lloyd_consequence_iff`
 
 Van Emden and Kowalski: `M_P(p, ũ)` iff $`P \Vdash p(\tilde{u} )`.
 
-{stmt}`LaxLogic.QLL.vanEmden_Kowalski`
+{stmt}`vanEmden_Kowalski`
 
-{docstring LaxLogic.QLL.vanEmden_Kowalski +allowMissing}
+{docstring vanEmden_Kowalski +allowMissing}
 
-{srcLink}`LaxLogic.QLL.vanEmden_Kowalski`
+{srcLink}`vanEmden_Kowalski`
 
 Two designed cells mark the limits of the method.
 
 $`\nvdash P \lor \lnot P`, refuted by a two-world Herbrand model: least models are
 intuitionistic.
 
-{stmt}`LaxLogic.QLL.lem_not_prv`
+{stmt}`lem_not_prv`
 
-{docstring LaxLogic.QLL.lem_not_prv +allowMissing}
+{docstring lem_not_prv +allowMissing}
 
-{srcLink}`LaxLogic.QLL.lem_not_prv`
+{srcLink}`lem_not_prv`
 
 A disjunction has no least Herbrand model, which is why bodies are split into
 Horn clauses first.
 
-{stmt}`LaxLogic.QLL.or_no_least_model`
+{stmt}`or_no_least_model`
 
-{docstring LaxLogic.QLL.or_no_least_model +allowMissing}
+{docstring or_no_least_model +allowMissing}
 
-{srcLink}`LaxLogic.QLL.or_no_least_model`
+{srcLink}`or_no_least_model`
 
 # Why two worlds
 
@@ -172,11 +173,11 @@ Lloyd's theory uses one world.  In one world $`\bigcirc` collapses:
 
 In a one-world Herbrand model, $`\bigcirc A` holds iff `A` does.
 
-{stmt}`LaxLogic.QLL.HTrue_circ`
+{stmt}`HTrue_circ`
 
-{docstring LaxLogic.QLL.HTrue_circ +allowMissing}
+{docstring HTrue_circ +allowMissing}
 
-{srcLink}`LaxLogic.QLL.HTrue_circ`
+{srcLink}`HTrue_circ`
 
 So a one-world model cannot tell "`S` holds" from "`S` holds up to a
 constraint", which is the distinction lax logic programming exists to make.
@@ -190,19 +191,19 @@ interpretation monotone.
 
 Theorem 7.5 at world 0: $`\Theta \vdash S` iff $`0 \models S`.
 
-{stmt}`LaxLogic.QLL.thm_7_5_world0`
+{stmt}`thm_7_5_world0`
 
-{docstring LaxLogic.QLL.thm_7_5_world0 +allowMissing}
+{docstring thm_7_5_world0 +allowMissing}
 
-{srcLink}`LaxLogic.QLL.thm_7_5_world0`
+{srcLink}`thm_7_5_world0`
 
 Theorem 7.5 at world 1: $`\Theta \vdash \bigcirc _q S` iff $`1 \models S`.
 
-{stmt}`LaxLogic.QLL.thm_7_5_world1`
+{stmt}`thm_7_5_world1`
 
-{docstring LaxLogic.QLL.thm_7_5_world1 +allowMissing}
+{docstring thm_7_5_world1 +allowMissing}
 
-{srcLink}`LaxLogic.QLL.thm_7_5_world1`
+{srcLink}`thm_7_5_world1`
 
 Solvability needs two more worlds, and they appear with the $`\bigcirc` pass: world 2
 carries the least model of the concrete program over the constraint
