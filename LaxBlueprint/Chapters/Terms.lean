@@ -7,6 +7,7 @@ import LaxLogic.PLL.Timing.Constraints
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open PLLND
 
 #doc (Manual) "The proof-term calculus" =>
 

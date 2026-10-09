@@ -111,55 +111,48 @@ gh workflow run pages.yml --ref blueprint-dev-chapter
 Publishing is manual only — `pages.yml` has **no** push trigger, so pushing is
 always safe.
 
-### The verso fork, and the fully-qualified names
+### The verso fork, and how names are shortened
 
-`verso` is pinned to **`fairflow/verso @ v4.31.0-declsig-fix`**, a one-commit
-fork fixing a shadowed `declSigWithId` parser that silently disabled
-`showNamespace`/`constantInfo` in `Docstring.ppSignature`. The root-level
-`[[require]]` sits *first*, ahead of `VersoBlueprint` and so ahead of `mathlib`
-— that order is load-bearing (§5). It resolves and builds green.
+`verso` is pinned to **`fairflow/verso @ af0ddec7`**: the `v4.31.0-declsig-fix`
+commit (a shadowed `declSigWithId` parser had silently disabled
+`showNamespace`/`constantInfo` in `Docstring.ppSignature`) plus one commit exposing
+`verso.docstring.showNamespace` to documents. The root-level `[[require]]` sits
+*first*, ahead of `VersoBlueprint` and so ahead of `mathlib`; that order is
+load-bearing (§5).
 
-**The site still renders fully-qualified names, and here is exactly why.** Trace
-it once and it stays clear:
+Two independent mechanisms decide what a signature shows. Keep them apart:
 
-```
-(lean := "FRJ.Gbu.W.gbuInv5")            in our chapter
-  → VersoBlueprint/ExternalDeclRender.lean:523
-        Verso.Genre.Manual.Signature.forName decl
-  → verso/VersoManual/Docstring.lean:315
-        Block.Docstring.ppSignature name (constantInfo := false)
-  → ppSignature (c) (showNamespace : Bool := true) …        ← the default
-```
+1. **The declaration's own name** (`theorem maehara`, not
+   `theorem PLLND.SC.maehara`): `weak.verso.docstring.showNamespace = false` in
+   `lakefile.toml`, an infrastructure file. Live since 2026-09-06, verified on
+   the published site that night.
+2. **Every name inside its type, and the notation**: the chapter's own `open`
+   lines. Lean's `Command.runTermElabM` hands the file's open declarations to
+   the pretty-printer, and verso's `ppSignature` adds to them rather than
+   replacing them. So each PLL chapter opens `PLLND`, which also switches on the
+   scoped PLL notation (`◯ ∧ ∨ ↠ ⊥`) and makes a plain `⊢` print for
+   `PLLND.LaxND`, the namespace's `turnstile_default`; the decision-procedure
+   chapter opens `FRJ FRJ.Gbu FRJ.Gbu.W`. Added 2026-10-09; before it, the
+   site's pages carried 1,191 fully qualified names.
 
-So the signature block that a reader actually sees is produced by
-`ppSignature` after all — the fork's fix **is** on our path, contrary to an
-earlier note in this file. But the fix only makes `showNamespace` *work*;
-`Signature.forName` never passes it, so it takes the default `true` and the
-namespace is printed. The fork was **necessary and not sufficient**.
+**Rule for a new chapter:** if it attaches declarations, open their namespace
+after `open Informal`, or its signatures print in long form. Do not open a type's
+own namespace (`Form`, `Tm`): `Tm.app` reads better than `app`, and sibling types
+share constructor names.
 
-Completing it is a one-line change in *verso*, not verso-blueprint: have
-`Signature.forName` pass `showNamespace := false`, or thread it through as a
-parameter. That belongs to the prover-toolkit agent, who owns the fork.
+Not reached by `open`, and expected: the Blueprint-Summary and Dependency-Graph
+pages, which list each node by the name as written in `(lean := …)`; and the
+"Constructor"/"Extends" lines of structures, which verso prints with `ppName`,
+which always shows full names.
 
-Independently corroborated by that agent, 2026-09-06: *“the fork carries ONLY
-the bug fix and not a `showNamespace` option. So declaration names stay fully
-qualified.”* What the fork **did** change on this site, and it is real: a
-declaration's own name in its own signature no longer carries a self-link
-(`constantInfo := false` now works), and inductive constructors render
-unqualified (`Docstring.lean:309` already passes `showNamespace := false`, which
-now takes effect). So there *is* a call site passing the flag — just not the one
-that prints the top-level declaration name.
+Optional follow-up: writing `(lean := "x")` rather than `(lean := "PLLND.x")`
+would shorten the hover and summary panels too. Verso-blueprint resolves the
+written name through `open` (measured on one node, 2026-09-06). Before 2026-10-09
+that would have made the panels disagree with the long signature beside them;
+now it would not. Left out of the 2026-10-09 change so that CI tested one
+variable.
 
-A separate, smaller effect is already available to us with no fork change.
-Verso-blueprint keeps two names per reference — `written` (the author's
-spelling, displayed in the hover and summary panels) and `canonical` (resolved,
-used for links), documented at `Data.lean:450`. Resolution goes through
-`Lean.resolveGlobalName` under `MonadResolveName`, so it honours `open`.
-**Measured on one node:** adding `open FRJ.Gbu.W` and writing
-`(lean := "gbuInv5")` shortened four of six occurrences — all in the hover and
-summary panels. The remaining ones are the rendered signature, which is the
-`ppSignature` path above. Worth doing only if the signature is fixed too;
-alone it makes the panels inconsistent with the signature beside them.
+The history of how this was diagnosed is in git, in this file's earlier versions.
 
 A second, separate blueprint effort exists for the prover toolkit
 (`dolax-in-lean`), owned by the Lean prover-toolkit agent. Not yours. One

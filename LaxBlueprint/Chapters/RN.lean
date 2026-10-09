@@ -9,6 +9,7 @@ import wip.gapWidth
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open PLLND
 
 #doc (Manual) "The variable-free fragment" =>
 

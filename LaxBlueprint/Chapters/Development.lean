@@ -65,6 +65,7 @@ VERSO CHEAT SHEET — everything used in this file, and nothing else.
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open PLLND
 
 
 #doc (Manual) "The PLL development" =>

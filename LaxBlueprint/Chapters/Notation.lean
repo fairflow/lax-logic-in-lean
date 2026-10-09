@@ -39,9 +39,13 @@ everything else is shown in long form, for example `PLLFormula.ifThen A B`
 or a tagged turnstile.  You never type into the infoview itself: what you
 type in the editor is limited only by scope.
 
-Verso documents (this Blueprint and the papers) use the same printer.  They
-open neither namespace, so signatures here are shown in long form, with
-fully qualified names.
+Verso documents (this Blueprint and the papers) use the same printer, so a
+document shows short names and notation exactly where its source file opens
+the namespace.  The PLL chapters of this Blueprint open `PLLND`, so their
+signatures use the PLL notation above, and an untagged `⊢` there is
+`PLLND.LaxND`, the namespace's `turnstile_default`; the decision-procedure
+chapter opens `FRJ`, `FRJ.Gbu` and `FRJ.Gbu.W`.  A chapter that opens
+neither shows signatures in long form, with fully qualified names.
 
 `#eval` is different again: it uses `toString`/`Repr`, which for
 `PLLFormula` still writes `⊃` for implication and `⊤` for `⊥ ⊃ ⊥`
