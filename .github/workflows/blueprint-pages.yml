@@ -57,6 +57,10 @@ jobs:
         run: lake exe cache get || true
       - name: Build Blueprint site
         run: ./scripts/ci-pages.sh
+      # The papers go into the SAME artifact, under /clp-paper/ and /lax-paper/:
+      # one Pages site per repository, and each deploy replaces all of it.
+      - name: Build Verso papers (HTML) into the site
+        run: ./scripts/ci-papers.sh _out/site/html-multi
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:

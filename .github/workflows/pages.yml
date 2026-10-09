@@ -24,6 +24,11 @@ on:
       - 'LaxBlueprint/**'
       - 'LaxBlueprintMain.lean'
       - 'scripts/ci-pages.sh'
+      - 'scripts/ci-papers.sh'
+      - 'CLPPaper/**'
+      - 'CLPPaperMain.lean'
+      - 'LaxPaper/**'
+      - 'LaxPaperMain.lean'
       - '.github/workflows/pages.yml'
       - '.github/workflows/blueprint-pages.yml'
   workflow_dispatch:
