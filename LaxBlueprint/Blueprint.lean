@@ -36,7 +36,7 @@ Papers, published on this site beside the Blueprint:
 Explorers and guides, self-contained pages (each states its own version and
 date):
 
-* [The RN(◯,{}) catalogue](https://fairflow.github.io/lax-logic-in-lean/tools/rn-catalogue.html)
+* [The `RN(◯,{})` catalogue](https://fairflow.github.io/lax-logic-in-lean/tools/rn-catalogue.html)
   (v27, 2026-08-26): the lattice explorer for the closed fragment: the ρ-catalogue R, its order
   as a Hasse diagram, the operation tables and the hypercubes.
 * [The R operation tables](https://fairflow.github.io/lax-logic-in-lean/tools/rho-optables.html)
