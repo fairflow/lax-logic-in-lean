@@ -29,6 +29,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: `scripts/readme-figures.py --check` dates the figures by
+          # `git log -1 -- docs/status-ledger.jsonl`, and in a shallow clone that
+          # is HEAD's date, so the check failed on every commit after the record's.
+          fetch-depth: 0
       - uses: leanprover/lean-action@v1
 
       # Every `import` names a module that exists.  Static, one second, and it
