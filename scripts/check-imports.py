@@ -32,6 +32,7 @@ EXTERNAL = {
     "Mathlib", "Batteries", "Std", "Lean", "Init", "Plausible", "ImportGraph",
     "Qq", "Aesop", "ProofWidgets", "Cli", "LeanSearchClient", "Verso",
     "SubVerso", "MD4Lean", "VersoManual", "VersoBlog", "VersoBlueprint",
+    "LeanCertify",
     # the Lean–Wolfram bridge: the sibling repository `mathematica-in-lean`,
     # put on LEAN_PATH by `scripts/clp-wolfram.sh` rather than made a Lake
     # dependency, and imported by exactly one file that nothing imports
