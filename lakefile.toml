@@ -40,6 +40,13 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.31.0"
 
+# Lean certify: the certified-computation harness (Mathlib-free). Pinned by
+# commit until its v0.1.0 tag exists.
+[[require]]
+name = "lean-certify"
+git = "https://github.com/fairflow/lean-certify"
+rev = "df1d01675452b86347fbd02adf0eeac9ae054e76"
+
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is
 # built occasionally, by hand or by the Pages workflow.
@@ -850,3 +857,10 @@ root = "wip.ui_interpFS_run"
 # measurement of what four retrieval conditions closed on one fixed set of
 # goals, and rewriting them to track a later calculus would destroy the
 # thing they record.  They are kept, unbuilt, as written.
+
+# The Lean certify acceptance test (lean-certify docs/outline.md §9): FinCM's
+# countermodel checker packaged as a `Certify.Certifier`, with the lints run
+# on `checkB`, `decideG4` and `decideFuel`. Not a default target:
+# `lake build CertifyAdoption`.
+[[lean_lib]]
+name = "CertifyAdoption"
