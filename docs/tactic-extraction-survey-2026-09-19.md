@@ -11,6 +11,44 @@ campaign and its ten-candidate table — this is candidate 6),
 `docs/ljf-simp-round1.md` and `docs/ljf-round-d-2026-09-18.md` (the method and
 its recorded refusals).
 
+---
+
+> ## READ THIS FIRST — the plan below has been executed, and is no longer advice
+>
+> **Status as of 2026-10-09.** Everything from "## The one structural fact" down
+> to "## 4. Ranking" is the survey **as written on 2026-09-19**, kept unrewritten
+> because it is the record of what was predicted. It is not a to-do list, and
+> three of its four steps are settled:
+>
+> | step | | outcome |
+> |---|---|---|
+> | 1 | `fin_sub`, 135 Finset sites in the three UI files | **DONE** — 389 lines, gated clean (`01ba085`) |
+> | 2 | the `Sub.cons`/`Sub.grow` inlining reversal, ~110 lines | **NOT DONE** — Matthew's reading, 2026-10-09: no clear benefit. It was the weakest of the four |
+> | 3 | six `Sub` facts for the zero-import island | **DONE** — 209 lines, 51 sites, gated clean (`e7698b1`) |
+> | 4 | `mem_sub` across the Mathlib island, 93 sites | **REFUTED** — see §"Step 4, REFUTED 2026-10-09" below |
+>
+> **Outturn: 598 lines of the ~1,159 estimated**, and the whole gap is step 4.
+>
+> **Two of this document's own measurements did not survive execution**, and both
+> argue for distrusting a token-level census:
+>
+> * §2 records step 1's sites as a **three**-line block. They are four: the
+>   closing paren sits on the `tauto` line, so the block folds onto its `(by`
+>   line and the saving is three lines per site, not two. The outturn beat the
+>   estimate for this reason.
+> * §1 and §3c describe step 4's leaves as `List.mem_cons_self` /
+>   `List.mem_cons_of_mem`. In `Craig.lean` they are `List.Mem` **constructors**
+>   (`.head _`, `.tail _ (…)`) — the counted text is not there — and the blocks
+>   are nested in a way that defeats bulk conversion, some sharing closing parens
+>   with siblings.
+>
+> **And the refusal that matters is not in the ranking.** §4's watched failure for
+> step 4 is a *timing* test, and §"What was not measured" says the axiom question
+> "is **not** answered here". It is answered now, and it is the reason step 4 is
+> dead: five `tauto` calls move `PLLND.craig_interpolation'` from
+> `[propext, Quot.sound]` to `[propext, Classical.choice, Quot.sound]`. Read the
+> ranking table with that in mind — it costs its own step 4 row.
+
 ## The one structural fact that decides the whole candidate
 
 **The repository is two islands, and `tauto` is only on one of them.**
