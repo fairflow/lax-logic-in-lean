@@ -8,6 +8,10 @@ import LaxLogic.PLL.Normalisation.TopTop
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+
+-- An unresolved or ambiguous `(lean := …)` name is a build error here, not a warning:
+-- otherwise a node silently loses its Lean attachment and the status that comes with it.
+set_option verso.blueprint.externalCode.strictResolve true
 open PLLND
 
 #doc (Manual) "Strong normalisation" =>
@@ -31,44 +35,44 @@ whole relation, and that is Lindley–Stark ⊤⊤-lifting.
 Each half of `Step`, normalising on its own.
 :::
 
-:::definition "astep" (parent := "frag") (lean := "PLLND.AStep")
+:::definition "astep" (parent := "frag") (lean := "AStep")
 The `let`-associativity fragment: re-bracketing nested binds, without
 touching any β-redex.
 :::
 
-:::definition "weight" (parent := "frag") (lean := "PLLND.Tm.weight")
+:::definition "weight" (parent := "frag") (lean := "Tm.weight")
 A weight on terms, strictly decreasing along {uses "astep"}[].
 :::
 
-:::theorem "assoc_sn" (parent := "frag") (lean := "PLLND.assoc_sn")
+:::theorem "assoc_sn" (parent := "frag") (lean := "assoc_sn")
 Assoc terminates, by {uses "weight"}[].  The argument is genuinely simple —
 a natural-number measure and nothing else — and it is worth presenting for
 that reason, as the contrast against which the difficulty of the other
 fragment, and then of their union, can be seen.
 :::
 
-:::definition "rstep" (parent := "frag") (lean := "PLLND.RStep")
+:::definition "rstep" (parent := "frag") (lean := "RStep")
 The β fragment: one clause per connective.
 :::
 
-:::definition "rsn" (parent := "frag") (lean := "PLLND.RSN")
+:::definition "rsn" (parent := "frag") (lean := "RSN")
 The reducibility predicate, defined by recursion on the type.  The `◯` clause
 is where the design decision sits: this is the value-style interpretation,
 and {uses "kont"}[] later replaces it.
 :::
 
-:::theorem "red_sn" (parent := "frag") (lean := "PLLND.Red.sn")
+:::theorem "red_sn" (parent := "frag") (lean := "Red.sn")
 Reducible terms are strongly normalising — the easy half of the reducibility
 method.
 :::
 
-:::theorem "beta_sn" (parent := "frag") (lean := "PLLND.beta_sn")
+:::theorem "beta_sn" (parent := "frag") (lean := "beta_sn")
 β is strongly normalising, by Kripke–Tait reducibility over {uses "rsn"}[]
 and {uses "red_sn"}[].  Note the asymmetry with {uses "assoc_sn"}[]: no
 measure on terms does this, because β duplicates arbitrary subterms.
 :::
 
-:::theorem "step_split" (parent := "frag") (lean := "PLLND.step_split")
+:::theorem "step_split" (parent := "frag") (lean := "step_split")
 Every `Step` is an {uses "astep"}[] or an {uses "rstep"}[].  This is what
 makes "the two fragments" a partition rather than a manner of speaking, and
 it is what the next section needs in order to say that *both* halves
@@ -115,20 +119,20 @@ interpretation used for {uses "beta_sn"}[] is exactly the `K = []` shadow of
 this one, which is why the upgrade is a strengthening and not a fresh start.
 :::
 
-:::theorem "fundamental_step" (parent := "full") (lean := "PLLND.fundamental_step")
+:::theorem "fundamental_step" (parent := "full") (lean := "fundamental_step")
 The fundamental theorem of the logical relation, over the full reduction:
 every well-typed term is reducible under any reducible substitution.  Uses
 {uses "kont"}[].
 :::
 
-:::theorem "strong_normalisation" (parent := "full") (lean := "PLLND.strong_normalisation")
+:::theorem "strong_normalisation" (parent := "full") (lean := "strong_normalisation")
 Strong normalisation of the full reduction: `SNt t` for every `t : Tm Γ φ`,
 β and assoc freely interleaved.  This closes what
 {uses "no_quasicommutation"}[] showed could not be closed compositionally,
 and it is the last of the three normalisation results.
 :::
 
-:::theorem "normalize_spec" (parent := "full") (lean := "PLLND.Tm.normalize_spec")
+:::theorem "normalize_spec" (parent := "full") (lean := "Tm.normalize_spec")
 The certified normaliser's specification: the function terminates and
 delivers a normal form of its input.
 :::

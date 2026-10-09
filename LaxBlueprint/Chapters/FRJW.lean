@@ -17,7 +17,11 @@ import wip.rbar
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
-open FRJ FRJ.Gbu FRJ.Gbu.W
+open FRJ FRJ.Gbu FRJ.Gbu.W PLLND
+
+-- An unresolved or ambiguous `(lean := …)` name is a build error here, not a warning:
+-- otherwise a node silently loses its Lean attachment and the status that comes with it.
+set_option verso.blueprint.externalCode.strictResolve true
 
 #doc (Manual) "The decision procedure" =>
 
@@ -68,21 +72,37 @@ irregular — and why {uses "lift_rule"}[] is needed to get from a regular
 disproof to a usable premise.
 :::
 
-:::theorem "duality_hole" (parent := "frjw_calc") (tags := "motivation") (lean := "FRJ.V.WCounter.no_irregular_circ_imp_self")
-FRJV has *no* irregular disproof of $`◯(◯Z ⊃ Z)`, for any `G`, `Z`, `Σ`,
-`Θ`.  Only $`◯∉` and $`Ax^{I◯}` conclude a `◯` goal; the former needs a
-cleanly tagged regular disproof of $`◯Z ⊃ Z`, and the latter needs
+:::theorem "duality_hole" (parent := "frjw_calc") (tags := "motivation") (lean := "V.WCounter.irregular_circ_imp_self_lifts")
+The hole, and what is left of it now that {uses "lift_rule"}[] fills it.
+Every irregular disproof of $`◯(◯Z ⊃ Z)` yields a regular disproof of the
+same goal, for any `G`, `Z`, `St`, `Th`:
+
+$$`\mathsf{FRJVi}\ G\ St\ Th\ (◯(◯Z ⊃ Z)) → ∃\, t\ Γ,\ \mathsf{Nonempty}\ (\mathsf{FRJVr}\ G\ t\ Γ\ (◯(◯Z ⊃ Z)))`
+
+pinned `[propext, Quot.sound]`.  The proof is a case split on the last rule.
+Four `FRJVi` rules can conclude a `◯` goal, and three cannot apply here:
+$`Ax^I` needs the goal prime; $`◯∉` needs a cleanly tagged regular disproof
+of $`◯Z ⊃ Z`, which `not_clean_imp_self` rules out; and $`Ax^{I◯}` needs
 `classForce` to reject a body of the form $`¬x ∨ x`, which it cannot,
-because `◯` is transparent to `classForce`.
+because `◯` is transparent to `classForce`.  What is left is Lift, which
+returns its own regular premise.  So in the extended calculus the only
+irregular disproofs of this goal are lifts.
+
+Before Lift, the last case did not exist and the same argument showed that
+FRJV had *no* irregular disproof of $`◯(◯Z ⊃ Z)` at all
+(`no_irregular_circ_imp_self`, proved 2026-08-31).  That was the hole: a
+goal with a regular disproof and no irregular one.  The statement is false
+of the extended calculus and was withdrawn on 2026-09-01 (`993ea74`); this
+theorem is what survives of it.
 :::
 
-:::theorem "gbu_gap" (parent := "frjw_calc") (tags := "motivation") (lean := "FRJ.Gbu.not_gbuIC_Gcc")
+:::theorem "gbu_gap" (parent := "frjw_calc") (tags := "motivation") (lean := "not_gbuIC_Gcc")
 `Gbu◯` cannot fill the hole either: $`∅ →_g ◯(◯p ⊃ p)` is not derivable.
 :::
 
-:::theorem "provable_gcc" (parent := "frjw_calc") (tags := "motivation") (lean := "FRJ.Gbu.provableV_Gcc, FRJ.V.RBar.not_force_of_rootAbove")
+:::theorem "provable_gcc" (parent := "frjw_calc") (tags := "motivation") (lean := "provableV_Gcc, V.RBar.not_force_of_rootAbove")
 A *regular* FRJV disproof of $`◯(◯p ⊃ p)` does exist, by the barren
-$`⋈^◯` join — but it cannot be used where an irregular one is required.
+$`⋈^◯` join — but without Lift it cannot be used where an irregular one is required.
 Together with {uses "duality_hole"}[] and {uses "gbu_gap"}[] that is the
 mismatch {uses "lift_rule"}[] removes.
 
@@ -97,21 +117,21 @@ tagless $`◯∉`, so the gate discriminates rather than passing everything.
 Transcription, conservativity, soundness.
 :::
 
-:::theorem "w1_calculus" (parent := "frjw_stages") (lean := "FRJ.FRJWr, FRJ.FRJWi, FRJ.DisprovableW")
+:::theorem "w1_calculus" (parent := "frjw_stages") (lean := "FRJWr, FRJWi, DisprovableW")
 The two FRJW families and the disprovability judgment, obtained from FRJV
 by adding {uses "lift_rule"}[] and deleting $`⊃∉`.  The stage gate is
 `#slime` reporting zero computed indices in the return type of every
 constructor of both families.
 :::
 
-:::theorem "w2_conservativity" (parent := "frjw_stages") (lean := "FRJ.disprovableW_of_provableV")
+:::theorem "w2_conservativity" (parent := "frjw_stages") (lean := "disprovableW_of_provableV")
 *Conservativity over FRJV.*  Every FRJV disproof is an FRJW disproof.  The
 only non-trivial case is $`⊃∉`, reconstructed as `lift (impIn d hA _) hTh`.
 Proved before soundness, because it is what licenses reusing the FRJV
 corpus.
 :::
 
-:::theorem "w3_soundness" (parent := "frjw_stages") (lean := "FRJ.soundnessW")
+:::theorem "w3_soundness" (parent := "frjw_stages") (lean := "soundnessW")
 *Soundness.*  A disproof yields a refutation: `DisprovableW G → ¬ PLL G`.
 The conclusion is against the wider fallible class, because the fallible
 join builds a model with a fallible world.
@@ -176,7 +196,7 @@ twenty-two stage boundaries of `searchW` with the infoview state at each,
 and shows for every recursive call which component it is charged to.
 :::
 
-:::theorem "dichotomy_cell" (parent := "frjw_cells") (lean := "FRJ.Gbu.W.searchW, FRJ.Gbu.W.dichotomyW")
+:::theorem "dichotomy_cell" (parent := "frjw_cells") (lean := "searchW, dichotomyW")
 The dichotomy at cell level.  `searchW` proves, for every well-formed
 cell, the Type-valued statement `WSearchOk`: *if the store does not
 refute the cell, one can build the `Gbu◯` derivation of it.*  Type-valued,
@@ -192,7 +212,7 @@ so it delivers the derivation rather than asserting its existence.
 One lemma per rule, and each one is the other calculus.
 :::
 
-:::proposition "inversion_bank" (parent := "frjw_bank") (lean := "FRJ.Gbu.W.gbuInv5")
+:::proposition "inversion_bank" (parent := "frjw_bank") (lean := "W.gbuInv5")
 This is the conceptual centre, and it is short enough to state whole.
 
 At every cell the searcher asks the store a question and, on a negative
@@ -229,7 +249,7 @@ negative hypothesis.  Nine sites and fourteen sites respectively.
 What the two calculi deliver together.
 :::
 
-:::theorem "crown" (parent := "frjw_crown") (lean := "FRJ.Gbu.W.frjw_complete, FRJ.Gbu.W.gbuw_complete, FRJ.Gbu.W.decidePLL, FRJ.Gbu.W.provableGbuC_iff_pll, FRJ.Gbu.W.disprovableW_iff_not_pll")
+:::theorem "crown" (parent := "frjw_crown") (lean := "frjw_complete, gbuw_complete, decidePLL, provableGbuC_iff_pll, disprovableW_iff_not_pll")
 After the closure and saturation stages have built a concrete saturated
 store for every `G`:
 
@@ -248,7 +268,7 @@ as *closed for FRJW*, with `decidePLL` going beyond the paper.
 Depends on {uses "dichotomy_cell"}[] and {uses "inversion_bank"}[].
 :::
 
-:::theorem "crown_syntactic" (parent := "frjw_crown") (lean := "FRJ.Gbu.W.PLL_iff_laxND, FRJ.Gbu.W.finite_poset_model_property, FRJ.Gbu.W.decideLaxND")
+:::theorem "crown_syntactic" (parent := "frjw_crown") (lean := "PLL_iff_laxND, finite_poset_model_property, decideLaxND")
 Read syntactically, through the bridge: `FRJ.Gbu.W.PLL_iff_laxND`,
 `finite_poset_model_property` — a formula is a theorem of PLL iff it is
 valid in every finite rooted poset constraint model — and

@@ -9,6 +9,10 @@ import wip.gapWidth
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+
+-- An unresolved or ambiguous `(lean := …)` name is a build error here, not a warning:
+-- otherwise a node silently loses its Lean attachment and the status that comes with it.
+set_option verso.blueprint.externalCode.strictResolve true
 open PLLND
 
 #doc (Manual) "The variable-free fragment" =>
@@ -45,7 +49,7 @@ repeated.
 Three infinitudes, and a boundedness result that survives them.
 :::
 
-:::theorem "rn_infinite" (parent := "rn_infinitudes") (lean := "PLLND.LaxInfinite.closed_lax_infinite")
+:::theorem "rn_infinite" (parent := "rn_infinitudes") (lean := "LaxInfinite.closed_lax_infinite")
 `RN(◯,∅)` is infinite: its `⊣⊢`-Lindenbaum quotient over variable-free PLL
 formulas has infinitely many classes.  Reduced, sorry-free, to the
 Rieger–Nishimura independence.
@@ -55,7 +59,7 @@ Note what it does *not* need: no variables, and no appeal to a modality
 beyond `◯⊥` and its negations.
 :::
 
-:::theorem "rn_bool_four" (parent := "rn_infinitudes") (lean := "PLLND.NegFour.neg_exactly_four")
+:::theorem "rn_bool_four" (parent := "rn_infinitudes") (lean := "NegFour.neg_exactly_four")
 Against those infinitudes, one sharp bound: for every variable-free `A`, the
 negation $`¬A` is interderivable with one of $`⊥`, $`¬◯⊥`, $`¬¬◯⊥`, $`⊤`.
 Since the regular elements are the image of $`¬`, the booleanization of
@@ -135,7 +139,7 @@ $`q_{13} = ◯ρ_{11}` sit *outside* the catalogue: they are the first depth-2
 The two headline results, both mechanised.
 :::
 
-:::theorem "rn_classification" (parent := "rn_proved") (lean := "PLLND.RNEmbed.rn_classification, PLLND.RNEmbed.image_classification")
+:::theorem "rn_classification" (parent := "rn_proved") (lean := "RNEmbed.rn_classification, RNEmbed.image_classification")
 *The classification.*  For every `◯`-free formula $`A` whose only variable
 is $`p`, the substitution $`A[p := ◯⊥]` is interderivable either with some
 rung of the ladder or with $`⊤`.  So the image of $`h` is the rungs
@@ -154,13 +158,13 @@ classification doubles as a *decision procedure for interderivability* on
 the whole `◯`-free one-variable fragment.
 :::
 
-:::theorem "rn_complement_infinite" (parent := "rn_proved") (lean := "PLLND.RNEmbed.complement_infinite_final")
+:::theorem "rn_complement_infinite" (parent := "rn_proved") (lean := "RNEmbed.complement_infinite_final")
 *The complement of the image is infinite*, with no caveat: the boxed odd
 rungs are pairwise distinct and all lie off the image.  Depends on
 {uses "rn_classification"}[].
 :::
 
-:::theorem "rn_width" (parent := "rn_proved") (lean := "PLLND.RNEmbed.width_infinite, PLLND.RNEmbed.gap_incomparable")
+:::theorem "rn_width" (parent := "rn_proved") (lean := "RNEmbed.width_infinite, RNEmbed.gap_incomparable")
 *`RN(◯,∅)` has unbounded width* — one of the three infinitudes.  The family
 $$`\mathrm{gap}\,k \;:=\; ◯(\mathrm{rnSub}\,(2k{+}1)) ⊃ \mathrm{rnSub}\,(2k{+}1)`
 generalises the dictionary class $`q_8` level by level — $`\mathrm{gap}\,1`

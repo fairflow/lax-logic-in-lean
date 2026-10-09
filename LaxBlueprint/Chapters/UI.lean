@@ -6,6 +6,10 @@ import LaxLogic.PLL.Sequent.Craig
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+
+-- An unresolved or ambiguous `(lean := …)` name is a build error here, not a warning:
+-- otherwise a node silently loses its Lean attachment and the status that comes with it.
+set_option verso.blueprint.externalCode.strictResolve true
 open PLLND
 
 #doc (Manual) "Towards uniform interpolation" =>
@@ -84,7 +88,7 @@ The proved starting point.  Uniform interpolation strengthens this to an
 interpolant depending only on the antecedent and the shared variables.
 :::
 
-:::theorem "maehara" (parent := "craig") (lean := "PLLND.SC.maehara")
+:::theorem "maehara" (parent := "craig") (lean := "SC.maehara")
 Maehara's method on the cut-free sequent calculus `SCh`/`SC` of
 `PLLSequent.lean`.  Given a derivation of `Γ ⊢ C` and a splitting of the
 context into two parts, the induction produces an interpolant `I` with
@@ -99,7 +103,7 @@ left boxes it.  The choice-free form `SC.maehara'` is pinned at
 `[propext, Quot.sound]`; the Mathlib-phrased wrapper adds `Classical.choice`.
 :::
 
-:::theorem "craig" (parent := "craig") (lean := "PLLND.craig_interpolation")
+:::theorem "craig" (parent := "craig") (lean := "craig_interpolation")
 Craig interpolation for PLL, the sequent form, read off {uses "maehara"}[]
 at the append splitting `Γ₁ ++ Γ₂`: if `Γ₁ ++ Γ₂ ⊢ C` is derivable then some
 `I` has `Γ₁ ⊢ I`, `I, Γ₂ ⊢ C`, and every atom of `I` occurs in `Γ₁` and in
@@ -110,7 +114,7 @@ is not unique and depends on `C`; removing that dependence is what the rest
 of the chapter is about.
 :::
 
-:::theorem "craig_imp" (parent := "craig") (lean := "PLLND.craig_implication")
+:::theorem "craig_imp" (parent := "craig") (lean := "craig_implication")
 The implication form: if `⊢ A ⊃ B` then some `I` over the common atoms of
 `A` and `B` has `⊢ A ⊃ I` and `⊢ I ⊃ B`.  It is the sequent form at the
 splitting `[A]; []` after one cut with `⊃`-left, and it is the statement a

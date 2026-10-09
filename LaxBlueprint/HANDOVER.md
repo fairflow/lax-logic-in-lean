@@ -132,8 +132,9 @@ Two independent mechanisms decide what a signature shows. Keep them apart:
    replacing them. So each PLL chapter opens `PLLND`, which also switches on the
    scoped PLL notation (`◯ ∧ ∨ ↠ ⊥`) and makes a plain `⊢` print for
    `PLLND.LaxND`, the namespace's `turnstile_default`; the decision-procedure
-   chapter opens `FRJ FRJ.Gbu FRJ.Gbu.W`. Added 2026-10-09; before it, the
-   site's pages carried 1,191 fully qualified names.
+   chapter opens `FRJ FRJ.Gbu FRJ.Gbu.W PLLND`. Added 2026-10-09; before it,
+   the site's pages carried 1,191 fully qualified names, after it 244, and
+   after the `(lean := …)` strings were shortened (below) fewer still.
 
 **Rule for a new chapter:** if it attaches declarations, open their namespace
 after `open Informal`, or its signatures print in long form. Do not open a type's
@@ -145,12 +146,31 @@ pages, which list each node by the name as written in `(lean := …)`; and the
 "Constructor"/"Extends" lines of structures, which verso prints with `ppName`,
 which always shows full names.
 
-Optional follow-up: writing `(lean := "x")` rather than `(lean := "PLLND.x")`
-would shorten the hover and summary panels too. Verso-blueprint resolves the
-written name through `open` (measured on one node, 2026-09-06). Before 2026-10-09
-that would have made the panels disagree with the long signature beside them;
-now it would not. Left out of the 2026-10-09 change so that CI tested one
-variable.
+**The `(lean := …)` strings are written short too** (2026-10-09, second
+change): node labels and the Summary page show the name *as written*, so
+`(lean := "PLLND.x")` became `(lean := "x")`. Verso-blueprint resolves the
+written name with `Lean.resolveGlobalName` in the chapter's scope. Each short
+form was chosen as the shortest suffix that denotes exactly the intended
+declaration, checked against three name sets: the repository's status ledger
+(`docs/status-ledger.jsonl`), every top-level name in Lean core and the
+packages, and every name verso and verso-blueprint declare. That is why
+`PLLND.Ne`, `PLLND.Sub` (Lean's `Ne`, `Sub`) and `PLLND.erase` (verso's
+`erase`) keep their prefix. Do the same for a new attachment.
+
+**Strict resolution.** An unresolved or ambiguous `(lean := …)` name is, by
+default, only a *warning*: the build stays green and the node silently loses its
+Lean attachment and status. Every chapter that attaches declarations therefore
+sets `verso.blueprint.externalCode.strictResolve true`, which makes it a build
+error. A new chapter with attachments should do the same.
+
+This is not hypothetical. Until 2026-10-09 the decision-procedure chapter's
+`duality_hole` node named `FRJ.V.WCounter.no_irregular_circ_imp_self`, which
+was withdrawn on 2026-09-01 (`993ea74`) when `(Lift)` made it false; the node
+had been silently unattached on the live site since, visible only as a warning
+in the Pages build log. It now states `irregular_circ_imp_self_lifts`, the
+theorem that survives (Matthew's decision), and records the withdrawn statement
+as history. To audit a site without strict mode, grep a Pages build log for
+`could not be resolved` and `is ambiguous`.
 
 The history of how this was diagnosed is in git, in this file's earlier versions.
 
