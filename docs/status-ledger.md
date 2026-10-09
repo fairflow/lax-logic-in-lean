@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-10-05 16:44 BST from `08fa4bb` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-10-09 22:10 BST from `faddabf` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**29603 declarations** in **603 modules**: 13601 theorems, 16002 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**29710 declarations** in **606 modules**: 13617 theorems, 16093 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -211,6 +211,8 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.coverfail` | 52 | 44 | 52 |  |  |
 | `wip.crankC` | 6 | 5 | 6 |  |  |
 | `wip.cutinv_cells` | 45 | 4 | 45 |  |  |
+| `wip.cutinv_screen` | 87 | 6 | 87 |  |  |
+| `wip.cutinv_screen_cert` | 14 | 10 | 14 |  |  |
 | `wip.dbclosed_dg` | 92 | 47 | 92 |  |  |
 | `wip.depth` | 50 | 48 | 50 |  |  |
 | `wip.depth2` | 90 | 52 | 90 |  |  |
@@ -326,6 +328,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.secondgen` | 7 | 6 | 7 |  |  |
 | `wip.seeds` | 14 | 13 | 14 |  |  |
 | `wip.semSpecW` | 6 | 4 | 6 |  |  |
+| `wip.semui_amalg_probe` | 6 | 0 | 6 |  |  |
 | `wip.semui_char` | 16 | 14 | 15 | 1 |  |
 | `wip.semui_ctx_core` | 41 | 4 | 41 |  |  |
 | `wip.semui_henkin` | 38 | 23 | 35 | 3 |  |
@@ -393,10 +396,10 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12784 |
-| `propext`, `Quot.sound` | 8459 |
-| `propext` | 5680 |
-| `propext`, `Classical.choice`, `Quot.sound` | 2646 |
+| *(none — axiom-free)* | 12850 |
+| `propext`, `Quot.sound` | 8475 |
+| `propext` | 5703 |
+| `propext`, `Classical.choice`, `Quot.sound` | 2648 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
 | `propext`, `Classical.choice` | 6 |

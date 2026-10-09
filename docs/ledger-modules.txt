@@ -426,6 +426,8 @@ wip.connect
 wip.coverfail
 wip.crankC
 wip.cutinv_cells
+wip.cutinv_screen
+wip.cutinv_screen_cert
 wip.dbclosed_dg
 wip.depth
 wip.depth2
@@ -541,6 +543,7 @@ wip.sealRefute
 wip.secondgen
 wip.seeds
 wip.semSpecW
+wip.semui_amalg_probe
 wip.semui_char
 wip.semui_ctx_core
 wip.semui_henkin
