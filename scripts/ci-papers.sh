@@ -13,6 +13,7 @@
 #   <site>/clp-paper/single/   CLPPaper, one page
 #   <site>/lax-paper/          LaxPaper, one page per section
 #   <site>/lax-paper/single/   LaxPaper, one page
+#   <site>/tools/*.html        the self-contained HTML explorers from docs/
 #
 # HTML only.  The PDFs need a TeX installation (scripts/verso-tex-pdf.sh) and
 # stay local: scripts/clp-paper.sh.
@@ -38,3 +39,12 @@ build() {  # lib main slug
 
 build CLPPaper CLPPaperMain.lean clp-paper
 build LaxPaper LaxPaperMain.lean lax-paper
+
+# The explorers are tracked, self-contained pages (no local references), so they
+# are copied as they are.  The list is explicit: a page is published only by
+# naming it here.
+mkdir -p "$site/tools"
+for f in rn-catalogue rho-optables pll-calculus-ledger interpolation-guide principal-proof-states; do
+  cp "docs/$f.html" "$site/tools/$f.html"
+done
+echo "ci-papers: $site/tools/ ($(ls "$site/tools" | wc -l | tr -d ' ') pages)"
