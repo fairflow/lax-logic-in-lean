@@ -8,6 +8,10 @@ open Verso.Genre
 open Verso.Genre.Manual
 open CLPPaper CLPPaper.Math
 
+-- Names in the rendered signatures are printed relative to the namespaces
+-- opened here, as in the source; scoped notation of LaxLogic.QLL prints too.
+open LaxLogic.QLL
+
 #doc (Manual) "Abstraction, extraction and refinement" =>
 
 The second pass: delete the constraints from the program, prove the abstract

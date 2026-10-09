@@ -67,6 +67,10 @@ open Verso.Genre.Manual
 open Informal
 
 
+-- Names in the rendered signatures are printed relative to the namespaces
+-- opened here, as in the source; scoped notation of PLLND prints too.
+open PLLND
+
 #doc (Manual) "The PLL development" =>
 
 A walk through the core of the mechanisation, from syntax to completeness.
