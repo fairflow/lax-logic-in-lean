@@ -68,6 +68,11 @@ jobs:
 
   deploy:
     name: Deploy Pages
+    # Deploys never overlap and are never cancelled half-way, whichever ref
+    # or event started them; a second deploy waits for the first.
+    concurrency:
+      group: github-pages-deploy
+      cancel-in-progress: false
     if: github.event_name != 'pull_request'
     needs: build
     environment:
