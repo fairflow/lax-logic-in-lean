@@ -82,8 +82,14 @@ Measured on `⊢ ◯p → ◯p` (`docs/demos.md` §3; summary in
 The cost is not the bound arithmetic (the 54-digit number is free). It
 is **constructing the object the bound is a function of**: `.card`
 builds `enum` level by level, with `|enum|²` products and quadratic
-`Finset` deduplication per level. The search itself adds nothing
-measurable. `docs/demos.md` states that this construction "exists only
+`Finset` deduplication per level. On this provable sequent the search
+itself adds nothing measurable; that is not true in general. The early
+fuelled search was itself very inefficient on refutable goals:
+`PROGRESS.md` §10 (2026-07-19, "fuel demoted") records that it "ground
+for minutes" where the fuel-free `G4cTm.find` took 0 ms, because a
+failing branch is explored to the full fuel depth. So the record shows
+two costs of fuel: building the bound's domain, and searching failing
+branches to the bound. `docs/demos.md` states that this construction "exists only
 to certify completeness", and `docs/calculus-formalisation-method.md`
 §4 puts the general point as: the fuel in a decidability theorem is there
 to satisfy the kernel, not the CPU.
