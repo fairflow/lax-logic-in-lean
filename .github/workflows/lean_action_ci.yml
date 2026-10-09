@@ -78,8 +78,8 @@ jobs:
       # The LJF◯ modules the two-sided engine's proof side rests on (Matthew,
       # 2026-10-09: "add LJF to CI").  NOT the whole `LJF` lib: its globs include
       # `LJF.OFuelPFam` (and `OFuelPCofinal`, which imports it), measured at
-      # 25–28 min and 17.8 GB peak RSS, beyond the runner.  Add `LJF.OCheckDeriv`
-      # here when it lands.  Placed after the ledger so the ledger's scope is
+      # 25–28 min and 17.8 GB peak RSS, beyond the runner.  `LJF.OCheckDeriv` (the
+      # fuel-free proof-side checker) is built and its pins checked here.  Placed after the ledger so the ledger's scope is
       # unchanged.
       - name: LJF◯ search and bridge build
-        run: lake build LJF.OSearch LJF.OBridge
+        run: lake build LJF.OSearch LJF.OBridge LJF.OCheckDeriv
