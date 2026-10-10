@@ -59,6 +59,8 @@ jobs:
         run: ./scripts/ci-pages.sh
       # The papers go into the SAME artifact, under /clp-paper/ and /lax-paper/:
       # one Pages site per repository, and each deploy replaces all of it.
+      - name: Install pandoc (renders the working guide)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
       - name: Build Verso papers (HTML) into the site
         run: ./scripts/ci-papers.sh _out/site/html-multi
       - name: Upload Pages artifact

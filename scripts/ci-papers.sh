@@ -48,3 +48,7 @@ for f in rn-catalogue rho-optables pll-calculus-ledger interpolation-guide princ
   cp "docs/$f.html" "$site/tools/$f.html"
 done
 echo "ci-papers: $site/tools/ ($(ls "$site/tools" | wc -l | tr -d ' ') pages)"
+
+# The working guide, rendered from its tracked Markdown at build time, so the
+# page cannot drift from the source.  Needs pandoc (installed by the workflow).
+scripts/tutorial-html.py docs/github-with-claude-tutorial.md "$site/tools/github-with-claude.html"
