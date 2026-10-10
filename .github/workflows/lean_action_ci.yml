@@ -1,7 +1,18 @@
 name: Lean Action CI
 
 on:
+  # Branch-filtered 2026-09-06.  An unfiltered `push:` fired on every push to
+  # every branch — 39 runs in one day across three branches — and
+  # `leanprover/lean-action@v1` mints a ~2.6 GB cache per branch.  GitHub scopes
+  # caches BY BRANCH, so siblings cannot share one; the repo sat at 13.1 GB
+  # against a 10 GB quota with eviction running continuously.
+  #
+  # `pull_request` is deliberately left UNFILTERED: every branch still gets a
+  # full check when it proposes a merge, which is the moment that matters.  Any
+  # branch can also be built on demand with workflow_dispatch.
   push:
+    branches:
+      - frjw-dev
   pull_request:
   workflow_dispatch:
 
