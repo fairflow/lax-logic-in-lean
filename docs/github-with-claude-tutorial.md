@@ -62,6 +62,13 @@ recently and is the root of several of the problems below.
   See §8 for why a bare `git push` is dangerous on this machine.
 - **Work reaches `main` only through a pull request.** No direct pushes to
   `main`, by any session.
+- **No agent writes tracked files in the main checkout** (Matthew,
+  2026-10-10), apart from his direct instruction. The main checkout is his;
+  agents work in worktrees. `scripts/guard-main-checkout.sh` enforces this for
+  the file tools as a pre-tool hook (`.claude/settings.json`): it refuses a
+  write to a tracked or un-ignored file there and allows ignored paths such as
+  `.beads/`. It does not see shell commands, so the rule still binds where the
+  hook cannot reach.
 - **Finishing.** The session that created a worktree removes it once its work
   has landed. Removal is allowed only for finished worktrees, and only after
   their uncommitted files are archived (Matthew, 2026-10-09, lifting the
