@@ -71,6 +71,27 @@ recently and is the root of several of the problems below.
   mislead. On 2026-10-09 removing worktrees worth 62 GB, 113 GB and ~100 GB
   by `du` freed 2.6, 8 and 3.4 GB. Measure `df` before and after.
 
+### Per-branch instructions, without merge conflicts
+
+Rules that hold on every branch live in `CLAUDE.md`, identical everywhere.
+Rules for one branch (a prototype that relaxes the refutation stage, say) must
+not be a file of the same name on each branch: merging would conflict, or
+silently carry one branch's rules onto another. They go in Beads (`bd`)
+instead. Its database is one per repository, shared by every branch and
+worktree, kept outside the working tree (`.beads/embeddeddolt/`, git-ignored)
+and synchronised by `bd dolt push` / `bd dolt pull` under `refs/dolt/data`,
+so it is never part of a code merge.
+
+- An issue for one branch carries the label `branch:<branch name>`; an
+  instruction rather than a task also carries `brief`.
+- `scripts/branch-brief.sh` runs as a session-start hook
+  (`.claude/settings.json`) and prints the current branch's issues into the
+  new session, so no agent has to remember to look.
+- When a branch is deleted, the manager closes its `branch:` issues in the same
+  step.
+- The script is silent where there is no Beads database; this repository has
+  none until `bd init` is run, which is Matthew's decision.
+
 ## 3. Merging: fast-forward, merge commits, squash, rebase, cherry-pick
 
 A branch is a pointer to a commit; merging decides how `main`'s pointer moves.
