@@ -25,6 +25,8 @@ on:
       - 'LaxBlueprintMain.lean'
       - 'scripts/ci-pages.sh'
       - 'scripts/ci-papers.sh'
+      - 'scripts/tutorial-html.py'
+      - 'docs/github-with-claude-tutorial.md'
       - 'CLPPaper/**'
       - 'CLPPaperMain.lean'
       - 'LaxPaper/**'

@@ -48,6 +48,9 @@ date):
 * [Interpolation, plainly](https://fairflow.github.io/lax-logic-in-lean/tools/interpolation-guide.html):
   a teaching guide to Craig and uniform interpolation; its claims are checked
   by hand or cited, not machine-checked.
+* [GitHub with Claude, Lean, Verso and Pages](https://fairflow.github.io/lax-logic-in-lean/tools/github-with-claude.html):
+  a working guide to how this repository is run: branches and worktrees,
+  merging, publishing, permissions.
 * [Principal proof states](https://fairflow.github.io/lax-logic-in-lean/tools/principal-proof-states.html):
   annotated proof states of the strong-normalisation proof.
 
