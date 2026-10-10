@@ -1,351 +1,181 @@
-# HANDOVER — the PLL Verso blueprint
+# HANDOVER: the blueprint docs role
 
-**Start here.** Rewritten 2026-09-06 16:20 BST for a session picking this up
-cold. You should not need to reconstruct anything from a previous conversation.
-For the blueprint's own build decisions, see `LaxBlueprint/HANDOFF.md`.
+**Start here** if you hold the docs role for the Verso documents in this
+repository. Rewritten 2026-10-10; earlier versions are in git.
 
-Published site: <https://fairflow.github.io/lax-logic-in-lean/>
+Published site: <https://fairflow.github.io/lax-logic-in-lean/>. The Blueprint
+is at the root; the papers are under `/clp-paper/` and `/lax-paper/`, each with
+a one-page version at `…/single/`.
+
+This file covers only what is particular to the role. Three other documents
+hold the rest, and are not repeated here:
+
+| for | read |
+|---|---|
+| branches, worktrees, pull requests, Pages, the draft-PR protocol, asking before any build | `docs/github-with-claude-tutorial.md` (§2, §4, §7, Appendix A) |
+| workflows, `lakefile.toml`, the verso pin, build decisions, why chapter titles are URLs | `LaxBlueprint/HANDOFF.md`, the infrastructure record |
+| which notation exists and where it prints | the Notation chapter, `LaxBlueprint/Chapters/Notation.lean` |
 
 ---
 
-## 0 · What this session is for — read before anything else
+## 1 · The role and its boundary
 
-**The blueprint is worked by two sessions with a division Matthew set on
-2026-09-06 17:35:**
+Matthew, 2026-09-06: *"the docs session owns the chapters; you stick to
+infrastructure."* The docs role owns `LaxBlueprint/Chapters/*.lean` and this
+file: chapter text, node statuses, prose, structure. It does not own the
+workflows, `lakefile.toml`, the scripts or the verso pin. The LaxLogic manager
+session merges pull requests and dispatches Pages.
 
-> the docs session owns the chapters; you stick to infrastructure
-
-| owner | owns |
-|---|---|
-| **the docs session** | `LaxBlueprint/Chapters/*.lean` — all chapter text, node statuses, prose, structure. Keeping the rendering in step with `frjw-dev`. |
-| **the infrastructure session** | `.github/workflows/*`, `lakefile.toml` build config, `scripts/ci-pages.sh`, the publish pipeline and its costs, Actions cache and quota, the verso pin. `LaxBlueprint/HANDOFF.md`. |
-
-If you are the docs session, §4 (deriving status) and §5's markup traps are
-yours; the build and publish mechanics are someone else's to change. If you are
-the infrastructure session, **do not edit the chapters** — report a defect to
-whoever holds the docs role and let them write it.
-
-Both sessions are bound by the same outer boundary, Matthew's instruction of
-2026-09-06:
+The outer boundary, also Matthew, 2026-09-06:
 
 > You should not be trying to contribute to theorem proving here, unless asked
-> to on a different branch or topic. Do not try to cross the boundary into
-> FRJW's work any more.
+> to on a different branch or topic.
 
-The boundary blurs easily, because doing this job well means reading a great
-deal of live mathematics. The distinction that matters:
+The boundary blurs easily, because the job means reading a great deal of
+mathematics.
 
-**In scope** — reading the ledgers and source files the FRJW agent maintains and
-rendering what they say as blueprint nodes; keeping statuses, axiom pins and
-dependencies faithful; prose, structure, titles, links, chapter set; building
-and publishing; being the build gate for chapter text (§6). Also in scope:
-reporting a **documentation defect** — a page claiming something its source does
-not support. That is a fault in your artefact, not a mathematical judgement.
+**In scope:** reading the sources and rendering what they say as nodes; keeping
+statuses, axiom pins and dependencies faithful; prose, structure, titles, links;
+verifying what is published; and reporting a **documentation defect**, a page
+claiming something its source does not support. That is a fault in this
+artefact, not a mathematical judgement.
 
-**Out of scope** — proposing, drafting or evaluating proofs; suggesting how a
-lemma should be reproved; advocating a refactor of someone else's development;
-owning, tracking or escalating mathematical decisions; attaching declarations
-that pull expensive modules into the build (§5).
+**Out of scope:** proposing, drafting or evaluating proofs; advocating a
+refactor of someone else's development; owning or escalating mathematical
+decisions. A status you read is input to be rendered, not a claim to
+adjudicate. Where a source and a summary disagree, say so and leave it with the
+owner. Crossing the line has looked like this: researching how a lemma might be
+reproved, and headlining a handover with a pending mathematical decision.
 
-Status you read is **input to be rendered, not a claim to adjudicate.** Where a
-source and a summary disagree, say so and leave it with the owner.
+**Blueprint or paper.** The Blueprint is a map of a large proof effort for
+co-developers and collaborators, and should be an accessible presentation
+without an overwhelm of detail. It is not the format for a paper. A paper is
+plain Verso: `CLPPaper/` uses no blueprint directives at all; `LaxPaper/` keeps
+the nodes and the dependency graph, and has no summary page (Matthew,
+2026-10-09).
 
 ---
 
-## 1 · Where everything is
+## 2 · Working method
 
-Standing rule from Matthew: **never push to his working directory.** Work in the
-worktree; he pulls.
+Every change goes to `main` through a draft pull request (tutorial, Appendix A).
+A change under `LaxBlueprint/**`, even to this file, runs the Pages build on the
+pull request, and that build is the test. Do not build locally without asking
+Matthew.
 
-| what | where |
-|---|---|
-| repo | `fairflow/lax-logic-in-lean` (public) |
-| Matthew's checkout | `/Users/matthew/Lean/Sources/lax-logic-in-lean` — **his**, do not push to it |
-| **what you work in** | **whatever checkout your session has.** See below — you cannot inherit a previous session's worktree. |
-| branch | `blueprint-dev-chapter` — this is the handover, not a path |
-| the blueprint | `LaxBlueprint/` — nine chapters under `Chapters/` |
-| the frontier | `frjw-dev`, the FRJW agent's branch. **Not yours to merge into**; open a PR and ask. |
-
-**How a fresh session picks this up.** Not by finding a path. Claude Desktop
-offers a worktree when a session starts: decline it and there is no worktree;
-accept it and you get a *fresh* one, unrelated to any previous session's. Either
-way you cannot take over the worktree the last session used, and taking one over
-would not be a safe design even if it were possible.
-
-So the handover is **the branch, on the remote** — which is why the previous
-session's last duty is always to commit and push everything. Your first move:
+With no local build, review the markup before pushing:
 
 ```bash
-git fetch origin && git checkout blueprint-dev-chapter && git pull --ff-only
+# block balance: the two numbers must match, and match main's (a chapter with no nodes prints "/")
+for f in LaxBlueprint/Chapters/*.lean; do
+  awk -v f="$f" '/^:::[a-z]/{o++} /^:::$/{c++} END{print o"/"c, f}' "$f"; done
+# a bare { in prose opens a Verso role: every hit must be a role, or inside backticks
+git diff -U0 origin/main -- LaxBlueprint/Chapters | grep '^+[^+]' | sed -E 's/`[^`]*`//g' | grep '{'
 ```
 
-and you are exactly where the last session left off.
+and check by eye that every `{uses "x"}` sits inside a `:::` node and names a
+node the file defines. Outside a node it fails the build with
+`uses declaration outside an informal enviroment`; in a chapter preamble, name
+the node in words.
 
-```bash
-lake build LaxBlueprint && ./scripts/ci-pages.sh
-```
+After the manager publishes, verify the live pages by content (§5).
 
-**Do not run that without asking.** Standing instruction from Matthew,
-2026-09-06 17:00, given while stopping a build of exactly this kind:
+---
 
-> stop building. this is not needed. there's so much building on every agent
-> going on, you now have to request permission to build.
+## 3 · Deriving status: from source, never from a summary
 
-Every agent on this machine compiles, and the contention is the cost he is
-managing — not this build's own six minutes. So: no `lake build`, no
-`ci-pages.sh`, no builds of any kind, without asking him first. That removes
-the local check that used to catch markup errors, so the compensating
-discipline is to review the markup statically before pushing:
+In order of authority:
 
-```bash
-awk '/^:::[a-z]/{o++} /^:::$/{c++} END{print o, c}' LaxBlueprint/Chapters/*.lean
-grep -n '{uses' LaxBlueprint/Chapters/UI.lean   # every hit must be INSIDE a ::: node (§5)
-```
+1. **The ledger comments in the Lean source file.**
+2. **The `#axioms_within` pins in the source**, the repository's checker
+   (`Meta/Audit.lean`). Not `#print axioms` alone.
+3. **`docs/status-ledger.jsonl`**: one line per declaration, with its module,
+   axioms and `sorry` flag. The quickest way to confirm that a name exists and
+   what it rests on.
+4. For the uniform-interpolation route: `docs/ui-routeB-blueprint.md`, the node
+   table, and `docs/ui-ljfo-clause-table.md`, the §-numbered record.
 
-and to check that every `{uses "x"}` names a node the file defines.
+Never take a status from a `docs/*.md` plan, a commit message or another
+session's report without checking it against these.
 
-```bash
-gh workflow run pages.yml --ref blueprint-dev-chapter
-```
+The search for uniform interpolation was **halted by Matthew on 2026-09-06**.
+The UI chapter records the state at the halt. It is a stopped campaign, not
+work in flight, and nothing here implies a relaunch.
 
-Publishing is manual only — `pages.yml` has **no** push trigger, so pushing is
-always safe.
+**Three checks, each of which has caught a published defect:**
 
-### The verso fork, and how names are shortened
+- *Is the theorem inhabited?* A node can be true, kernel-checked and empty.
+  `hasUI_of_stabEq` was published as a result after a refutation had made its
+  hypothesis unsatisfiable; `pll_ui_R_escD` became vacuous the same way. When
+  anything turns REFUTED, ask which other nodes quantify over it.
+- *Does the signature match the prose?* A sentence quoted from a docstring
+  overstated what remained, because the docstring was wrong too. The docstring
+  of `irregular_circ_imp_self_lifts` says "is a lift of a regular one"; the
+  statement says only that a regular disproof exists. Write from the signature.
+- *Does the attachment still exist?* `duality_hole` named a theorem withdrawn
+  on 2026-09-01 and sat silently unattached on the live site for five weeks.
+  Strict resolution (§4) now makes that a build error.
 
-`verso` is pinned to **`fairflow/verso @ af0ddec7`**: the `v4.31.0-declsig-fix`
-commit (a shadowed `declSigWithId` parser had silently disabled
-`showNamespace`/`constantInfo` in `Docstring.ppSignature`) plus one commit exposing
-`verso.docstring.showNamespace` to documents. The root-level `[[require]]` sits
-*first*, ahead of `VersoBlueprint` and so ahead of `mathlib`; that order is
-load-bearing (§5).
+---
 
-Two independent mechanisms decide what a signature shows. Keep them apart:
+## 4 · Names and attachments
+
+Two mechanisms decide what a signature shows. Keep them apart.
 
 1. **The declaration's own name** (`theorem maehara`, not
    `theorem PLLND.SC.maehara`): `weak.verso.docstring.showNamespace = false` in
-   `lakefile.toml`, an infrastructure file. Live since 2026-09-06, verified on
-   the published site that night.
-2. **Every name inside its type, and the notation**: the chapter's own `open`
-   lines. Lean's `Command.runTermElabM` hands the file's open declarations to
-   the pretty-printer, and verso's `ppSignature` adds to them rather than
-   replacing them. So each PLL chapter opens `PLLND`, which also switches on the
-   scoped PLL notation (`◯ ∧ ∨ ↠ ⊥`) and makes a plain `⊢` print for
-   `PLLND.LaxND`, the namespace's `turnstile_default`; the decision-procedure
-   chapter opens `FRJ FRJ.Gbu FRJ.Gbu.W PLLND`. Added 2026-10-09; before it,
-   the site's pages carried 1,191 fully qualified names, after it 244, and
-   after the `(lean := …)` strings were shortened (below) fewer still.
+   `lakefile.toml`.
+2. **Every name inside its type, and the notation:** the chapter's own `open`
+   lines. Lean hands the file's open namespaces to the pretty-printer. The PLL
+   chapters open `PLLND`, which also switches on the PLL notation and makes a
+   plain `⊢` print for `PLLND.LaxND`; the decision-procedure chapter opens
+   `FRJ FRJ.Gbu FRJ.Gbu.W PLLND`.
 
-**Rule for a new chapter:** if it attaches declarations, open their namespace
-after `open Informal`, or its signatures print in long form. Do not open a type's
-own namespace (`Form`, `Tm`): `Tm.app` reads better than `app`, and sibling types
-share constructor names.
+**For a new chapter or a new attachment:**
 
-Not reached by `open`, and expected: the Blueprint-Summary and Dependency-Graph
-pages, which list each node by the name as written in `(lean := …)`; and the
-"Constructor"/"Extends" lines of structures, which verso prints with `ppName`,
-which always shows full names.
+- Open the namespace of the declarations it attaches, after `open Informal`. Do
+  not open a type's own namespace (`Form`, `Tm`): `Tm.app` reads better than
+  `app`, and sibling types share constructor names.
+- Write `(lean := "…")` as the shortest name that denotes exactly the intended
+  declaration in that scope. Node labels show the name as written. Check the
+  short form against the status ledger, against Lean's and the packages'
+  top-level names, and against verso's own: `PLLND.Ne` and `PLLND.Sub` keep
+  their prefix because Lean has `Ne` and `Sub`, and `PLLND.erase` because verso
+  has `erase`.
+- Set `verso.blueprint.externalCode.strictResolve true` before `#doc`. Without
+  it an unresolved or ambiguous name is only a warning: the build stays green
+  and the node silently loses its attachment and its status.
+- Check what the attached declaration's module imports. An attachment costs its
+  module's whole import closure. **N0c and N0d are deliberately unattached**
+  (Matthew): attaching them puts `LJF/OFuelPFam.lean` on the build's critical
+  path.
 
-**The `(lean := …)` strings are written short too** (2026-10-09, second
-change): node labels and the Summary page show the name *as written*, so
-`(lean := "PLLND.x")` became `(lean := "x")`. Verso-blueprint resolves the
-written name with `Lean.resolveGlobalName` in the chapter's scope. Each short
-form was chosen as the shortest suffix that denotes exactly the intended
-declaration, checked against three name sets: the repository's status ledger
-(`docs/status-ledger.jsonl`), every top-level name in Lean core and the
-packages, and every name verso and verso-blueprint declare. That is why
-`PLLND.Ne`, `PLLND.Sub` (Lean's `Ne`, `Sub`) and `PLLND.erase` (verso's
-`erase`) keep their prefix. Do the same for a new attachment.
-
-**Strict resolution.** An unresolved or ambiguous `(lean := …)` name is, by
-default, only a *warning*: the build stays green and the node silently loses its
-Lean attachment and status. Every chapter that attaches declarations therefore
-sets `verso.blueprint.externalCode.strictResolve true`, which makes it a build
-error. A new chapter with attachments should do the same.
-
-This is not hypothetical. Until 2026-10-09 the decision-procedure chapter's
-`duality_hole` node named `FRJ.V.WCounter.no_irregular_circ_imp_self`, which
-was withdrawn on 2026-09-01 (`993ea74`) when `(Lift)` made it false; the node
-had been silently unattached on the live site since, visible only as a warning
-in the Pages build log. It now states `irregular_circ_imp_self_lifts`, the
-theorem that survives (Matthew's decision), and records the withdrawn statement
-as history. To audit a site without strict mode, grep a Pages build log for
-`could not be resolved` and `is ambiguous`.
-
-The history of how this was diagnosed is in git, in this file's earlier versions.
-
-A second, separate blueprint effort exists for the prover toolkit
-(`dolax-in-lean`), owned by the Lean prover-toolkit agent. Not yours. One
-practical consequence: two CI builds are independent and parallel, whereas two
-local builds contend for the same cores.
+**What cannot be shortened**, so do not spend time on it: the Blueprint-Summary
+page, which lists each declaration's canonical name whatever the chapter wrote;
+the "Constructor" and "Extends" lines of structures; private constants, which
+print as `PLLND.A✝`; and names the printer keeps long to avoid a clash
+(`PLLND.Ne`, `PLLND.Sub`, `FRJ.Tag` against verso's `Tag`). FRJ defines no
+notation for its formulas, so `◯(◯Z ⊃ Z)` prints as `(Z.circ.imp Z).circ`.
 
 ---
 
-## 2 · State
+## 5 · Verifying the published site
 
-- **Published and verified**, 2026-09-06 16:17. All twelve pages 200, contents
-  checked by text and not merely by status code.
-- **Zero `TO WRITE` markers** remain anywhere in the chapter set. 100 nodes, 68
-  Lean-backed.
-- **Nothing is pending.** No unpublished chapter text.
+Check content, not status codes.
 
-**Measured build costs.** A publish takes **11–13½ minutes**; locally, with a
-warm closure, `lake build LaxBlueprint` is about **6–7 minutes** for 9050 jobs.
-If a run looks like heading for 90 minutes, something has put
-`LJF/OFuelPFam.lean` back in the import closure — see §5.
+- **The front page carries the deployed commit hash.** Compare it with
+  `origin/main` first.
+- **Nodes live on per-section sub-pages**, for example
+  `Towards-uniform-interpolation/The-chain-to-uniform-interpolation/`, not on
+  the chapter page. Links are written relative to the site root.
+- **Count visible text only.** Verso puts every full name in a `data-binding`
+  attribute, so a search of the raw HTML over-counts by a large factor.
+- **Names inside displayed formulas are LaTeX-escaped**: search for
+  `pll\_ui\_R`, not `pll_ui_R`.
+- **To audit attachments**, search a Pages build log for `could not be resolved`
+  and `is ambiguous`. There should be none.
 
-*Do not attribute variation inside that range to the CI cache.* An earlier
-version of this file explained an 11 → 13½ minute difference as a cache miss
-after a `lakefile.toml` edit. That was a guess dressed as a measurement. The
-cache situation, checked against the API on 2026-09-06:
-
-| cache | size | from |
-|---|---|---|
-| `lake-Linux-X64-…` ×4 | 2.59 GB each | `lean_action_ci.yml`, duplicated across two branches |
-| `Linux-lake-packages-v1-…` | 2.68 GB | the Pages workflow |
-| `Linux-lean-build-v1-…` | **0.07 GB** | the Pages workflow |
-
-Total **13.11 GB against a 10 GB quota**, so eviction is continuous and the four
-near-duplicate CI caches occupy 79% of it. The Pages caches do exist — the
-prover-toolkit agent's report that they never persist is too strong — but the
-Lean build cache is only 70 MB, because the cached paths (`.lake/build/lib`,
-`.lake/build/ir`) cover the root package's own oleans and not `.lake/packages`.
-So it carries far less than its name suggests. Treat CI timings as a range and
-do not reason from warm-versus-cold.
-
-**The one fact that shapes this job:** `frjw-dev` moves several commits a day.
-It went eleven commits ahead within hours of the last merge. Any list of
-statuses written into a document is stale almost immediately — which is why §4
-below is a procedure and not a table. The previous version of this file carried
-such a table and it was obsolete inside four hours.
-
----
-
-## 3 · The standing job
-
-There is no one-off task list. The job is a loop:
-
-1. `git fetch origin`, see how far `frjw-dev` has moved, merge it.
-2. Re-derive current status from source (§4) and re-render the affected nodes.
-3. **Do not build. Ask first.** See the standing instruction below. Push
-   (always safe — `pages.yml` has no push trigger) and ask before publishing.
-4. Verify the live pages **by content**. Chapter pages split into per-section
-   sub-pages: nodes live under e.g.
-   `…/Towards-uniform-interpolation/The-chain-to-uniform-interpolation/`, not on
-   the chapter page. Checking only the chapter page shows false misses.
-
----
-
-## 4 · How to re-derive status — do this, don't trust a snapshot
-
-**The sources of truth, in order:**
-
-1. **The ledger comments in the Lean source file itself.** Highest authority.
-2. **`#axioms_within` pins in the source** — the repo's checker, in
-   `Meta/Audit.lean`. Not `#print axioms` alone (§5).
-3. **`docs/ui-routeB-blueprint.md`** — the maintained node table. Good for the
-   shape; it can lag the files, and it carries at least one stale figure.
-4. **`docs/ui-ljfo-clause-table.md`** — the running record, §-numbered. The
-   narrative and the reasoning.
-
-**Never** take a status from a `docs/*.md` **plan**, or from an agent's message,
-without checking it against 1–3.
-
-Useful invocations:
-
-```bash
-grep -E '^\| N[0-9a-z]+ ' docs/ui-routeB-blueprint.md      # the node table rows
-grep -n '^### 4\.' docs/ui-ljfo-clause-table.md | tail -20 # what has landed lately
-grep -rE '^#axioms_within' LJF/ wip/                        # the pins, as measured
-```
-
-**Two checks that have caught real defects:**
-
-*Is the theorem inhabited?* A node can be true, kernel-checked and **empty**. The
-published N3 once presented `hasUI_of_stabEq` as a result when a refutation
-elsewhere had made its hypothesis unsatisfiable — the dividing line was exactly
-that theorem's own hypothesis. Pins being right does not make a statement
-non-vacuous. When a status changes to REFUTED anywhere, ask which other nodes
-quantify over what was just refuted.
-
-*Does the signature match the prose?* A sentence quoted verbatim from a docstring
-was published and overstated what remained, because the docstring was wrong too.
-Read the signature, not the surrounding words.
-
----
-
-## 5 · Traps that have already cost time
-
-**`{uses "…"}` works only inside a node.** In a chapter preamble it fails with
-`uses declaration outside an informal enviroment` (sic). Hit twice; the second
-cost a 10-minute CI failure. In preamble text, name the node in words. The cheat
-sheet in `Development.lean` has been corrected at source.
-
-**An `(lean := "…")` attachment costs its module's whole import closure.** One
-import line put `LJF/OFuelPFam.lean` on the critical path and took a publish from
-11 minutes to 90+ — not because the module is large, but because a 17-way
-`mutual` goes through `WellFounded.fix`; the same bodies as an `unsafe def`
-compile in 3 seconds. **N0c and N0d are deliberately unattached — Matthew's
-decision, not an oversight. Do not “fix” it.** Before attaching anything, check
-what the import drags in, not merely that the build passes.
-
-**`[[require]]` order in `lakefile.toml` is load-bearing.** `VersoBlueprint` must
-precede `mathlib`, or lake refuses with `mathlib: failed to fetch cache`; the
-`verso` fork require sits ahead of both. Editing `lakefile.toml` also misses the
-CI cache key *and* the first restore-key, so it forces a rebuild.
-
-**`#axioms_within` is the checker, not `#print axioms` alone.** It lives in
-`Meta/Audit.lean`; seven files under `LJF/` use it. Grepping for the wrong one
-produced a false report of missing pins.
-
-**Do not quote line counts or other volatile figures.** The node table says
-`OFuelHeight.lean` is 873 lines; it is 1182.
-
-**Do not compile a stack another agent is already compiling.** Ask what they are
-building and offer to take it. Two worktrees do *not* share lake state (separate
-inodes) — the cost is CPU contention. Actions is free and unmetered for this
-public repo, so CI is usually both cheaper and less disruptive. If a build in
-Matthew's checkout is grinding, the usual cause is that it is behind: pull first.
-
-**Re-fetch before pushing.** Matthew pushes to this branch himself. A push was
-rejected non-fast-forward mid-job because his verso pin had landed in between.
-Merge and re-push; do not force.
-
----
-
-## 6 · Coordination
-
-The FRJW agent owns `frjw-dev` and `LJF/`. It **cannot build `LaxBlueprint`**
-(that pulls verso), so **you are its build gate** for chapter text it writes. Its
-standing instruction: if a paragraph breaks the build, revert *that paragraph*,
-not the commit, and tell it which.
-
-`frjw-dev` is not yours to merge into. Open a PR and ask.
-
-What crossing the boundary looked like, so it stays recognisable: this session
-researched a lemma's proof and drafted a proposal for how to reprove it, and
-headlined a handover with a pending mathematical decision as though it tracked
-it. Both were over the line even though the material was accurate. Report what
-the source says; leave what to do about it to its owner.
-
-**`SendMessage` may be unavailable.** After an outage the messaging layer
-re-registered every session with new names, refs and sockets, and this session
-lost `SendMessage` — a *deferred* tool the resumed session was not re-offered.
-`ListAgents`, a static tool, still worked, so peers were visible but not
-reachable. A freshly started session gets the full deferred set. Until then,
-write to `HANDOFF.md` on the shared branch, which the other agents read — but
-that is pull, not push, and nobody is notified.
-
----
-
-## 7 · Scope note from Matthew
-
-The blueprint is **not** the right format for writing papers. It is designed for
-large proof efforts needing a map every contributor can work from. For a paper,
-use plain Verso: a `Manual`-genre document omitting the blueprint directives and
-the `{blueprint_graph}` / `{blueprint_summary}` pages. Same framework, same
-build, no porting.
-
-The audience is co-developers and collaborators — Avi among them — and the aim is
-an accessible, enjoyable presentation of the theory without an overwhelm of
-detail.
+Reference point, 2026-10-09, commit `b77bbee`: 95 fully qualified names in the
+visible text of the Blueprint's 45 pages (Summary and Graph excluded), all
+accounted for by §4's list and by names written out in prose. Earlier the same
+day, before the chapters opened their namespaces, the count was 1,191.
