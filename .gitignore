@@ -46,3 +46,9 @@ docs/clp-paper.pdf
 # already tracked in `main`, and `.gitignore` does not untrack — removing it is
 # a separate decision.)
 *_items.jsonl
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/proxieddb/
