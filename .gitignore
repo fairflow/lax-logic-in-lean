@@ -52,3 +52,6 @@ docs/clp-paper.pdf
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# The Beads issue database: local to a clone, never committed.
+.beads/
