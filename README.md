@@ -9,6 +9,26 @@ PLL extends intuitionistic propositional logic with one modality `◯`, read as
 what follows them is not in the paper. `docs/calculus-map.md` is the provenance
 reference and settles which is which — read it before attributing a result.
 
+## The published site, the papers, and the working guide
+
+* **Site:** <https://fairflow.github.io/lax-logic-in-lean/>: the Blueprint
+  (chapters with live proof status and a dependency graph), with the papers and
+  explorers beside it:
+  * *Lax Logic as a Framework for Constraint Logic Programming, Mechanised*:
+    <https://fairflow.github.io/lax-logic-in-lean/clp-paper/>
+  * *Synthesising Constraints in Lean*:
+    <https://fairflow.github.io/lax-logic-in-lean/lax-paper/>
+  * the lattice explorer for the closed fragment:
+    <https://fairflow.github.io/lax-logic-in-lean/tools/rn-catalogue.html>
+* **How this repository is run:** [`docs/github-with-claude-tutorial.md`](docs/github-with-claude-tutorial.md),
+  a working guide to GitHub with Claude Code, Lean, Verso and Pages: one agent
+  per branch and worktree, merging and cherry-picking, publishing to Pages,
+  permissions and safety, and the draft-PR protocol that keeps builds from
+  overlapping.
+* **Certified computation:** [`docs/certified-computation-findings-2026-10-09.md`](docs/certified-computation-findings-2026-10-09.md)
+  and the shared harness [lean-certify](https://github.com/fairflow/lean-certify),
+  used here by `CertifyAdoption.lean` and `LJF/OCheckDeriv.lean`.
+
 ## How to read a claim in this repository
 
 Three statuses, kept rigidly apart:
@@ -168,7 +188,7 @@ complete for PLL, and the `FRJW`/`GBUW` dichotomy that yields `decidePLL`.
   something is not meeting the bar; the list should get shorter.
 * **`prover-toolkit/`** — retrieval, a proving harness, and the challenge/ablation
   set. Python, not part of any Lean target.
-* **`docs/` (157 documents)** — the written record.
+* **`docs/` (159 documents)** — the written record.
 
 ## Build and run
 
@@ -192,4 +212,5 @@ scripts/laxrun.sh help           # the CLI
 | `HANDOFF.md` | the standing handover, appended in dated sections |
 | `docs/next-session.md` | live threads and open decisions |
 | `docs/status-ledger.md` | the generated proof-status record |
+| `docs/github-with-claude-tutorial.md` | **how the repository is run**: branches, worktrees, PRs, merging, Pages, permissions |
 | `docs/search-manual.md` | proof and countermodel search |
