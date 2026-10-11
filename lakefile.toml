@@ -58,6 +58,11 @@ name = "LaxBlueprint"
 [[lean_lib]]
 name = "LaxPaper"
 
+# CurryPaper: the page on the mechanisation of Fairtlough–Mendler, TYPES 2000
+# (LaxLogic/PLL/Semantics/CtxCompleteness.lean).  Not in defaultTargets, as LaxPaper.
+[[lean_lib]]
+name = "CurryPaper"
+
 # CLPPaper: the vanilla-Verso paper on the CLP mechanisation (LaxLogic/QLL/CLP*,
 # BodyCirc, HeadFlatten, CLPMachine).  Deliberately NOT in defaultTargets, for
 # the same reason as LaxPaper.  Build HTML + PDF with scripts/clp-paper.sh.

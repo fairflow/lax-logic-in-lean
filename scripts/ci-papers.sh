@@ -13,6 +13,7 @@
 #   <site>/clp-paper/single/   CLPPaper, one page
 #   <site>/lax-paper/          LaxPaper, one page per section
 #   <site>/lax-paper/single/   LaxPaper, one page
+#   <site>/curry-paper/        CurryPaper (and /single/)
 #   <site>/tools/*.html        the self-contained HTML explorers from docs/
 #
 # HTML only.  The PDFs need a TeX installation (scripts/verso-tex-pdf.sh) and
@@ -39,6 +40,7 @@ build() {  # lib main slug
 
 build CLPPaper CLPPaperMain.lean clp-paper
 build LaxPaper LaxPaperMain.lean lax-paper
+build CurryPaper CurryPaperMain.lean curry-paper
 
 # The explorers are tracked, self-contained pages (no local references), so they
 # are copied as they are.  The list is explicit: a page is published only by
