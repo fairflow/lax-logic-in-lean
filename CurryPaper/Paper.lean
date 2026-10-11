@@ -18,7 +18,7 @@ A Lean 4 mechanisation of the results of
 > Matt Fairtlough and Michael Mendler.
 > *On the Logical Content of Computational Type Theory: A Solution to Curry's Problem.*
 > In Types for Proofs and Programs (TYPES 2000), Springer LNCS 2277,
-> pp. 63–78, 2002.  DOI 10.1007/3-540-45842-5_5.
+> pp. 63–78, 2002.  DOI `10.1007/3-540-45842-5_5`.
 
 Everything here is in one file of the library,
 `LaxLogic/PLL/Semantics/CtxCompleteness.lean`.  Each node below carries the
