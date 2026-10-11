@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""Render `docs/github-with-claude-tutorial.md` as one self-contained HTML page.
+"""Render a tracked Markdown document as one self-contained HTML page.
 
-    scripts/tutorial-html.py <in.md> <out.html>
+    scripts/tutorial-html.py <in.md> <out.html> [--draft]
+
+`--draft` puts a DRAFT banner at the top (for a paper draft published for
+comment).  Written for `docs/github-with-claude-tutorial.md`; it works on any
+Markdown file with one `#` title and `##` sections.
 
 Needs `pandoc` on PATH.  Used by `scripts/ci-papers.sh`, so the page on the
 Pages site is generated from the tracked Markdown at build time and cannot
@@ -42,6 +46,7 @@ code{font:400 .86em var(--mono);background:var(--code-bg);padding:.08em .32em;
 pre{background:var(--code-bg);padding:.8rem 1rem;border-radius:6px;overflow-x:auto}
 pre code{background:none;padding:0;overflow-wrap:normal}
 hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+.draft{border:1px solid var(--accent);border-radius:6px;padding:.5rem .8rem;color:var(--accent);font-weight:600}
 footer{margin-top:2.5rem;color:var(--muted);font-size:.9rem;border-top:1px solid var(--rule);padding-top:1rem}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 """
@@ -53,29 +58,32 @@ FONTS = ("https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;
 
 def main() -> int:
     src, out = sys.argv[1], sys.argv[2]
+    draft = "--draft" in sys.argv[3:]
     body = subprocess.run(["pandoc", src, "-f", "gfm", "-t", "html5"],
                           check=True, capture_output=True, text=True).stdout
     body = re.sub(r"<h([1-6])\s+id=", r"<h\1 id=", body)
     m = re.search(r"<h1[^>]*>(.*?)</h1>", body, flags=re.S)
     title = re.sub(r"\s+", " ", m.group(1)) if m else "Working guide"
     body = body.replace(m.group(0), "", 1) if m else body
-    intro, rest = body, ""
+    intro, rest = "", body          # a document with no Contents block: all of it is the body
     if "<p>Contents</p>" in body and "<hr />" in body:
         intro, rest = body.split("<p>Contents</p>", 1)
         rest = rest.split("<hr />", 1)[1]
     heads = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', rest, flags=re.S)
     toc = "".join(f'<li><a href="#{i}">{re.sub(chr(92) + "s+", " ", t)}</a></li>'
                   for i, t in heads)
+    banner = ('<p class="draft">DRAFT: not yet publishable. Claims are as stated in the repository record.</p>'
+              if draft else "")
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{re.sub(r"<[^>]+>", "", title)}</title>
 <link rel="stylesheet" href="{FONTS}">
 <style>{CSS}</style></head><body><div class="wrap">
-<header><h1>{title}</h1><div class="meta">{intro.strip()}</div></header>
+{banner}<header><h1>{title}</h1><div class="meta">{intro.strip()}</div></header>
 <details class="toc"><summary>Contents</summary><ol>{toc}</ol></details>
 <main>{rest}</main>
-<footer>Generated from <code>docs/github-with-claude-tutorial.md</code> in
+<footer>Generated from <code>{src}</code> in
 <a href="https://github.com/fairflow/lax-logic-in-lean">fairflow/lax-logic-in-lean</a>.
 <a href="../">Back to the Blueprint.</a></footer>
 </div></body></html>
