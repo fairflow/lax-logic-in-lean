@@ -28,30 +28,30 @@ here.
 
 Papers, published on this site beside the Blueprint:
 
-* [Lax Logic as a Framework for Constraint Logic Programming, Mechanised](https://fairflow.github.io/lax-logic-in-lean/clp-paper/)
-  ([one page](https://fairflow.github.io/lax-logic-in-lean/clp-paper/single/))
-* [Synthesising Constraints in Lean](https://fairflow.github.io/lax-logic-in-lean/lax-paper/)
-  ([one page](https://fairflow.github.io/lax-logic-in-lean/lax-paper/single/))
+* [Lax Logic as a Framework for Constraint Logic Programming, Mechanised](https://projects.fairflow.co.uk/lax-logic-in-lean/clp-paper/)
+  ([one page](https://projects.fairflow.co.uk/lax-logic-in-lean/clp-paper/single/))
+* [Synthesising Constraints in Lean](https://projects.fairflow.co.uk/lax-logic-in-lean/lax-paper/)
+  ([one page](https://projects.fairflow.co.uk/lax-logic-in-lean/lax-paper/single/))
 
 Explorers and guides, self-contained pages (each states its own version and
 date):
 
-* [The `RN(◯,{})` catalogue](https://fairflow.github.io/lax-logic-in-lean/tools/rn-catalogue.html)
+* [The `RN(◯,{})` catalogue](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/rn-catalogue.html)
   (v27, 2026-08-26): the lattice explorer for the closed fragment: the ρ-catalogue R, its order
   as a Hasse diagram, the operation tables and the hypercubes.
-* [The R operation tables](https://fairflow.github.io/lax-logic-in-lean/tools/rho-optables.html)
+* [The R operation tables](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/rho-optables.html)
   (2026-08-25; the catalogue above carries the later tables).
-* [The PLL calculus ledger](https://fairflow.github.io/lax-logic-in-lean/tools/pll-calculus-ledger.html):
+* [The PLL calculus ledger](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/pll-calculus-ledger.html):
   every proof system in the development and the soundness, completeness and
   equivalence results relating them, each with its Lean statement and
   observed axiom pin (2026-08-31).
-* [Interpolation, plainly](https://fairflow.github.io/lax-logic-in-lean/tools/interpolation-guide.html):
+* [Interpolation, plainly](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/interpolation-guide.html):
   a teaching guide to Craig and uniform interpolation; its claims are checked
   by hand or cited, not machine-checked.
-* [GitHub with Claude, Lean, Verso and Pages](https://fairflow.github.io/lax-logic-in-lean/tools/github-with-claude.html):
+* [GitHub with Claude, Lean, Verso and Pages](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/github-with-claude.html):
   a working guide to how this repository is run: branches and worktrees,
   merging, publishing, permissions.
-* [Principal proof states](https://fairflow.github.io/lax-logic-in-lean/tools/principal-proof-states.html):
+* [Principal proof states](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/principal-proof-states.html):
   annotated proof states of the strong-normalisation proof.
 
 {include 0 LaxBlueprint.Chapters.Overview}
