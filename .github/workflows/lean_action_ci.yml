@@ -30,6 +30,11 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# `actions: write` lets the run delete the caches it supersedes.
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,7 +46,35 @@ jobs:
           # `git log -1 -- docs/status-ledger.jsonl`, and in a shallow clone that
           # is HEAD's date, so the check failed on every commit after the record's.
           fetch-depth: 0
+      # The build cache, managed here and not by `lean-action` (2026-10-11).
+      # `lean-action` keys its cache on the commit, so EVERY run saved a fresh
+      # ~2.7 GB copy, in the run's own scope: one push to main plus one open
+      # pull request took the repository past its 10 GB quota, GitHub evicted
+      # the least recently used cache, and the next run rebuilt from scratch.
+      # Now every run restores (a pull request reads main's cache), only a
+      # push to main saves, and that save removes the copies it supersedes.
+      # The key is `lean-action`'s own, so its existing caches still match.
+      - name: Restore build cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .lake
+          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}
       - uses: leanprover/lean-action@v1
+        with:
+          use-github-cache: false
+      - name: Save build cache (push to main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v4
+        with:
+          path: .lake
+          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+      - name: Remove superseded build caches
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+        run: scripts/prune-caches.sh "lake-${{ runner.os }}-" "$KEEP"
 
       # Every `import` names a module that exists.  Static, one second, and it
       # runs BEFORE the expensive check because it catches the failure that
