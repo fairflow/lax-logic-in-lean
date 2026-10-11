@@ -30,7 +30,7 @@ Contents
   targeting `main` and on pushes to `main`.
 - **Pages** is `.github/workflows/pages.yml` (calling `blueprint-pages.yml`):
   it builds the Blueprint, the two papers and the explorers into one site,
-  https://fairflow.github.io/lax-logic-in-lean/. It deploys only when
+  https://projects.fairflow.co.uk/lax-logic-in-lean/. It deploys only when
   dispatched by hand; on a pull request it builds without deploying.
 - **Who merges.** Since 2026-10-09 every change reaches `main` through a pull
   request, and the LaxLogic manager session merges them one at a time

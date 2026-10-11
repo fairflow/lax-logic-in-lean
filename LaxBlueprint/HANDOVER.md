@@ -3,7 +3,7 @@
 **Start here** if you hold the docs role for the Verso documents in this
 repository. Rewritten 2026-10-10; earlier versions are in git.
 
-Published site: <https://fairflow.github.io/lax-logic-in-lean/>. The Blueprint
+Published site: <https://projects.fairflow.co.uk/lax-logic-in-lean/>. The Blueprint
 is at the root; the papers are under `/clp-paper/` and `/lax-paper/`, each with
 a one-page version at `…/single/`.
 

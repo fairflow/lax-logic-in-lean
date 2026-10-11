@@ -11,17 +11,17 @@ reference and settles which is which — read it before attributing a result.
 
 ## The published site, the papers, and the working guide
 
-* **Site:** <https://fairflow.github.io/lax-logic-in-lean/>: the Blueprint
+* **Site:** <https://projects.fairflow.co.uk/lax-logic-in-lean/>: the Blueprint
   (chapters with live proof status and a dependency graph), with the papers and
   explorers beside it:
   * *Lax Logic as a Framework for Constraint Logic Programming, Mechanised*:
-    <https://fairflow.github.io/lax-logic-in-lean/clp-paper/>
+    <https://projects.fairflow.co.uk/lax-logic-in-lean/clp-paper/>
   * *Synthesising Constraints in Lean*:
-    <https://fairflow.github.io/lax-logic-in-lean/lax-paper/>
+    <https://projects.fairflow.co.uk/lax-logic-in-lean/lax-paper/>
   * the lattice explorer for the closed fragment:
-    <https://fairflow.github.io/lax-logic-in-lean/tools/rn-catalogue.html>
+    <https://projects.fairflow.co.uk/lax-logic-in-lean/tools/rn-catalogue.html>
 * **How this repository is run:** [`docs/github-with-claude-tutorial.md`](docs/github-with-claude-tutorial.md)
-  ([on the site](https://fairflow.github.io/lax-logic-in-lean/tools/github-with-claude.html)),
+  ([on the site](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/github-with-claude.html)),
   a working guide to GitHub with Claude Code, Lean, Verso and Pages: one agent
   per branch and worktree, merging and cherry-picking, publishing to Pages,
   permissions and safety, and the draft-PR protocol that keeps builds from
