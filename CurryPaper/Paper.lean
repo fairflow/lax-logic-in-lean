@@ -35,7 +35,7 @@ formulas `K`, `L` acting on a formula by
 $$`[K, L]\,φ \;=\; K ⊃ (φ ∨ L)`
 
 A *standard constraint* `C` is a finite conjunction of basic constraints, and
-`φ^C` is `φ` with every subformula `◯ψ` replaced by `C[ψ^C]`, the same `C` at
+$`φ^{C}` is `φ` with every subformula `◯ψ` replaced by $`C[ψ^{C}]`, the same `C` at
 every occurrence.  The main theorem is context completeness:
 
 $$`\mathrm{PLL} ⊢ φ \quad\Longleftrightarrow\quad \text{for every standard constraint } C,\;\; \mathrm{IPL} ⊢ φ^{C}`
@@ -66,7 +66,7 @@ true.  Uses {uses "curry_basic"}[].
 :::
 
 :::definition "curry_sub" (parent := "curry_defs") (lean := "subC")
-The translation `φ^C`: every `◯ψ` becomes `C[ψ^C]`.  Uses
+The translation $`φ^{C}`: every `◯ψ` becomes $`C[ψ^{C}]`.  Uses
 {uses "curry_apply"}[].
 :::
 
@@ -78,13 +78,13 @@ The solution to Curry's problem.
 
 :::definition "curry_translate" (parent := "curry_thm6") (lean := "translate")
 The translation of derivations: a PLL derivation of `φ` from `Γ` becomes a
-derivation of `φ^C` from `Γ^C`, for any standard constraint `C`.  This is the
+derivation of $`φ^{C}` from $`Γ^{C}`, for any standard constraint `C`.  This is the
 content of "every constraint is a sound reading of the modality", in full
 sequent form.  Uses {uses "curry_sub"}[].
 :::
 
 :::theorem "curry_sound" (parent := "curry_thm6") (lean := "thm6_soundness")
-Soundness direction, over all constraints: if `φ` is a PLL theorem then `φ^C`
+Soundness direction, over all constraints: if `φ` is a PLL theorem then $`φ^{C}`
 is provable in PLL, for every constraint `C`, with `K` and `L` any PLL formulas.  Uses {uses "curry_translate"}[].
 :::
 
@@ -95,7 +95,7 @@ at the same worlds.
 :::
 
 :::theorem "curry_complete" (parent := "curry_thm6") (lean := "thm6_completeness")
-Completeness direction, over all constraints: if `φ^C` is provable in PLL for
+Completeness direction, over all constraints: if $`φ^{C}` is provable in PLL for
 every constraint `C`, then `φ` is a PLL theorem.  By contraposition from the finite model property
 and {uses "curry_lemma7"}[].
 :::
@@ -107,19 +107,19 @@ The variant of Theorem 6 over all constraints, both directions.  Uses
 
 :::theorem "curry_thm6_paper" (parent := "curry_thm6") (lean := "thm6_paper")
 Theorem 6 in the paper's own wording: `φ` is a theorem of PLL exactly when
-`φ^C` is a theorem of IPL for every standard constraint `C` whose `K` and `L`
+$`φ^{C}` is a theorem of IPL for every standard constraint `C` whose `K` and `L`
 are modality-free.  Uses {uses "curry_sound_paper"}[] and
 {uses "curry_complete_paper"}[].
 :::
 
 :::theorem "curry_sound_paper" (parent := "curry_thm6") (lean := "thm6_soundness_paper")
 Soundness in the paper's form: for an IPL constraint `C`, the translation
-`φ^C` of a PLL theorem is an IPL theorem.  From {uses "curry_sound"}[] and the
+$`φ^{C}` of a PLL theorem is an IPL theorem.  From {uses "curry_sound"}[] and the
 conservativity of PLL over IPL.
 :::
 
 :::theorem "curry_complete_paper" (parent := "curry_thm6") (lean := "thm6_completeness_paper")
-Completeness in the paper's form: if `φ^C` is an IPL theorem for every IPL
+Completeness in the paper's form: if $`φ^{C}` is an IPL theorem for every IPL
 constraint `C`, then `φ` is a PLL theorem.  The hypothesis is used at the one
 constraint of {uses "curry_lemma7"}[], which is an IPL constraint
 ({uses "curry_c0_ipl"}[]).
@@ -151,19 +151,19 @@ cases: it uses the hypothesis only at `C₀`.
 # Corollary 10: no finite set of constraints suffices
 
 :::group "curry_cor10"
-The formulas `χ_m` and the incompleteness of every finite set of constraints.
+The formulas $`χ_m` and the incompleteness of every finite set of constraints.
 :::
 
 :::definition "curry_chi" (parent := "curry_cor10") (lean := "chi")
-The family `χ_0 = ◯⊥`, `χ_{m+1} = ◯(◯p_{m+1} ⊃ (p_{m+1} ∨ χ_m))`.
+The family $`χ_0 = \bigcirc\bot`, $`χ_{m+1} = \bigcirc(\bigcirc p_{m+1} ⊃ (p_{m+1} ∨ χ_m))`.
 :::
 
 :::theorem "curry_lemma8" (parent := "curry_cor10") (lean := "lemma8")
-Lemma 8.  A standard constraint of depth at most `m` makes `χ_m^C` provable.
+Lemma 8.  A standard constraint of depth at most `m` makes $`χ_m^{C}` provable.
 :::
 
 :::theorem "curry_lemma9" (parent := "curry_cor10") (lean := "lemma9")
-Lemma 9.  No `χ_m` is a PLL theorem.  The countermodels are an explicit family
+Lemma 9.  No $`χ_m` is a PLL theorem.  The countermodels are an explicit family
 of models on the natural numbers.
 :::
 
@@ -199,12 +199,12 @@ which records `Lean.collectAxioms` for every declaration.
   direction in both forms (`thm6_soundness`, `thm6_soundness_paper`), Theorem 2 (`thm2_boolean_algebra` and the
   `BooleanAlgebra` instance).
 * `propext`, `Classical.choice`, `Quot.sound`: Lemma 7, the completeness
-  direction and Theorem 6 in both forms, the formulas `χ_m`, Lemmas 8 and 9, Corollary 10.
+  direction and Theorem 6 in both forms, the formulas $`χ_m`, Lemmas 8 and 9, Corollary 10.
 
 The use of `Classical.choice` is deliberate here and is not typical of the
 library, most of which avoids it.  It enters, among other places, through the finite model property,
 the choice of fresh variable names for the worlds of a model, and the
-enumeration of an infinite supply of propositional variables for `χ_m`.  No
+enumeration of an infinite supply of propositional variables for $`χ_m`.  No
 declaration on this page depends on `sorry` or on `native_decide`.
 
 # What is not mechanised
