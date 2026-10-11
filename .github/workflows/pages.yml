@@ -27,6 +27,7 @@ on:
       - 'scripts/ci-papers.sh'
       - 'scripts/tutorial-html.py'
       - 'docs/github-with-claude-tutorial.md'
+      - 'docs/belief-paper-draft.md'
       - 'CLPPaper/**'
       - 'CLPPaperMain.lean'
       - 'LaxPaper/**'

@@ -55,7 +55,7 @@ scripts/tutorial-html.py docs/github-with-claude-tutorial.md "$site/tools/github
 
 # Paper drafts in Markdown, published for comment under /drafts/ with a DRAFT
 # banner.  A draft is published only by naming it here; the Verso papers above
-# are the route for a finished paper.  The Belief draft is ready to switch on
-# when Matthew says so:
+# are the route for a finished paper.  The Belief draft was switched on
+# at Matthew's word, 2026-10-11:
 mkdir -p "$site/drafts"
-# scripts/tutorial-html.py docs/belief-paper-draft.md "$site/drafts/belief-in-lax-logic.html" --draft
+scripts/tutorial-html.py docs/belief-paper-draft.md "$site/drafts/belief-in-lax-logic.html" --draft
