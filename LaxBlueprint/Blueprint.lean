@@ -12,6 +12,7 @@ import LaxBlueprint.Chapters.StrongNorm
 import LaxBlueprint.Chapters.FRJW
 import LaxBlueprint.Chapters.UI
 import LaxBlueprint.Chapters.RN
+import LaxBlueprint.Chapters.Belief
 import LaxBlueprint.Chapters.Tools
 
 open Verso.Genre
@@ -32,6 +33,11 @@ Papers, published on this site beside the Blueprint:
   ([one page](https://projects.fairflow.co.uk/lax-logic-in-lean/clp-paper/single/))
 * [Synthesising Constraints in Lean](https://projects.fairflow.co.uk/lax-logic-in-lean/lax-paper/)
   ([one page](https://projects.fairflow.co.uk/lax-logic-in-lean/lax-paper/single/))
+
+In preparation, not yet publishable: *Belief in Lax Logic*.  Its mechanised base
+is the chapter of that name below; the
+[draft](https://projects.fairflow.co.uk/lax-logic-in-lean/drafts/belief-in-lax-logic.html)
+is `docs/belief-paper-draft.md` in the repository.
 
 Explorers and guides, self-contained pages (each states its own version and
 date):
@@ -63,6 +69,7 @@ date):
 {include 0 LaxBlueprint.Chapters.FRJW}
 {include 0 LaxBlueprint.Chapters.UI}
 {include 0 LaxBlueprint.Chapters.RN}
+{include 0 LaxBlueprint.Chapters.Belief}
 {include 0 LaxBlueprint.Chapters.Tools}
 
 {blueprint_graph}
