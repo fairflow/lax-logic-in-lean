@@ -2,7 +2,7 @@ import Verso
 import VersoManual
 import VersoBlueprint
 import VersoBlueprint.Commands.Graph
-import LaxLogic.PLL.Semantics.CtxCompleteness
+import LaxLogic.PLL.Semantics.CtxCompletenessIPL
 
 open Verso.Genre
 open Verso.Genre.Manual
@@ -84,8 +84,8 @@ sequent form.  Uses {uses "curry_sub"}[].
 :::
 
 :::theorem "curry_sound" (parent := "curry_thm6") (lean := "thm6_soundness")
-Soundness direction: if `φ` is a PLL theorem then `φ^C` is provable, for every
-standard constraint `C`.  Uses {uses "curry_translate"}[].
+Soundness direction, over all constraints: if `φ` is a PLL theorem then `φ^C`
+is provable in PLL, for every constraint `C`, with `K` and `L` any PLL formulas.  Uses {uses "curry_translate"}[].
 :::
 
 :::theorem "curry_lemma7" (parent := "curry_thm6") (lean := "lemma7")
@@ -95,35 +95,58 @@ at the same worlds.
 :::
 
 :::theorem "curry_complete" (parent := "curry_thm6") (lean := "thm6_completeness")
-Completeness direction: if `φ^C` is provable for every standard constraint `C`,
-then `φ` is a PLL theorem.  By contraposition from the finite model property
+Completeness direction, over all constraints: if `φ^C` is provable in PLL for
+every constraint `C`, then `φ` is a PLL theorem.  By contraposition from the finite model property
 and {uses "curry_lemma7"}[].
 :::
 
 :::theorem "curry_thm6_main" (parent := "curry_thm6") (lean := "thm6")
-Theorem 6, both directions.  Uses {uses "curry_sound"}[] and
-{uses "curry_complete"}[].
+The variant of Theorem 6 over all constraints, both directions.  Uses
+{uses "curry_sound"}[] and {uses "curry_complete"}[].
 :::
 
-The statement that is machine-checked is
+:::theorem "curry_thm6_paper" (parent := "curry_thm6") (lean := "thm6_paper")
+Theorem 6 in the paper's own wording: `φ` is a theorem of PLL exactly when
+`φ^C` is a theorem of IPL for every standard constraint `C` whose `K` and `L`
+are modality-free.  Uses {uses "curry_sound_paper"}[] and
+{uses "curry_complete_paper"}[].
+:::
 
-$$`\mathrm{PLL} ⊢ φ \quad\Longleftrightarrow\quad \text{for every standard constraint } C,\;\; \mathrm{PLL} ⊢ φ^{C}`
+:::theorem "curry_sound_paper" (parent := "curry_thm6") (lean := "thm6_soundness_paper")
+Soundness in the paper's form: for an IPL constraint `C`, the translation
+`φ^C` of a PLL theorem is an IPL theorem.  From {uses "curry_sound"}[] and the
+conservativity of PLL over IPL.
+:::
 
-with `C` ranging over constraints whose `K` and `L` are arbitrary PLL formulas.
-This differs from the paper's wording in two places, and the difference is
-bridged by remarks in the source, not by a stated theorem:
+:::theorem "curry_complete_paper" (parent := "curry_thm6") (lean := "thm6_completeness_paper")
+Completeness in the paper's form: if `φ^C` is an IPL theorem for every IPL
+constraint `C`, then `φ` is a PLL theorem.  The hypothesis is used at the one
+constraint of {uses "curry_lemma7"}[], which is an IPL constraint
+({uses "curry_c0_ipl"}[]).
+:::
 
-* When `K` and `L` are modality-free, `φ^C` is modality-free (`subC_isIPL`, in
-  the library), and PLL is conservative over IPL (`conservativity`), so
-  provability of `φ^C` in PLL is provability in IPL.
-* The completeness proof uses the hypothesis at one constraint only, the `C₀` of
-  Lemma 7, whose `K` and `L` are propositional variables and disjunctions of
-  them.  So the proof establishes the paper's form, with `C` restricted to
-  IPL constraints.
+:::theorem "curry_c0_ipl" (parent := "curry_thm6") (lean := "C0_isIPL")
+The constraint `C₀` of Lemma 7 is built from propositional variables and
+disjunctions of them, so it is an IPL constraint.
+:::
 
-The paper's form, restricted to IPL constraints and with IPL provability on the
-right, is therefore a short corollary of what is here; it is not yet stated as
-a theorem of the library.
+Two statements of Theorem 6 are machine-checked, and they are not the same.
+
+The paper's, `thm6_paper`, with `C` ranging over the paper's standard
+constraints (`K`, `L` modality-free) and IPL provability on the right:
+
+$$`\mathrm{PLL} ⊢ φ \quad\Longleftrightarrow\quad \text{for every IPL standard constraint } C,\;\; \mathrm{IPL} ⊢ φ^{C}`
+
+and a variant, `thm6`, with `C` ranging over a larger class, in which `K` and
+`L` may be any PLL formulas, and PLL provability on the right:
+
+$$`\mathrm{PLL} ⊢ φ \quad\Longleftrightarrow\quad \text{for every } C \text{ with } K, L \text{ arbitrary},\;\; \mathrm{PLL} ⊢ φ^{C}`
+
+Left to right the variant says more, since it covers more constraints.  Right
+to left it says less, since its hypothesis asks more; that direction of the
+paper's theorem does not follow from the variant and is proved separately
+(`thm6_completeness_paper`, added 2026-10-11).  The proof is the same in both
+cases: it uses the hypothesis only at `C₀`.
 
 # Corollary 10: no finite set of constraints suffices
 
@@ -173,10 +196,10 @@ Read from the repository's proof-status ledger (`docs/status-ledger.jsonl`),
 which records `Lean.collectAxioms` for every declaration.
 
 * `propext`, `Quot.sound` only: the translation `translate`, the soundness
-  direction `thm6_soundness`, Theorem 2 (`thm2_boolean_algebra` and the
+  direction in both forms (`thm6_soundness`, `thm6_soundness_paper`), Theorem 2 (`thm2_boolean_algebra` and the
   `BooleanAlgebra` instance).
 * `propext`, `Classical.choice`, `Quot.sound`: Lemma 7, the completeness
-  direction, Theorem 6, the formulas `χ_m`, Lemmas 8 and 9, Corollary 10.
+  direction and Theorem 6 in both forms, the formulas `χ_m`, Lemmas 8 and 9, Corollary 10.
 
 The use of `Classical.choice` is deliberate here and is not typical of the
 library, most of which avoids it.  It enters, among other places, through the finite model property,
@@ -186,8 +209,6 @@ declaration on this page depends on `sorry` or on `native_decide`.
 
 # What is not mechanised
 
-* The paper's Theorem 6 in its exact wording (IPL constraints, IPL
-  provability): see the remark under Theorem 6.
 * The paper's Theorem 5, soundness and completeness of PLL for constraint
   models, is not proved in this file; it is the library's
   `consequence_iff_derivable`, mechanised from Fairtlough and Mendler 1997.
