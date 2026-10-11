@@ -18,6 +18,8 @@ reference and settles which is which — read it before attributing a result.
     <https://projects.fairflow.co.uk/lax-logic-in-lean/clp-paper/>
   * *Synthesising Constraints in Lean*:
     <https://projects.fairflow.co.uk/lax-logic-in-lean/lax-paper/>
+  * *A Solution to Curry's Problem, Mechanised* (Fairtlough and Mendler, TYPES 2000):
+    <https://projects.fairflow.co.uk/lax-logic-in-lean/curry-paper/>
   * the lattice explorer for the closed fragment:
     <https://projects.fairflow.co.uk/lax-logic-in-lean/tools/rn-catalogue.html>
 * **How this repository is run:** [`docs/github-with-claude-tutorial.md`](docs/github-with-claude-tutorial.md)

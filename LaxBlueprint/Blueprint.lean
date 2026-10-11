@@ -33,6 +33,9 @@ Papers, published on this site beside the Blueprint:
   ([one page](https://projects.fairflow.co.uk/lax-logic-in-lean/clp-paper/single/))
 * [Synthesising Constraints in Lean](https://projects.fairflow.co.uk/lax-logic-in-lean/lax-paper/)
   ([one page](https://projects.fairflow.co.uk/lax-logic-in-lean/lax-paper/single/))
+* [A Solution to Curry's Problem, Mechanised](https://projects.fairflow.co.uk/lax-logic-in-lean/curry-paper/)
+  ([one page](https://projects.fairflow.co.uk/lax-logic-in-lean/curry-paper/single/)):
+  Fairtlough and Mendler, TYPES 2000; Theorem 6, Corollary 10 and Theorem 2.
 
 In preparation, not yet publishable: *Belief in Lax Logic*.  Its mechanised base
 is the chapter of that name below; the

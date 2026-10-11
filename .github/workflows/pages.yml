@@ -32,6 +32,8 @@ on:
       - 'CLPPaperMain.lean'
       - 'LaxPaper/**'
       - 'LaxPaperMain.lean'
+      - 'CurryPaper/**'
+      - 'CurryPaperMain.lean'
       - '.github/workflows/pages.yml'
       - '.github/workflows/blueprint-pages.yml'
   workflow_dispatch:
