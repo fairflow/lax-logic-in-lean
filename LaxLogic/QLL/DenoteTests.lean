@@ -77,7 +77,7 @@ theorem eq_pair {Γ : Ctx} {p q : Pf} {A B : Form}
     denote 𝔐 (.andI d e) η ρ = (denote 𝔐 d η ρ, denote 𝔐 e η ρ) := rfl
 
 theorem eq_fst {Γ : Ctx} {r : Pf} {A B : Form}
-    (d : Derives r Γ (.and A B)) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
+    (d : Derives r Γ (A ∧ B)) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.andE₁ d) η ρ = (denote 𝔐 d η ρ).1 := rfl
 
 theorem eq_lam {Γ : Ctx} {p : Pf} {A B : Form} (z : String) (hz : FreshP z Γ p)

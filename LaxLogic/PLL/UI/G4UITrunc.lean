@@ -62,7 +62,7 @@ carried (and that made its recursion non-well-founded). -/
 
 /-- Collapse: `E, ◯(E ⇢ Z) ⊢ ◯Z`. -/
 theorem box_guard_collapse (E Z : PLLFormula) :
-    G4c [E, (E.ifThen Z).somehow] Z.somehow := by
+    G4c [E, ◯(E ↠ Z)] ◯Z := by
   refine G4c.laxL (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr
     (Or.inl rfl)))) ?_
   -- E ⇢ Z, E, ◯(E ⇢ Z) ⊢ ◯Z: reorder and fire the context MP
@@ -71,7 +71,7 @@ theorem box_guard_collapse (E Z : PLLFormula) :
 
 /-- Introduction: `◯Z ⊢ ◯(E ⇢ Z)`. -/
 theorem box_guard_intro (E Z : PLLFormula) :
-    G4c [Z.somehow] ((E.ifThen Z).somehow) :=
+    G4c [◯Z] (◯(E ↠ Z)) :=
   box_mono (G4c.impR (G4c.identity_mem (List.mem_cons.mpr
     (Or.inr (List.mem_cons.mpr (Or.inl rfl))))))
 
@@ -82,7 +82,7 @@ be opened against a ◯-shaped goal (retention keeps the box). -/
 
 /-- `X, Γ ⊢ ◯C  ⟹  ◯X, Γ ⊢ ◯C`. -/
 theorem laxL_lift {X C : PLLFormula} {Γ : List PLLFormula}
-    (d : G4c (X :: Γ) C.somehow) : G4c (X.somehow :: Γ) C.somehow :=
+    (d : G4c (X :: Γ) ◯C) : G4c (◯X :: Γ) ◯C :=
   G4c.laxL (List.mem_cons.mpr (Or.inl rfl))
     (((d.weaken X.somehow).perm (List.Perm.swap _ _ _)))
 
@@ -677,12 +677,12 @@ mapping on the `others` plus a contravariant feed for the truncation
 guard whenever the low-side truncation is live. -/
 theorem itpAfull_box_map {p : String} {S : Finset PLLFormula}
     {f₁ b₁ f₂ b₂ : Nat} {Γ : List PLLFormula} {D : PLLFormula}
-    (hoth : ∀ φ ∈ itpAoth p S f₁ b₁ Γ (D.somehow),
-        ∃ ψ ∈ itpAoth p S f₂ b₂ Γ (D.somehow), G4c [φ] ψ)
+    (hoth : ∀ φ ∈ itpAoth p S f₁ b₁ Γ (◯D),
+        ∃ ψ ∈ itpAoth p S f₂ b₂ Γ (◯D), G4c [φ] ψ)
     (htr : ∀ b₁', b₁ = b₁' + 1 → ∃ b₂', b₂ = b₂' + 1 ∧
         G4c [itpE p S f₂ b₂' Γ] (itpE p S f₁ b₁' Γ)) :
-    G4c [orAll (itpAfull p S f₁ b₁ Γ (D.somehow))]
-        (orAll (itpAfull p S f₂ b₂ Γ (D.somehow))) := by
+    G4c [orAll (itpAfull p S f₁ b₁ Γ (◯D))]
+        (orAll (itpAfull p S f₂ b₂ Γ (◯D))) := by
   simp only [itpAfull]
   refine G4c.orAll_elim ?_
   intro φ hφ
@@ -2354,12 +2354,12 @@ through the mapping; `htr` feeds the contravariant `E`-guard of the
 truncation disjunct. -/
 theorem itpAfull_box_map₂ {p : String} {S : Finset PLLFormula}
     {f₁ b₁ f₂ b₂ : Nat} {Γ₁ Γ₂ : List PLLFormula} {D : PLLFormula}
-    (hoth : ∀ φ ∈ itpAoth p S f₁ b₁ Γ₁ (D.somehow),
-        ∃ ψ ∈ itpAoth p S f₂ b₂ Γ₂ (D.somehow), G4c [φ] ψ)
+    (hoth : ∀ φ ∈ itpAoth p S f₁ b₁ Γ₁ (◯D),
+        ∃ ψ ∈ itpAoth p S f₂ b₂ Γ₂ (◯D), G4c [φ] ψ)
     (htr : ∀ b₁', b₁ = b₁' + 1 → ∃ b₂', b₂ = b₂' + 1 ∧
         G4c [itpE p S f₂ b₂' Γ₂] (itpE p S f₁ b₁' Γ₁)) :
-    G4c [orAll (itpAfull p S f₁ b₁ Γ₁ (D.somehow))]
-        (orAll (itpAfull p S f₂ b₂ Γ₂ (D.somehow))) := by
+    G4c [orAll (itpAfull p S f₁ b₁ Γ₁ (◯D))]
+        (orAll (itpAfull p S f₂ b₂ Γ₂ (◯D))) := by
   simp only [itpAfull]
   refine G4c.orAll_elim ?_
   intro φ hφ

@@ -94,12 +94,12 @@ theorem nobot_ax {Γ : List PLLFormula} : DerivUNoFall Γ nobot :=
   DerivU.hyp (List.mem_cons_self ..)
 
 theorem mp {Γ : List PLLFormula} {φ ψ : PLLFormula}
-    (h₁ : DerivUNoFall Γ (φ.ifThen ψ)) (h₂ : DerivUNoFall Γ φ) :
+    (h₁ : DerivUNoFall Γ (φ ↠ ψ)) (h₂ : DerivUNoFall Γ φ) :
     DerivUNoFall Γ ψ :=
   DerivU.mp h₁ h₂
 
 theorem unit {Γ : List PLLFormula} {φ : PLLFormula} (h : DerivUNoFall Γ φ) :
-    DerivUNoFall Γ (somehow φ) :=
+    DerivUNoFall Γ (◯φ) :=
   DerivU.unit h
 
 theorem rename {Γ Γ' : List PLLFormula} {φ : PLLFormula}
@@ -111,7 +111,7 @@ theorem rename {Γ Γ' : List PLLFormula} {φ : PLLFormula}
   · exact List.mem_cons_of_mem _ (H ψ hm)
 
 theorem deduction {Γ : List PLLFormula} {φ ψ : PLLFormula}
-    (h : DerivUNoFall (φ :: Γ) ψ) : DerivUNoFall Γ (φ.ifThen ψ) := by
+    (h : DerivUNoFall (φ :: Γ) ψ) : DerivUNoFall Γ (φ ↠ ψ) := by
   refine DerivU.deduction (DerivU.rename ?_ h)
   intro θ hm
   simp only [List.mem_cons] at hm ⊢
@@ -122,7 +122,7 @@ theorem cut {Γ : List PLLFormula} {φ ψ : PLLFormula}
     DerivUNoFall Γ ψ :=
   mp (deduction h₂) h₁
 
-theorem exfalso {Γ : List PLLFormula} (h : DerivUNoFall Γ falsePLL)
+theorem exfalso {Γ : List PLLFormula} (h : DerivUNoFall Γ ⊥)
     (φ : PLLFormula) : DerivUNoFall Γ φ :=
   mp (of_nd (.impIntro (.falsoElim φ (.iden (List.mem_cons_self ..))))) h
 
@@ -144,21 +144,21 @@ theorem varFree_truePLL : VarFree truePLL := ⟨trivial, trivial⟩
 
 /-- From `[ψ] ⊢ ⊥` and `Γ ⊢ ψ` conclude `Γ ⊢ ⊥`. -/
 private theorem bot_of {Γ : List PLLFormula} {ψ : PLLFormula}
-    (h₁ : DerivUNoFall [ψ] falsePLL) (h₂ : DerivUNoFall Γ ψ) :
-    DerivUNoFall Γ falsePLL :=
+    (h₁ : DerivUNoFall [ψ] ⊥) (h₂ : DerivUNoFall Γ ψ) :
+    DerivUNoFall Γ ⊥ :=
   DerivUNoFall.mp ((DerivUNoFall.deduction h₁).rename (by simp)) h₂
 
 private theorem and_intro {Γ : List PLLFormula} {φ ψ : PLLFormula}
     (h₁ : DerivUNoFall Γ φ) (h₂ : DerivUNoFall Γ ψ) :
-    DerivUNoFall Γ (φ.and ψ) :=
+    DerivUNoFall Γ (φ ∧ ψ) :=
   DerivUNoFall.mp (DerivUNoFall.mp (DerivUNoFall.of_nd
     (.impIntro (.impIntro (.andIntro (.iden (by simp)) (.iden (by simp))))))
     h₁) h₂
 
 /-- `∨`-elimination into `⊥`, singleton-context form. -/
 private theorem or_elim_bot {φ ψ : PLLFormula}
-    (h₁ : DerivUNoFall [φ] falsePLL) (h₂ : DerivUNoFall [ψ] falsePLL) :
-    DerivUNoFall [φ.or ψ] falsePLL := by
+    (h₁ : DerivUNoFall [φ] ⊥) (h₂ : DerivUNoFall [ψ] ⊥) :
+    DerivUNoFall [(φ ∨ ψ)] ⊥ := by
   have d₁ : DerivUNoFall [φ.or ψ] (φ.ifThen falsePLL) :=
     (DerivUNoFall.deduction h₁).rename (by simp)
   have d₂ : DerivUNoFall [φ.or ψ] (ψ.ifThen falsePLL) :=
@@ -173,8 +173,8 @@ private theorem or_elim_bot {φ ψ : PLLFormula}
 
 /-- `◯`-monotonicity into `◯⊥`, singleton-context form: from `[φ] ⊢ ⊥`
 conclude `[◯φ] ⊢ ◯⊥`. -/
-private theorem ob_bot_of {φ : PLLFormula} (h : DerivUNoFall [φ] falsePLL) :
-    DerivUNoFall [somehow φ] (somehow falsePLL) := by
+private theorem ob_bot_of {φ : PLLFormula} (h : DerivUNoFall [φ] ⊥) :
+    DerivUNoFall [◯φ] (◯⊥) := by
   have d : DerivUNoFall [somehow φ] (φ.ifThen falsePLL) :=
     (DerivUNoFall.deduction h).rename (by simp)
   have base : DerivUNoFall [somehow φ]
@@ -188,7 +188,7 @@ formula is derivable or inconsistent.  The axiom is used exactly once, in the
 `◯`-case; the distribution scheme is never used, so the statement holds for
 PLL + `¬◯⊥` by the same proof. -/
 theorem varfree_dichotomy : ∀ {A : PLLFormula}, VarFree A →
-    DerivUNoFall [] A ∨ DerivUNoFall [A] falsePLL := by
+    DerivUNoFall [] A ∨ DerivUNoFall [A] ⊥ := by
   intro A hA
   induction A with
   | prop a => exact hA.elim
@@ -323,7 +323,7 @@ theorem unitModel_infallible : Infallible unitModel := rfl
 
 /-- **Consistency**: PCLL + `¬◯⊥` does not derive `⊥`, so the dichotomy is
 not trivial. -/
-theorem consistent : ¬ DerivUNoFall [] falsePLL := by
+theorem consistent : ¬ DerivUNoFall [] ⊥ := by
   intro h
   have hf := sound h unitModel_confluent unitModel_infallible ()
     (by intro ψ hψ; simp at hψ)
@@ -345,7 +345,7 @@ theorem nobot_mem_obInv {T : Set PLLFormula} (hc : SClosed T)
   hc _ ((SDeriv.of_mem hn).unit)
 
 theorem bot_not_mem_obInv {T : Set PLLFormula} (hc : SClosed T)
-    (hn : nobot ∈ T) (hb : falsePLL ∉ T) : falsePLL ∉ obInv T :=
+    (hn : nobot ∈ T) (hb : ⊥ ∉ T) : ⊥ ∉ obInv T :=
   fun h => hb (hc _ ((SDeriv.of_mem hn).mp (SDeriv.of_mem h)))
 
 /-- The relativised canonical model: `canonU` restricted to the proper prime

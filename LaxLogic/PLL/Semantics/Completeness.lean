@@ -55,11 +55,11 @@ def disjOf : List PLLFormula → List PLLFormula → PLLFormula
     disjOf Ds [] = bigOr Ds := by cases Ds <;> rfl
 
 @[simp] theorem disjOf_nil_left (K : PLLFormula) (Ts : List PLLFormula) :
-    disjOf [] (K :: Ts) = .somehow (bigOr (K :: Ts)) := rfl
+    disjOf [] (K :: Ts) = ◯(bigOr (K :: Ts)) := rfl
 
 @[simp] theorem disjOf_cons_cons (D K : PLLFormula) (Ds Ts : List PLLFormula) :
     disjOf (D :: Ds) (K :: Ts) =
-      (bigOr (D :: Ds)).or (.somehow (bigOr (K :: Ts))) := rfl
+      ((bigOr (D :: Ds)) ∨ (◯(bigOr (K :: Ts)))) := rfl
 
 /-- Consistency (F&M §4): no nonempty finite choice from `fal` and `mfal`
 has its `disjOf` derivable from `val`. -/
@@ -92,7 +92,7 @@ theorem disjOf_intro_fal {Γ : Set PLLFormula} {φ : PLLFormula}
 
 /-- Introduce `disjOf` from its modal disjunct. -/
 theorem disjOf_intro_lax {Γ : Set PLLFormula} {Ds Ts : List PLLFormula}
-    (hne : Ts ≠ []) (h : Γ ⊢ .somehow (bigOr Ts)) : Γ ⊢ disjOf Ds Ts := by
+    (hne : Ts ≠ []) (h : Γ ⊢ ◯(bigOr Ts)) : Γ ⊢ disjOf Ds Ts := by
   cases Ts with
   | nil => exact absurd rfl hne
   | cons K Ts =>
@@ -104,7 +104,7 @@ theorem disjOf_intro_lax {Γ : Set PLLFormula} {Ds Ts : List PLLFormula}
 theorem disjOf_elim {Γ : Set PLLFormula} {χ : PLLFormula}
     {Ds Ts : List PLLFormula} (h : Γ ⊢ disjOf Ds Ts)
     (hD : ∀ φ ∈ Ds, insert φ Γ ⊢ χ)
-    (hT : Ts ≠ [] → insert (.somehow (bigOr Ts)) Γ ⊢ χ) : Γ ⊢ χ := by
+    (hT : Ts ≠ [] → insert (◯(bigOr Ts)) Γ ⊢ χ) : Γ ⊢ χ := by
   cases Ts with
   | nil =>
       rw [disjOf_nil_right] at h
@@ -314,7 +314,7 @@ theorem not_mem_fal_of_mem_val {T : Theory} (hM : MaxConsistent T)
 
 /-- (ii) primeness of `val`. -/
 theorem or_mem {T : Theory} (hM : MaxConsistent T)
-    {φ ψ : PLLFormula} (h : φ.or ψ ∈ T.val) :
+    {φ ψ : PLLFormula} (h : (φ ∨ ψ) ∈ T.val) :
     φ ∈ T.val ∨ ψ ∈ T.val := by
   by_contra hcon
   push_neg at hcon
@@ -336,7 +336,7 @@ theorem or_mem {T : Theory} (hM : MaxConsistent T)
 
 /-- (iii) implication decomposition. -/
 theorem imp_mem {T : Theory} (hM : MaxConsistent T)
-    {φ ψ : PLLFormula} (h : φ.ifThen ψ ∈ T.val) :
+    {φ ψ : PLLFormula} (h : (φ ↠ ψ) ∈ T.val) :
     φ ∈ T.fal ∨ ψ ∈ T.val := by
   by_contra hcon
   push_neg at hcon
@@ -370,7 +370,7 @@ theorem imp_mem {T : Theory} (hM : MaxConsistent T)
 
 /-- (iv) falsified disjunctions decompose conjunctively. -/
 theorem fal_or {T : Theory} (hM : MaxConsistent T)
-    {φ ψ : PLLFormula} (h : φ.or ψ ∈ T.fal) :
+    {φ ψ : PLLFormula} (h : (φ ∨ ψ) ∈ T.fal) :
     φ ∈ T.fal ∧ ψ ∈ T.fal := by
   have main : ∀ χ : PLLFormula,
       (∀ Γ : Set PLLFormula, Γ ⊢ χ → Γ ⊢ φ.or ψ) → χ ∈ T.fal := by
@@ -398,7 +398,7 @@ theorem fal_or {T : Theory} (hM : MaxConsistent T)
 
 /-- (v) falsified conjunctions decompose disjunctively. -/
 theorem fal_and {T : Theory} (hM : MaxConsistent T)
-    {φ ψ : PLLFormula} (h : φ.and ψ ∈ T.fal) :
+    {φ ψ : PLLFormula} (h : (φ ∧ ψ) ∈ T.fal) :
     φ ∈ T.fal ∨ ψ ∈ T.fal := by
   by_contra hcon
   push_neg at hcon

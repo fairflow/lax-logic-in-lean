@@ -48,14 +48,14 @@ theorem comp {Γ : List PLLFormula} {X Y : PLLFormula}
 
 theorem andI {Γ : List PLLFormula} {A B : PLLFormula}
     (h₁ : DerivUNoFall Γ A) (h₂ : DerivUNoFall Γ B) :
-    DerivUNoFall Γ (A.and B) :=
+    DerivUNoFall Γ (A ∧ B) :=
   DerivUNoFall.mp (DerivUNoFall.mp (DerivUNoFall.of_nd
     (.impIntro (.impIntro (.andIntro (.iden (by simp)) (.iden (by simp))))))
     h₁) h₂
 
 /-- `∨`-elimination at `DerivUNoFall` level. -/
 theorem orE {Γ : List PLLFormula} {A B C : PLLFormula}
-    (h₀ : DerivUNoFall Γ (A.or B))
+    (h₀ : DerivUNoFall Γ (A ∨ B))
     (h₁ : DerivUNoFall (A :: Γ) C) (h₂ : DerivUNoFall (B :: Γ) C) :
     DerivUNoFall Γ C := by
   have base : DerivUNoFall Γ
@@ -68,7 +68,7 @@ theorem orE {Γ : List PLLFormula} {A B C : PLLFormula}
 
 /-- `◯` is monotone on entailments. -/
 theorem ob_mono {A B : PLLFormula} (h : DerivUNoFall [A] B) :
-    DerivUNoFall [somehow A] (somehow B) := by
+    DerivUNoFall [◯A] (◯B) := by
   have d : DerivUNoFall [somehow A] (A.ifThen B) :=
     (DerivUNoFall.deduction h).rename (by simp)
   have base : DerivUNoFall [somehow A]
@@ -98,7 +98,7 @@ end EquivNF
 
 theorem and_congr {A A' B B' : PLLFormula}
     (hA : EquivNF A A') (hB : EquivNF B B') :
-    EquivNF (A.and B) (A'.and B') := by
+    EquivNF (A ∧ B) (A' ∧ B') := by
   constructor
   · exact andI (comp hA.1 (.of_nd (.andElim1 (ψ := B) (.iden (by simp)))))
       (comp hB.1 (.of_nd (.andElim2 (φ := A) (.iden (by simp)))))
@@ -107,7 +107,7 @@ theorem and_congr {A A' B B' : PLLFormula}
 
 theorem or_congr {A A' B B' : PLLFormula}
     (hA : EquivNF A A') (hB : EquivNF B B') :
-    EquivNF (A.or B) (A'.or B') := by
+    EquivNF (A ∨ B) (A' ∨ B') := by
   constructor
   · exact orE (A := A) (B := B) (.hyp (by simp))
       (comp (.of_nd (.orIntro1 (.iden (by simp)))) (comp hA.1 (.hyp (by simp))))
@@ -118,7 +118,7 @@ theorem or_congr {A A' B B' : PLLFormula}
 
 theorem imp_mono {A A' B B' : PLLFormula}
     (hA : DerivUNoFall [A'] A) (hB : DerivUNoFall [B] B') :
-    DerivUNoFall [A.ifThen B] (A'.ifThen B') := by
+    DerivUNoFall [(A ↠ B)] (A' ↠ B') := by
   refine DerivUNoFall.deduction ?_
   have h₁ : DerivUNoFall (A' :: [A.ifThen B]) A := hA.rename (by simp)
   have h₂ : DerivUNoFall (A' :: [A.ifThen B]) B :=
@@ -127,22 +127,22 @@ theorem imp_mono {A A' B B' : PLLFormula}
 
 theorem imp_congr {A A' B B' : PLLFormula}
     (hA : EquivNF A A') (hB : EquivNF B B') :
-    EquivNF (A.ifThen B) (A'.ifThen B') :=
+    EquivNF (A ↠ B) (A' ↠ B') :=
   ⟨imp_mono hA.2 hB.1, imp_mono hA.1 hB.2⟩
 
 theorem ob_congr {A B : PLLFormula} (h : EquivNF A B) :
-    EquivNF (somehow A) (somehow B) :=
+    EquivNF (◯A) (◯B) :=
   ⟨ob_mono h.1, ob_mono h.2⟩
 
 /-! ## 2. The lattice-homomorphism laws -/
 
 /-- `◯⊥ ≡ ⊥` — the axiom. -/
-theorem obBot : EquivNF (somehow falsePLL) falsePLL :=
+theorem obBot : EquivNF (◯⊥) ⊥ :=
   ⟨.mp .nobot_ax (.hyp (by simp)), .exfalso (.hyp (by simp)) _⟩
 
 /-- `◯(A ∧ B) ≡ ◯A ∧ ◯B` — the strong-monad laws (PLL already). -/
 theorem obAnd {A B : PLLFormula} :
-    EquivNF (somehow (A.and B)) ((somehow A).and (somehow B)) := by
+    EquivNF (◯(A ∧ B)) ((◯A) ∧ (◯B)) := by
   constructor
   · exact andI (ob_mono (.of_nd (.andElim1 (ψ := B) (.iden (by simp)))))
       (ob_mono (.of_nd (.andElim2 (φ := A) (.iden (by simp)))))
@@ -156,7 +156,7 @@ theorem obAnd {A B : PLLFormula} :
 /-- `◯(A ∨ B) ≡ ◯A ∨ ◯B` — the distribution scheme (this is its single
 point of use in the normalisation). -/
 theorem obOr {A B : PLLFormula} :
-    EquivNF (somehow (A.or B)) ((somehow A).or (somehow B)) := by
+    EquivNF (◯(A ∨ B)) ((◯A) ∨ (◯B)) := by
   constructor
   · exact DerivUNoFall.mp (.of_derivU (DerivU.dist A B)) (.hyp (by simp))
   · exact orE (A := somehow A) (B := somehow B) (.hyp (by simp))
@@ -167,7 +167,7 @@ theorem obOr {A B : PLLFormula} :
 
 /-- `◯◯A ≡ ◯A` — idempotence (PLL already). -/
 theorem obOb {A : PLLFormula} :
-    EquivNF (somehow (somehow A)) (somehow A) :=
+    EquivNF (◯(◯A)) (◯A) :=
   ⟨.of_nd (.laxElim (φ := somehow A) (ψ := A) (.iden (by simp))
       (.iden (by simp))),
    .of_nd (.laxIntro (.iden (by simp)))⟩
@@ -204,7 +204,7 @@ def ObNormal : PLLFormula → Prop
   | .somehow (.ifThen A B) => ObNormal A ∧ ObNormal B
   | .somehow _ => False
 
-theorem obApp_equiv : ∀ A : PLLFormula, EquivNF (obApp A) A.somehow
+theorem obApp_equiv : ∀ A : PLLFormula, EquivNF (obApp A) ◯A
   | .prop _ => .refl _
   | .falsePLL => obBot.symm
   | .and A B =>

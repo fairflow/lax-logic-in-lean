@@ -287,7 +287,7 @@ fixed-basis premises — all an occurring-only pool offers for
 `peirceBoxP` — do not derive it. -/
 theorem occurring_only_insufficient :
     [lowT "p" peirceBoxP, sideT "p" peirceBoxP,
-       substP "p" .falsePLL peirceBoxP, substP "p" truePLL peirceBoxP] ⊬ peirceBoxP :=
+       substP "p" ⊥ peirceBoxP, substP "p" truePLL peirceBoxP] ⊬ peirceBoxP :=
   FinCM.not_provable_of_check (M := lawCM) (w := 0) (by decide)
 
 /-! ## The frontier row: the CORRECTED ∀-law is refuted too
@@ -324,7 +324,7 @@ def frontierCM : FinCM :=
 /-- ¬¬◯⊥ does not derive the frontier row (so the ∀p-value ◯⊥ is
 strictly below ¬¬◯⊥ here). -/
 theorem nnBoxBot_not_derives_frontier :
-    [(PLLFormula.falsePLL.somehow.ifThen .falsePLL).ifThen .falsePLL] ⊬ frontierRow :=
+    [((◯⊥ ↠ ⊥) ↠ ⊥)] ⊬ frontierRow :=
   FinCM.not_provable_of_check (M := frontierCM) (w := 0) (by decide)
 
 /-- **The corrected pool is insufficient at the frontier row.** -/

@@ -118,7 +118,7 @@ theorem interp_applyC (Cc : Prop) (v : String → Prop) :
 `⊥` interprets as an obligation: the disjunction of its preconditions. -/
 theorem interp_applyC_bot (Cc : Prop) (v : String → Prop)
     (Ks : List PLLFormula) (x : PLLFormula) :
-    interp Cc v (applyC (Ks.map (fun K => (K, .falsePLL))) x) ↔
+    interp Cc v (applyC (Ks.map (fun K => (K, ⊥))) x) ↔
       Debt (anyOf (Ks.map (interp Cc v))) (interp Cc v x) := by
   have h := interp_applyC Cc v (Ks.map (fun K => (K, .falsePLL))) x
   have hlist :

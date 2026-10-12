@@ -66,7 +66,7 @@ and the ∀-amalgamation residue holds, then ◯ψ is the semantic
 ∀p-value of ◯φ.  The forward half is unconditional. -/
 theorem semAll_box {p : String} {φ ψ : PLLFormula}
     (h : IsSemAll p φ ψ) (hAm : BoxRowAmalgAll p φ ψ) :
-    IsSemAll p φ.somehow ψ.somehow := by
+    IsSemAll p φ.somehow ◯ψ := by
   obtain ⟨hpf, hspec⟩ := h
   have hAψ : ∀ a ∈ ψ.atoms, a ≠ p := fun a ha he => hpf (he ▸ ha)
   refine ⟨hpf, ?_⟩
@@ -93,7 +93,7 @@ and the ∃-amalgamation residue holds, then ◯ψ is the semantic
 ∃p-value of ◯φ.  The backward half is unconditional. -/
 theorem semEx_box {p : String} {φ ψ : PLLFormula}
     (h : IsSemEx p φ ψ) (hAm : BoxRowAmalgEx p φ ψ) :
-    IsSemEx p φ.somehow ψ.somehow := by
+    IsSemEx p φ.somehow ◯ψ := by
   obtain ⟨hpf, hspec⟩ := h
   refine ⟨hpf, ?_⟩
   intro C w
@@ -140,7 +140,7 @@ def Lob0Refutes (p : String) (φ : PLLFormula) : Prop :=
 constraint-rigid, so a fallibility-free row there has every promise
 withheld — no member forces φ, and ◯φ fails at the base. -/
 theorem boxRowAmalgAll_lob0 {p : String} {φ : PLLFormula}
-    (h : Lob0Refutes p φ) : BoxRowAmalgAll p φ .falsePLL := by
+    (h : Lob0Refutes p φ) : BoxRowAmalgAll p φ ⊥ := by
   intro C x hrow
   refine ⟨lobVariant C p, lobVariant_pbisim C p, (x, 0), rfl, ?_⟩
   intro hbox
@@ -167,7 +167,7 @@ theorem lob0_prop (p : String) : Lob0Refutes p (.prop p) := by
 above it forces p non-fallibly. -/
 theorem lob0_em (p : String) :
     Lob0Refutes p
-      ((PLLFormula.prop p).or ((PLLFormula.prop p).ifThen .falsePLL)) := by
+      ((PLLFormula.prop p) ∨ ((PLLFormula.prop p) ↠ ⊥)) := by
   intro C z hz h
   rcases h with hp | hnp
   · have hp' : (z, 0) ∈ (if p = p then
@@ -188,8 +188,7 @@ theorem lob0_em (p : String) :
 sits at level ≥ 2 above everything), level 0 stays undecorated. -/
 theorem lob0_nn (p : String) :
     Lob0Refutes p
-      ((((PLLFormula.prop p).ifThen .falsePLL).ifThen .falsePLL).ifThen
-        (.prop p)) := by
+      ((((PLLFormula.prop p) ↠ ⊥) ↠ ⊥) ↠ (.prop p)) := by
   intro C z hz hM
   have hnn : (lobVariant C p).force (z, 0)
       (((PLLFormula.prop p).ifThen .falsePLL).ifThen .falsePLL) := by
@@ -213,23 +212,21 @@ theorem lob0_nn (p : String) :
 /-- **`∀p.◯(p ∨ ¬p) = ◯⊥`** — the first law-generated value. -/
 theorem semAll_box_em (p : String) :
     IsSemAll p
-      (((PLLFormula.prop p).or ((PLLFormula.prop p).ifThen
-        .falsePLL)).somehow)
-      PLLFormula.falsePLL.somehow :=
+      (◯((PLLFormula.prop p) ∨ ((PLLFormula.prop p) ↠ ⊥)))
+      ◯⊥ :=
   semAll_box (semAll_em_p p) (boxRowAmalgAll_lob0 (lob0_em p))
 
 /-- **`∀p.◯(¬¬p ⊃ p) = ◯⊥`**. -/
 theorem semAll_box_nn (p : String) :
     IsSemAll p
-      ((((((PLLFormula.prop p).ifThen .falsePLL).ifThen .falsePLL)).ifThen
-        (.prop p)).somehow)
-      PLLFormula.falsePLL.somehow :=
+      (◯(((((PLLFormula.prop p) ↠ ⊥) ↠ ⊥)) ↠ (.prop p)))
+      ◯⊥ :=
   semAll_box (semAll_nnp_imp_p p) (boxRowAmalgAll_lob0 (lob0_nn p))
 
 /-- Consistency check: the law re-derives `∀p.◯p = ◯⊥`
 (`semAll_box_p` proved it directly). -/
 theorem semAll_box_p' (p : String) :
-    IsSemAll p (PLLFormula.prop p).somehow PLLFormula.falsePLL.somehow :=
+    IsSemAll p (PLLFormula.prop p).somehow ◯⊥ :=
   semAll_box (semAll_prop_self p) (boxRowAmalgAll_lob0 (lob0_prop p))
 
 /-- The ∃-residue for the atom: decorate p everywhere. -/
@@ -249,7 +246,7 @@ theorem boxRowAmalgEx_prop (p : String) :
 theory file proved the value ⊤ directly; ◯⊤ ⊣⊢ ⊤, consistency by
 `semEx_unique`). -/
 theorem semEx_box_p' (p : String) :
-    IsSemEx p (PLLFormula.prop p).somehow truePLL.somehow :=
+    IsSemEx p (PLLFormula.prop p).somehow ◯truePLL :=
   semEx_box (semEx_prop_self p) (boxRowAmalgEx_prop p)
 
 /-! ## Axiom audit (pinned) -/

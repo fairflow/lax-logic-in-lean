@@ -60,7 +60,7 @@ def interp (C : Prop) (v : String → Prop) : PLLFormula → Prop
   | .somehow φ => Debt C (interp C v φ)
 
 @[simp] theorem interp_somehow (C : Prop) (v : String → Prop) (φ : PLLFormula) :
-    interp C v (.somehow φ) = Debt C (interp C v φ) := rfl
+    interp C v (◯φ) = Debt C (interp C v φ) := rfl
 
 /-- A context holds when all of its formulas do. -/
 def interpCtx (C : Prop) (v : String → Prop) : List PLLFormula → Prop
@@ -102,13 +102,13 @@ theorem sound {Γ : List PLLFormula} {φ : PLLFormula}
 a proof of `φ` modulo `C`. This is constraint extraction on the object logic,
 stated in the obligation library's own vocabulary. -/
 theorem debt_of_lax {φ : PLLFormula} (C : Prop) (v : String → Prop)
-    (p : LaxND [] (.somehow φ)) : Debt C (interp C v φ) :=
+    (p : LaxND [] (◯φ)) : Debt C (interp C v φ) :=
   sound C v p trivial
 
 /-- The single-constraint model collapses iterated modalities. Recorded rather
 than hidden: it is the precise sense in which this bridge is the easy half. -/
 theorem interp_somehow_idem (C : Prop) (v : String → Prop) (φ : PLLFormula) :
-    interp C v (.somehow (.somehow φ)) ↔ interp C v (.somehow φ) :=
+    interp C v (◯(◯φ)) ↔ interp C v (◯φ) :=
   ⟨fun h c => h c c, fun h c _ => h c⟩
 
 /-! ### `◯◯M` and `◯M`: equi-inhabited, but not the same term
@@ -146,14 +146,14 @@ theorem writerMul_not_injective :
 The degenerate end of the model, and a sanity check that `Debt` is not adding
 strength. -/
 theorem interp_true (v : String → Prop) (φ : PLLFormula) :
-    interp True v (.somehow φ) ↔ interp True v φ :=
+    interp True v (◯φ) ↔ interp True v φ :=
   ⟨fun h => h trivial, fun h _ => h⟩
 
 /-- With `C := False` everything modal is vacuous — the object-logic form of
 `Debt.vacuous`, and of Matthew's gloss: if the constraint is not true, the
 belief says nothing. -/
 theorem interp_false (v : String → Prop) (φ : PLLFormula) :
-    interp False v (.somehow φ) :=
+    interp False v (◯φ) :=
   fun h => h.elim
 
 /-! ## Gates

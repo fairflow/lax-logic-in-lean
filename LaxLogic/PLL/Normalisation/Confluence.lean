@@ -119,7 +119,7 @@ private theorem join_caseInr {Γ : List PLLFormula} {A B C : PLLFormula}
     exact ⟨_, .head (Step.subst _ h) (.refl _), .head (.caseInr _ _ _) (.refl _)⟩
 
 private theorem join_bindVal {Γ : List PLLFormula} {A B : PLLFormula}
-    (a : Tm Γ A) (u₀ : Tm (A :: Γ) (somehow B)) {u₂ : Tm Γ (somehow B)}
+    (a : Tm Γ A) (u₀ : Tm (A :: Γ) (◯B)) {u₂ : Tm Γ (◯B)}
     (h : Step (.bind (.val a) u₀) u₂) :
     ∃ v, Steps (u₀.subst1 a) v ∧ Steps u₂ v := by
   cases h with
@@ -135,8 +135,8 @@ private theorem join_bindVal {Γ : List PLLFormula} {A B : PLLFormula}
 The two genuine critical pairs of the calculus live here: `let`-β and
 `let`-assoc firing inside the scrutinee. -/
 private theorem join_bindAssoc {Γ : List PLLFormula} {A B C : PLLFormula}
-    (s₀ : Tm Γ (somehow A)) (t₀ : Tm (A :: Γ) (somehow B))
-    (u₀ : Tm (B :: Γ) (somehow C)) {u₂ : Tm Γ (somehow C)}
+    (s₀ : Tm Γ (◯A)) (t₀ : Tm (A :: Γ) (◯B))
+    (u₀ : Tm (B :: Γ) (◯C)) {u₂ : Tm Γ (◯C)}
     (h : Step (.bind (.bind s₀ t₀) u₀) u₂) :
     ∃ v, Steps (.bind s₀ (.bind t₀ (u₀.rename Ren.skip1))) v ∧ Steps u₂ v := by
   cases h with

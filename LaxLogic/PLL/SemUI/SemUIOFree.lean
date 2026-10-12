@@ -211,7 +211,7 @@ theorem topExt_force_iff (C : ConstraintModel) :
 /-- `◯⊥` holds everywhere in the extension: the fallible top is a
 constraint successor of every world. -/
 theorem topExt_boxBot (C : ConstraintModel) (a : (topExt C).W) :
-    (topExt C).force a PLLFormula.falsePLL.somehow := by
+    (topExt C).force a ◯⊥ := by
   intro b hb
   refine ⟨.inr (), ?_, True.intro⟩
   rcases b with y | u
@@ -228,7 +228,7 @@ theorem no_lower_bound_above_boxBot {M : PLLFormula}
     (hM : boxFree M = true) {D : ConstraintModel} {d : D.W}
     (hd : ¬ D.force d M) {ξ : PLLFormula}
     (hlow : Nonempty (LaxND [ξ] M))
-    (hcone : Nonempty (LaxND [PLLFormula.falsePLL.somehow] ξ)) : False := by
+    (hcone : Nonempty (LaxND [◯⊥] ξ)) : False := by
   obtain ⟨dlow⟩ := hlow
   obtain ⟨dcone⟩ := hcone
   have hξ : (topExt D).force (.inl d) ξ :=
@@ -243,7 +243,7 @@ theorem no_lower_bound_above_boxBot {M : PLLFormula}
 
 /-- With no fallible worlds, `¬◯⊥` holds everywhere. -/
 theorem flat_neg_boxBot {C : ConstraintModel} (hF : C.F = ∅) (w : C.W) :
-    C.force w (PLLFormula.falsePLL.somehow.ifThen .falsePLL) := by
+    C.force w (◯⊥ ↠ ⊥) := by
   intro v hv hbox
   obtain ⟨u, -, hu⟩ := hbox v (C.refl_i v)
   have hu' : u ∈ C.F := hu
@@ -258,7 +258,7 @@ theorem no_lower_bound_above_negBoxBot {M : PLLFormula}
     (hd : ¬ D.force d M) {ξ : PLLFormula}
     (hlow : Nonempty (LaxND [ξ] M))
     (hcone : Nonempty (LaxND
-      [PLLFormula.falsePLL.somehow.ifThen .falsePLL] ξ)) : False := by
+      [(◯⊥ ↠ ⊥)] ξ)) : False := by
   obtain ⟨dlow⟩ := hlow
   obtain ⟨dcone⟩ := hcone
   have hξ : D.force d ξ :=
@@ -276,7 +276,7 @@ theorem no_lower_bound_above_negBoxBot {M : PLLFormula}
 theorem semAll_value_not_above_boxBot {p : String} {M ψ : PLLFormula}
     (hM : boxFree M = true) (h : IsSemAll p M ψ)
     {D : ConstraintModel} {d : D.W} (hd : ¬ D.force d M) :
-    [PLLFormula.falsePLL.somehow] ⊬ ψ :=
+    [◯⊥] ⊬ ψ :=
   fun hcone => no_lower_bound_above_boxBot hM hd (semAll_lower h) hcone
 
 /-- The ∀p-value of an M refuted over a fallibility-free model never
@@ -284,7 +284,7 @@ lies in the ¬◯⊥-cone. -/
 theorem semAll_value_not_above_negBoxBot {p : String} {M ψ : PLLFormula}
     (h : IsSemAll p M ψ) {D : ConstraintModel} (hDF : D.F = ∅)
     {d : D.W} (hd : ¬ D.force d M) :
-    [PLLFormula.falsePLL.somehow.ifThen .falsePLL] ⊬ ψ :=
+    [(◯⊥ ↠ ⊥)] ⊬ ψ :=
   fun hcone => no_lower_bound_above_negBoxBot hDF hd (semAll_lower h) hcone
 
 /-- If `⊢ M` then any ∀p-value of M is derivable — the value is ⊤, in
@@ -311,10 +311,10 @@ theorem semAll_value_bot_of_cones {p : String} {M ψ : PLLFormula}
     {D₁ : ConstraintModel} {d₁ : D₁.W} (hd₁ : ¬ D₁.force d₁ M)
     {D₂ : ConstraintModel} (hDF : D₂.F = ∅) {d₂ : D₂.W}
     (hd₂ : ¬ D₂.force d₂ M)
-    (hcov : Nonempty (LaxND [PLLFormula.falsePLL.somehow] ψ) ∨
-      Nonempty (LaxND [PLLFormula.falsePLL.somehow.ifThen .falsePLL] ψ) ∨
-      Nonempty (LaxND [ψ] .falsePLL)) :
-    Nonempty (LaxND [ψ] .falsePLL) := by
+    (hcov : Nonempty (LaxND [◯⊥] ψ) ∨
+      Nonempty (LaxND [(◯⊥ ↠ ⊥)] ψ) ∨
+      Nonempty (LaxND [ψ] ⊥)) :
+    Nonempty (LaxND [ψ] ⊥) := by
   rcases hcov with h1 | h2 | h3
   · exact absurd h1 (semAll_value_not_above_boxBot hM h hd₁)
   · exact absurd h2 (semAll_value_not_above_negBoxBot h hDF hd₂)
@@ -328,7 +328,7 @@ non-fallibly. -/
 theorem semEx_value_not_derives_negBoxBot {p : String} {M ψ : PLLFormula}
     (hM : boxFree M = true) (h : IsSemEx p M ψ)
     {D : ConstraintModel} {d : D.W} (hdF : d ∉ D.F) (hd : D.force d M) :
-    [ψ] ⊬ PLLFormula.falsePLL.somehow.ifThen .falsePLL := by
+    [ψ] ⊬ (◯⊥ ↠ ⊥) := by
   rintro ⟨e⟩
   obtain ⟨u⟩ := semEx_upper h
   have hψ : (topExt D).force (.inl d) ψ :=
@@ -345,7 +345,7 @@ derives `◯⊥`. -/
 theorem semEx_value_not_derives_boxBot {p : String} {M ψ : PLLFormula}
     (h : IsSemEx p M ψ) {D : ConstraintModel} (hDF : D.F = ∅)
     {d : D.W} (hd : D.force d M) :
-    [ψ] ⊬ PLLFormula.falsePLL.somehow := by
+    [ψ] ⊬ ◯⊥ := by
   rintro ⟨e⟩
   obtain ⟨u⟩ := semEx_upper h
   have hψ : D.force d ψ := soundness u D d (fun χ hχ => by
@@ -665,7 +665,7 @@ theorem semAll_top_of_derivable {p : String} {M : PLLFormula}
 
 /-- `M ⊢ ⊥` gives `∃p.M = ⊥`, for ANY M. -/
 theorem semEx_bot_of_inconsistent {p : String} {M : PLLFormula}
-    (hM : Nonempty (LaxND [M] .falsePLL)) : IsSemEx p M .falsePLL := by
+    (hM : Nonempty (LaxND [M] ⊥)) : IsSemEx p M ⊥ := by
   obtain ⟨d⟩ := hM
   refine ⟨by simp, ?_⟩
   intro C w
@@ -690,7 +690,7 @@ theorem exists_refuting_world {M : PLLFormula}
 
 /-- From consistency, classically, a non-fallible forcing world. -/
 theorem exists_forcing_world {M : PLLFormula}
-    (hM : [M] ⊬ .falsePLL) :
+    (hM : [M] ⊬ ⊥) :
     ∃ (D : ConstraintModel) (d : D.W), D.force d M ∧ d ∉ D.F := by
   by_contra h
   refine hM (completeness ?_)
@@ -704,7 +704,7 @@ countermodel and fibre it over the given model: at any non-fallible
 world w, the p-variant world `(w, d)` refutes M. -/
 theorem semAll_ofree_bot {p : String} {M : PLLFormula}
     (hbf : boxFree M = true) (hat : ∀ a ∈ M.atoms, a = p)
-    (hM : [] ⊬ M) : IsSemAll p M .falsePLL := by
+    (hM : [] ⊬ M) : IsSemAll p M ⊥ := by
   obtain ⟨D, d, hd⟩ := exists_refuting_world hM
   have hdF : d ∉ D.F := fun hF => hd (D.force_of_fallible hF)
   have hK : ¬ (flatten D).force ⟨d, hdF⟩ M :=
@@ -725,7 +725,7 @@ theorem semAll_ofree_bot {p : String} {M : PLLFormula}
 force it themselves; non-fallible worlds through the graft). -/
 theorem semEx_ofree_top {p : String} {M : PLLFormula}
     (hbf : boxFree M = true) (hat : ∀ a ∈ M.atoms, a = p)
-    (hM : [M] ⊬ .falsePLL) : IsSemEx p M truePLL := by
+    (hM : [M] ⊬ ⊥) : IsSemEx p M truePLL := by
   obtain ⟨D, d, hdM, hdF⟩ := exists_forcing_world hM
   have hK : (flatten D).force ⟨d, hdF⟩ M :=
     (flatten_force_iff D hbf d hdF).mpr hdM
@@ -748,7 +748,7 @@ formula has a definable semantic ∀p-quantifier with value ⊤ or ⊥ —
 exactly Pitts's values. -/
 theorem ofree_semAll_definable (p : String) (M : PLLFormula)
     (hbf : boxFree M = true) (hat : ∀ a ∈ M.atoms, a = p) :
-    ∃ ψ, IsSemAll p M ψ ∧ (ψ = truePLL ∨ ψ = PLLFormula.falsePLL) := by
+    ∃ ψ, IsSemAll p M ψ ∧ (ψ = truePLL ∨ ψ = ⊥) := by
   rcases Classical.em (Nonempty (LaxND [] M)) with h | h
   · exact ⟨truePLL, semAll_top_of_derivable h, Or.inl rfl⟩
   · exact ⟨.falsePLL, semAll_ofree_bot hbf hat h, Or.inr rfl⟩
@@ -756,7 +756,7 @@ theorem ofree_semAll_definable (p : String) (M : PLLFormula)
 /-- **Agreement with IPC, ∃-side, PROVED**. -/
 theorem ofree_semEx_definable (p : String) (M : PLLFormula)
     (hbf : boxFree M = true) (hat : ∀ a ∈ M.atoms, a = p) :
-    ∃ ψ, IsSemEx p M ψ ∧ (ψ = truePLL ∨ ψ = PLLFormula.falsePLL) := by
+    ∃ ψ, IsSemEx p M ψ ∧ (ψ = truePLL ∨ ψ = ⊥) := by
   rcases Classical.em (Nonempty (LaxND [M] .falsePLL)) with h | h
   · exact ⟨.falsePLL, semEx_bot_of_inconsistent h, Or.inr rfl⟩
   · exact ⟨truePLL, semEx_ofree_top hbf hat h, Or.inl rfl⟩

@@ -71,10 +71,10 @@ theorem residue_force_prop {n₀ a : String} {u : PUnit} :
     (residue n₀).force u (.prop a) ↔ a = n₀ := Iff.rfl
 
 theorem residue_force_bot {n₀ : String} {u : PUnit} :
-    ¬ (residue n₀).force u .falsePLL := fun h => h
+    ¬ (residue n₀).force u ⊥ := fun h => h
 
 theorem residue_force_ifThen {n₀ : String} {A B : PLLFormula} {u : PUnit} :
-    (residue n₀).force u (A.ifThen B) ↔
+    (residue n₀).force u (A ↠ B) ↔
       ((residue n₀).force u A → (residue n₀).force u B) := by
   constructor
   · intro h ha
@@ -120,7 +120,7 @@ theorem residue_applyC {n₀ : String} {bad : List String} {C : StdCtx}
 /-- The translated `◯⊥` fails at the residue point. -/
 theorem residue_not_subC_boxBot {n₀ : String} {bad : List String}
     {C : StdCtx} (h : ResiduePair n₀ bad C) {u : PUnit} :
-    ¬ (residue n₀).force u (subC C PLLFormula.falsePLL.somehow) :=
+    ¬ (residue n₀).force u (subC C ◯⊥) :=
   fun hf => residue_force_bot ((residue_applyC h _ u).mp hf)
 
 /-! ## The diagram -/
@@ -194,7 +194,7 @@ fallible worlds force `p` anyway. -/
 theorem sem_row1 {p n₀ : String} {bad : List String} {C : StdCtx}
     (h : ResiduePair n₀ bad C) (D : ConstraintModel) {w : D.W}
     (h₀ : D.force w (.prop n₀)) (hbad : ∀ a ∈ bad, D.force w (negA a)) :
-    D.force w ((applyC C (.prop p)).ifThen (.prop p)) := by
+    D.force w ((applyC C (.prop p)) ↠ (.prop p)) := by
   intro v hwv hv
   obtain ⟨Ls, hmem, hLs⟩ := h.pair
   have hb := (force_applyC_iff D C (.prop p) v).mp hv _ hmem
@@ -212,7 +212,7 @@ theorem sem_row1 {p n₀ : String} {bad : List String} {C : StdCtx}
 theorem diag_row1 {p n₀ : String} {bad : List String} {C : StdCtx}
     (h : ResiduePair n₀ bad C) :
     Nonempty (LaxND [diag n₀ bad]
-      (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p)))) := by
+      (subC C (◯(PLLFormula.prop p) ↠ (.prop p)))) := by
   refine completeness ?_
   intro D w hw
   have hd := (diag_force_iff D w).mp (hw _ (List.mem_singleton.mpr rfl))
@@ -225,7 +225,7 @@ fallible. -/
 theorem diag_row2 {p n₀ : String} {bad : List String} {C : StdCtx}
     (h : ResiduePair n₀ bad C) :
     Nonempty (LaxND [diag n₀ bad]
-      (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow)) := by
+      (subC C ◯(◯(PLLFormula.prop p) ↠ (.prop p)))) := by
   refine completeness ?_
   intro D w hw
   have hd := (diag_force_iff D w).mp (hw _ (List.mem_singleton.mpr rfl))
@@ -294,9 +294,9 @@ theorem fails_half_boxp_imp_p {p n₀ : String} {bad : List String}
     {C : StdCtx} {A : PLLFormula} {Θ : List PLLFormula}
     (h : ResiduePair n₀ bad C) (hpn : p ≠ n₀) (hpb : p ∉ bad)
     (hA : IsIPCAll p isIPL
-      (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p))) A)
+      (subC C (◯(PLLFormula.prop p) ↠ (.prop p))) A)
     (hΘ : ∀ ψ ∈ Θ, ∃ a, a ≠ n₀ ∧ ψ = negA a) :
-    (A :: Θ) ⊬ .falsePLL :=
+    (A :: Θ) ⊬ ⊥ :=
   residue_obstruction hA (diag_pfree hpn hpb) diag_isIPL (diag_row1 h)
     (residue_diag h.fresh) (residue_theta hΘ) residue_force_bot
 
@@ -306,9 +306,9 @@ theorem fails_half_box_lob {p n₀ : String} {bad : List String}
     {C : StdCtx} {A : PLLFormula} {Θ : List PLLFormula}
     (h : ResiduePair n₀ bad C) (hpn : p ≠ n₀) (hpb : p ∉ bad)
     (hA : IsIPCAll p isIPL
-      (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow) A)
+      (subC C ◯(◯(PLLFormula.prop p) ↠ (.prop p))) A)
     (hΘ : ∀ ψ ∈ Θ, ∃ a, a ≠ n₀ ∧ ψ = negA a) :
-    (A :: Θ) ⊬ subC C PLLFormula.falsePLL.somehow :=
+    (A :: Θ) ⊬ subC C ◯⊥ :=
   residue_obstruction hA (diag_pfree hpn hpb) diag_isIPL (diag_row2 h)
     (residue_diag h.fresh) (residue_theta hΘ) (residue_not_subC_boxBot h)
 
@@ -339,8 +339,8 @@ theorem chain3C_residue : ResiduePair "a0" ["a1", "a2"] chain3C where
 `(◯p⊃p)^{chain3C}` is consistent with the fallibility axiom `¬a2`. -/
 theorem chain3_fails_half {A : PLLFormula}
     (hA : IsIPCAll "p" isIPL
-      (subC chain3C ((PLLFormula.prop "p").somehow.ifThen (.prop "p"))) A) :
-    [A, negA "a2"] ⊬ .falsePLL :=
+      (subC chain3C (◯(PLLFormula.prop "p") ↠ (.prop "p"))) A) :
+    [A, negA "a2"] ⊬ ⊥ :=
   fails_half_boxp_imp_p chain3C_residue (by simp) (by simp) hA
     (fun ψ hψ => ⟨"a2", by simp, List.mem_singleton.mp hψ ▸ rfl⟩)
 
@@ -457,9 +457,9 @@ theorem holds_half_boxp_imp_p {p : String} {Θ : List PLLFormula}
     {C : StdCtx} {A : PLLFormula}
     (hC : ThetaNamed Θ C) (hΘp : ∀ ψ ∈ Θ, p ∉ ψ.atoms)
     (hA : IsIPCAll p isIPL
-      (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p))) A) :
-    Nonempty (LaxND (A :: Θ) .falsePLL) ∧
-    Nonempty (LaxND (.falsePLL :: Θ) A) := by
+      (subC C (◯(PLLFormula.prop p) ↠ (.prop p))) A) :
+    Nonempty (LaxND (A :: Θ) ⊥) ∧
+    Nonempty (LaxND (⊥ :: Θ) A) := by
   constructor
   · obtain ⟨dlow⟩ := hA.lower
     have dlow' : LaxND (A :: Θ) ((applyC C (.prop p)).ifThen (.prop p)) :=
@@ -485,9 +485,9 @@ theorem holds_half_box_lob {p : String} {Θ : List PLLFormula}
     (hC : ThetaNamed Θ C) (hΘp : ∀ ψ ∈ Θ, p ∉ ψ.atoms)
     (hΘipl : ∀ ψ ∈ Θ, isIPL ψ)
     (hA : IsIPCAll p isIPL
-      (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow) A) :
-    Nonempty (LaxND (A :: Θ) (subC C PLLFormula.falsePLL.somehow)) ∧
-    Nonempty (LaxND (subC C PLLFormula.falsePLL.somehow :: Θ) A) := by
+      (subC C ◯(◯(PLLFormula.prop p) ↠ (.prop p))) A) :
+    Nonempty (LaxND (A :: Θ) (subC C ◯⊥)) ∧
+    Nonempty (LaxND (subC C ◯⊥ :: Θ) A) := by
   constructor
   · obtain ⟨d⟩ := theta_applyC hC .falsePLL (Δ := A :: Θ)
       (fun ψ h => ⟨.iden (List.mem_cons_of_mem _ h)⟩)
@@ -522,9 +522,9 @@ theorem chain2C_thetaNamed : ThetaNamed [negA "a1"] chain2C := by
 `(◯p⊃p)^{chain2C}` is `[¬a1]`-equivalent to `⊥`. -/
 theorem chain2_holds_half {A : PLLFormula}
     (hA : IsIPCAll "p" isIPL
-      (subC chain2C ((PLLFormula.prop "p").somehow.ifThen (.prop "p"))) A) :
-    Nonempty (LaxND [A, negA "a1"] .falsePLL) ∧
-    Nonempty (LaxND [.falsePLL, negA "a1"] A) :=
+      (subC chain2C (◯(PLLFormula.prop "p") ↠ (.prop "p"))) A) :
+    Nonempty (LaxND [A, negA "a1"] ⊥) ∧
+    Nonempty (LaxND [⊥, negA "a1"] A) :=
   holds_half_boxp_imp_p chain2C_thetaNamed
     (by
       intro ψ hψ
@@ -681,8 +681,8 @@ theorem model_dichotomy_boxp_imp_p {nm : Nat → String}
     (hrefl : ∀ w ∈ worldsOf m, m.ri w w = true) {p : String}
     (hp : ∀ w ∈ worldsOf m, nm w ≠ p) {A : PLLFormula}
     (hA : IsIPCAll p isIPL
-      (subC (c0Of nm m) ((PLLFormula.prop p).somehow.ifThen (.prop p))) A) :
-    Nonempty (LaxND (A :: falAxioms nm m) .falsePLL) ↔
+      (subC (c0Of nm m) (◯(PLLFormula.prop p) ↠ (.prop p))) A) :
+    Nonempty (LaxND (A :: falAxioms nm m) ⊥) ↔
       ∀ u ∈ worldsOf m, stableB m u = true → m.fal u = true := by
   constructor
   · intro hder u₀ hu₀ hstab
@@ -711,9 +711,9 @@ theorem model_dichotomy_box_lob {nm : Nat → String}
     (hp : ∀ w ∈ worldsOf m, nm w ≠ p) {A : PLLFormula}
     (hA : IsIPCAll p isIPL
       (subC (c0Of nm m)
-        ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow) A) :
+        ◯(◯(PLLFormula.prop p) ↠ (.prop p))) A) :
     Nonempty (LaxND (A :: falAxioms nm m)
-        (subC (c0Of nm m) PLLFormula.falsePLL.somehow)) ↔
+        (subC (c0Of nm m) ◯⊥)) ↔
       ∀ u ∈ worldsOf m, stableB m u = true → m.fal u = true := by
   constructor
   · intro hder u₀ hu₀ hstab

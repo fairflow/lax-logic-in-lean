@@ -86,7 +86,7 @@ instance (φ : PLLFormula) (w : modelFallible.W) :
 
 /-- `¬◯⊥` is **not** a theorem of PLL (F&M Figure 3, left model). -/
 theorem not_provable_not_somehow_false :
-    [] ⊬ notPLL (somehow falsePLL) := by
+    [] ⊬ notPLL (◯⊥) := by
   rintro ⟨p⟩
   exact absurd (soundness_valid p modelFallible false) (by decide)
 
@@ -140,8 +140,7 @@ instance (φ : PLLFormula) (w : modelOrSplit.W) :
 /-- `◯(A ∨ B) ⊃ (◯A ∨ ◯B)` is **not** a theorem of PLL
 (F&M Figure 3, middle model). -/
 theorem not_provable_somehow_or_dist :
-    [] ⊬ (somehow ((prop "A").or (prop "B"))).ifThen
-        ((somehow (prop "A")).or (somehow (prop "B"))) := by
+    [] ⊬ ((◯((prop "A") ∨ (prop "B"))) ↠ ((◯(prop "A")) ∨ (◯(prop "B")))) := by
   rintro ⟨p⟩
   exact absurd (soundness_valid p modelOrSplit .r) (by decide)
 
@@ -202,8 +201,7 @@ instance (φ : PLLFormula) (w : modelNoImpDist.W) :
 /-- `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)` is **not** a theorem of PLL
 (F&M Figure 3, right model). -/
 theorem not_provable_imp_somehow_dist :
-    [] ⊬ ((somehow (prop "A")).ifThen (somehow (prop "B"))).ifThen
-        (somehow ((prop "A").ifThen (prop "B"))) := by
+    [] ⊬ (((◯(prop "A")) ↠ (◯(prop "B"))) ↠ (◯((prop "A") ↠ (prop "B")))) := by
   rintro ⟨p⟩
   exact absurd (soundness_valid p modelNoImpDist .r) (by decide)
 
@@ -212,7 +210,7 @@ theorem not_provable_imp_somehow_dist :
 /-- On models without fallible worlds, `¬◯⊥` is valid. -/
 theorem force_not_somehow_false_of_F_empty (C : ConstraintModel)
     (hF : C.F = ∅) (w : C.W) :
-    C.force w (notPLL (somehow falsePLL)) := by
+    C.force w (notPLL (◯⊥)) := by
   intro v _ hf
   obtain ⟨u, _, hu⟩ := hf v (C.refl_i v)
   rw [show C.force u falsePLL = (u ∈ C.F) from rfl, hF] at hu
@@ -226,7 +224,7 @@ def MutuallyConfluent (C : ConstraintModel) : Prop :=
 simple possibility clause. -/
 theorem force_somehow_iff_of_confluent {C : ConstraintModel}
     (hc : MutuallyConfluent C) {w : C.W} {φ : PLLFormula} :
-    C.force w (somehow φ) ↔ ∃ u, C.Rm w u ∧ C.force u φ := by
+    C.force w (◯φ) ↔ ∃ u, C.Rm w u ∧ C.force u φ := by
   constructor
   · intro h
     exact h w (C.refl_i w)
@@ -237,7 +235,7 @@ theorem force_somehow_iff_of_confluent {C : ConstraintModel}
 /-- On mutually confluent models, `◯(M ∨ N) ⊃ (◯M ∨ ◯N)` is valid. -/
 theorem force_somehow_or_dist_of_confluent {C : ConstraintModel}
     (hc : MutuallyConfluent C) (w : C.W) (M N : PLLFormula) :
-    C.force w ((somehow (M.or N)).ifThen ((somehow M).or (somehow N))) := by
+    C.force w ((◯(M ∨ N)) ↠ ((◯M) ∨ (◯N))) := by
   intro v _ hf
   rw [force_somehow_iff_of_confluent hc] at hf
   obtain ⟨u, hvu, hu⟩ := hf

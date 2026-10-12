@@ -38,9 +38,9 @@ open LaxLogic.QLL LaxLogic.QLL.CompleteTests
 `FA` is `A` with no argument, so its refinement does not consult the
 environment and the entailment is the genuine constant-domain shape. -/
 theorem cd_refines {𝔐 : Model} (ρ : String → 𝔐.D)
-    (f : Val 𝔐 (.forall_ (.or FA FB)))
-    (hf : Refines 𝔐 [] ρ (.forall_ (.or FA FB)) f) :
-    ∃ q, Refines 𝔐 [] ρ (.or FA (.forall_ FB)) q := by
+    (f : Val 𝔐 (.forall_ (FA ∨ FB)))
+    (hf : Refines 𝔐 [] ρ (.forall_ (FA ∨ FB)) f) :
+    ∃ q, Refines 𝔐 [] ρ (FA ∨ (.forall_ FB)) q := by
   classical
   by_cases h : ∃ (d : 𝔐.D) (c : 𝔐.C), f d = .inl c
   · obtain ⟨d, c, hd⟩ := h
@@ -63,10 +63,10 @@ theorem cd_refines {𝔐 : Model} (ρ : String → 𝔐.D)
 /-- **Refinement is not complete.**  A formula the refinement semantics
 validates in every model, and the calculus does not prove. -/
 theorem refinement_not_complete :
-    (∀ (𝔐 : Model) (ρ : String → 𝔐.D) (f : Val 𝔐 (.forall_ (.or FA FB))),
-        Refines 𝔐 [] ρ (.forall_ (.or FA FB)) f →
-        ∃ q, Refines 𝔐 [] ρ (.or FA (.forall_ FB)) q)
-      ∧ ¬ Prv [.forall_ (.or FA FB)] (.or FA (.forall_ FB)) :=
+    (∀ (𝔐 : Model) (ρ : String → 𝔐.D) (f : Val 𝔐 (.forall_ (FA ∨ FB))),
+        Refines 𝔐 [] ρ (.forall_ (FA ∨ FB)) f →
+        ∃ q, Refines 𝔐 [] ρ (FA ∨ (.forall_ FB)) q)
+      ∧ ¬ Prv [.forall_ (FA ∨ FB)] (FA ∨ (.forall_ FB)) :=
   ⟨fun _ ρ f hf => cd_refines ρ f hf, cd_not_prv⟩
 
 /-- info: 'LaxLogic.QLL.RefineIncomplete.refinement_not_complete' depends on axioms: [propext, Classical.choice, Quot.sound] -/

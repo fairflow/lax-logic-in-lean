@@ -122,7 +122,7 @@ theorem impCirc_sound (𝔐 : Model) (η : PEnv 𝔐 (ctxImp q A B)) (ρ : Strin
 
 theorem andCirc_sound (𝔐 : Model) (η : PEnv 𝔐 (ctxAnd q A B)) (ρ : String → 𝔐.D)
     (hη : CtxRefines 𝔐 ρ (ctxAnd q A B) η) :
-    Refines 𝔐 [] ρ (.circ q (.and A B)) (denote 𝔐 (andCirc q A B) η ρ) :=
+    Refines 𝔐 [] ρ (.circ q (A ∧ B)) (denote 𝔐 (andCirc q A B) η ρ) :=
   soundness 𝔐 (andCirc q A B) ⟨trivial, trivial, trivial, trivial⟩ η ρ hη
 
 /-! ## The proof terms, in surface syntax -/

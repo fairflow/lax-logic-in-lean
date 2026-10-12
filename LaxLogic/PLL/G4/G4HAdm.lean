@@ -40,78 +40,78 @@ theorem init {Γ : List PLLFormula} {a : String}
     (h : prop a ∈ Γ) : G4c Γ (prop a) := ⟨0, .init h⟩
 
 theorem botL {Γ : List PLLFormula} {C : PLLFormula}
-    (h : falsePLL ∈ Γ) : G4c Γ C := ⟨0, .botL h⟩
+    (h : ⊥ ∈ Γ) : G4c Γ C := ⟨0, .botL h⟩
 
 theorem andR {Γ : List PLLFormula} {A B : PLLFormula}
-    (d₁ : G4c Γ A) (d₂ : G4c Γ B) : G4c Γ (A.and B) := by
+    (d₁ : G4c Γ A) (d₂ : G4c Γ B) : G4c Γ (A ∧ B) := by
   obtain ⟨n, h₁, h₂⟩ := toSame d₁ d₂
   exact ⟨n + 1, .andR h₁ h₂⟩
 
 theorem orR1 {Γ : List PLLFormula} {A B : PLLFormula}
-    (d : G4c Γ A) : G4c Γ (A.or B) := by
+    (d : G4c Γ A) : G4c Γ (A ∨ B) := by
   obtain ⟨n, h⟩ := d; exact ⟨n + 1, .orR1 h⟩
 
 theorem orR2 {Γ : List PLLFormula} {A B : PLLFormula}
-    (d : G4c Γ B) : G4c Γ (A.or B) := by
+    (d : G4c Γ B) : G4c Γ (A ∨ B) := by
   obtain ⟨n, h⟩ := d; exact ⟨n + 1, .orR2 h⟩
 
 theorem impR {Γ : List PLLFormula} {A B : PLLFormula}
-    (d : G4c (A :: Γ) B) : G4c Γ (A.ifThen B) := by
+    (d : G4c (A :: Γ) B) : G4c Γ (A ↠ B) := by
   obtain ⟨n, h⟩ := d; exact ⟨n + 1, .impR h⟩
 
 theorem laxR {Γ : List PLLFormula} {A : PLLFormula}
-    (d : G4c Γ A) : G4c Γ A.somehow := by
+    (d : G4c Γ A) : G4c Γ ◯A := by
   obtain ⟨n, h⟩ := d; exact ⟨n + 1, .laxR h⟩
 
 theorem andL {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (h : Γ.Perm (A.and B :: Δ)) (d : G4c (A :: B :: Δ) C) : G4c Γ C := by
+    (h : Γ.Perm ((A ∧ B) :: Δ)) (d : G4c (A :: B :: Δ) C) : G4c Γ C := by
   obtain ⟨n, hd⟩ := d; exact ⟨n + 1, .andL h hd⟩
 
 theorem orL {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (h : Γ.Perm (A.or B :: Δ)) (d₁ : G4c (A :: Δ) C) (d₂ : G4c (B :: Δ) C) :
+    (h : Γ.Perm ((A ∨ B) :: Δ)) (d₁ : G4c (A :: Δ) C) (d₂ : G4c (B :: Δ) C) :
     G4c Γ C := by
   obtain ⟨n, h₁, h₂⟩ := toSame d₁ d₂
   exact ⟨n + 1, .orL h h₁ h₂⟩
 
 theorem laxL {Γ : List PLLFormula} {A B : PLLFormula}
-    (h : A.somehow ∈ Γ) (d : G4c (A :: Γ) B.somehow) : G4c Γ B.somehow := by
+    (h : ◯A ∈ Γ) (d : G4c (A :: Γ) ◯B) : G4c Γ ◯B := by
   obtain ⟨n, hd⟩ := d; exact ⟨n + 1, .laxL h hd⟩
 
 theorem impLProp {Γ Δ : List PLLFormula} {a : String} {B C : PLLFormula}
-    (h : Γ.Perm ((prop a).ifThen B :: Δ)) (ha : prop a ∈ Δ)
+    (h : Γ.Perm (((prop a) ↠ B) :: Δ)) (ha : prop a ∈ Δ)
     (d : G4c (B :: Δ) C) : G4c Γ C := by
   obtain ⟨n, hd⟩ := d; exact ⟨n + 1, .impLProp h ha hd⟩
 
 theorem impLBot {Γ Δ : List PLLFormula} {B C : PLLFormula}
-    (h : Γ.Perm (falsePLL.ifThen B :: Δ)) (d : G4c Δ C) : G4c Γ C := by
+    (h : Γ.Perm ((⊥ ↠ B) :: Δ)) (d : G4c Δ C) : G4c Γ C := by
   obtain ⟨n, hd⟩ := d; exact ⟨n + 1, .impLBot h hd⟩
 
 theorem impLAnd {Γ Δ : List PLLFormula} {A B D E : PLLFormula}
-    (h : Γ.Perm ((A.and B).ifThen D :: Δ))
-    (d : G4c (A.ifThen (B.ifThen D) :: Δ) E) : G4c Γ E := by
+    (h : Γ.Perm (((A ∧ B) ↠ D) :: Δ))
+    (d : G4c ((A ↠ (B ↠ D)) :: Δ) E) : G4c Γ E := by
   obtain ⟨n, hd⟩ := d; exact ⟨n + 1, .impLAnd h hd⟩
 
 theorem impLOr {Γ Δ : List PLLFormula} {A B D E : PLLFormula}
-    (h : Γ.Perm ((A.or B).ifThen D :: Δ))
-    (d : G4c (A.ifThen D :: B.ifThen D :: Δ) E) : G4c Γ E := by
+    (h : Γ.Perm (((A ∨ B) ↠ D) :: Δ))
+    (d : G4c ((A ↠ D) :: (B ↠ D) :: Δ) E) : G4c Γ E := by
   obtain ⟨n, hd⟩ := d; exact ⟨n + 1, .impLOr h hd⟩
 
 theorem impLImp {Γ Δ : List PLLFormula} {A B D E : PLLFormula}
-    (h : Γ.Perm ((A.ifThen B).ifThen D :: Δ))
-    (d₁ : G4c (B.ifThen D :: Δ) (A.ifThen B)) (d₂ : G4c (D :: Δ) E) :
+    (h : Γ.Perm (((A ↠ B) ↠ D) :: Δ))
+    (d₁ : G4c ((B ↠ D) :: Δ) (A ↠ B)) (d₂ : G4c (D :: Δ) E) :
     G4c Γ E := by
   obtain ⟨n, h₁, h₂⟩ := toSame d₁ d₂
   exact ⟨n + 1, .impLImp h h₁ h₂⟩
 
 theorem impLLax {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (h : Γ.Perm (A.somehow.ifThen B :: Δ))
+    (h : Γ.Perm ((◯A ↠ B) :: Δ))
     (d₁ : G4c Γ A) (d₂ : G4c (B :: Δ) C) : G4c Γ C := by
   obtain ⟨n, h₁, h₂⟩ := toSame d₁ d₂
   exact ⟨n + 1, .impLLax h h₁ h₂⟩
 
 theorem impLLaxLax {Γ Δ : List PLLFormula} {A B X C : PLLFormula}
-    (h : Γ.Perm (A.somehow.ifThen B :: Δ)) (hX : X.somehow ∈ Δ)
-    (d₁ : G4c (X :: Γ) A.somehow) (d₂ : G4c (B :: Δ) C) : G4c Γ C := by
+    (h : Γ.Perm ((◯A ↠ B) :: Δ)) (hX : ◯X ∈ Δ)
+    (d₁ : G4c (X :: Γ) ◯A) (d₂ : G4c (B :: Δ) C) : G4c Γ C := by
   obtain ⟨n, h₁, h₂⟩ := toSame d₁ d₂
   exact ⟨n + 1, .impLLaxLax h hX h₁ h₂⟩
 
@@ -249,7 +249,7 @@ theorem identity_mem {A : PLLFormula} {Γ : List PLLFormula} (h : A ∈ Γ) :
 
 /-- **Modus ponens in the context**: `A, A ⊃ B, Γ ⊢ B`. -/
 theorem mp (A B : PLLFormula) (Γ : List PLLFormula) :
-    G4c (A :: A.ifThen B :: Γ) B := by
+    G4c (A :: (A ↠ B) :: Γ) B := by
   simpa using (identity_mpt (telWeight [A] B)).2 [A] B Γ (Nat.le_refl _)
 
 end G4c

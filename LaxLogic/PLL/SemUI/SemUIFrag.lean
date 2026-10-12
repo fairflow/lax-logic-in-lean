@@ -41,7 +41,7 @@ def bigAnd : List PLLFormula → PLLFormula
 @[simp] theorem bigAnd_nil : bigAnd [] = truePLL := rfl
 @[simp] theorem bigAnd_singleton (φ : PLLFormula) : bigAnd [φ] = φ := rfl
 @[simp] theorem bigAnd_cons₂ (φ ψ : PLLFormula) (l : List PLLFormula) :
-    bigAnd (φ :: ψ :: l) = φ.and (bigAnd (ψ :: l)) := rfl
+    bigAnd (φ :: ψ :: l) = (φ ∧ (bigAnd (ψ :: l))) := rfl
 
 /-! ### Crank and atoms bounds for `bigAnd`/`bigOr` -/
 
@@ -159,7 +159,7 @@ A DNF datum is a list `ds` of conjunct lists; its formula is
 
 /-- Conjunction of two DNFs: the cross product of the conjunct lists. -/
 theorem interd_and_dnf (ds₁ ds₂ : List (List PLLFormula)) :
-    Interd ((bigOr (ds₁.map bigAnd)).and (bigOr (ds₂.map bigAnd)))
+    Interd ((bigOr (ds₁.map bigAnd)) ∧ (bigOr (ds₂.map bigAnd)))
       (bigOr ((ds₁.flatMap fun S => ds₂.map fun T => S ++ T).map bigAnd)) := by
   refine ⟨?_, ?_⟩
   · -- distribute the conjunction over both disjunctions
@@ -199,7 +199,7 @@ theorem interd_and_dnf (ds₁ ds₂ : List (List PLLFormula)) :
 
 /-- Disjunction of two DNFs: append the conjunct lists. -/
 theorem interd_or_append (ds₁ ds₂ : List (List PLLFormula)) :
-    Interd ((bigOr (ds₁.map bigAnd)).or (bigOr (ds₂.map bigAnd)))
+    Interd ((bigOr (ds₁.map bigAnd)) ∨ (bigOr (ds₂.map bigAnd)))
       (bigOr ((ds₁ ++ ds₂).map bigAnd)) := by
   rw [List.map_append]
   refine ⟨?_, ?_⟩
@@ -229,11 +229,11 @@ def dnfL (c : List PLLFormula) : List PLLFormula :=
   (((c.sublists.filter (· ≠ [])).map bigAnd).sublists).map bigOr
 
 theorem mem_implList {l : List PLLFormula} {P : PLLFormula} :
-    P ∈ implList l ↔ ∃ D ∈ l, ∃ E ∈ l, D.ifThen E = P := by
+    P ∈ implList l ↔ ∃ D ∈ l, ∃ E ∈ l, (D ↠ E) = P := by
   simp [implList]
 
 theorem mem_boxList {l : List PLLFormula} {P : PLLFormula} :
-    P ∈ boxList l ↔ ∃ D ∈ l, PLLFormula.somehow D = P := by
+    P ∈ boxList l ↔ ∃ D ∈ l, ◯D = P := by
   simp [boxList]
 
 /-- The rank-stratified components: atoms and `⊥` at rank 0; from rank
@@ -246,7 +246,7 @@ def comps (V : List String) : Nat → List PLLFormula
       ++ boxList (dnfL (comps V r))
 
 theorem comps_zero (V : List String) :
-    comps V 0 = .falsePLL :: V.map .prop := by rw [comps]
+    comps V 0 = ⊥ :: V.map .prop := by rw [comps]
 
 theorem comps_one (V : List String) :
     comps V 1 = comps V 0 ++ implList (dnfL (comps V 0)) := by

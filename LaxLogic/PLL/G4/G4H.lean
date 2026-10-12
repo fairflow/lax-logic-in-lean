@@ -271,7 +271,7 @@ theorem ofG4p : ∀ {Γ : List PLLFormula} {C : PLLFormula},
 
 /-- The gap sequent, now at the final calculus. -/
 theorem gap_derivable :
-    G4c [PLLG4Gap.Ga.somehow, PLLG4Gap.Fa] (prop "r") :=
+    G4c [◯PLLG4Gap.Ga, PLLG4Gap.Fa] (prop "r") :=
   ofG4p G4p.gap_derivable
 
 private theorem sub_cons {Δ Γ : List PLLFormula}

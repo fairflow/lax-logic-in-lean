@@ -640,7 +640,7 @@ def demoM : FinCM :=
 /-- **`◯p ⊬ p`, by an executable countermodel**: the verified checker
 validates `demoM` in the kernel. -/
 theorem somehow_p_not_p :
-    [(prop "p").somehow] ⊬ prop "p" :=
+    [◯(prop "p")] ⊬ prop "p" :=
   FinCM.not_provable_of_check (M := demoM) (w := 2) (by decide)
 
 #print axioms FinCM.not_provable_of_check

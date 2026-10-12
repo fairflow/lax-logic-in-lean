@@ -163,40 +163,40 @@ theorem inv : ∀ {n : Nat} {Γ : List PLLFormula} {C : PLLFormula},
 /-! ### Named height-preserving corollaries -/
 
 theorem andL_inv {n : Nat} {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4h n Γ C) (hp : Γ.Perm (A.and B :: Δ)) : G4h n (A :: B :: Δ) C :=
+    (d : G4h n Γ C) (hp : Γ.Perm ((A ∧ B) :: Δ)) : G4h n (A :: B :: Δ) C :=
   d.inv (.and A B) hp
 
 theorem orL_inv₁ {n : Nat} {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4h n Γ C) (hp : Γ.Perm (A.or B :: Δ)) : G4h n (A :: Δ) C :=
+    (d : G4h n Γ C) (hp : Γ.Perm ((A ∨ B) :: Δ)) : G4h n (A :: Δ) C :=
   d.inv (.or₁ A B) hp
 
 theorem orL_inv₂ {n : Nat} {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4h n Γ C) (hp : Γ.Perm (A.or B :: Δ)) : G4h n (B :: Δ) C :=
+    (d : G4h n Γ C) (hp : Γ.Perm ((A ∨ B) :: Δ)) : G4h n (B :: Δ) C :=
   d.inv (.or₂ A B) hp
 
 theorem impLProp_inv {n : Nat} {Γ Δ : List PLLFormula} {a : String}
     {B C : PLLFormula}
-    (d : G4h n Γ C) (hp : Γ.Perm ((prop a).ifThen B :: Δ)) :
+    (d : G4h n Γ C) (hp : Γ.Perm (((prop a) ↠ B) :: Δ)) :
     G4h n (B :: Δ) C :=
   d.inv (.impProp a B) hp
 
 theorem impLBot_inv {n : Nat} {Γ Δ : List PLLFormula} {B C : PLLFormula}
-    (d : G4h n Γ C) (hp : Γ.Perm (falsePLL.ifThen B :: Δ)) : G4h n Δ C :=
+    (d : G4h n Γ C) (hp : Γ.Perm ((⊥ ↠ B) :: Δ)) : G4h n Δ C :=
   d.inv (.impBot B) hp
 
 theorem impLImp_inv₂ {n : Nat} {Γ Δ : List PLLFormula} {A B D C : PLLFormula}
-    (d : G4h n Γ C) (hp : Γ.Perm ((A.ifThen B).ifThen D :: Δ)) :
+    (d : G4h n Γ C) (hp : Γ.Perm (((A ↠ B) ↠ D) :: Δ)) :
     G4h n (D :: Δ) C :=
   d.inv (.impImp A B D) hp
 
 theorem impLLax_inv₂ {n : Nat} {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4h n Γ C) (hp : Γ.Perm (A.somehow.ifThen B :: Δ)) :
+    (d : G4h n Γ C) (hp : Γ.Perm ((◯A ↠ B) :: Δ)) :
     G4h n (B :: Δ) C :=
   d.inv (.impLax A B) hp
 
 /-- **`impR` inversion, height-preserving.** -/
 theorem impR_inv : ∀ {n : Nat} {Γ : List PLLFormula} {G : PLLFormula},
-    G4h n Γ G → ∀ {A B : PLLFormula}, G = A.ifThen B →
+    G4h n Γ G → ∀ {A B : PLLFormula}, G = (A ↠ B) →
     G4h n (A :: Γ) B := by
   intro n Γ G d
   induction d with
@@ -267,36 +267,36 @@ theorem inv {Γ Δ : List PLLFormula} {C P : PLLFormula} {L : List PLLFormula}
   d.imp fun _ h => h.inv hInv hp
 
 theorem impR_inv {Γ : List PLLFormula} {A B : PLLFormula}
-    (d : G4c Γ (A.ifThen B)) : G4c (A :: Γ) B :=
+    (d : G4c Γ (A ↠ B)) : G4c (A :: Γ) B :=
   d.imp fun _ h => h.impR_inv rfl
 
 theorem andL_inv {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4c Γ C) (hp : Γ.Perm (A.and B :: Δ)) : G4c (A :: B :: Δ) C :=
+    (d : G4c Γ C) (hp : Γ.Perm ((A ∧ B) :: Δ)) : G4c (A :: B :: Δ) C :=
   d.inv (.and A B) hp
 
 theorem orL_inv₁ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4c Γ C) (hp : Γ.Perm (A.or B :: Δ)) : G4c (A :: Δ) C :=
+    (d : G4c Γ C) (hp : Γ.Perm ((A ∨ B) :: Δ)) : G4c (A :: Δ) C :=
   d.inv (.or₁ A B) hp
 
 theorem orL_inv₂ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4c Γ C) (hp : Γ.Perm (A.or B :: Δ)) : G4c (B :: Δ) C :=
+    (d : G4c Γ C) (hp : Γ.Perm ((A ∨ B) :: Δ)) : G4c (B :: Δ) C :=
   d.inv (.or₂ A B) hp
 
 theorem impLProp_inv {Γ Δ : List PLLFormula} {a : String} {B C : PLLFormula}
-    (d : G4c Γ C) (hp : Γ.Perm ((prop a).ifThen B :: Δ)) : G4c (B :: Δ) C :=
+    (d : G4c Γ C) (hp : Γ.Perm (((prop a) ↠ B) :: Δ)) : G4c (B :: Δ) C :=
   d.inv (.impProp a B) hp
 
 theorem impLBot_inv {Γ Δ : List PLLFormula} {B C : PLLFormula}
-    (d : G4c Γ C) (hp : Γ.Perm (falsePLL.ifThen B :: Δ)) : G4c Δ C :=
+    (d : G4c Γ C) (hp : Γ.Perm ((⊥ ↠ B) :: Δ)) : G4c Δ C :=
   d.inv (.impBot B) hp
 
 theorem impLImp_inv₂ {Γ Δ : List PLLFormula} {A B D C : PLLFormula}
-    (d : G4c Γ C) (hp : Γ.Perm ((A.ifThen B).ifThen D :: Δ)) :
+    (d : G4c Γ C) (hp : Γ.Perm (((A ↠ B) ↠ D) :: Δ)) :
     G4c (D :: Δ) C :=
   d.inv (.impImp A B D) hp
 
 theorem impLLax_inv₂ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4c Γ C) (hp : Γ.Perm (A.somehow.ifThen B :: Δ)) : G4c (B :: Δ) C :=
+    (d : G4c Γ C) (hp : Γ.Perm ((◯A ↠ B) :: Δ)) : G4c (B :: Δ) C :=
   d.inv (.impLax A B) hp
 
 end G4c

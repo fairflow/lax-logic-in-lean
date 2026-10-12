@@ -249,10 +249,10 @@ theorem HTrue_pred {p : String} {us : List Tm} (h : Tm.lcAtList 0 us) :
   exact ⟨fun h => h.resolve_left id, Or.inr⟩
 
 /-- Truth of a conjunction. -/
-theorem HTrue_and {A B : Form} : HTrue I (.and A B) ↔ HTrue I A ∧ HTrue I B := Iff.rfl
+theorem HTrue_and {A B : Form} : HTrue I (A ∧ B) ↔ HTrue I A ∧ HTrue I B := Iff.rfl
 
 /-- Truth of a disjunction. -/
-theorem HTrue_or {A B : Form} : HTrue I (.or A B) ↔ HTrue I A ∨ HTrue I B := Iff.rfl
+theorem HTrue_or {A B : Form} : HTrue I (A ∨ B) ↔ HTrue I A ∨ HTrue I B := Iff.rfl
 
 /-- Truth of an implication (one world, so classical on this clause). -/
 theorem HTrue_imp {A B : Form} : HTrue I (.imp A B) ↔ (HTrue I A → HTrue I B) :=
@@ -571,11 +571,11 @@ def lemModel : KModel :=
     · rfl
 
 /-- Excluded middle for an atom is true in the empty Herbrand interpretation... -/
-theorem lem_HTrue : HTrue RNone (.or (.pred "P" []) (.imp (.pred "P" []) .bot)) :=
+theorem lem_HTrue : HTrue RNone ((.pred "P" []) ∨ (.imp (.pred "P" []) .bot)) :=
   Or.inr (HTrue_imp.2 fun h => ((HTrue_pred Tm.lcAtList_nil).1 h : False).elim)
 
 /-- ...and not derivable: so queries are restricted to Σ-formulas. -/
-theorem lem_not_prv : ¬ Prv [] (.or (.pred "P" []) (.imp (.pred "P" []) .bot)) := by
+theorem lem_not_prv : ¬ Prv [] ((.pred "P" []) ∨ (.imp (.pred "P" []) .bot)) := by
   intro h
   have h' := Prv.sound h lemModel false Tm.fvar (fun _ _ => trivial) (fun _ hB => nomatch hB)
   rcases h' with h₁ | h₂
@@ -586,8 +586,8 @@ theorem lem_not_prv : ¬ Prv [] (.or (.pred "P" []) (.imp (.pred "P" []) .bot)) 
 
 /-- `P ∨ Q` has no least Herbrand model: so programs are restricted to Horn clauses. -/
 theorem or_no_least_model : ¬ ∃ I : String → List Tm → Prop,
-    HTrue I (.or (.pred "P" []) (.pred "Q" [])) ∧
-    ∀ J : String → List Tm → Prop, HTrue J (.or (.pred "P" []) (.pred "Q" [])) →
+    HTrue I ((.pred "P" []) ∨ (.pred "Q" [])) ∧
+    ∀ J : String → List Tm → Prop, HTrue J ((.pred "P" []) ∨ (.pred "Q" [])) →
       ∀ p us, I p us → J p us := by
   rintro ⟨I, hI, hmin⟩
   have hP := hmin (fun p _ => p = "P") (Or.inl ((HTrue_pred Tm.lcAtList_nil).2 rfl))

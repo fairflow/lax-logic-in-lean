@@ -170,45 +170,45 @@ theorem init {Γ : List PLLFormula} {a : String} (h : PLLFormula.prop a ∈ Γ) 
     SC Γ (.prop a) := ⟨0, .init h⟩
 
 theorem botL {Γ : List PLLFormula} {C : PLLFormula}
-    (h : PLLFormula.falsePLL ∈ Γ) : SC Γ C := ⟨0, .botL h⟩
+    (h : ⊥ ∈ Γ) : SC Γ C := ⟨0, .botL h⟩
 
 theorem andR {Γ : List PLLFormula} {A B : PLLFormula}
-    (h₁ : SC Γ A) (h₂ : SC Γ B) : SC Γ (A.and B) :=
+    (h₁ : SC Γ A) (h₂ : SC Γ B) : SC Γ (A ∧ B) :=
   have ⟨n, d₁⟩ := h₁; have ⟨m, d₂⟩ := h₂
   ⟨max n m + 1, .andR (d₁.mono (Nat.le_max_left ..)) (d₂.mono (Nat.le_max_right ..))⟩
 
-theorem andL {Γ : List PLLFormula} {A B C : PLLFormula} (h : A.and B ∈ Γ)
+theorem andL {Γ : List PLLFormula} {A B C : PLLFormula} (h : (A ∧ B) ∈ Γ)
     (h' : SC (A :: B :: Γ) C) : SC Γ C :=
   have ⟨n, d⟩ := h'; ⟨n + 1, .andL h d⟩
 
 theorem orR1 {Γ : List PLLFormula} {A B : PLLFormula} (h : SC Γ A) :
-    SC Γ (A.or B) :=
+    SC Γ (A ∨ B) :=
   have ⟨n, d⟩ := h; ⟨n + 1, .orR1 d⟩
 
 theorem orR2 {Γ : List PLLFormula} {A B : PLLFormula} (h : SC Γ B) :
-    SC Γ (A.or B) :=
+    SC Γ (A ∨ B) :=
   have ⟨n, d⟩ := h; ⟨n + 1, .orR2 d⟩
 
-theorem orL {Γ : List PLLFormula} {A B C : PLLFormula} (h : A.or B ∈ Γ)
+theorem orL {Γ : List PLLFormula} {A B C : PLLFormula} (h : (A ∨ B) ∈ Γ)
     (h₁ : SC (A :: Γ) C) (h₂ : SC (B :: Γ) C) : SC Γ C :=
   have ⟨n, d₁⟩ := h₁; have ⟨m, d₂⟩ := h₂
   ⟨max n m + 1, .orL h (d₁.mono (Nat.le_max_left ..)) (d₂.mono (Nat.le_max_right ..))⟩
 
 theorem impR {Γ : List PLLFormula} {A B : PLLFormula}
-    (h : SC (A :: Γ) B) : SC Γ (A.ifThen B) :=
+    (h : SC (A :: Γ) B) : SC Γ (A ↠ B) :=
   have ⟨n, d⟩ := h; ⟨n + 1, .impR d⟩
 
-theorem impL {Γ : List PLLFormula} {A B C : PLLFormula} (h : A.ifThen B ∈ Γ)
+theorem impL {Γ : List PLLFormula} {A B C : PLLFormula} (h : (A ↠ B) ∈ Γ)
     (h₁ : SC Γ A) (h₂ : SC (B :: Γ) C) : SC Γ C :=
   have ⟨n, d₁⟩ := h₁; have ⟨m, d₂⟩ := h₂
   ⟨max n m + 1, .impL h (d₁.mono (Nat.le_max_left ..)) (d₂.mono (Nat.le_max_right ..))⟩
 
 theorem laxR {Γ : List PLLFormula} {A : PLLFormula} (h : SC Γ A) :
-    SC Γ (A.somehow) :=
+    SC Γ (◯A) :=
   have ⟨n, d⟩ := h; ⟨n + 1, .laxR d⟩
 
-theorem laxL {Γ : List PLLFormula} {A B : PLLFormula} (h : A.somehow ∈ Γ)
-    (h' : SC (A :: Γ) (B.somehow)) : SC Γ (B.somehow) :=
+theorem laxL {Γ : List PLLFormula} {A B : PLLFormula} (h : ◯A ∈ Γ)
+    (h' : SC (A :: Γ) (◯B)) : SC Γ (◯B) :=
   have ⟨n, d⟩ := h'; ⟨n + 1, .laxL h d⟩
 
 /-- General identity is admissible. -/
@@ -628,7 +628,7 @@ theorem cutElimination {Γ : List PLLFormula} {C : PLLFormula} :
 /-- **Disjunction property** (F&M Lemma 2.7(i)): a cut-free proof of
 `⊢ A ∨ B` must end with a right disjunction rule. -/
 theorem disjunction_property {A B : PLLFormula}
-    (h : Nonempty (LaxND [] (A.or B))) :
+    (h : Nonempty (LaxND [] (A ∨ B))) :
     Nonempty (LaxND [] A) ∨ Nonempty (LaxND [] B) := by
   obtain ⟨n, d⟩ := cutElimination.mp h
   cases d with
@@ -642,7 +642,7 @@ theorem disjunction_property {A B : PLLFormula}
 /-- **`◯`-reflection** (F&M Lemma 2.7(ii)): `⊢ ◯M` implies `⊢ M` — the
 inverse of necessitation, impossible in ordinary modal logics. -/
 theorem somehow_reflection {A : PLLFormula}
-    (h : Nonempty (LaxND [] (A.somehow))) : Nonempty (LaxND [] A) := by
+    (h : Nonempty (LaxND [] (◯A))) : Nonempty (LaxND [] A) := by
   obtain ⟨n, d⟩ := cutElimination.mp h
   cases d with
   | botL h => exact absurd h (by simp)

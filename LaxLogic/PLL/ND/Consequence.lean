@@ -147,19 +147,19 @@ theorem map₃ {Γ : Set PLLFormula} {φ ψ χ ω : PLLFormula}
   · intro χ' h; simp only [List.mem_append]; exact .inr h
 
 theorem mp {Γ : Set PLLFormula} {φ ψ : PLLFormula}
-    (h₁ : Γ ⊢ φ.ifThen ψ) (h₂ : Γ ⊢ φ) : Γ ⊢ ψ :=
+    (h₁ : Γ ⊢ (φ ↠ ψ)) (h₂ : Γ ⊢ φ) : Γ ⊢ ψ :=
   map₂ (fun p₁ p₂ => .impElim p₁ p₂) h₁ h₂
 
 theorem falso {Γ : Set PLLFormula} (φ : PLLFormula)
-    (h : Γ ⊢ .falsePLL) : Γ ⊢ φ :=
+    (h : Γ ⊢ ⊥) : Γ ⊢ φ :=
   map (fun p => .falsoElim φ p) h
 
 theorem orL {Γ : Set PLLFormula} {φ : PLLFormula} (ψ : PLLFormula)
-    (h : Γ ⊢ φ) : Γ ⊢ φ.or ψ :=
+    (h : Γ ⊢ φ) : Γ ⊢ (φ ∨ ψ) :=
   map (fun p => .orIntro1 p) h
 
 theorem orR {Γ : Set PLLFormula} (φ : PLLFormula) {ψ : PLLFormula}
-    (h : Γ ⊢ ψ) : Γ ⊢ φ.or ψ :=
+    (h : Γ ⊢ ψ) : Γ ⊢ (φ ∨ ψ) :=
   map (fun p => .orIntro2 p) h
 
 /-- Every hypothesis list over `insert φ Γ` renames into
@@ -182,14 +182,14 @@ private theorem extract {Γ : Set PLLFormula} {φ : PLLFormula}
 
 /-- Deduction theorem, one direction: discharge a hypothesis. -/
 theorem deduct {Γ : Set PLLFormula} {φ ψ : PLLFormula}
-    (h : insert φ Γ ⊢ ψ) : Γ ⊢ φ.ifThen ψ := by
+    (h : insert φ Γ ⊢ ψ) : Γ ⊢ (φ ↠ ψ) := by
   obtain ⟨L, hL, ⟨p⟩⟩ := h
   obtain ⟨hfilter, hren⟩ := extract hL
   exact ⟨_, hfilter, ⟨.impIntro (p.rename hren)⟩⟩
 
 /-- Deduction theorem, converse direction. -/
 theorem undeduct {Γ : Set PLLFormula} {φ ψ : PLLFormula}
-    (h : Γ ⊢ φ.ifThen ψ) : insert φ Γ ⊢ ψ :=
+    (h : Γ ⊢ (φ ↠ ψ)) : insert φ Γ ⊢ ψ :=
   mp (mono (Set.subset_insert φ Γ) h) (of_mem (Set.mem_insert φ Γ))
 
 /-- Cut at the level of sets. -/
@@ -199,7 +199,7 @@ theorem cut {Γ : Set PLLFormula} {φ ψ : PLLFormula}
 
 /-- Disjunction elimination at the level of sets. -/
 theorem orE {Γ : Set PLLFormula} {φ ψ χ : PLLFormula}
-    (h₀ : Γ ⊢ φ.or ψ) (h₁ : insert φ Γ ⊢ χ) (h₂ : insert ψ Γ ⊢ χ) :
+    (h₀ : Γ ⊢ (φ ∨ ψ)) (h₁ : insert φ Γ ⊢ χ) (h₂ : insert ψ Γ ⊢ χ) :
     Γ ⊢ χ :=
   map₃ (fun p₀ pd₁ pd₂ => .orElim p₀
       (.impElim (pd₁.rename (fun _ h => List.mem_cons_of_mem _ h))
@@ -250,7 +250,7 @@ theorem bigOr_sub {Γ : Set PLLFormula} {Ds Ds' : List PLLFormula}
 conclude `Γ ⊢ ◯ψ`.  (This is set-level `laxElim` with a non-`◯` minor
 premise promoted by `laxIntro`.) -/
 theorem somehow_mono {Γ : Set PLLFormula} {φ ψ : PLLFormula}
-    (h₁ : Γ ⊢ .somehow φ) (h₂ : insert φ Γ ⊢ ψ) : Γ ⊢ .somehow ψ :=
+    (h₁ : Γ ⊢ ◯φ) (h₂ : insert φ Γ ⊢ ψ) : Γ ⊢ ◯ψ :=
   map₂ (fun p₁ pd => .laxElim p₁
       (.laxIntro (.impElim (pd.rename (fun _ h => List.mem_cons_of_mem _ h))
         (.iden (.head _)))))
@@ -259,8 +259,8 @@ theorem somehow_mono {Γ : Set PLLFormula} {φ ψ : PLLFormula}
 /-- `(φ ⊃ ◯χ) ⊢ ◯φ ⊃ ◯χ` — the key lemma for the `◯N ∈ Γ` case of the
 truth lemma (Lemma 2.1 in Fairtlough–Mendler). -/
 theorem somehow_bind {Γ : Set PLLFormula} {φ χ : PLLFormula}
-    (h₁ : Γ ⊢ .somehow φ) (h₂ : Γ ⊢ φ.ifThen (.somehow χ)) :
-    Γ ⊢ .somehow χ :=
+    (h₁ : Γ ⊢ ◯φ) (h₂ : Γ ⊢ (φ ↠ (◯χ))) :
+    Γ ⊢ ◯χ :=
   map₂ (fun p₁ p₂ => .laxElim p₁
       (.impElim (p₂.rename (fun _ h => List.mem_cons_of_mem _ h))
         (.iden (.head _))))
@@ -268,7 +268,7 @@ theorem somehow_bind {Γ : Set PLLFormula} {φ χ : PLLFormula}
 
 /-- `K ∨ ◯L ⊢ ◯(K ∨ L)` — powers `Θ ⊆ Δ` (Lemma 4.2(vi)). -/
 theorem somehow_or_absorb {Γ : Set PLLFormula} {φ ψ : PLLFormula}
-    (h : Γ ⊢ φ.or (.somehow ψ)) : Γ ⊢ .somehow (φ.or ψ) :=
+    (h : Γ ⊢ (φ ∨ (◯ψ))) : Γ ⊢ ◯(φ ∨ ψ) :=
   orE h
     (map (fun p => .laxIntro (.orIntro1 p)) (of_mem (Set.mem_insert ..)))
     (somehow_mono (of_mem (Set.mem_insert ..))

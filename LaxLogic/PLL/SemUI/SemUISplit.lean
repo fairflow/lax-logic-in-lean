@@ -254,8 +254,7 @@ neither in the decoration nor fallible, so it does not force `p`. -/
 theorem splitVariant_not_frontier (C : ConstraintModel) (p : String)
     (z : C.W) (hz : ∀ u, C.Rm z u → u ∉ C.F) :
     ¬ (splitVariant C p z).force (.inl z)
-      ((((PLLFormula.prop p).ifThen PLLFormula.falsePLL.somehow).ifThen
-        (.prop p)).ifThen (.prop p)) := by
+      ((((PLLFormula.prop p) ↠ ◯⊥) ↠ (.prop p)) ↠ (.prop p)) := by
   intro hM
   have hzF : z ∉ C.F := hz z (C.refl_m z)
   -- the copy of `z` forces `p` …
@@ -311,9 +310,8 @@ future whose `Rₘ`-row is fallibility-free, and the split there is a
 p-variant refuting the row. -/
 theorem semAll_frontier (p : String) :
     IsSemAll p
-      ((((PLLFormula.prop p).ifThen PLLFormula.falsePLL.somehow).ifThen
-        (.prop p)).ifThen (.prop p))
-      PLLFormula.falsePLL.somehow := by
+      ((((PLLFormula.prop p) ↠ ◯⊥) ↠ (.prop p)) ↠ (.prop p))
+      ◯⊥ := by
   refine ⟨by simp, ?_⟩
   intro C w
   constructor
@@ -331,13 +329,13 @@ theorem semAll_frontier (p : String) :
 
 /-- The pinned frontier row of `PLLSemUILaw` has ∀p-value `◯⊥`. -/
 theorem semAll_frontierRow :
-    IsSemAll "p" frontierRow PLLFormula.falsePLL.somehow :=
+    IsSemAll "p" frontierRow ◯⊥ :=
   semAll_frontier "p"
 
 /-- `◯⊥ ⊢ ((p ⊃ ◯⊥) ⊃ p) ⊃ p` — the lower half as a derivability
 corollary (previously known only through a found proof term). -/
 theorem boxBot_derives_frontier :
-    Nonempty (LaxND [PLLFormula.falsePLL.somehow] frontierRow) :=
+    Nonempty (LaxND [◯⊥] frontierRow) :=
   semAll_lower semAll_frontierRow
 
 /-- **The transform pool cannot derive the value it fails to match**:
@@ -346,7 +344,7 @@ with `boxBot_derives_frontier`, it would derive the row itself,
 against the certified countermodel).  The split reaches what the pool
 provably cannot. -/
 theorem poolAll_not_derives_value :
-    poolAll "p" frontierRow ⊬ PLLFormula.falsePLL.somehow := by
+    poolAll "p" frontierRow ⊬ ◯⊥ := by
   rintro ⟨d⟩
   obtain ⟨e⟩ := boxBot_derives_frontier
   exact poolAll_insufficient_frontier ⟨compose e d⟩
@@ -358,8 +356,7 @@ theorem poolAll_not_derives_value :
 is).  One construction covers the doubling's value and the frontier
 row. -/
 theorem semAll_em_p_via_split (p : String) :
-    IsSemAll p ((PLLFormula.prop p).or ((PLLFormula.prop p).ifThen
-      .falsePLL)) .falsePLL := by
+    IsSemAll p ((PLLFormula.prop p) ∨ ((PLLFormula.prop p) ↠ ⊥)) ⊥ := by
   refine ⟨by simp, ?_⟩
   intro C w
   constructor
@@ -406,7 +403,7 @@ constraint witness is a cluster-mate, and forcing crosses clusters in
 both directions. -/
 theorem boxA_imp_A_of_rmClusterInternal {C : ConstraintModel}
     (h : RmClusterInternal C) (A : PLLFormula) (w : C.W) :
-    C.force w (A.somehow.ifThen A) := by
+    C.force w (◯A ↠ A) := by
   intro v hv hbox
   obtain ⟨u, hu, hA⟩ := hbox v (C.refl_i v)
   exact C.force_hered (h hu) hA
@@ -461,7 +458,7 @@ transform basis genuinely needs the levelled construction (or a common
 generalisation that creates sideways constraint arrows). -/
 theorem splitTower_oneW_forces_lob (p : String) {D : ConstraintModel}
     (t : SplitTower oneW D) (w : D.W) :
-    D.force w ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow := by
+    D.force w ◯(◯(PLLFormula.prop p) ↠ (.prop p)) := by
   have hD : RmClusterInternal D := t.rmClusterInternal (fun _ => trivial)
   intro v hv
   exact ⟨v, D.refl_m v, boxA_imp_A_of_rmClusterInternal hD (.prop p) v⟩

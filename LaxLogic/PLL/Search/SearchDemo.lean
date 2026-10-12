@@ -127,7 +127,7 @@ paste, with `found` renamed to `unit_derivable`.  The search is now out of
 the picture — the kernel rechecks the proof term on its own. -/
 
 theorem unit_derivable :
-    Nonempty (LaxND [] ((PLLFormula.prop "p").ifThen ((PLLFormula.prop "p").somehow))) :=
+    Nonempty (LaxND [] ((PLLFormula.prop "p") ↠ (◯(PLLFormula.prop "p")))) :=
   PLLND.Search.proved_sound
     (.impR (.laxR (.init (by decide))))
 
@@ -180,7 +180,7 @@ Again a paste of the `pin it:` block, with `underivable` renamed.  The `by
 decide` is the kernel running `checkB` on the concrete model. -/
 
 theorem esc_underivable :
-    [] ⊬ ((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p") :=
+    [] ⊬ ((◯(PLLFormula.prop "p")) ↠ (PLLFormula.prop "p")) :=
   FinCM.not_provable_of_check
     (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide)
 
@@ -237,7 +237,7 @@ The paste again.  Two `by decide`s this time: one for mutual confluence
 (`confB`), one for the refutation itself (`checkB`). -/
 
 theorem esc_underivable_pcll :
-    ¬ ConfluentU.DerivU [((PLLFormula.prop "p").somehow)] (PLLFormula.prop "p") :=
+    ¬ ConfluentU.DerivU [(◯(PLLFormula.prop "p"))] (PLLFormula.prop "p") :=
   PLLND.RNC.not_derivU_of_checkConf
     (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide) (by decide)
 
@@ -482,7 +482,7 @@ and supplies the implicit formula arguments of the left rules by name — but
 it is still just a paste.  Here it is, with `found` renamed to `dist_pll`. -/
 
 theorem dist_pll :
-    Nonempty (LaxND [((((PLLFormula.prop "p").or (PLLFormula.prop "q")).somehow).ifThen (((PLLFormula.prop "p").somehow).or ((PLLFormula.prop "q").somehow))), (((PLLFormula.prop "p").or (PLLFormula.prop "q")).somehow)] (((PLLFormula.prop "p").somehow).or ((PLLFormula.prop "q").somehow))) :=
+    Nonempty (LaxND [((◯((PLLFormula.prop "p") ∨ (PLLFormula.prop "q"))) ↠ ((◯(PLLFormula.prop "p")) ∨ (◯(PLLFormula.prop "q")))), (◯((PLLFormula.prop "p") ∨ (PLLFormula.prop "q")))] ((◯(PLLFormula.prop "p")) ∨ (◯(PLLFormula.prop "q")))) :=
   PLLND.Search.proved_sound
     (.impLLaxLax (A := ((PLLFormula.prop "p").or (PLLFormula.prop "q"))) (B := (((PLLFormula.prop "p").somehow).or ((PLLFormula.prop "q").somehow))) (X := ((PLLFormula.prop "p").or (PLLFormula.prop "q"))) (by decide) (by decide) (.laxR (.orL (A := (PLLFormula.prop "p")) (B := (PLLFormula.prop "q")) (by decide) (.orR1 (.init (by decide))) (.orR2 (.init (by decide))))) (.orL (A := ((PLLFormula.prop "p").somehow)) (B := ((PLLFormula.prop "q").somehow)) (by decide) (.orR1 (.laxL (A := (PLLFormula.prop "p")) (by decide) (.laxR (.init (by decide))))) (.orR2 (.laxL (A := (PLLFormula.prop "q")) (by decide) (.laxR (.init (by decide)))))))
 
@@ -620,7 +620,7 @@ theorem found_nofall :
 The paste, `found_nofall` renamed. -/
 
 theorem nofall_obot_bot :
-    PLLND.NoFall.DerivUNoFall [(PLLFormula.falsePLL.somehow)] PLLFormula.falsePLL :=
+    PLLND.NoFall.DerivUNoFall [(◯⊥)] ⊥ :=
   PLLND.NoFall.derivUNoFall_of_nd (PLLND.Search.proved_sound
     (.impLLaxLax (A := PLLFormula.falsePLL) (B := PLLFormula.falsePLL) (X := PLLFormula.falsePLL) (by decide) (by decide) (.botL (by decide)) (.botL (by decide))))
 
@@ -654,7 +654,7 @@ theorem underivable_nofall :
 #refuteNF [(prop "p").somehow] ⊢ prop "p"
 
 theorem nofall_not_obp_p :
-    ¬ PLLND.NoFall.DerivUNoFall [((PLLFormula.prop "p").somehow)] (PLLFormula.prop "p") :=
+    ¬ PLLND.NoFall.DerivUNoFall [(◯(PLLFormula.prop "p"))] (PLLFormula.prop "p") :=
   PLLND.NoFall.not_derivUNoFall_of_check
     (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide) (by decide) (by decide)
 

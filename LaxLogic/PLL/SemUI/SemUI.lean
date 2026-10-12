@@ -359,7 +359,7 @@ theorem semEx_prop_self (p : String) : IsSemEx p (.prop p) truePLL := by
 
 /-- `∀p.p = ⊥` — only fallible worlds have p forced by ALL p-variants
 (redecorate with the fallible set). -/
-theorem semAll_prop_self (p : String) : IsSemAll p (.prop p) falsePLL := by
+theorem semAll_prop_self (p : String) : IsSemAll p (.prop p) ⊥ := by
   refine ⟨by simp, ?_⟩
   intro M w
   constructor
@@ -397,7 +397,7 @@ theorem semAll_prop_ne {p q : String} (h : q ≠ p) :
     exact h' w (M.refl_i w) M (ABisim.id _ M) w rfl
 
 /-- `∃p.⊥ = ⊥`. -/
-theorem semEx_false (p : String) : IsSemEx p .falsePLL .falsePLL := by
+theorem semEx_false (p : String) : IsSemEx p ⊥ ⊥ := by
   refine ⟨by simp, ?_⟩
   intro M w
   constructor
@@ -407,7 +407,7 @@ theorem semEx_false (p : String) : IsSemEx p .falsePLL .falsePLL := by
     exact (B.fall hZ).mpr hF
 
 /-- `∀p.⊥ = ⊥`. -/
-theorem semAll_false (p : String) : IsSemAll p .falsePLL .falsePLL := by
+theorem semAll_false (p : String) : IsSemAll p ⊥ ⊥ := by
   refine ⟨by simp, ?_⟩
   intro M w
   constructor
@@ -419,7 +419,7 @@ theorem semAll_false (p : String) : IsSemAll p .falsePLL .falsePLL := by
 /-- ∃p commutes with ∨ (the SAME p-variant serves whichever disjunct). -/
 theorem semEx_or {p : String} {φ₁ φ₂ ψ₁ ψ₂ : PLLFormula}
     (h₁ : IsSemEx p φ₁ ψ₁) (h₂ : IsSemEx p φ₂ ψ₂) :
-    IsSemEx p (φ₁.or φ₂) (ψ₁.or ψ₂) := by
+    IsSemEx p (φ₁ ∨ φ₂) (ψ₁ ∨ ψ₂) := by
   refine ⟨fun hp => (mem_atoms_or.mp hp).elim h₁.1 h₂.1, ?_⟩
   intro M w
   show M.force w ψ₁ ∨ M.force w ψ₂ ↔ _
@@ -435,7 +435,7 @@ theorem semEx_or {p : String} {φ₁ φ₂ ψ₁ ψ₂ : PLLFormula}
 /-- ∀p commutes with ∧. -/
 theorem semAll_and {p : String} {φ₁ φ₂ ψ₁ ψ₂ : PLLFormula}
     (h₁ : IsSemAll p φ₁ ψ₁) (h₂ : IsSemAll p φ₂ ψ₂) :
-    IsSemAll p (φ₁.and φ₂) (ψ₁.and ψ₂) := by
+    IsSemAll p (φ₁ ∧ φ₂) (ψ₁ ∧ ψ₂) := by
   refine ⟨fun hp => (mem_atoms_and.mp hp).elim h₁.1 h₂.1, ?_⟩
   intro M w
   show M.force w ψ₁ ∧ M.force w ψ₂ ↔ _
@@ -479,7 +479,7 @@ the closed fragment, is the ∀p-shadow of the modality itself. -/
 
 /-- `∃p.¬p = ⊤`: decorate p by the fallible set; then p ⊃ ⊥ holds
 everywhere. -/
-theorem semEx_neg_p (p : String) : IsSemEx p ((PLLFormula.prop p).ifThen .falsePLL) truePLL := by
+theorem semEx_neg_p (p : String) : IsSemEx p ((PLLFormula.prop p) ↠ ⊥) truePLL := by
   refine ⟨by simp [truePLL], ?_⟩
   intro M w
   constructor
@@ -495,7 +495,7 @@ theorem semEx_neg_p (p : String) : IsSemEx p ((PLLFormula.prop p).ifThen .falseP
 
 /-- `∀p.¬p = ⊥`: against the ⊤-decoration, ¬p forces only where
 everything ahead is fallible — i.e. exactly on F. -/
-theorem semAll_neg_p (p : String) : IsSemAll p ((PLLFormula.prop p).ifThen .falsePLL) .falsePLL := by
+theorem semAll_neg_p (p : String) : IsSemAll p ((PLLFormula.prop p) ↠ ⊥) ⊥ := by
   refine ⟨by simp, ?_⟩
   intro M w
   constructor
@@ -534,7 +534,7 @@ Forward: ◯⊥ is p-free, so it crosses any p-bisimulation, and `full_F`
 turns its fallible witnesses into p-witnesses.  Backward: the
 F-decoration is a legal p-variant on which ◯p IS ◯⊥. -/
 theorem semAll_box_p (p : String) :
-    IsSemAll p (PLLFormula.prop p).somehow PLLFormula.falsePLL.somehow := by
+    IsSemAll p (PLLFormula.prop p).somehow ◯⊥ := by
   refine ⟨by simp, ?_⟩
   intro M w
   constructor
@@ -560,7 +560,7 @@ theorem semAll_box_p (p : String) :
 /-- `∃p.(p ∧ ¬p) = ⊥`: a p-variant forcing both p and ¬p is fallible,
 and fallibility crosses the bisimulation. -/
 theorem semEx_p_and_neg_p (p : String) :
-    IsSemEx p ((PLLFormula.prop p).and ((PLLFormula.prop p).ifThen .falsePLL)) .falsePLL := by
+    IsSemEx p ((PLLFormula.prop p) ∧ ((PLLFormula.prop p) ↠ ⊥)) ⊥ := by
   refine ⟨by simp, ?_⟩
   intro M w
   constructor
@@ -644,8 +644,8 @@ commute with ∧.  The pointwise candidate for `∃p.(p ∧ ¬p)` from
 because at the non-fallible world of `oneW` the two conjuncts demand
 INCOMPATIBLE p-decorations (everywhere vs nowhere-but-F). -/
 theorem semEx_and_pointwise_fails (p : String) :
-    ¬ IsSemEx p ((PLLFormula.prop p).and ((PLLFormula.prop p).ifThen .falsePLL))
-        (truePLL.and truePLL) := by
+    ¬ IsSemEx p ((PLLFormula.prop p) ∧ ((PLLFormula.prop p) ↠ ⊥))
+        (truePLL ∧ truePLL) := by
   rintro ⟨-, hspec⟩
   have htop : oneW.force () (truePLL.and truePLL) :=
     ⟨fun _ _ h => h, fun _ _ h => h⟩
@@ -691,14 +691,14 @@ theorem inessential_of_semAll_true {p : String} {M : PLLFormula}
 /-- If ⊥ meets the ∃p-spec for `M`, then `M ⊢ ⊥`: the world itself is a
 p-variant of itself forcing `M`. -/
 theorem semEx_false_refutes {p : String} {M : PLLFormula}
-    (h : IsSemEx p M .falsePLL) : Nonempty (LaxND [M] .falsePLL) := by
+    (h : IsSemEx p M ⊥) : Nonempty (LaxND [M] ⊥) := by
   refine completeness ?_
   intro C w hw
   exact (h.2 C w).mpr ⟨C, ABisim.id _ C, w, rfl, hw M (by simp)⟩
 
 /-- **⊥ is never an essential ∃p-value**: `∃p.M = ⊥` forces `M ≡ ⊥`. -/
 theorem inessential_of_semEx_false {p : String} {M : PLLFormula}
-    (h : IsSemEx p M .falsePLL) : Inessential p M := by
+    (h : IsSemEx p M ⊥) : Inessential p M := by
   obtain ⟨d⟩ := semEx_false_refutes h
   exact ⟨.falsePLL, by simp, ⟨d⟩, ⟨.falsoElim M (.iden (by simp))⟩⟩
 
@@ -909,7 +909,7 @@ completeness extracts from the value's non-derivability. -/
 
 /-- `∀p.(ξ ∨ p) = ξ` for p-free ξ. -/
 theorem semAll_or_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms) :
-    IsSemAll p (ξ.or (.prop p)) ξ := by
+    IsSemAll p (ξ ∨ (.prop p)) ξ := by
   have hsub : substP p .falsePLL (ξ.or (.prop p)) = ξ.or .falsePLL := by
     simp [substP, substP_of_not_mem hp]
   refine isSemAll_of_certificates (χs := [.falsePLL]) hp
@@ -922,7 +922,7 @@ theorem semAll_or_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms) :
 /-- For underivable p-free ξ, `p` is essential in `ξ ∨ p`: the instances
 `p := ⊤` and `p := ⊥` are separated at any countermodel to ξ. -/
 theorem essential_or_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms)
-    (hξ : [] ⊬ ξ) : ¬ Inessential p (ξ.or (.prop p)) := by
+    (hξ : [] ⊬ ξ) : ¬ Inessential p (ξ ∨ (.prop p)) := by
   obtain ⟨C, w, -, hnf⟩ := exists_countermodel hξ
   refine essential_of_separation (χ₁ := truePLL) (χ₂ := .falsePLL) C w ?_ ?_
   · rw [show substP p truePLL (ξ.or (.prop p)) = ξ.or truePLL from by
@@ -936,7 +936,7 @@ theorem essential_or_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms)
 
 /-- `∃p.(ξ ∧ p) = ξ` for p-free ξ. -/
 theorem semEx_and_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms) :
-    IsSemEx p (ξ.and (.prop p)) ξ := by
+    IsSemEx p (ξ ∧ (.prop p)) ξ := by
   have hsub : substP p truePLL (ξ.and (.prop p)) = ξ.and truePLL := by
     simp [substP, substP_of_not_mem hp]
   refine isSemEx_of_certificates (χ := truePLL) hp
@@ -947,8 +947,8 @@ theorem semEx_and_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms) :
 
 /-- For p-free ξ with `ξ ⊬ ⊥`, `p` is essential in `ξ ∧ p`. -/
 theorem essential_and_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms)
-    (hξ : [ξ] ⊬ .falsePLL) :
-    ¬ Inessential p (ξ.and (.prop p)) := by
+    (hξ : [ξ] ⊬ ⊥) :
+    ¬ Inessential p (ξ ∧ (.prop p)) := by
   obtain ⟨C, w, hfor, hnf⟩ := exists_countermodel hξ
   have hξw : C.force w ξ := hfor ξ (List.mem_singleton.mpr rfl)
   refine essential_of_separation (χ₁ := truePLL) (χ₂ := .falsePLL) C w ?_ ?_
@@ -978,7 +978,7 @@ fragment: the essential ∃p-image is RN(◯,{}) ∖ {⊥}. -/
 theorem essential_semEx_image {p : String} {ξ : PLLFormula}
     (hp : p ∉ ξ.atoms) :
     (∃ M, IsSemEx p M ξ ∧ ¬ Inessential p M) ↔
-      [ξ] ⊬ .falsePLL := by
+      [ξ] ⊬ ⊥ := by
   constructor
   · rintro ⟨M, hex, hess⟩ ⟨d⟩
     exact hess ⟨ξ, hp, semEx_upper hex, ⟨.falsoElim M d⟩⟩
@@ -1058,8 +1058,8 @@ frame-changing p-variant.  A non-fallible world of the lower copy
 forces neither `p` (it is not in the decoration) nor `¬p` (its upper
 twin is), so only fallible worlds survive the spec. -/
 theorem semAll_em_p (p : String) :
-    IsSemAll p ((PLLFormula.prop p).or ((PLLFormula.prop p).ifThen .falsePLL))
-      .falsePLL := by
+    IsSemAll p ((PLLFormula.prop p) ∨ ((PLLFormula.prop p) ↠ ⊥))
+      ⊥ := by
   refine ⟨by simp, ?_⟩
   intro C w
   constructor
@@ -1087,7 +1087,7 @@ theorem semAll_em_p (p : String) :
 /-- At the one-world irrefutable model, excluded middle holds for every
 formula (classically). -/
 theorem oneW_em (A : PLLFormula) :
-    oneW.force () (A.or (A.ifThen .falsePLL)) := by
+    oneW.force () (A ∨ (A ↠ ⊥)) := by
   by_cases h : oneW.force () A
   · exact Or.inl h
   · refine Or.inr ?_
@@ -1103,7 +1103,7 @@ is necessary. -/
 theorem em_p_no_certificate (p : String) (χs : List PLLFormula) :
     χs.map (fun χ =>
         substP p χ
-          ((PLLFormula.prop p).or ((PLLFormula.prop p).ifThen .falsePLL))) ⊬ .falsePLL := by
+          ((PLLFormula.prop p) ∨ ((PLLFormula.prop p) ↠ ⊥))) ⊬ ⊥ := by
   rintro ⟨d⟩
   have hval := soundness d oneW () (fun ξ hξ => by
     obtain ⟨χ, -, rfl⟩ := List.mem_map.mp hξ
@@ -1344,7 +1344,7 @@ theorem isSemEx_of_certificates_low {p : String} {M ψ : PLLFormula}
 ∀p-value, reached by the lower transform:
 `lowT p (◯p ⊃ p) = (◯⊤ ⊃ ⊥) ∧ (◯⊤ ⊃ ⊤) ⊢ ⊥`. -/
 theorem semAll_boxp_imp_p (p : String) :
-    IsSemAll p ((PLLFormula.prop p).somehow.ifThen (.prop p)) .falsePLL := by
+    IsSemAll p (◯(PLLFormula.prop p) ↠ (.prop p)) ⊥ := by
   have hL : lowT p ((PLLFormula.prop p).somehow.ifThen (.prop p))
       = (truePLL.somehow.ifThen .falsePLL).and
           (truePLL.somehow.ifThen truePLL) := by
@@ -1358,8 +1358,7 @@ theorem semAll_boxp_imp_p (p : String) :
 /-- **`∀p.(¬¬p ⊃ p) = ⊥`** — classicality of `p` also has ∀p-value ⊥,
 again through the lower transform. -/
 theorem semAll_nnp_imp_p (p : String) :
-    IsSemAll p ((((PLLFormula.prop p).ifThen .falsePLL).ifThen
-        .falsePLL).ifThen (.prop p)) .falsePLL := by
+    IsSemAll p ((((PLLFormula.prop p) ↠ ⊥) ↠ ⊥) ↠ (.prop p)) ⊥ := by
   have hL : lowT p ((((PLLFormula.prop p).ifThen .falsePLL).ifThen
         .falsePLL).ifThen (.prop p))
       = (((((PLLFormula.falsePLL.ifThen .falsePLL).and
@@ -1456,8 +1455,8 @@ def lobVariant_pbisim (C : ConstraintModel) (p : String) :
 /-- **`∀p.◯(◯p ⊃ p) = ◯⊥`** — the Löb-shaped frontier value, by the
 sideways-witness construction. -/
 theorem semAll_box_lob (p : String) :
-    IsSemAll p (((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow)
-      PLLFormula.falsePLL.somehow := by
+    IsSemAll p (◯(◯(PLLFormula.prop p) ↠ (.prop p)))
+      ◯⊥ := by
   refine ⟨by simp, ?_⟩
   intro C w
   constructor
@@ -2107,7 +2106,7 @@ def C4 : ConstraintModel where
 namespace W4
 
 /-- ◯⊥ holds at v₂ (the constraint relation reaches the fallible top). -/
-theorem force_v2_boxBot : C4.force v2 PLLFormula.falsePLL.somehow := by
+theorem force_v2_boxBot : C4.force v2 ◯⊥ := by
   intro v hv
   cases v with
   | w0 => exact Bool.noConfusion hv
@@ -2116,7 +2115,7 @@ theorem force_v2_boxBot : C4.force v2 PLLFormula.falsePLL.somehow := by
   | fl => exact ⟨fl, rfl, rfl⟩
 
 /-- ◯⊥ fails at v₁ (its only constraint witness is itself). -/
-theorem not_force_v1_boxBot : ¬ C4.force v1 PLLFormula.falsePLL.somehow := by
+theorem not_force_v1_boxBot : ¬ C4.force v1 ◯⊥ := by
   intro h
   obtain ⟨u, hu, huF⟩ := h v1 rfl
   cases u with
@@ -2146,7 +2145,7 @@ theorem not_force_w0_negBoxBot : ¬ C4.force w0 negBoxBot := by
 
 /-- ¬¬◯⊥-shaped failure at w₀: v₁ is a non-fallible ¬◯⊥-future. -/
 theorem not_force_w0_negnegBoxBot :
-    ¬ C4.force w0 (negBoxBot.ifThen .falsePLL) := by
+    ¬ C4.force w0 (negBoxBot ↠ ⊥) := by
   intro h
   exact Bool.noConfusion (h v1 rfl force_v1_negBoxBot)
 
@@ -2249,10 +2248,10 @@ def peirce (p : String) : PLLFormula :=
   (PLLFormula.falsePLL.somehow.ifThen (PLLFormula.prop p)).ifThen
     (PLLFormula.prop p)
 
-theorem lowT_self (p : String) : lowT p (PLLFormula.prop p) = .falsePLL := by
+theorem lowT_self (p : String) : lowT p (PLLFormula.prop p) = ⊥ := by
   simp [lowT]
 
-theorem sideT_self (p : String) : sideT p (PLLFormula.prop p) = .falsePLL := by
+theorem sideT_self (p : String) : sideT p (PLLFormula.prop p) = ⊥ := by
   simp [sideT]
 
 /-- The three-world chain a < b < f. -/
@@ -2308,7 +2307,7 @@ def C3 : ConstraintModel where
 namespace W3
 
 /-- ◯⊥ holds at b. -/
-theorem force_b_boxBot : C3.force b PLLFormula.falsePLL.somehow := by
+theorem force_b_boxBot : C3.force b ◯⊥ := by
   intro v hv
   cases v with
   | a => exact Bool.noConfusion hv
@@ -2316,7 +2315,7 @@ theorem force_b_boxBot : C3.force b PLLFormula.falsePLL.somehow := by
   | fl => exact ⟨fl, rfl, rfl⟩
 
 /-- ◯⊥ fails at a. -/
-theorem not_force_a_boxBot : ¬ C3.force a PLLFormula.falsePLL.somehow := by
+theorem not_force_a_boxBot : ¬ C3.force a ◯⊥ := by
   intro h
   obtain ⟨u, hu, huF⟩ := h a rfl
   cases u with
@@ -2327,7 +2326,7 @@ theorem not_force_a_boxBot : ¬ C3.force a PLLFormula.falsePLL.somehow := by
 /-- At a and b, `◯⊥ ⊃ ⊥` is not forced (b sees ◯⊥ non-fallibly);
 packaged: any world Rᵢ-below b refutes it. -/
 theorem not_force_negBoxBot {w : W3} (hw : riB w b = true) :
-    ¬ C3.force w (PLLFormula.falsePLL.somehow.ifThen .falsePLL) := by
+    ¬ C3.force w (◯⊥ ↠ ⊥) := by
   intro h
   exact Bool.noConfusion (h b hw force_b_boxBot)
 
@@ -2408,7 +2407,7 @@ theorem allCand_not_value (p : String) :
 certified by the substitution `p := ◯⊥` — again a subformula of the
 witness. -/
 theorem semAll_peirce (p : String) :
-    IsSemAll p (peirce p) PLLFormula.falsePLL.somehow := by
+    IsSemAll p (peirce p) ◯⊥ := by
   have hsub : substP p PLLFormula.falsePLL.somehow (peirce p)
       = (PLLFormula.falsePLL.somehow.ifThen PLLFormula.falsePLL.somehow).ifThen
           PLLFormula.falsePLL.somehow := by
@@ -2432,8 +2431,7 @@ weight-cap artifact — the substitution `p := ⊤` also certifies, since
 currently known to REQUIRE a frame-changing generator; the ∀-side
 necessity is `em_p_no_certificate`. -/
 theorem semEx_wem_box (p : String) :
-    IsSemEx p (((PLLFormula.prop p).somehow.ifThen .falsePLL).or
-      (PLLFormula.prop p).somehow) truePLL := by
+    IsSemEx p ((◯(PLLFormula.prop p) ↠ ⊥) ∨ ◯(PLLFormula.prop p)) truePLL := by
   have hL : lowT p (((PLLFormula.prop p).somehow.ifThen .falsePLL).or
       (PLLFormula.prop p).somehow)
       = ((truePLL.somehow.ifThen .falsePLL).and
@@ -2465,7 +2463,7 @@ while e.g. pivot ¬◯⊥ is covered by `p := ⊥` since `¬¬¬◯⊥ ≡ ¬◯
 `semAll_peirce`): a natural essential preimage of every value. -/
 theorem semAll_peirce_family (p : String) {ξ : PLLFormula}
     (hξ : p ∉ ξ.atoms) :
-    IsSemAll p ((ξ.ifThen (PLLFormula.prop p)).ifThen (PLLFormula.prop p))
+    IsSemAll p ((ξ ↠ (PLLFormula.prop p)) ↠ (PLLFormula.prop p))
       ξ := by
   have hsub : substP p ξ ((ξ.ifThen (PLLFormula.prop p)).ifThen
       (PLLFormula.prop p)) = (ξ.ifThen ξ).ifThen ξ := by
@@ -2480,7 +2478,7 @@ theorem semAll_peirce_family (p : String) {ξ : PLLFormula}
 /-- `∃p.((ξ ⊃ p) ⊃ p) = ⊤` for every p-free pivot ξ. -/
 theorem semEx_peirce_family (p : String) {ξ : PLLFormula}
     (hξ : p ∉ ξ.atoms) :
-    IsSemEx p ((ξ.ifThen (PLLFormula.prop p)).ifThen (PLLFormula.prop p))
+    IsSemEx p ((ξ ↠ (PLLFormula.prop p)) ↠ (PLLFormula.prop p))
       truePLL := by
   have hsub : substP p truePLL ((ξ.ifThen (PLLFormula.prop p)).ifThen
       (PLLFormula.prop p)) = (ξ.ifThen truePLL).ifThen truePLL := by
@@ -2494,8 +2492,7 @@ theorem semEx_peirce_family (p : String) {ξ : PLLFormula}
 ⊤-instances are jointly contradictory. -/
 theorem semAll_bicond_family (p : String) {ξ : PLLFormula}
     (hξ : p ∉ ξ.atoms) :
-    IsSemAll p ((ξ.ifThen (PLLFormula.prop p)).and
-      ((PLLFormula.prop p).ifThen ξ)) .falsePLL := by
+    IsSemAll p ((ξ ↠ (PLLFormula.prop p)) ∧ ((PLLFormula.prop p) ↠ ξ)) ⊥ := by
   have hsub1 : substP p .falsePLL ((ξ.ifThen (PLLFormula.prop p)).and
       ((PLLFormula.prop p).ifThen ξ))
       = (ξ.ifThen .falsePLL).and (PLLFormula.falsePLL.ifThen ξ) := by
@@ -2516,8 +2513,7 @@ theorem semAll_bicond_family (p : String) {ξ : PLLFormula}
 `semEx_bicond_top`). -/
 theorem semEx_bicond_family (p : String) {ξ : PLLFormula}
     (hξ : p ∉ ξ.atoms) :
-    IsSemEx p ((ξ.ifThen (PLLFormula.prop p)).and
-      ((PLLFormula.prop p).ifThen ξ)) truePLL := by
+    IsSemEx p ((ξ ↠ (PLLFormula.prop p)) ∧ ((PLLFormula.prop p) ↠ ξ)) truePLL := by
   have hsub : substP p ξ ((ξ.ifThen (PLLFormula.prop p)).and
       ((PLLFormula.prop p).ifThen ξ))
       = (ξ.ifThen ξ).and (ξ.ifThen ξ) := by
@@ -2561,14 +2557,14 @@ def twoChain : ConstraintModel where
 /-- `⊬ ◯⊥`: at the one-world irrefutable model, no constraint witness is
 fallible. -/
 theorem not_derivable_boxFalse :
-    [] ⊬ PLLFormula.falsePLL.somehow := by
+    [] ⊬ ◯⊥ := by
   rintro ⟨d⟩
   obtain ⟨u, -, hu⟩ := soundness d oneW () (by simp) () (oneW.refl_i ())
   exact hu
 
 /-- `⊬ ¬◯⊥`: at the root of `twoChain`, `◯⊥` holds non-fallibly. -/
 theorem not_derivable_neg_boxFalse :
-    [] ⊬ PLLFormula.falsePLL.somehow.ifThen .falsePLL := by
+    [] ⊬ (◯⊥ ↠ ⊥) := by
   rintro ⟨d⟩
   have hval := soundness d twoChain false (by simp) false (fun h => h)
   have hbox : twoChain.force false PLLFormula.falsePLL.somehow := by
@@ -2579,13 +2575,13 @@ theorem not_derivable_neg_boxFalse :
 /-- `◯⊥` is an essential ∀p-value: `∀p.(◯⊥ ∨ p) = ◯⊥` with `p`
 essential. -/
 theorem essential_fibre_boxFalse (p : String) :
-    ∃ M, IsSemAll p M PLLFormula.falsePLL.somehow ∧ ¬ Inessential p M :=
+    ∃ M, IsSemAll p M ◯⊥ ∧ ¬ Inessential p M :=
   (essential_semAll_image (by simp)).mpr not_derivable_boxFalse
 
 /-- `¬◯⊥` is an essential ∀p-value: `∀p.(¬◯⊥ ∨ p) = ¬◯⊥` with `p`
 essential. -/
 theorem essential_fibre_neg_boxFalse (p : String) :
-    ∃ M, IsSemAll p M (PLLFormula.falsePLL.somehow.ifThen .falsePLL) ∧
+    ∃ M, IsSemAll p M (◯⊥ ↠ ⊥) ∧
       ¬ Inessential p M :=
   (essential_semAll_image (by simp)).mpr not_derivable_neg_boxFalse
 
@@ -2605,7 +2601,7 @@ theorem essential_prop_self (p : String) :
 at the one-world model.  With `semAll_box_p`, the original data point
 `∀p.◯p = ◯⊥` is essential in full. -/
 theorem essential_box_p (p : String) :
-    ¬ Inessential p (PLLFormula.prop p).somehow := by
+    ¬ Inessential p ◯(PLLFormula.prop p) := by
   refine essential_of_separation (χ₁ := truePLL) (χ₂ := .falsePLL) oneW () ?_ ?_
   · show oneW.force () ((if p = p then truePLL else PLLFormula.prop p).somehow)
     rw [if_pos rfl]
