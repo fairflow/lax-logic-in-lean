@@ -541,3 +541,102 @@ idempotence \ensuremath{\ne} isomorphism & \texttt{mu\_eta\_not\_mutually\_inver
 its measured audit, with the definitions reproduced verbatim) and
 line-level annotated walk-throughs of the three central proofs
 accompany the artefact.
+
+\subsection*{Index of declarations}\label{app:index}
+
+Results and definitions cited in the text as [D\,$n$], in order of first
+citation: the Lean name, its file, and the axioms it depends on, as
+recorded in the artefact's proof-status ledger. File names are relative to
+\texttt{LaxLogic/} unless they begin \texttt{wip/}.
+
+{\footnotesize\raggedright
+\declentry{PLLFormula}{\texttt{PLLFormula}}{\texttt{PLL/\allowbreak{}Syntax/\allowbreak{}Formula.lean}}{none}
+\declentry{LaxND}{\texttt{PLLND.\allowbreak{}LaxND}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}NDCore.lean}}{none}
+\declentry{Tm}{\texttt{PLLND.\allowbreak{}Tm}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Terms.lean}}{none}
+\declentry{SC}{\texttt{PLLND.\allowbreak{}SC}}{\texttt{PLL/\allowbreak{}Sequent/\allowbreak{}Sequent.lean}}{none}
+\declentry{conservativity-IPL}{\texttt{PLLND.\allowbreak{}conservativity\_IPL}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}NDCore.lean}}{propext, Quot.sound}
+\declentry{craig-interpolation-}{\texttt{PLLND.\allowbreak{}craig\_interpolation'}}{\texttt{PLL/\allowbreak{}Sequent/\allowbreak{}Craig.lean}}{propext, Quot.sound}
+\declentry{soundness}{\texttt{PLLND.\allowbreak{}soundness}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}}{propext}
+\declentry{completeness}{\texttt{PLLND.\allowbreak{}completeness}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Completeness.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{nucleus-eq-sup-bot}{\texttt{BeliefLax.\allowbreak{}nucleus\_eq\_sup\_bot}}{\texttt{Belief/\allowbreak{}Collapse.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{nucleusOrderIsoBot}{\texttt{BeliefLax.\allowbreak{}nucleusOrderIsoBot}}{\texttt{Belief/\allowbreak{}BooleanIso.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{em-of-openNucleus-eq-closedNucleus}{\texttt{BeliefLax.\allowbreak{}em\_of\_openNucleus\_eq\_closedNucleus}}{\texttt{Belief/\allowbreak{}OpenClosed.lean}}{propext}
+\declentry{closed-lax-infinite}{\texttt{PLLND.\allowbreak{}LaxInfinite.\allowbreak{}closed\_lax\_infinite}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}LaxInfinite.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{chain3-card}{\texttt{BeliefLax.\allowbreak{}chain3\_card}}{\texttt{Belief/\allowbreak{}Examples.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{chain3-open-ne-closed}{\texttt{BeliefLax.\allowbreak{}chain3\_open\_ne\_closed}}{\texttt{Belief/\allowbreak{}Examples.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{Ctx-thm6}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}thm6}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{Ctx-corollary10}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}corollary10}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{Ctx-thm2-boolean-algebra}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}thm2\_boolean\_algebra}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{propext, Quot.sound}
+\declentry{varfree-exactly-six}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}varfree\_exactly\_six}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{six-pairwise}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}six\_pairwise}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{varfree-exactly-four}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}varfree\_exactly\_four}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{four-distinct}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}four\_distinct}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{varfree-dichotomy}{\texttt{PLLND.\allowbreak{}NoFall.\allowbreak{}varfree\_dichotomy}}{\texttt{PLL/\allowbreak{}UI/\allowbreak{}NoFall.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{varfree-exactly-six-wem0}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}varfree\_exactly\_six\_wem0}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{varfree-exactly-four-em0}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}varfree\_exactly\_four\_em0}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{derivLin-iff-valid}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}derivLin\_iff\_valid}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{box-nobot}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}box\_nobot}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{box-nobot-em}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}box\_nobot\_em}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{box-trivial}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}box\_trivial}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{nucleus-not-closed-Fin3}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}nucleus\_not\_closed\_Fin3}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{K-does-not-force-dist}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}K\_does\_not\_force\_dist}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{dist-of-lin}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}dist\_of\_lin}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{converseK-fails-infallible}{\texttt{ConverseK.\allowbreak{}converseK\_fails\_infallible}}{\texttt{wip/\allowbreak{}converseK.lean}}{propext, Quot.sound}
+\declentry{converseK-fails-fallible}{\texttt{ConverseK.\allowbreak{}converseK\_fails\_fallible}}{\texttt{wip/\allowbreak{}converseK.lean}}{propext, Quot.sound}
+\declentry{depth-box-gap-one-exact}{\texttt{PLLND.\allowbreak{}Depth.\allowbreak{}depth\_box\_gap\_one\_exact}}{\texttt{wip/\allowbreak{}depth2.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{visible-top}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_top}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{visible-rnSub-one}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_one}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{visible-rnSub-two}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_two}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{visible-rnSub-four}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_four}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{visible-rnSub-six}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_six}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{not-joinPrime-rnSub-odd}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}not\_joinPrime\_rnSub\_odd}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{bite-uniform-split}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}bite\_uniform\_split}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{uniform-dist-valid}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}uniform\_dist\_valid}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{none}
+\declentry{not-provable-somehow-or-dist}{\texttt{PLLND.\allowbreak{}not\_provable\_somehow\_or\_dist}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{strategy-realises-obAB}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}strategy\_realises\_obAB}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{strategy-dist-refuted}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}strategy\_dist\_refuted}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{impdist-not-uniform}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}impdist\_not\_uniform}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{realS-fullness-obstruction}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realS\_fullness\_obstruction}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Quot.sound}
+\declentry{FinCM}{\texttt{PLLND.\allowbreak{}FinCM}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{none}
+\declentry{forceB}{\texttt{PLLND.\allowbreak{}FinCM.\allowbreak{}forceB}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
+\declentry{force-iff}{\texttt{PLLND.\allowbreak{}FinCM.\allowbreak{}force\_iff}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
+\declentry{realP-adequate-and-full}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_adequate\_and\_full}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{propext, Quot.sound}
+\declentry{realP-refutes-sequent}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_refutes\_sequent}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{propext, Quot.sound}
+\declentry{Tbl}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}Tbl}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{none}
+\declentry{tblPca}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}tblPca}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{propext}
+\declentry{realP-refutes-sequent-tbl}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_refutes\_sequent\_tbl}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{propext, Quot.sound}
+\declentry{FTheory}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}FTheory}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
+\declentry{cons-iff-check}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}cons\_iff\_check}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{cons-insVal-or-insFal}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}cons\_insVal\_or\_insFal}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
+\declentry{lindenbaum}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}lindenbaum}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
+\declentry{truth-lemma}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}truth\_lemma}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
+\declentry{finite-canonical-countermodel}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}finite\_canonical\_countermodel}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
+\declentry{emitter-completeness}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}emitter\_completeness}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
+\declentry{derivable-iff-no-realP-refutation}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}derivable\_iff\_no\_realP\_refutation}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}RealCompleteness.lean}}{propext, Quot.sound}
+\declentry{CounterEmit-emit}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emit}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
+\declentry{demoM}{\texttt{PLLND.\allowbreak{}demoM}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{none}
+\declentry{emitMin}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emitMin}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
+\declentry{emitMinClean}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emitMinClean}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
+\declentry{force-hered}{\texttt{PLLND.\allowbreak{}ConstraintModel.\allowbreak{}force\_hered}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}}{none}
+\declentry{riEquiv}{\texttt{PLLND.\allowbreak{}Diagram.\allowbreak{}riEquiv}}{\texttt{PLL/\allowbreak{}Search/\allowbreak{}Diagram.lean}}{propext, Quot.sound}
+\declentry{rmEquiv}{\texttt{PLLND.\allowbreak{}Diagram.\allowbreak{}rmEquiv}}{\texttt{PLL/\allowbreak{}Search/\allowbreak{}Diagram.lean}}{propext, Quot.sound}
+\declentry{extract-sound}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}extract\_sound}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{ob-strength}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}ob\_strength}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{none}
+\declentry{mu-eta-not-mutually-inverse}{\texttt{PLLND.\allowbreak{}mu\_eta\_not\_mutually\_inverse}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Idempotency.lean}}{propext}
+\declentry{eta-mu-not-conv-id}{\texttt{PLLND.\allowbreak{}eta\_mu\_not\_conv\_id}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Idempotency.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{falsePath-beats-topological}{\texttt{PLLND.\allowbreak{}falsePath\_beats\_topological}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Timing.lean}}{none}
+\declentry{skip-beats-topological}{\texttt{PLLND.\allowbreak{}skip\_beats\_topological}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingAdder.lean}}{none}
+\declentry{ready-bound}{\texttt{PLLND.\allowbreak{}RippleN.\allowbreak{}ready\_bound}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingRipple.lean}}{propext, Quot.sound}
+\declentry{ripple-tight}{\texttt{PLLND.\allowbreak{}RippleN.\allowbreak{}ripple\_tight}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingRipple.lean}}{propext, Quot.sound}
+\declentry{lookahead-beats-ripple}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}lookahead\_beats\_ripple}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{balGP-eq-linGP}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}balGP\_eq\_linGP}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{lookahead-eq-ripple-gp}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}lookahead\_eq\_ripple\_gp}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{cElem-beats-sequential}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}cElem\_beats\_sequential}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{arbiter-no-distribution}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}arbiter\_no\_distribution}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{propext, Quot.sound}
+\declentry{arbiter-not-confluent}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}arbiter\_not\_confluent}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{propext, Quot.sound}
+\declentry{derivU-iff-confluent-valid}{\texttt{PLLND.\allowbreak{}ConfluentU.\allowbreak{}derivU\_iff\_confluent\_valid}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}ConfluentComplete.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{force-somehow-iff-notnot}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}force\_somehow\_iff\_notnot}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{force-somehow-iff-of-confluent}{\texttt{PLLND.\allowbreak{}force\_somehow\_iff\_of\_confluent}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{none}
+\declentry{force-somehow-or-dist-of-confluent}{\texttt{PLLND.\allowbreak{}force\_somehow\_or\_dist\_of\_confluent}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{propext}
+\declentry{modelOrSplit-not-confluent}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}modelOrSplit\_not\_confluent}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
+\par}

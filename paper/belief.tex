@@ -54,6 +54,13 @@
 %% Monospace-heavy justified lines: stretch rather than overflow.
 \setlength{\emergencystretch}{2em}
 
+%% Declarations cited in the text by number: \dref{key} prints [Dn], linked to
+%% the entry \declentry{key}{name}{file}{axioms} in the index of Appendix E.
+\newcounter{declno}
+\newcommand{\dref}[1]{\hyperref[decl:#1]{[D\ref*{decl:#1}]}}
+\newcommand{\declentry}[4]{\par\noindent\hangindent=2.9em\hangafter=1
+  \refstepcounter{declno}\label{decl:#1}\makebox[2.9em][l]{[D\thedeclno]}#2, #3; #4.}
+
 %% acmart predefines theorem/proposition/lemma/corollary/example/definition,
 %% but only late in class setup — extend at begin-document.  Numbering is
 %% within sections so the draft's hand numbering (3.1, 5.1, 6.5, …) is
