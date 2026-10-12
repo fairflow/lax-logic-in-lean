@@ -25,8 +25,8 @@ the TeX source in `paper/` (`paper/belief.pdf`); `docs/belief-mechanisation-inde
 its claims to a declaration.  This chapter covers the results that live in the
 library (`LaxLogic/Belief/`).  The paper also cites results of other chapters:
 context completeness and the infinite closed fragment.  It is not yet
-publishable: the closed-fragment ladder of its section 3.1 is still in `wip/`
-and is not claimed here.
+publishable.  Every declaration it cites is in the library; its Appendix E
+indexes them with their axioms.
 
 # Classical belief collapses
 
