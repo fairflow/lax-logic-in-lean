@@ -54,6 +54,9 @@ echo "ci-papers: $site/tools/ ($(ls "$site/tools" | wc -l | tr -d ' ') pages)"
 # The working guide, rendered from its tracked Markdown at build time, so the
 # page cannot drift from the source.  Needs pandoc (installed by the workflow).
 scripts/tutorial-html.py docs/github-with-claude-tutorial.md "$site/tools/github-with-claude.html"
+# Its companion, on keeping long agent work on course; marked DRAFT in its own
+# text, so it carries the banner.
+scripts/tutorial-html.py docs/claude-techniques.md "$site/tools/claude-techniques.html" --draft
 
 # Paper drafts, published for comment under /drafts/.  A draft is published
 # only by naming it here; the Verso papers above are the route for a finished

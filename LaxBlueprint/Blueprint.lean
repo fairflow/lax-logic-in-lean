@@ -60,6 +60,9 @@ date):
 * [GitHub with Claude, Lean, Verso and Pages](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/github-with-claude.html):
   a working guide to how this repository is run: branches and worktrees,
   merging, publishing, permissions.
+* [Claude Techniques](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/claude-techniques.html):
+  a companion guide, in draft, on keeping long agent work on course: contexts,
+  instruction files, memory, and communication between agents.
 * [Principal proof states](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/principal-proof-states.html):
   annotated proof states of the strong-normalisation proof.
 

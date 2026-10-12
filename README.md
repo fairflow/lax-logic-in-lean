@@ -28,6 +28,10 @@ reference and settles which is which — read it before attributing a result.
   per branch and worktree, merging and cherry-picking, publishing to Pages,
   permissions and safety, and the draft-PR protocol that keeps builds from
   overlapping.
+* **Its companion, in draft:** [`docs/claude-techniques.md`](docs/claude-techniques.md)
+  ([on the site](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/claude-techniques.html)),
+  on keeping long agent work on course: contexts, instruction files, memory,
+  and communication between agents.
 * **Certified computation:** [`docs/certified-computation-findings-2026-10-09.md`](docs/certified-computation-findings-2026-10-09.md)
   and the shared harness [lean-certify](https://github.com/fairflow/lean-certify),
   used here by `CertifyAdoption.lean` and `LJF/OCheckDeriv.lean`.
