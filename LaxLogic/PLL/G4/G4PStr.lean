@@ -56,7 +56,7 @@ theorem Spine.lift {φ σ : PLLFormula} :
 
 /-- Descend one `◯` at the target's top. -/
 theorem Spine.unbox {φ σ : PLLFormula} :
-    Spine φ σ.somehow → Spine φ σ := by
+    Spine φ ◯σ → Spine φ σ := by
   intro s
   generalize hσ : σ.somehow = τ at s
   induction s with
@@ -67,7 +67,7 @@ theorem Spine.unbox {φ σ : PLLFormula} :
 lax rules included): from `Γ ⇒ D` and `Γ, B ⇒ E` conclude
 `Γ, D→B ⇒ E`.  Induction on the first derivation only. -/
 theorem weak_Imp : ∀ {Γ : List PLLFormula} {D : PLLFormula}, G4p Γ D →
-    ∀ {B E : PLLFormula}, G4p (B :: Γ) E → G4p (D.ifThen B :: Γ) E := by
+    ∀ {B E : PLLFormula}, G4p (B :: Γ) E → G4p ((D ↠ B) :: Γ) E := by
   intro Γ D d
   induction d with
   | init h =>
@@ -181,8 +181,8 @@ theorem weak_Imp : ∀ {Γ : List PLLFormula} {D : PLLFormula}, G4p Γ D →
 /-- The `◯`-antecedent instance (Dyckhoff–Negri 4.1 as needed for the
 lax rules). -/
 theorem weak_ImpLax {Γ : List PLLFormula} {D B E : PLLFormula}
-    (d : G4p Γ D.somehow) (side : G4p (B :: Γ) E) :
-    G4p (D.somehow.ifThen B :: Γ) E :=
+    (d : G4p Γ ◯D) (side : G4p (B :: Γ) E) :
+    G4p ((◯D ↠ B) :: Γ) E :=
   weak_Imp d side
 
 /-- **Duplication for `L→→`** (Dyckhoff–Negri Lemma 4.2, folded form):
@@ -191,8 +191,8 @@ a context occurrence of `(A→B)→D` may be replaced by
 premise is `impR`-inverted and closed with `weak_Imp` — no measure. -/
 theorem impLImp_dup : ∀ {Γ' : List PLLFormula} {E : PLLFormula},
     G4p Γ' E → ∀ {A B D : PLLFormula} {Γ : List PLLFormula},
-    Γ'.Perm ((A.ifThen B).ifThen D :: Γ) →
-    G4p (A :: B.ifThen D :: B.ifThen D :: Γ) E := by
+    Γ'.Perm (((A ↠ B) ↠ D) :: Γ) →
+    G4p (A :: (B ↠ D) :: (B ↠ D) :: Γ) E := by
   intro Γ' E d
   induction d with
   | init h =>

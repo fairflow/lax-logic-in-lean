@@ -164,49 +164,49 @@ theorem init {Γ : Finset PLLFormula} {a : String} (h : prop a ∈ Γ) :
     G4s Γ (prop a) := ⟨0, .init h⟩
 
 theorem botL {Γ : Finset PLLFormula} {C : PLLFormula}
-    (h : falsePLL ∈ Γ) : G4s Γ C := ⟨0, .botL h⟩
+    (h : ⊥ ∈ Γ) : G4s Γ C := ⟨0, .botL h⟩
 
 theorem andR {Γ : Finset PLLFormula} {A B : PLLFormula}
-    (d₁ : G4s Γ A) (d₂ : G4s Γ B) : G4s Γ (A.and B) := by
+    (d₁ : G4s Γ A) (d₂ : G4s Γ B) : G4s Γ (A ∧ B) := by
   obtain ⟨n, d₁⟩ := d₁
   obtain ⟨m, d₂⟩ := d₂
   exact ⟨max n m + 1, .andR (d₁.mono (Nat.le_max_left n m))
     (d₂.mono (Nat.le_max_right n m))⟩
 
 theorem orR1 {Γ : Finset PLLFormula} {A B : PLLFormula}
-    (d : G4s Γ A) : G4s Γ (A.or B) := by
+    (d : G4s Γ A) : G4s Γ (A ∨ B) := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .orR1 d⟩
 
 theorem orR2 {Γ : Finset PLLFormula} {A B : PLLFormula}
-    (d : G4s Γ B) : G4s Γ (A.or B) := by
+    (d : G4s Γ B) : G4s Γ (A ∨ B) := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .orR2 d⟩
 
 theorem impR {Γ : Finset PLLFormula} {A B : PLLFormula}
-    (d : G4s (insert A Γ) B) : G4s Γ (A.ifThen B) := by
+    (d : G4s (insert A Γ) B) : G4s Γ (A ↠ B) := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .impR d⟩
 
 theorem laxR {Γ : Finset PLLFormula} {A : PLLFormula}
-    (d : G4s Γ A) : G4s Γ A.somehow := by
+    (d : G4s Γ A) : G4s Γ ◯A := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .laxR d⟩
 
 theorem laxL {Γ : Finset PLLFormula} {A B : PLLFormula}
-    (h : A.somehow ∈ Γ) (d : G4s (insert A Γ) B.somehow) :
-    G4s Γ B.somehow := by
+    (h : ◯A ∈ Γ) (d : G4s (insert A Γ) ◯B) :
+    G4s Γ ◯B := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .laxL h d⟩
 
 theorem andL {Γ : Finset PLLFormula} {A B C : PLLFormula}
-    (h : A.and B ∈ Γ) (d : G4s (insert A (insert B Γ)) C) :
+    (h : (A ∧ B) ∈ Γ) (d : G4s (insert A (insert B Γ)) C) :
     G4s Γ C := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .andL h d⟩
 
 theorem orL {Γ : Finset PLLFormula} {A B C : PLLFormula}
-    (h : A.or B ∈ Γ) (d₁ : G4s (insert A Γ) C)
+    (h : (A ∨ B) ∈ Γ) (d₁ : G4s (insert A Γ) C)
     (d₂ : G4s (insert B Γ) C) : G4s Γ C := by
   obtain ⟨n, d₁⟩ := d₁
   obtain ⟨m, d₂⟩ := d₂
@@ -214,27 +214,27 @@ theorem orL {Γ : Finset PLLFormula} {A B C : PLLFormula}
     (d₂.mono (Nat.le_max_right n m))⟩
 
 theorem impLProp {Γ : Finset PLLFormula} {a : String} {B C : PLLFormula}
-    (h : (prop a).ifThen B ∈ Γ) (ha : prop a ∈ Γ)
+    (h : ((prop a) ↠ B) ∈ Γ) (ha : prop a ∈ Γ)
     (d : G4s (insert B Γ) C) : G4s Γ C := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .impLProp h ha d⟩
 
 theorem impLAnd {Γ : Finset PLLFormula} {A B D C : PLLFormula}
-    (h : (A.and B).ifThen D ∈ Γ)
-    (d : G4s (insert (A.ifThen (B.ifThen D)) Γ) C) : G4s Γ C := by
+    (h : ((A ∧ B) ↠ D) ∈ Γ)
+    (d : G4s (insert (A ↠ (B ↠ D)) Γ) C) : G4s Γ C := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .impLAnd h d⟩
 
 theorem impLOr {Γ : Finset PLLFormula} {A B D C : PLLFormula}
-    (h : (A.or B).ifThen D ∈ Γ)
-    (d : G4s (insert (A.ifThen D) (insert (B.ifThen D) Γ)) C) :
+    (h : ((A ∨ B) ↠ D) ∈ Γ)
+    (d : G4s (insert (A ↠ D) (insert (B ↠ D) Γ)) C) :
     G4s Γ C := by
   obtain ⟨n, d⟩ := d
   exact ⟨n + 1, .impLOr h d⟩
 
 theorem impLImp {Γ : Finset PLLFormula} {A B D C : PLLFormula}
-    (h : (A.ifThen B).ifThen D ∈ Γ)
-    (d₁ : G4s (insert (B.ifThen D) Γ) (A.ifThen B))
+    (h : ((A ↠ B) ↠ D) ∈ Γ)
+    (d₁ : G4s (insert (B ↠ D) Γ) (A ↠ B))
     (d₂ : G4s (insert D Γ) C) : G4s Γ C := by
   obtain ⟨n, d₁⟩ := d₁
   obtain ⟨m, d₂⟩ := d₂
@@ -242,7 +242,7 @@ theorem impLImp {Γ : Finset PLLFormula} {A B D C : PLLFormula}
     (d₂.mono (Nat.le_max_right n m))⟩
 
 theorem impLLax {Γ : Finset PLLFormula} {A B C : PLLFormula}
-    (h : A.somehow.ifThen B ∈ Γ) (d₁ : G4s Γ A)
+    (h : (◯A ↠ B) ∈ Γ) (d₁ : G4s Γ A)
     (d₂ : G4s (insert B Γ) C) : G4s Γ C := by
   obtain ⟨n, d₁⟩ := d₁
   obtain ⟨m, d₂⟩ := d₂
@@ -250,8 +250,8 @@ theorem impLLax {Γ : Finset PLLFormula} {A B C : PLLFormula}
     (d₂.mono (Nat.le_max_right n m))⟩
 
 theorem impLLaxLax {Γ : Finset PLLFormula} {A B X C : PLLFormula}
-    (h : A.somehow.ifThen B ∈ Γ) (hX : X.somehow ∈ Γ)
-    (d₁ : G4s (insert X Γ) A.somehow)
+    (h : (◯A ↠ B) ∈ Γ) (hX : ◯X ∈ Γ)
+    (d₁ : G4s (insert X Γ) ◯A)
     (d₂ : G4s (insert B Γ) C) : G4s Γ C := by
   obtain ⟨n, d₁⟩ := d₁
   obtain ⟨m, d₂⟩ := d₂
@@ -284,7 +284,7 @@ theorem orAll_intro : ∀ {l : List PLLFormula} {φ : PLLFormula}, φ ∈ l →
 /-- Split a conjunction at the head of the context (cumulatively). -/
 theorem andL_ins {X₁ X₂ : PLLFormula} {Δ : Finset PLLFormula}
     {C : PLLFormula} (d : G4s (insert X₁ (insert X₂ Δ)) C) :
-    G4s (insert (X₁.and X₂) Δ) C :=
+    G4s (insert (X₁ ∧ X₂) Δ) C :=
   andL (Finset.mem_insert_self _ _)
     (d.weaken_subset (Finset.insert_subset_insert _
       (Finset.insert_subset_insert _ (Finset.subset_insert _ _))))
@@ -344,7 +344,7 @@ theorem cut_adm {Δ : Finset PLLFormula} {A E : PLLFormula}
 /-- **Modus ponens against a context implication** (set level): the
 consumer of the `(E ⇢ A)`-guarded clauses. -/
 theorem mp_adm {Δ : Finset PLLFormula} {X Y E : PLLFormula}
-    (hK : X.ifThen Y ∈ Δ) (hX : G4s Δ X)
+    (hK : (X ↠ Y) ∈ Δ) (hX : G4s Δ X)
     (hY : G4s (insert Y Δ) E) : G4s Δ E := by
   refine cut_adm ?_ hY
   have e₁ : Δ.toList.toFinset = Δ := Finset.toList_toFinset _
@@ -365,7 +365,7 @@ an implication goal can always be unfolded first.  (The other right
 rules are not invertible: `◯A` via `laxR` does not imply `A`, and a
 disjunction goal proved by `orL` splits.) -/
 theorem impR_inv : ∀ {n : Nat} {Γ : Finset PLLFormula} {C : PLLFormula},
-    G4sh n Γ C → ∀ {A B : PLLFormula}, C = A.ifThen B →
+    G4sh n Γ C → ∀ {A B : PLLFormula}, C = (A ↠ B) →
     G4sh n (insert A Γ) B := by
   intro n Γ C d
   induction d with
@@ -1338,26 +1338,26 @@ theorem G4c.iden {A : PLLFormula} {Γ : List PLLFormula} (h : A ∈ Γ) :
 
 theorem imp_mono {X X' Y Y' : PLLFormula}
     (hX : G4c [X] X') (hY : G4c [Y'] Y) :
-    G4c [X'.ifThen Y'] (X.ifThen Y) := by
+    G4c [(X' ↠ Y')] (X ↠ Y) := by
   refine G4c.impR ?_
   refine G4c.impL_adm (l₀ := [X]) (List.Perm.swap _ _ _) ?_ ?_
   · exact (hX.weaken (X'.ifThen Y')).perm (List.Perm.swap _ _ _)
   · exact (hY.weaken X).perm (List.Perm.swap _ _ _)
 
 theorem box_mono {Y Y' : PLLFormula} (hY : G4c [Y'] Y) :
-    G4c [Y'.somehow] Y.somehow :=
+    G4c [◯Y'] ◯Y :=
   G4c.laxL (.head _)
     ((hY.laxR.weaken Y'.somehow).perm (List.Perm.swap _ _ _))
 
 theorem and_mono {X X' Y Y' : PLLFormula}
     (h₁ : G4c [X] X') (h₂ : G4c [Y] Y') :
-    G4c [X.and Y] (X'.and Y') := by
+    G4c [(X ∧ Y)] (X' ∧ Y') := by
   refine G4c.andL (List.Perm.refl _) ?_
   exact G4c.andR ((h₁.weaken Y).perm (List.Perm.swap _ _ _)) (h₂.weaken X)
 
 theorem or_mono {X X' Y Y' : PLLFormula}
     (h₁ : G4c [X] X') (h₂ : G4c [Y] Y') :
-    G4c [X.or Y] (X'.or Y') := by
+    G4c [(X ∨ Y)] (X' ∨ Y') := by
   refine G4c.orL (List.Perm.refl _) ?_ ?_
   · exact G4c.orR1 h₁
   · exact G4c.orR2 h₂

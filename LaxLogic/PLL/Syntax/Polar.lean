@@ -171,12 +171,12 @@ def phase (φ : PLLFormula) : Nat := shiftsNeg (polNeg φ)
 /-- `◯` costs exactly one phase boundary more than its argument in positive
 position: the `↓` that `polPos` inserts. -/
 theorem shifts_polPos_somehow (φ : PLLFormula) :
-    shiftsPos (polPos (.somehow φ)) = shiftsPos (polPos φ) + 1 := rfl
+    shiftsPos (polPos (◯φ)) = shiftsPos (polPos φ) + 1 := rfl
 
 /-- In negative position `◯` costs nothing beyond its argument — the boundary
 is carried by the argument's own polarisation. -/
 theorem phase_somehow (φ : PLLFormula) :
-    phase (.somehow φ) = shiftsPos (polPos φ) := rfl
+    phase (◯φ) = shiftsPos (polPos φ) := rfl
 
 end Polar
 end PLLND

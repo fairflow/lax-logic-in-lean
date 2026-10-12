@@ -321,7 +321,7 @@ theorem PTree.close_typed {S : Form} {p : PTree} (hp : PTyped isC Θ S p) :
 /-! ### Theorem 9.4 as a step invariant: the store is `c₀ ∧ store` -/
 
 theorem Expand.store {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c') :
-    ∀ c₀ : Form, PEq c (.and c₀ p.store) → PEq c' (.and c₀ p'.store) := by
+    ∀ c₀ : Form, PEq c (c₀ ∧ p.store) → PEq c' (c₀ ∧ p'.store) := by
   induction h with
   | top => intro c₀ hc; exact hc
   | cstr _ _ =>
@@ -377,8 +377,8 @@ theorem SLDStep.single {c : Form} {p : PTree} {s' : MState} (h : SLDStep isC Θ 
 
 /-- Along a run from `c₀ □ [S]`, the tree stays typed by `S` and the store is `c₀ ∧ store`. -/
 theorem SLDSteps.inv {c₀ : Form} {S : Form} {s s' : MState} (h : SLDSteps isC Θ ok s s') :
-    ∀ {c₁ : Form} {p₁ : PTree}, s = ⟨c₁, [p₁]⟩ → PTyped isC Θ S p₁ → PEq c₁ (.and c₀ p₁.store) →
-      ∀ {c : Form} {p : PTree}, s' = ⟨c, [p]⟩ → PTyped isC Θ S p ∧ PEq c (.and c₀ p.store) := by
+    ∀ {c₁ : Form} {p₁ : PTree}, s = ⟨c₁, [p₁]⟩ → PTyped isC Θ S p₁ → PEq c₁ (c₀ ∧ p₁.store) →
+      ∀ {c : Form} {p : PTree}, s' = ⟨c, [p]⟩ → PTyped isC Θ S p ∧ PEq c (c₀ ∧ p.store) := by
   induction h with
   | refl s =>
       intro c₁ p₁ hs ht hc c p hs'
@@ -398,7 +398,7 @@ theorem SLDSteps.inv {c₀ : Form} {S : Form} {s s' : MState} (h : SLDSteps isC 
 `c ⊣⊢ c₀ ∧ total q`, with `q` a proof tree of `S`. -/
 theorem SLDSteps.store {c₀ c : Form} {S : Form} {p : PTree} {q : CProof}
     (h : SLDSteps isC Θ ok ⟨c₀, [.hole S]⟩ ⟨c, [p]⟩) (hq : p.close = some q) :
-    CTyped isC Θ S q ∧ PEq c (.and c₀ q.total) := by
+    CTyped isC Θ S q ∧ PEq c (c₀ ∧ q.total) := by
   obtain ⟨ht, hc⟩ := h.inv (c₀ := c₀) (S := S) rfl (.hole S) (PEq.and_top _).symm rfl
   exact ⟨PTree.close_typed ht hq, by rw [← PTree.store_close p q hq]; exact hc⟩
 
@@ -874,8 +874,8 @@ nothing, or one constraint leaf. -/
 theorem ExpandAt.delta {i : Nat} {c c' : Form} {p p' : PTree}
     (h : ExpandAt isC Θ NoPrune i c p p' c') :
     (c' = c ∧ ∀ d, ExpandAt isC Θ NoPrune i d p p' d) ∨
-    (∃ B ts, c' = .and c (.pred B ts) ∧
-      ∀ d, ExpandAt isC Θ NoPrune i d p p' (.and d (.pred B ts))) := by
+    (∃ B ts, c' = (c ∧ (.pred B ts)) ∧
+      ∀ d, ExpandAt isC Θ NoPrune i d p p' (d ∧ (.pred B ts))) := by
   induction h with
   | top => exact Or.inl ⟨rfl, fun _ => .top⟩
   | cstr hB _ => exact Or.inr ⟨_, _, rfl, fun _ => .cstr hB trivial⟩
@@ -911,7 +911,7 @@ theorem ExpandAt.delta {i : Nat} {c c' : Form} {p p' : PTree}
 
 /-- Two constraint leaves in either order: the stores agree up to `⊣⊢`. -/
 theorem PEq.swap_leaves (c B₁ B₂ : Form) :
-    PEq (.and (.and c B₁) B₂) (.and (.and c B₂) B₁) :=
+    PEq ((c ∧ B₁) ∧ B₂) ((c ∧ B₂) ∧ B₁) :=
   (PEq.and_assoc _ _ _).trans
     ((PEq.and (PEq.refl _) (PEq.and_comm _ _)).trans (PEq.and_assoc _ _ _).symm)
 

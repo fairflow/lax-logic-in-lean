@@ -74,7 +74,7 @@ theorem SNt.steps {Γ : List PLLFormula} {φ : PLLFormula} {t t' : Tm Γ φ}
   | refl _ => exact id
   | head h1 _ ih => exact fun h => ih (h.inv h1)
 
-theorem SNt.abort {Γ : List PLLFormula} (φ : PLLFormula) {t : Tm Γ .falsePLL}
+theorem SNt.abort {Γ : List PLLFormula} (φ : PLLFormula) {t : Tm Γ ⊥}
     (h : SNt t) : SNt (Tm.abort φ t) :=
   Acc.of_inversion (f := Tm.abort φ)
     (fun hy => by cases hy with | abortCong h' => exact ⟨_, rfl, h'⟩) h
@@ -557,13 +557,13 @@ theorem rename_rename {Γ Δ Θ : List PLLFormula} {C : PLLFormula}
 
 /-- Scrutinee steps lift through the stack. -/
 theorem plug_step {Γ : List PLLFormula} {C : PLLFormula} :
-    ∀ {A : PLLFormula} (K : Kont Γ C A) {t t' : Tm Γ (somehow A)},
+    ∀ {A : PLLFormula} (K : Kont Γ C A) {t t' : Tm Γ (◯A)},
     Step t t' → Step (K.plug t) (K.plug t')
   | _, .nil, _, _, h => h
   | _, .cons u K, _, _, h => plug_step K (.bindCong₁ h)
 
 theorem plug_steps {Γ : List PLLFormula} {C A : PLLFormula}
-    (K : Kont Γ C A) {t t' : Tm Γ (somehow A)}
+    (K : Kont Γ C A) {t t' : Tm Γ (◯A)}
     (h : Steps t t') : Steps (K.plug t) (K.plug t') :=
   Steps.cong (fun hs => K.plug_step hs) h
 
@@ -587,7 +587,7 @@ inductive KStep : ∀ {Γ : List PLLFormula} {C A : PLLFormula},
 /-- Stack steps are steps of any plugged term. -/
 theorem KStep.plug_step : ∀ {Γ : List PLLFormula} {C A : PLLFormula}
     {K K' : Kont Γ C A}, KStep K K' →
-    ∀ (t : Tm Γ (somehow A)), Step (K.plug t) (K'.plug t) := by
+    ∀ (t : Tm Γ (◯A)), Step (K.plug t) (K'.plug t) := by
   intro Γ C A K K' h
   induction h with
   | frame h' => exact fun t => Kont.plug_step _ (.bindCong₂ h')
@@ -616,16 +616,16 @@ interface).  This is `cut_aux`'s `leftCommute` in continuation clothing;
 the scrutinee is kept general precisely so the lemma can be reused for
 neutral, `val`- and `bind`-headed `X` alike. -/
 theorem plug_step_cases : ∀ {Γ : List PLLFormula} {C A : PLLFormula}
-    (K : Kont Γ C A) (X : Tm Γ (somehow A)) {y : Tm Γ (somehow C)},
+    (K : Kont Γ C A) (X : Tm Γ (◯A)) {y : Tm Γ (◯C)},
     Step (K.plug X) y →
     (∃ X', Step X X' ∧ y = K.plug X') ∨
     (∃ K', KStep K K' ∧ y = K'.plug X) ∨
-    (∃ (s₀ : Tm Γ A) (B : PLLFormula) (u₀ : Tm (A :: Γ) (somehow B))
+    (∃ (s₀ : Tm Γ A) (B : PLLFormula) (u₀ : Tm (A :: Γ) (◯B))
         (K₀ : Kont Γ C B), X = .val s₀ ∧ K = .cons u₀ K₀ ∧
         y = K₀.plug (u₀.subst1 s₀)) ∨
-    (∃ (A₀ : PLLFormula) (t₀ : Tm Γ (somehow A₀))
-        (t₁ : Tm (A₀ :: Γ) (somehow A)) (B : PLLFormula)
-        (u₀ : Tm (A :: Γ) (somehow B)) (K₀ : Kont Γ C B),
+    (∃ (A₀ : PLLFormula) (t₀ : Tm Γ (◯A₀))
+        (t₁ : Tm (A₀ :: Γ) (◯A)) (B : PLLFormula)
+        (u₀ : Tm (A :: Γ) (◯B)) (K₀ : Kont Γ C B),
         X = .bind t₀ t₁ ∧ K = .cons u₀ K₀ ∧
         y = K₀.plug (.bind t₀ (.bind t₁ (u₀.rename Ren.skip1)))) := by
   intro Γ C A K
@@ -667,7 +667,7 @@ theorem Tm.rename_skip1_subst_lift {Γ : List PLLFormula} {A B χ : PLLFormula}
 /-- Instantiating a merged frame is binding the instance against the
 original frame. -/
 theorem bind_subst1_merge {Γ : List PLLFormula} {A B C : PLLFormula}
-    (u : Tm (A :: Γ) (somehow B)) (u₀ : Tm (B :: Γ) (somehow C)) (s : Tm Γ A) :
+    (u : Tm (A :: Γ) (◯B)) (u₀ : Tm (B :: Γ) (◯C)) (s : Tm Γ A) :
     (Tm.bind u (u₀.rename Ren.skip1)).subst1 s = Tm.bind (u.subst1 s) u₀ := by
   show Tm.bind (u.subst (Sub.cons s Sub.ids))
       ((u₀.rename Ren.skip1).subst (Sub.lift (Sub.cons s Sub.ids))) = _
@@ -681,7 +681,7 @@ interface-assoc reduct keeps the first component — the underlying term is
 literally unchanged — and shortens the stack, which is exactly the case
 bare `Acc`-induction cannot handle and ordinal rank can. -/
 theorem principal : ∀ {Γ : List PLLFormula} {A B C : PLLFormula}
-    (s : Tm Γ A) (u : Tm (A :: Γ) (somehow B)) (K : Kont Γ C B),
+    (s : Tm Γ A) (u : Tm (A :: Γ) (◯B)) (K : Kont Γ C B),
     SNt s → SNt (K.plug (u.subst1 s)) →
     SNt (K.plug (.bind (.val s) u)) := by
   suffices H : ∀ (μ : Ordinal × ℕ × Ordinal) {Γ A B C}
@@ -813,7 +813,7 @@ theorem SRed.sn : ∀ {φ : PLLFormula} {Γ : List PLLFormula} {t : Tm Γ φ},
 
 /-- The `◯`-clause at the identity renaming. -/
 theorem SRed.plugSN {Γ : List PLLFormula} {A C : PLLFormula}
-    {t : Tm Γ (somehow A)} (ht : SRed (somehow A) t)
+    {t : Tm Γ (◯A)} (ht : SRed (◯A) t)
     {K : Kont Γ C A} (hK : KRedP (SRed A) K) : SNt (K.plug t) := by
   have h := ht.2 (fun {_} v => v) K hK
   rwa [Tm.rename_id] at h
@@ -893,8 +893,8 @@ induction is on the SN of a canonical witness for the stack, namely the
 weakened stack plugged with a reducible variable. -/
 theorem sn_plug_neut {Γ : List PLLFormula} {C A : PLLFormula}
     (hvar : SRed A (Tm.var (Var.here (Γ := Γ) (φ := A))))
-    {t : Tm Γ (somehow A)} (hne : SNeut t)
-    (hred : ∀ t', Step t t' → SRed (somehow A) t')
+    {t : Tm Γ (◯A)} (hne : SNeut t)
+    (hred : ∀ t', Step t t' → SRed (◯A) t')
     {K : Kont Γ C A} (hK : KRedP (SRed A) K) : SNt (K.plug t) := by
   have hmt : SNt ((K.rename (fun v => .there v)).plug (.val (.var .here))) :=
     hK _ _ hvar
@@ -1000,7 +1000,7 @@ are new, via the pole and the principal lemma respectively.
 
 /-- Reduction sequences from `inl` stay `inl`. -/
 theorem steps_inl : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
-    {x z : Tm Γ (A.or B)}, Steps x z →
+    {x z : Tm Γ (A ∨ B)}, Steps x z →
     ∀ {a : Tm Γ A}, x = .inl a → ∃ a', z = .inl a' ∧ Steps a a' := by
   intro Γ A B x z h
   induction h with
@@ -1017,7 +1017,7 @@ theorem steps_inl : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
 
 /-- Reduction sequences from `inr` stay `inr`. -/
 theorem steps_inr : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
-    {x z : Tm Γ (A.or B)}, Steps x z →
+    {x z : Tm Γ (A ∨ B)}, Steps x z →
     ∀ {a : Tm Γ B}, x = .inr a → ∃ a', z = .inr a' ∧ Steps a a' := by
   intro Γ A B x z h
   induction h with
@@ -1034,7 +1034,7 @@ theorem steps_inr : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
 
 /-- Abort terms over SN scrutinees are reducible. -/
 theorem sred_abort {Γ : List PLLFormula} {φ : PLLFormula}
-    {t : Tm Γ .falsePLL} (h : SNt t) : SRed φ (.abort φ t) :=
+    {t : Tm Γ ⊥} (h : SNt t) : SRed φ (.abort φ t) :=
   Acc.selfInduction (P := fun t => SRed φ (Tm.abort φ t)) h fun t _ ih =>
     SRed.cr3 trivial fun y hy => by
       cases hy with
@@ -1064,14 +1064,14 @@ theorem sred_lam {Γ : List PLLFormula} {A B : PLLFormula} {b : Tm (A :: Γ) B}
     (hbsn : SNt b)
     (H : ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) (s : Tm Δ A),
       SRed A s → SRed B ((b.rename ρ.lift).subst1 s)) :
-    SRed (A.ifThen B) (.lam b) :=
+    SRed (A ↠ B) (.lam b) :=
   ⟨hbsn.lam, fun ρ _s hs =>
     sred_beta_exp (hbsn.rename ρ.lift) hs (fun s' hs' => H ρ s' hs')⟩
 
 /-- Pairs of reducibles are reducible. -/
 theorem sred_pair {Γ : List PLLFormula} {A B : PLLFormula}
     {a : Tm Γ A} {b : Tm Γ B} (ha : SRed A a) (hb : SRed B b) :
-    SRed (A.and B) (.pair a b) := by
+    SRed (A ∧ B) (.pair a b) := by
   refine Acc.pairInduction (P := fun a b =>
       SRed A a → SRed B b → SRed (A.and B) (.pair a b)) ha.sn hb.sn ?_ ha hb
   intro a b _ _ iha ihb ha hb
@@ -1093,7 +1093,7 @@ theorem sred_pair {Γ : List PLLFormula} {A B : PLLFormula}
 
 /-- Left injections of reducibles are reducible. -/
 theorem sred_inl {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ A}
-    (ha : SRed A a) : SRed (A.or B) (.inl a) :=
+    (ha : SRed A a) : SRed (A ∨ B) (.inl a) :=
   ⟨SNt.inl ha.sn,
    fun hst => by
      obtain ⟨a', heq, hsteps⟩ := steps_inl hst rfl
@@ -1105,7 +1105,7 @@ theorem sred_inl {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ A}
 
 /-- Right injections of reducibles are reducible. -/
 theorem sred_inr {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ B}
-    (ha : SRed B a) : SRed (A.or B) (.inr a) := by
+    (ha : SRed B a) : SRed (A ∨ B) (.inr a) := by
   -- (Lean ≥4.31: see `red_inr` in PLLReducibility.lean for why the
   -- impossible branch, listed first here, needs `refine` up front rather
   -- than a plain term-mode anonymous constructor.)
@@ -1118,7 +1118,7 @@ theorem sred_inr {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ B}
 
 /-- `val`s of reducibles are reducible: immediate from the pole. -/
 theorem sred_val {Γ : List PLLFormula} {A : PLLFormula} {a : Tm Γ A}
-    (ha : SRed A a) : SRed (somehow A) (.val a) := by
+    (ha : SRed A a) : SRed (◯A) (.val a) := by
   refine ⟨SNt.val ha.sn, ?_⟩
   intro Δ ρ C K hK
   have h := hK (fun {_} v => v) (a.rename ρ) (ha.rename ρ)
@@ -1127,8 +1127,8 @@ theorem sred_val {Γ : List PLLFormula} {A : PLLFormula} {a : Tm Γ A}
 
 /-- Case analysis over reducibles with reducible branches is reducible. -/
 theorem sred_case {Γ : List PLLFormula} {A B χ : PLLFormula}
-    {t : Tm Γ (A.or B)} {u₁ : Tm (A :: Γ) χ} {u₂ : Tm (B :: Γ) χ}
-    (h1sn : SNt u₁) (h2sn : SNt u₂) (ht : SRed (A.or B) t)
+    {t : Tm Γ (A ∨ B)} {u₁ : Tm (A :: Γ) χ} {u₂ : Tm (B :: Γ) χ}
+    (h1sn : SNt u₁) (h2sn : SNt u₂) (ht : SRed (A ∨ B) t)
     (H₁ : ∀ s : Tm Γ A, SRed A s → SRed χ (u₁.subst1 s))
     (H₂ : ∀ s : Tm Γ B, SRed B s → SRed χ (u₂.subst1 s)) :
     SRed χ (.case t u₁ u₂) := by
@@ -1153,11 +1153,11 @@ lemma the whole file exists for.  The `◯`-clause of `bind t u` at a stack
 `cons u K`; reducibility of the extended stack is exactly the principal
 lemma. -/
 theorem sred_bind {Γ : List PLLFormula} {A B : PLLFormula}
-    {t : Tm Γ (somehow A)} {u : Tm (A :: Γ) (somehow B)}
-    (ht : SRed (somehow A) t)
+    {t : Tm Γ (◯A)} {u : Tm (A :: Γ) (◯B)}
+    (ht : SRed (◯A) t)
     (H : ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) (s : Tm Δ A),
-      SRed A s → SRed (somehow B) ((u.rename ρ.lift).subst1 s)) :
-    SRed (somehow B) (.bind t u) := by
+      SRed A s → SRed (◯B) ((u.rename ρ.lift).subst1 s)) :
+    SRed (◯B) (.bind t u) := by
   have hcl : ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) {C : PLLFormula}
       (K : Kont Δ C B), KRedP (SRed B) K →
       SNt (K.plug ((Tm.bind t u).rename ρ)) := by

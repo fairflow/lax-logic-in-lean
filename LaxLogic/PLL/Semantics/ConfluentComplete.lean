@@ -89,7 +89,7 @@ theorem DerivU.rename {Γ Γ' : List PLLFormula} {φ : PLLFormula} (H : ∀ ψ �
   rcases h with h | h
   exacts [Or.inl h, Or.inr (H ψ h)]
 
-theorem DerivU.mp {Γ : List PLLFormula} {φ ψ : PLLFormula} (h₁ : DerivU Γ (φ.ifThen ψ)) (h₂ : DerivU Γ φ) :
+theorem DerivU.mp {Γ : List PLLFormula} {φ ψ : PLLFormula} (h₁ : DerivU Γ (φ ↠ ψ)) (h₂ : DerivU Γ φ) :
     DerivU Γ ψ := by
   obtain ⟨L₁, hL₁, ⟨p₁⟩⟩ := h₁
   obtain ⟨L₂, hL₂, ⟨p₂⟩⟩ := h₂
@@ -103,14 +103,14 @@ theorem DerivU.mp {Γ : List PLLFormula} {φ ψ : PLLFormula} (h₁ : DerivU Γ 
         tauto
 
 theorem DerivU.deduction {Γ : List PLLFormula} {φ ψ : PLLFormula} (h : DerivU (φ :: Γ) ψ) :
-    DerivU Γ (φ.ifThen ψ) := by
+    DerivU Γ (φ ↠ ψ) := by
   obtain ⟨L, hL, ⟨p⟩⟩ := h
   refine ⟨L, hL, ⟨.impIntro (p.rename ?_)⟩⟩
   intro θ hθ
   simp only [List.mem_append, List.mem_cons] at hθ ⊢
   tauto
 
-theorem DerivU.unit {Γ : List PLLFormula} {φ : PLLFormula} (h : DerivU Γ φ) : DerivU Γ (somehow φ) := by
+theorem DerivU.unit {Γ : List PLLFormula} {φ : PLLFormula} (h : DerivU Γ φ) : DerivU Γ (◯φ) := by
   obtain ⟨L, hL, ⟨p⟩⟩ := h
   exact ⟨L, hL, ⟨.laxIntro p⟩⟩
 
@@ -130,7 +130,7 @@ theorem SDeriv.mono {T U : Set PLLFormula} {φ : PLLFormula} (hTU : T ⊆ U) :
   exact ⟨Γ, fun ψ h => hTU (hΓ ψ h), hd⟩
 
 theorem SDeriv.mp {T : Set PLLFormula} {φ ψ : PLLFormula}
-    (h₁ : SDeriv T (φ.ifThen ψ)) (h₂ : SDeriv T φ) : SDeriv T ψ := by
+    (h₁ : SDeriv T (φ ↠ ψ)) (h₂ : SDeriv T φ) : SDeriv T ψ := by
   obtain ⟨Γ₁, hΓ₁, hd₁⟩ := h₁
   obtain ⟨Γ₂, hΓ₂, hd₂⟩ := h₂
   refine ⟨Γ₁ ++ Γ₂, ?_, ?_⟩
@@ -142,12 +142,12 @@ theorem SDeriv.mp {T : Set PLLFormula} {φ ψ : PLLFormula}
       (hd₂.rename (by intro θ h; simp only [List.mem_append]; tauto))
 
 theorem SDeriv.unit {T : Set PLLFormula} {φ : PLLFormula} (h : SDeriv T φ) :
-    SDeriv T (somehow φ) := by
+    SDeriv T (◯φ) := by
   obtain ⟨Γ, hΓ, hd⟩ := h
   exact ⟨Γ, hΓ, hd.unit⟩
 
 theorem SDeriv.andI {T : Set PLLFormula} {φ ψ : PLLFormula}
-    (h₁ : SDeriv T φ) (h₂ : SDeriv T ψ) : SDeriv T (φ.and ψ) := by
+    (h₁ : SDeriv T φ) (h₂ : SDeriv T ψ) : SDeriv T (φ ∧ ψ) := by
   obtain ⟨Γ₁, hΓ₁, L₁, hL₁, ⟨p₁⟩⟩ := h₁
   obtain ⟨Γ₂, hΓ₂, L₂, hL₂, ⟨p₂⟩⟩ := h₂
   refine ⟨Γ₁ ++ Γ₂, ?_, L₁ ++ L₂, ?_, ⟨.andIntro (p₁.rename ?_) (p₂.rename ?_)⟩⟩
@@ -163,29 +163,29 @@ theorem SDeriv.andI {T : Set PLLFormula} {φ ψ : PLLFormula}
     tauto
 
 theorem SDeriv.andE₁ {T : Set PLLFormula} {φ ψ : PLLFormula}
-    (h : SDeriv T (PLLFormula.and φ ψ)) : SDeriv T φ := by
+    (h : SDeriv T (φ ∧ ψ)) : SDeriv T φ := by
   obtain ⟨Γ, hΓ, L, hL, ⟨p⟩⟩ := h
   exact ⟨Γ, hΓ, L, hL, ⟨.andElim1 p⟩⟩
 
 theorem SDeriv.andE₂ {T : Set PLLFormula} {φ ψ : PLLFormula}
-    (h : SDeriv T (PLLFormula.and φ ψ)) : SDeriv T ψ := by
+    (h : SDeriv T (φ ∧ ψ)) : SDeriv T ψ := by
   obtain ⟨Γ, hΓ, L, hL, ⟨p⟩⟩ := h
   exact ⟨Γ, hΓ, L, hL, ⟨.andElim2 p⟩⟩
 
 theorem SDeriv.orI₁ {T : Set PLLFormula} {φ ψ : PLLFormula} (h : SDeriv T φ) :
-    SDeriv T (PLLFormula.or φ ψ) := by
+    SDeriv T (φ ∨ ψ) := by
   obtain ⟨Γ, hΓ, L, hL, ⟨p⟩⟩ := h
   exact ⟨Γ, hΓ, L, hL, ⟨.orIntro1 p⟩⟩
 
 theorem SDeriv.orI₂ {T : Set PLLFormula} {φ ψ : PLLFormula} (h : SDeriv T ψ) :
-    SDeriv T (PLLFormula.or φ ψ) := by
+    SDeriv T (φ ∨ ψ) := by
   obtain ⟨Γ, hΓ, L, hL, ⟨p⟩⟩ := h
   exact ⟨Γ, hΓ, L, hL, ⟨.orIntro2 p⟩⟩
 
 /-- Deduction theorem, set form.  Decidable equality of formulas
 filters the used context. -/
 theorem SDeriv.deduction {T : Set PLLFormula} {φ ψ : PLLFormula}
-    (h : SDeriv (insert φ T) ψ) : SDeriv T (φ.ifThen ψ) := by
+    (h : SDeriv (insert φ T) ψ) : SDeriv T (φ ↠ ψ) := by
   obtain ⟨Γ, hΓ, hd⟩ := h
   refine ⟨Γ.filter (fun θ => decide (θ ≠ φ)), ?_, ?_⟩
   · intro θ hθ
@@ -203,8 +203,8 @@ theorem SDeriv.deduction {T : Set PLLFormula} {φ ψ : PLLFormula}
 
 /-- `∨`-elimination at set level. -/
 theorem SDeriv.or_elim {T : Set PLLFormula} {A B ψ : PLLFormula}
-    (h₀ : SDeriv T (A.or B))
-    (h₁ : SDeriv T (A.ifThen ψ)) (h₂ : SDeriv T (B.ifThen ψ)) :
+    (h₀ : SDeriv T (A ∨ B))
+    (h₁ : SDeriv T (A ↠ ψ)) (h₂ : SDeriv T (B ↠ ψ)) :
     SDeriv T ψ := by
   obtain ⟨Γ₀, hΓ₀, L₀, hL₀, ⟨p₀⟩⟩ := h₀
   obtain ⟨Γ₁, hΓ₁, L₁, hL₁, ⟨p₁⟩⟩ := h₁

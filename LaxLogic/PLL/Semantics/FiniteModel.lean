@@ -111,7 +111,7 @@ theorem subF_trans : ∀ (χ : PLLFormula) {φ : PLLFormula},
 
 /-- The closure `{⊥} ∪ subF φ` is subformula-closed. -/
 theorem subClosed_insert_bot_subF (φ₀ : PLLFormula) :
-    SubClosed (insert PLLFormula.falsePLL (subF φ₀)) := by
+    SubClosed (insert ⊥ (subF φ₀)) := by
   have step : ∀ {φ ψ : PLLFormula}, ψ ∈ subF φ →
       φ ∈ insert PLLFormula.falsePLL (subF φ₀) →
       ψ ∈ insert PLLFormula.falsePLL (subF φ₀) := by

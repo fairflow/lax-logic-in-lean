@@ -211,7 +211,7 @@ theorem trace_atoms {C : ConstraintModel} {cl : Finset PLLFormula}
 
 /-- The `fall` clause holds for the functor (the closure carries `⊥`). -/
 theorem trace_fall {C : ConstraintModel} {cl : Finset PLLFormula}
-    (hbot : PLLFormula.falsePLL ∈ cl) {c : C.W} :
+    (hbot : ⊥ ∈ cl) {c : C.W} :
     (c ∈ C.F ↔ trace C cl c ∈ (canonFin cl).F) := by
   constructor
   · intro h; exact mem_traceT_val.mpr ⟨hbot, h⟩
@@ -439,12 +439,12 @@ discharges `BoxRowAmalgAll` (truth lemma + the realisability pack). -/
 theorem boxRowAmalgAll_of_realises {p : String} {φ ψ : PLLFormula}
     {cl : Finset PLLFormula} (hcl : SubClosed cl)
     (hat : ∀ q ∈ φ.atoms, q ≠ p → PLLFormula.prop q ∈ cl)
-    (hbox : φ.somehow ∈ cl)
+    (hbox : ◯φ ∈ cl)
     (h : ∀ (C : ConstraintModel) (x : C.W),
       (∀ y, C.Rm x y → ¬ C.force y ψ) →
       ∃ k : (canonFin cl).W,
         Realises C (canonFin cl) p (fun q => PLLFormula.prop q ∈ cl) x k ∧
-        φ.somehow ∈ k.1.fal) :
+        ◯φ ∈ k.1.fal) :
     BoxRowAmalgAll p φ ψ := by
   refine boxRowAmalgAll_of_desc (dom := fun q => PLLFormula.prop q ∈ cl)
     hat ?_
@@ -458,12 +458,12 @@ triple with `◯φ ∈ val` realised over `w`. -/
 theorem boxRowAmalgEx_of_realises {p : String} {φ ψ : PLLFormula}
     {cl : Finset PLLFormula} (hcl : SubClosed cl)
     (hat : ∀ q ∈ φ.atoms, q ≠ p → PLLFormula.prop q ∈ cl)
-    (hbox : φ.somehow ∈ cl)
+    (hbox : ◯φ ∈ cl)
     (h : ∀ (C : ConstraintModel) (w : C.W),
       (∀ x, C.Ri w x → ∃ y, C.Rm x y ∧ C.force y ψ) →
       ∃ k : (canonFin cl).W,
         Realises C (canonFin cl) p (fun q => PLLFormula.prop q ∈ cl) w k ∧
-        φ.somehow ∈ k.1.val) :
+        ◯φ ∈ k.1.val) :
     BoxRowAmalgEx p φ ψ := by
   refine boxRowAmalgEx_of_desc (dom := fun q => PLLFormula.prop q ∈ cl)
     hat ?_
@@ -615,10 +615,10 @@ the consistent ∀-side pre-triple to a closure-maximal triple with
 `◯φ ∈ fal`, the pre-triple below it, and the promises exactly
 preserved. -/
 theorem preTripleAll_extend {C : ConstraintModel} {cl : Finset PLLFormula}
-    {p : String} {x : C.W} {φ : PLLFormula} (hbox : φ.somehow ∈ cl)
+    {p : String} {x : C.W} {φ : PLLFormula} (hbox : ◯φ ∈ cl)
     (hcons : (preTripleAll C cl p x φ).Cons) :
     ∃ T : (canonFin cl).W,
-      φ.somehow ∈ T.1.fal ∧
+      ◯φ ∈ T.1.fal ∧
       (preTripleAll C cl p x φ).le T.1 ∧
       T.1.mfal = (preTripleAll C cl p x φ).mfal := by
   obtain ⟨T', hle, hM, hmf⟩ := lindenbaum hcons
@@ -630,10 +630,10 @@ theorem preTripleAll_extend {C : ConstraintModel} {cl : Finset PLLFormula}
 /-- Dually: the consistent ∃-side pre-triple extends to a
 closure-maximal triple with `◯φ ∈ val`. -/
 theorem preTripleEx_extend {C : ConstraintModel} {cl : Finset PLLFormula}
-    {p : String} {w : C.W} {φ : PLLFormula} (hbox : φ.somehow ∈ cl)
+    {p : String} {w : C.W} {φ : PLLFormula} (hbox : ◯φ ∈ cl)
     (hcons : (preTripleEx C cl p w φ).Cons) :
     ∃ T : (canonFin cl).W,
-      φ.somehow ∈ T.1.val ∧
+      ◯φ ∈ T.1.val ∧
       (preTripleEx C cl p w φ).le T.1 ∧
       T.1.mfal = (preTripleEx C cl p w φ).mfal := by
   obtain ⟨T', hle, hM, hmf⟩ := lindenbaum hcons

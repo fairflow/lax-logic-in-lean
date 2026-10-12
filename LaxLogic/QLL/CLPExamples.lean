@@ -101,15 +101,15 @@ def proof95 : CProof := ((runL ex95 isC95 false 20 goal95).map (·.1)).getD .top
 theorem check95 : checkC isC95 ex95 goal95 proof95 = true := by decide +kernel
 
 /-- The answer constraint is `c₁ ∧ c₃`. -/
-theorem total95 : proof95.total = .and (.pred "c1" []) (.pred "c3" []) := by decide +kernel
+theorem total95 : proof95.total = ((.pred "c1" []) ∧ (.pred "c3" [])) := by decide +kernel
 
 /-- Answer soundness for Example 9.5. -/
-theorem prv95 : Prv ex95.forms (.imp (.and (.pred "c1" []) (.pred "c3" [])) goal95) :=
+theorem prv95 : Prv ex95.forms (.imp ((.pred "c1" []) ∧ (.pred "c3" [])) goal95) :=
   total95 ▸ (checkC_sound isC95 ex95 proof95 goal95 check95).prv_total
 
 /-- All answers: the two branches of `θ₃`. -/
 theorem all95 : (proveAll ex95 isC95 false 20 goal95 ⟨[], 0⟩).map (·.1.total) =
-    [.and (.pred "c1" []) (.pred "c3" []), .and (.pred "c2" []) (.pred "c4" [])] := by
+    [((.pred "c1" []) ∧ (.pred "c3" [])), ((.pred "c2" []) ∧ (.pred "c4" []))] := by
   decide +kernel
 
 def c (i : Nat) : Form := .pred s!"c{i}" []
@@ -117,7 +117,7 @@ def P (i : Nat) : Form := .pred s!"P{i}" []
 
 /-- The draft's six steps: Rule 5, 2a, 3, 5, 1, 1. -/
 theorem steps95 : Steps isC95 ex95 (fun _ => True)
-    ⟨.top, [goal95]⟩ ⟨.and (.and .top (c 1)) (c 3), []⟩ :=
+    ⟨.top, [goal95]⟩ ⟨((.and .top (c 1)) ∧ (c 3)), []⟩ :=
   .step (Step.clause (l := []) (r := []) (cl := θ3) 2 [] rfl rfl rfl (by simp)) <|
   .step (Step.orL (l := []) (r := [])) <|
   .step (Step.and (l := []) (r := [])) <|
@@ -128,7 +128,7 @@ theorem steps95 : Steps isC95 ex95 (fun _ => True)
 
 /-- **Example 9.5**, through Corollary 9.8. -/
 theorem cor95 : Prv ex95.forms
-    (.imp (.and (.and .top (c 1)) (c 3)) (.and .top (.and goal95 .top))) :=
+    (.imp ((.and .top (c 1)) ∧ (c 3)) (.and .top (.and goal95 .top))) :=
   steps_sound steps95 rfl
 
 /-! ## The `◯` pass on the same examples -/
@@ -162,7 +162,7 @@ draft's six steps is, up to `⊣⊢`, the constraint extracted from an abstract 
 of `◯Q` against `Θ♯`. -/
 theorem thm97_95 : ∃ p : CProof, CTyped isC95 ex95 goal95 p ∧
     ATyped (ex95.abs isC95 .ex) .ex goal95 p.toA ∧
-    PEq (.and (.and .top (c 1)) (c 3)) (p.toA.ext (ex95.table isC95)).1 :=
+    PEq ((.and .top (c 1)) ∧ (c 3)) (p.toA.ext (ex95.table isC95)).1 :=
   thm_9_7 .ex heads95 steps95 (.pred _ _) (by decide)
 
 /-! ## Generated programs -/

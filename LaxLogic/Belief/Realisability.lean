@@ -231,10 +231,10 @@ def fullEvidence (P : Pca) (C : ConstraintModel) : Evidence P C where
 truth-forces `◯(A ∨ B)`, but no element `⊩ᵘ`-realises it — the uniform tag would
 have to decide disjunct `A` at world `a` and disjunct `B` at world `b`. -/
 theorem bite_uniform_split :
-    modelOrSplit.force W3.r (somehow ((prop "A").or (prop "B"))) ∧
+    modelOrSplit.force W3.r (◯((prop "A") ∨ (prop "B"))) ∧
     ∀ x : ℕ,
       ¬ realU natPca (fullEvidence natPca modelOrSplit)
-          (somehow ((prop "A").or (prop "B"))) x W3.r := by
+          (◯((prop "A") ∨ (prop "B"))) x W3.r := by
   refine ⟨by decide, ?_⟩
   intro x hx
   simp only [realU] at hx
@@ -340,7 +340,7 @@ theorem ob_strength (P : Pca) {C : ConstraintModel} (A B : HProp P.Carrier C)
 predicate of `φ`: the modality is interpreted by the belief operator. -/
 theorem realU_somehow_mem (P : Pca) {C : ConstraintModel} (Ev : Evidence P C)
     (φ : PLLFormula) (x : P.Carrier) (w : C.W) :
-    realU P Ev (.somehow φ) x w ↔
+    realU P Ev (◯φ) x w ↔
       x ∈ ob C (fun u => {y | realU P Ev φ y u}) w :=
   Iff.rfl
 
@@ -358,7 +358,7 @@ reading `◯ = ¬¬` is the `Rₘ = Rᵢ` instance of the constraint semantics. 
 theorem force_somehow_iff_notnot (C : ConstraintModel)
     (hRm : ∀ {w v : C.W}, C.Rm w v ↔ C.Ri w v) (hF : C.F = ∅)
     (M : PLLFormula) (w : C.W) :
-    C.force w (somehow M) ↔ C.force w (notPLL (notPLL M)) := by
+    C.force w (◯M) ↔ C.force w (notPLL (notPLL M)) := by
   constructor
   · intro h v hv hneg
     rcases h v hv with ⟨u, hmu, hu⟩
@@ -387,7 +387,7 @@ its fixed tag already decides the disjunct at every constraint-witness.  With
 /-- **Universal `⊩ᵘ`-realiser for `∨`-distribution.** -/
 theorem uniform_dist_valid (P : Pca) {C : ConstraintModel} (Ev : Evidence P C)
     (I : P.Carrier) (hI : ∀ b, P.app I b = some b) (φ ψ : PLLFormula) (w : C.W) :
-    realU P Ev ((somehow (φ.or ψ)).ifThen ((somehow φ).or (somehow ψ))) I w := by
+    realU P Ev ((◯(φ ∨ ψ)) ↠ ((◯φ) ∨ (◯ψ))) I w := by
   simp only [realU]
   intro v _hv
   refine Or.inr fun b hb => ⟨b, hI b, ?_⟩
@@ -431,7 +431,7 @@ theorem no_evidence_B_at_a (y : P.Carrier) :
 
 /-- No element realises `A ⊃ B` at the root. -/
 theorem no_realU_impAB_at_root (y : P.Carrier) :
-    ¬ realU P (EvChain P) ((prop "A").ifThen (prop "B")) y W3.r := by
+    ¬ realU P (EvChain P) ((prop "A") ↠ (prop "B")) y W3.r := by
   intro hy
   rcases hy W3.a (Or.inr (Or.inl rfl)) with hF | himp
   · exact hF.elim
@@ -442,7 +442,7 @@ theorem no_realU_impAB_at_root (y : P.Carrier) :
 /-- No element realises `◯(A ⊃ B)` at the root: the only `Rₘ`-witness of `r` is
 `r` itself. -/
 theorem no_realU_obImpAB_at_root (y : P.Carrier) :
-    ¬ realU P (EvChain P) (somehow ((prop "A").ifThen (prop "B"))) y W3.r := by
+    ¬ realU P (EvChain P) (◯((prop "A") ↠ (prop "B"))) y W3.r := by
   intro hy
   rcases hy W3.r (Or.inl rfl) with hF | ⟨u, hmu, hu⟩
   · exact hF.elim
@@ -453,7 +453,7 @@ theorem no_realU_obImpAB_at_root (y : P.Carrier) :
 /-- No element realises `◯A` at the root (the only witness is `r`, where `A`
 has no evidence). -/
 theorem no_realU_obA_at_root (b : P.Carrier) :
-    ¬ realU P (EvChain P) (somehow (prop "A")) b W3.r := by
+    ¬ realU P (EvChain P) (◯(prop "A")) b W3.r := by
   intro hb
   rcases hb W3.r (Or.inl rfl) with hF | ⟨u, hmu, hu⟩
   · exact hF.elim
@@ -465,7 +465,7 @@ theorem no_realU_obA_at_root (b : P.Carrier) :
 
 /-- Every element realises `◯B` at worlds `a` and `b` (the witness is `b`). -/
 theorem realU_obB_above (b' : P.Carrier) (v : W3) (hv : v ≠ W3.r) :
-    realU P (EvChain P) (somehow (prop "B")) b' v := by
+    realU P (EvChain P) (◯(prop "B")) b' v := by
   intro v' hv'
   refine Or.inr ⟨W3.b, ?_, Or.inr (show W3.b ∈ vChain "B" by decide)⟩
   -- `v' Rₘ b`: from `a` via the step `a Rₘ b`, from `b` by reflexivity
@@ -482,7 +482,7 @@ theorem realU_obB_above (b' : P.Carrier) (v : W3) (hv : v ≠ W3.r) :
 /-- The identity realises `◯A ⊃ ◯B` at the root: vacuously at `r` (no realiser
 of `◯A` there), and via the `b`-witness above `r`. -/
 theorem id_realises_obA_imp_obB (I : P.Carrier) (hI : ∀ b, P.app I b = some b) :
-    realU P (EvChain P) ((somehow (prop "A")).ifThen (somehow (prop "B"))) I
+    realU P (EvChain P) ((◯(prop "A")) ↠ (◯(prop "B"))) I
       W3.r := by
   intro v _hv
   refine Or.inr fun b' hb' => ⟨b', hI b', ?_⟩
@@ -498,8 +498,7 @@ identity combinator (`skk` in a genuine PCA).  With `uniform_dist_valid`, the
 theorem impdist_not_uniform (I : P.Carrier) (hI : ∀ b, P.app I b = some b)
     (e : P.Carrier) :
     ¬ realU P (EvChain P)
-        (((somehow (prop "A")).ifThen (somehow (prop "B"))).ifThen
-          (somehow ((prop "A").ifThen (prop "B")))) e W3.r := by
+        (((◯(prop "A")) ↠ (◯(prop "B"))) ↠ (◯((prop "A") ↠ (prop "B")))) e W3.r := by
   intro he
   rcases he W3.r (Or.inl rfl) with hF | himp
   · exact hF.elim
@@ -535,7 +534,7 @@ theorem strategy_realises_obAB (b₀ : P.Carrier)
     (h_b : ∃ y, P.app b₀ (κ W3.b) = some y ∧ P.fst y = κ W3.b ∧
       (P.untag (P.snd y)).1 = true) :
     realS P (fullEvidence P modelOrSplit) κ
-      (somehow ((prop "A").or (prop "B"))) b₀ W3.r := by
+      (◯((prop "A") ∨ (prop "B"))) b₀ W3.r := by
   intro v _hv
   refine Or.inr ?_
   cases v with
@@ -565,8 +564,7 @@ theorem strategy_dist_refuted (b₀ : P.Carrier)
       (P.untag (P.snd y)).1 = true)
     (e : P.Carrier) :
     ¬ realS P (fullEvidence P modelOrSplit) κ
-        ((somehow ((prop "A").or (prop "B"))).ifThen
-          ((somehow (prop "A")).or (somehow (prop "B")))) e W3.r := by
+        ((◯((prop "A") ∨ (prop "B"))) ↠ ((◯(prop "A")) ∨ (◯(prop "B")))) e W3.r := by
   intro he
   rcases he W3.r (Or.inl rfl) with hF | himp
   · exact hF.elim
@@ -617,7 +615,7 @@ def splitCode : W3 → ℕ
 root of the split model (contrast `bite_uniform_split`). -/
 theorem strategy_realises_obAB_split :
     realS splitPca (fullEvidence splitPca modelOrSplit) splitCode
-      (somehow ((prop "A").or (prop "B"))) 0 W3.r :=
+      (◯((prop "A") ∨ (prop "B"))) 0 W3.r :=
   strategy_realises_obAB splitPca splitCode 0
     ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩
     ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩
@@ -628,8 +626,7 @@ refutes `◯(A∨B) ⊃ (◯A ∨ ◯B)` at the root — the truth countermodel 
 strategy clause. -/
 theorem strategy_dist_refuted_split (e : ℕ) :
     ¬ realS splitPca (fullEvidence splitPca modelOrSplit) splitCode
-        ((somehow ((prop "A").or (prop "B"))).ifThen
-          ((somehow (prop "A")).or (somehow (prop "B")))) e W3.r :=
+        ((◯((prop "A") ∨ (prop "B"))) ↠ ((◯(prop "A")) ∨ (◯(prop "B")))) e W3.r :=
   strategy_dist_refuted splitPca splitCode 0
     ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩
     ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩

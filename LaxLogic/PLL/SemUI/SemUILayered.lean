@@ -443,8 +443,8 @@ fails at the lone point. -/
 theorem weak_escape_breaks_force_iff :
     ∃ (B : LayeredBisimW (fun _ => True) chainFM oneW),
       B.Z 2 false () ∧
-      chainFM.force false (PLLFormula.falsePLL.somehow) ∧
-      ¬ oneW.force () (PLLFormula.falsePLL.somehow) := by
+      chainFM.force false (◯⊥) ∧
+      ¬ oneW.force () (◯⊥) := by
   refine ⟨⟨fun _ w w' => w = false, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
     rfl, ?_, ?_⟩
   · exact fun h => h

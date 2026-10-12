@@ -41,7 +41,7 @@ theorem Spine.lift {φ σ : PLLFormula} :
 
 /-- Descend one `◯` at the target's top. -/
 theorem Spine.unbox {φ σ : PLLFormula} :
-    Spine φ σ.somehow → Spine φ σ := by
+    Spine φ ◯σ → Spine φ σ := by
   intro s
   generalize hσ : σ.somehow = τ at s
   induction s with
@@ -52,7 +52,7 @@ theorem Spine.unbox {φ σ : PLLFormula} :
 conclude `Γ, D→B ⇒ E`. -/
 theorem weak_Imp : ∀ {n : Nat} {Γ : List PLLFormula} {D : PLLFormula},
     G4h n Γ D → ∀ {B E : PLLFormula}, G4c (B :: Γ) E →
-    G4c (D.ifThen B :: Γ) E := by
+    G4c ((D ↠ B) :: Γ) E := by
   intro n Γ D d
   induction d with
   | init h =>
@@ -159,7 +159,7 @@ theorem weak_Imp : ∀ {n : Nat} {Γ : List PLLFormula} {D : PLLFormula},
 
 /-- `weak_Imp` at the working judgment. -/
 theorem weak_Imp' {Γ : List PLLFormula} {D B E : PLLFormula}
-    (d : G4c Γ D) (side : G4c (B :: Γ) E) : G4c (D.ifThen B :: Γ) E := by
+    (d : G4c Γ D) (side : G4c (B :: Γ) E) : G4c ((D ↠ B) :: Γ) E := by
   obtain ⟨n, hd⟩ := d
   exact weak_Imp hd side
 
@@ -168,8 +168,8 @@ open G4 (perm_cons_cases perm_shuffle) in
 occurrence of `(A→B)→D` may be replaced by `A, B→D, B→D`. -/
 theorem impLImp_dup : ∀ {n : Nat} {Γ' : List PLLFormula} {E : PLLFormula},
     G4h n Γ' E → ∀ {A B D : PLLFormula} {Γ : List PLLFormula},
-    Γ'.Perm ((A.ifThen B).ifThen D :: Γ) →
-    G4c (A :: B.ifThen D :: B.ifThen D :: Γ) E := by
+    Γ'.Perm (((A ↠ B) ↠ D) :: Γ) →
+    G4c (A :: (B ↠ D) :: (B ↠ D) :: Γ) E := by
   intro n Γ' E d
   induction d with
   | init h =>

@@ -176,9 +176,9 @@ theorem closed_lax_ge_eight : witnesses.Pairwise NotEquiv := by
 
 /-- `◯(¬◯⊥)` is inequivalent to each of the seven other closed witnesses. -/
 theorem somehow_neg_box_new :
-    ∀ ψ ∈ [bot, Ob, neg Ob, neg (neg Ob), (neg (neg Ob)).ifThen Ob,
-            (neg Ob).or (neg (neg Ob)), neg bot],
-      NotEquiv ((neg Ob).somehow) ψ := by
+    ∀ ψ ∈ [bot, Ob, neg Ob, neg (neg Ob), ((neg (neg Ob)) ↠ Ob),
+            ((neg Ob) ∨ (neg (neg Ob))), neg bot],
+      NotEquiv (◯(neg Ob)) ψ := by
   intro ψ hψ
   fin_cases hψ <;> exact ineq_imp_notEquiv (by decide)
 
@@ -501,14 +501,14 @@ def rhoLad : ℕ → PLLFormula
   | (n+2) => (sLad (n+1)).ifThen (sLad n)
 
 theorem rn_force_prop (a : String) (w : ℕ) : rnModel.force w (prop a) ↔ w = 0 := Iff.rfl
-theorem rn_force_bot (w : ℕ) : rnModel.force w falsePLL ↔ False :=
+theorem rn_force_bot (w : ℕ) : rnModel.force w ⊥ ↔ False :=
   ⟨fun h => absurd h (Set.notMem_empty w), False.elim⟩
 theorem rn_force_or (w : ℕ) (a b : PLLFormula) :
-    rnModel.force w (a.or b) ↔ rnModel.force w a ∨ rnModel.force w b := Iff.rfl
+    rnModel.force w (a ∨ b) ↔ rnModel.force w a ∨ rnModel.force w b := Iff.rfl
 theorem rn_force_imp (w : ℕ) (a b : PLLFormula) :
-    rnModel.force w (a.ifThen b) ↔ ∀ v, rnLe w v → rnModel.force v a → rnModel.force v b := Iff.rfl
+    rnModel.force w (a ↠ b) ↔ ∀ v, rnLe w v → rnModel.force v a → rnModel.force v b := Iff.rfl
 theorem rn_force_negp (w : ℕ) :
-    rnModel.force w ((prop "p").ifThen falsePLL) ↔ ∀ v, rnLe w v → v ≠ 0 := by
+    rnModel.force w ((prop "p") ↠ ⊥) ↔ ∀ v, rnLe w v → v ≠ 0 := by
   rw [rn_force_imp]
   constructor
   · intro h v hv hv0; exact (rn_force_bot v).mp (h v hv ((rn_force_prop "p" v).mpr hv0))

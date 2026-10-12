@@ -301,7 +301,7 @@ theorem somehow_p_not_p_realP (P : Pca) (tok : String → P.Carrier)
       ∃ s, ∀ i b, P.app s (P.pair (κ i) b) = some (g i)) :
     ∃ hwf : demoM.WellFormed, ∃ hlt : 2 < demoM.n,
       (∃ x, x ⊩ᵖ[tokenEvidence P demoM hwf tok, κ, ⟨2, hlt⟩]
-        (prop "p").somehow) ∧
+        ◯(prop "p")) ∧
       ¬ ∃ x, x ⊩ᵖ[tokenEvidence P demoM hwf tok, κ, ⟨2, hlt⟩] (prop "p") := by
   obtain ⟨hwf, hlt, hΓ, hC⟩ := realP_refutes_sequent
     (M := demoM) (w := 2) (Γ := [(prop "p").somehow]) (C := prop "p")
@@ -419,7 +419,7 @@ finite model, explicit evidence, explicit algebra; no hypotheses. -/
 theorem somehow_p_not_p_realP_tbl :
     ∃ hwf : demoM.WellFormed, ∃ hlt : 2 < demoM.n,
       (∃ x, x ⊩ᵖ[tokenEvidence tblPca demoM hwf (fun _ => Tbl.base 0), tblκ,
-        ⟨2, hlt⟩] (prop "p").somehow) ∧
+        ⟨2, hlt⟩] ◯(prop "p")) ∧
       ¬ ∃ x, x ⊩ᵖ[tokenEvidence tblPca demoM hwf (fun _ => Tbl.base 0), tblκ,
         ⟨2, hlt⟩] (prop "p") :=
   somehow_p_not_p_realP tblPca (fun _ => Tbl.base 0) tblκ tbl_htab tbl_htabP

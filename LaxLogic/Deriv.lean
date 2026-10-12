@@ -49,43 +49,43 @@ theorem rename {Γ Γ' : List PLLFormula} {φ : PLLFormula}
   | ⟨p⟩ => ⟨p.rename H⟩
 
 theorem falsoElim {Γ : List PLLFormula} (φ : PLLFormula) :
-    Deriv Γ .falsePLL → Deriv Γ φ
+    Deriv Γ ⊥ → Deriv Γ φ
   | ⟨p⟩ => ⟨.falsoElim φ p⟩
 
 theorem impIntro {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv (φ :: Γ) ψ → Deriv Γ (φ.ifThen ψ)
+    Deriv (φ :: Γ) ψ → Deriv Γ (φ ↠ ψ)
   | ⟨p⟩ => ⟨.impIntro p⟩
 
 theorem impElim {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ (φ.ifThen ψ) → Deriv Γ φ → Deriv Γ ψ
+    Deriv Γ (φ ↠ ψ) → Deriv Γ φ → Deriv Γ ψ
   | ⟨p⟩, ⟨q⟩ => ⟨.impElim p q⟩
 
 theorem andIntro {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ φ → Deriv Γ ψ → Deriv Γ (φ.and ψ)
+    Deriv Γ φ → Deriv Γ ψ → Deriv Γ (φ ∧ ψ)
   | ⟨p⟩, ⟨q⟩ => ⟨.andIntro p q⟩
 
 theorem andElim1 {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ (φ.and ψ) → Deriv Γ φ
+    Deriv Γ (φ ∧ ψ) → Deriv Γ φ
   | ⟨p⟩ => ⟨.andElim1 p⟩
 
 theorem andElim2 {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ (φ.and ψ) → Deriv Γ ψ
+    Deriv Γ (φ ∧ ψ) → Deriv Γ ψ
   | ⟨p⟩ => ⟨.andElim2 p⟩
 
 theorem orIntro1 {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ φ → Deriv Γ (φ.or ψ)
+    Deriv Γ φ → Deriv Γ (φ ∨ ψ)
   | ⟨p⟩ => ⟨.orIntro1 p⟩
 
 theorem orIntro2 {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ ψ → Deriv Γ (φ.or ψ)
+    Deriv Γ ψ → Deriv Γ (φ ∨ ψ)
   | ⟨p⟩ => ⟨.orIntro2 p⟩
 
 theorem orElim {Γ : List PLLFormula} {φ ψ χ : PLLFormula} :
-    Deriv Γ (φ.or ψ) → Deriv (φ :: Γ) χ → Deriv (ψ :: Γ) χ → Deriv Γ χ
+    Deriv Γ (φ ∨ ψ) → Deriv (φ :: Γ) χ → Deriv (ψ :: Γ) χ → Deriv Γ χ
   | ⟨p⟩, ⟨q₁⟩, ⟨q₂⟩ => ⟨.orElim p q₁ q₂⟩
 
 theorem somehowMono {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv (φ :: Γ) ψ → Deriv (.somehow φ :: Γ) (.somehow ψ)
+    Deriv (φ :: Γ) ψ → Deriv (◯φ :: Γ) (◯ψ)
   | ⟨p⟩ => ⟨LaxND.somehowMono p⟩
 
 /-- Weaken a one-hypothesis derivation to any context carrying that
