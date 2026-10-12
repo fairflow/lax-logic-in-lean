@@ -169,6 +169,12 @@ theorem completeness {Γ φ} (h : Γ ⊨- φ) :
     Nonempty (LaxND Γ φ)
 \end{lstlisting}
 
+\noindent In the clauses of \texttt{force} the formula connectives occur only
+in the patterns on the left, as constructors. The \ensuremath{\wedge}, \ensuremath{\vee},
+\ensuremath{\to}, \ensuremath{\forall} and \ensuremath{\exists} on the right are Lean's own, on
+propositions: the definition translates each formula connective into the
+corresponding statement about worlds.
+
 \noindent \texttt{soundness} audits \texttt{[propext]};
 \texttt{completeness} is the parent's Zorn construction, clean-classical
 and kept as the foil for Section 6.2. The three countermodels of the
@@ -545,98 +551,114 @@ accompany the artefact.
 \subsection*{Index of declarations}\label{app:index}
 
 Results and definitions cited in the text as [D\,$n$], in order of first
-citation: the Lean name, its file, and the axioms it depends on, as
-recorded in the artefact's proof-status ledger. File names are relative to
-\texttt{LaxLogic/} unless they begin \texttt{wip/}.
+citation: the Lean name, its file, and its audit, as recorded in the
+artefact's proof-status ledger. Each name is linked to its declaration in
+the public repository. File names are relative to \texttt{LaxLogic/}
+unless they begin \texttt{wip/}.
+
+\medskip
+\noindent The audit column, here and in the orientation table above, gives
+the axioms a declaration depends on:
+
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+none & no axioms \\
+{[propext]} & \texttt{propext} only \\
+{[p,Q]} & \texttt{propext}, \texttt{Quot.sound}: no choice \\
+clean & \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound} \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 {\footnotesize\raggedright
-\declentry{PLLFormula}{\texttt{PLLFormula}}{\texttt{PLL/\allowbreak{}Syntax/\allowbreak{}Formula.lean}}{none}
-\declentry{LaxND}{\texttt{PLLND.\allowbreak{}LaxND}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}NDCore.lean}}{none}
-\declentry{Tm}{\texttt{PLLND.\allowbreak{}Tm}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Terms.lean}}{none}
-\declentry{SC}{\texttt{PLLND.\allowbreak{}SC}}{\texttt{PLL/\allowbreak{}Sequent/\allowbreak{}Sequent.lean}}{none}
-\declentry{conservativity-IPL}{\texttt{PLLND.\allowbreak{}conservativity\_IPL}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}NDCore.lean}}{propext, Quot.sound}
-\declentry{craig-interpolation-}{\texttt{PLLND.\allowbreak{}craig\_interpolation'}}{\texttt{PLL/\allowbreak{}Sequent/\allowbreak{}Craig.lean}}{propext, Quot.sound}
-\declentry{soundness}{\texttt{PLLND.\allowbreak{}soundness}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}}{propext}
-\declentry{completeness}{\texttt{PLLND.\allowbreak{}completeness}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Completeness.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{nucleus-eq-sup-bot}{\texttt{BeliefLax.\allowbreak{}nucleus\_eq\_sup\_bot}}{\texttt{Belief/\allowbreak{}Collapse.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{nucleusOrderIsoBot}{\texttt{BeliefLax.\allowbreak{}nucleusOrderIsoBot}}{\texttt{Belief/\allowbreak{}BooleanIso.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{em-of-openNucleus-eq-closedNucleus}{\texttt{BeliefLax.\allowbreak{}em\_of\_openNucleus\_eq\_closedNucleus}}{\texttt{Belief/\allowbreak{}OpenClosed.lean}}{propext}
-\declentry{closed-lax-infinite}{\texttt{PLLND.\allowbreak{}LaxInfinite.\allowbreak{}closed\_lax\_infinite}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}LaxInfinite.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{chain3-card}{\texttt{BeliefLax.\allowbreak{}chain3\_card}}{\texttt{Belief/\allowbreak{}Examples.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{chain3-open-ne-closed}{\texttt{BeliefLax.\allowbreak{}chain3\_open\_ne\_closed}}{\texttt{Belief/\allowbreak{}Examples.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{Ctx-thm6}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}thm6}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{Ctx-corollary10}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}corollary10}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{Ctx-thm2-boolean-algebra}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}thm2\_boolean\_algebra}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{propext, Quot.sound}
-\declentry{varfree-exactly-six}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}varfree\_exactly\_six}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{six-pairwise}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}six\_pairwise}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{varfree-exactly-four}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}varfree\_exactly\_four}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{four-distinct}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}four\_distinct}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{varfree-dichotomy}{\texttt{PLLND.\allowbreak{}NoFall.\allowbreak{}varfree\_dichotomy}}{\texttt{PLL/\allowbreak{}UI/\allowbreak{}NoFall.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{varfree-exactly-six-wem0}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}varfree\_exactly\_six\_wem0}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{varfree-exactly-four-em0}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}varfree\_exactly\_four\_em0}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{derivLin-iff-valid}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}derivLin\_iff\_valid}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{box-nobot}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}box\_nobot}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{box-nobot-em}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}box\_nobot\_em}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{box-trivial}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}box\_trivial}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{nucleus-not-closed-Fin3}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}nucleus\_not\_closed\_Fin3}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{K-does-not-force-dist}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}K\_does\_not\_force\_dist}}{\texttt{wip/\allowbreak{}classical.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{dist-of-lin}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}dist\_of\_lin}}{\texttt{wip/\allowbreak{}linear.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{converseK-fails-infallible}{\texttt{ConverseK.\allowbreak{}converseK\_fails\_infallible}}{\texttt{wip/\allowbreak{}converseK.lean}}{propext, Quot.sound}
-\declentry{converseK-fails-fallible}{\texttt{ConverseK.\allowbreak{}converseK\_fails\_fallible}}{\texttt{wip/\allowbreak{}converseK.lean}}{propext, Quot.sound}
-\declentry{depth-box-gap-one-exact}{\texttt{PLLND.\allowbreak{}Depth.\allowbreak{}depth\_box\_gap\_one\_exact}}{\texttt{wip/\allowbreak{}depth2.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{visible-top}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_top}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{visible-rnSub-one}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_one}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{visible-rnSub-two}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_two}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{visible-rnSub-four}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_four}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{visible-rnSub-six}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_six}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{not-joinPrime-rnSub-odd}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}not\_joinPrime\_rnSub\_odd}}{\texttt{wip/\allowbreak{}visible.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{bite-uniform-split}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}bite\_uniform\_split}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{uniform-dist-valid}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}uniform\_dist\_valid}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{none}
-\declentry{not-provable-somehow-or-dist}{\texttt{PLLND.\allowbreak{}not\_provable\_somehow\_or\_dist}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{strategy-realises-obAB}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}strategy\_realises\_obAB}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{strategy-dist-refuted}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}strategy\_dist\_refuted}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{impdist-not-uniform}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}impdist\_not\_uniform}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{realS-fullness-obstruction}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realS\_fullness\_obstruction}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Quot.sound}
-\declentry{FinCM}{\texttt{PLLND.\allowbreak{}FinCM}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{none}
-\declentry{forceB}{\texttt{PLLND.\allowbreak{}FinCM.\allowbreak{}forceB}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
-\declentry{force-iff}{\texttt{PLLND.\allowbreak{}FinCM.\allowbreak{}force\_iff}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
-\declentry{realP-adequate-and-full}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_adequate\_and\_full}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{propext, Quot.sound}
-\declentry{realP-refutes-sequent}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_refutes\_sequent}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{propext, Quot.sound}
-\declentry{Tbl}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}Tbl}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{none}
-\declentry{tblPca}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}tblPca}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{propext}
-\declentry{realP-refutes-sequent-tbl}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_refutes\_sequent\_tbl}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{propext, Quot.sound}
-\declentry{FTheory}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}FTheory}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
-\declentry{cons-iff-check}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}cons\_iff\_check}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{cons-insVal-or-insFal}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}cons\_insVal\_or\_insFal}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
-\declentry{lindenbaum}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}lindenbaum}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
-\declentry{truth-lemma}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}truth\_lemma}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
-\declentry{finite-canonical-countermodel}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}finite\_canonical\_countermodel}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
-\declentry{emitter-completeness}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}emitter\_completeness}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{propext, Quot.sound}
-\declentry{derivable-iff-no-realP-refutation}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}derivable\_iff\_no\_realP\_refutation}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}RealCompleteness.lean}}{propext, Quot.sound}
-\declentry{CounterEmit-emit}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emit}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
-\declentry{demoM}{\texttt{PLLND.\allowbreak{}demoM}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{none}
-\declentry{emitMin}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emitMin}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
-\declentry{emitMinClean}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emitMinClean}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{propext, Quot.sound}
-\declentry{force-hered}{\texttt{PLLND.\allowbreak{}ConstraintModel.\allowbreak{}force\_hered}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}}{none}
-\declentry{riEquiv}{\texttt{PLLND.\allowbreak{}Diagram.\allowbreak{}riEquiv}}{\texttt{PLL/\allowbreak{}Search/\allowbreak{}Diagram.lean}}{propext, Quot.sound}
-\declentry{rmEquiv}{\texttt{PLLND.\allowbreak{}Diagram.\allowbreak{}rmEquiv}}{\texttt{PLL/\allowbreak{}Search/\allowbreak{}Diagram.lean}}{propext, Quot.sound}
-\declentry{extract-sound}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}extract\_sound}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{ob-strength}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}ob\_strength}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{none}
-\declentry{mu-eta-not-mutually-inverse}{\texttt{PLLND.\allowbreak{}mu\_eta\_not\_mutually\_inverse}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Idempotency.lean}}{propext}
-\declentry{eta-mu-not-conv-id}{\texttt{PLLND.\allowbreak{}eta\_mu\_not\_conv\_id}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Idempotency.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{falsePath-beats-topological}{\texttt{PLLND.\allowbreak{}falsePath\_beats\_topological}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Timing.lean}}{none}
-\declentry{skip-beats-topological}{\texttt{PLLND.\allowbreak{}skip\_beats\_topological}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingAdder.lean}}{none}
-\declentry{ready-bound}{\texttt{PLLND.\allowbreak{}RippleN.\allowbreak{}ready\_bound}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingRipple.lean}}{propext, Quot.sound}
-\declentry{ripple-tight}{\texttt{PLLND.\allowbreak{}RippleN.\allowbreak{}ripple\_tight}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingRipple.lean}}{propext, Quot.sound}
-\declentry{lookahead-beats-ripple}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}lookahead\_beats\_ripple}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{balGP-eq-linGP}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}balGP\_eq\_linGP}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{lookahead-eq-ripple-gp}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}lookahead\_eq\_ripple\_gp}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{cElem-beats-sequential}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}cElem\_beats\_sequential}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{arbiter-no-distribution}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}arbiter\_no\_distribution}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{propext, Quot.sound}
-\declentry{arbiter-not-confluent}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}arbiter\_not\_confluent}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{propext, Quot.sound}
-\declentry{derivU-iff-confluent-valid}{\texttt{PLLND.\allowbreak{}ConfluentU.\allowbreak{}derivU\_iff\_confluent\_valid}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}ConfluentComplete.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{force-somehow-iff-notnot}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}force\_somehow\_iff\_notnot}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
-\declentry{force-somehow-iff-of-confluent}{\texttt{PLLND.\allowbreak{}force\_somehow\_iff\_of\_confluent}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{none}
-\declentry{force-somehow-or-dist-of-confluent}{\texttt{PLLND.\allowbreak{}force\_somehow\_or\_dist\_of\_confluent}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{propext}
-\declentry{modelOrSplit-not-confluent}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}modelOrSplit\_not\_confluent}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{propext, Classical.choice, Quot.sound}
+\declentry{PLLFormula}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Syntax/Formula.lean\#L6}{\texttt{PLLFormula}}}{\texttt{PLL/\allowbreak{}Syntax/\allowbreak{}Formula.lean}}{none}
+\declentry{LaxND}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/ND/NDCore.lean\#L79}{\texttt{PLLND.\allowbreak{}LaxND}}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}NDCore.lean}}{none}
+\declentry{Tm}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/ND/Terms.lean\#L60}{\texttt{PLLND.\allowbreak{}Tm}}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Terms.lean}}{none}
+\declentry{SC}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Sequent/Sequent.lean\#L58}{\texttt{PLLND.\allowbreak{}SC}}}{\texttt{PLL/\allowbreak{}Sequent/\allowbreak{}Sequent.lean}}{none}
+\declentry{conservativity-IPL}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/ND/NDCore.lean\#L220}{\texttt{PLLND.\allowbreak{}conservativity\_IPL}}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}NDCore.lean}}{[p,Q]}
+\declentry{craig-interpolation-}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Sequent/Craig.lean\#L511}{\texttt{PLLND.\allowbreak{}craig\_interpolation'}}}{\texttt{PLL/\allowbreak{}Sequent/\allowbreak{}Craig.lean}}{[p,Q]}
+\declentry{soundness}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/Kripke.lean\#L102}{\texttt{PLLND.\allowbreak{}soundness}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}}{[propext]}
+\declentry{completeness}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/Completeness.lean\#L614}{\texttt{PLLND.\allowbreak{}completeness}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Completeness.lean}}{clean}
+\declentry{nucleus-eq-sup-bot}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Collapse.lean\#L48}{\texttt{BeliefLax.\allowbreak{}nucleus\_eq\_sup\_bot}}}{\texttt{Belief/\allowbreak{}Collapse.lean}}{clean}
+\declentry{nucleusOrderIsoBot}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/BooleanIso.lean\#L55}{\texttt{BeliefLax.\allowbreak{}nucleusOrderIsoBot}}}{\texttt{Belief/\allowbreak{}BooleanIso.lean}}{clean}
+\declentry{em-of-openNucleus-eq-closedNucleus}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/OpenClosed.lean\#L39}{\texttt{BeliefLax.\allowbreak{}em\_of\_openNucleus\_eq\_closedNucleus}}}{\texttt{Belief/\allowbreak{}OpenClosed.lean}}{[propext]}
+\declentry{closed-lax-infinite}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/LaxInfinite.lean\#L616}{\texttt{PLLND.\allowbreak{}LaxInfinite.\allowbreak{}closed\_lax\_infinite}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}LaxInfinite.lean}}{clean}
+\declentry{chain3-card}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Examples.lean\#L26}{\texttt{BeliefLax.\allowbreak{}chain3\_card}}}{\texttt{Belief/\allowbreak{}Examples.lean}}{clean}
+\declentry{chain3-open-ne-closed}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Examples.lean\#L38}{\texttt{BeliefLax.\allowbreak{}chain3\_open\_ne\_closed}}}{\texttt{Belief/\allowbreak{}Examples.lean}}{clean}
+\declentry{Ctx-thm6}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CtxCompleteness.lean\#L651}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}thm6}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{clean}
+\declentry{Ctx-corollary10}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CtxCompleteness.lean\#L980}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}corollary10}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{clean}
+\declentry{Ctx-thm2-boolean-algebra}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CtxCompleteness.lean\#L1649}{\texttt{PLLND.\allowbreak{}Ctx.\allowbreak{}thm2\_boolean\_algebra}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CtxCompleteness.lean}}{[p,Q]}
+\declentry{varfree-exactly-six}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/linear.lean\#L428}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}varfree\_exactly\_six}}}{\texttt{wip/\allowbreak{}linear.lean}}{clean}
+\declentry{six-pairwise}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/linear.lean\#L441}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}six\_pairwise}}}{\texttt{wip/\allowbreak{}linear.lean}}{clean}
+\declentry{varfree-exactly-four}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/classical.lean\#L346}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}varfree\_exactly\_four}}}{\texttt{wip/\allowbreak{}classical.lean}}{clean}
+\declentry{four-distinct}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/classical.lean\#L357}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}four\_distinct}}}{\texttt{wip/\allowbreak{}classical.lean}}{clean}
+\declentry{varfree-dichotomy}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/UI/NoFall.lean\#L190}{\texttt{PLLND.\allowbreak{}NoFall.\allowbreak{}varfree\_dichotomy}}}{\texttt{PLL/\allowbreak{}UI/\allowbreak{}NoFall.lean}}{clean}
+\declentry{varfree-exactly-six-wem0}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/linear.lean\#L435}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}varfree\_exactly\_six\_wem0}}}{\texttt{wip/\allowbreak{}linear.lean}}{clean}
+\declentry{varfree-exactly-four-em0}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/classical.lean\#L351}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}varfree\_exactly\_four\_em0}}}{\texttt{wip/\allowbreak{}classical.lean}}{clean}
+\declentry{derivLin-iff-valid}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/linear.lean\#L609}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}derivLin\_iff\_valid}}}{\texttt{wip/\allowbreak{}linear.lean}}{clean}
+\declentry{box-nobot}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/linear.lean\#L309}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}box\_nobot}}}{\texttt{wip/\allowbreak{}linear.lean}}{clean}
+\declentry{box-nobot-em}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/classical.lean\#L378}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}box\_nobot\_em}}}{\texttt{wip/\allowbreak{}classical.lean}}{clean}
+\declentry{box-trivial}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/classical.lean\#L151}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}box\_trivial}}}{\texttt{wip/\allowbreak{}classical.lean}}{clean}
+\declentry{nucleus-not-closed-Fin3}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/classical.lean\#L415}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}nucleus\_not\_closed\_Fin3}}}{\texttt{wip/\allowbreak{}classical.lean}}{clean}
+\declentry{K-does-not-force-dist}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/classical.lean\#L162}{\texttt{PLLND.\allowbreak{}ClassicalLax.\allowbreak{}K\_does\_not\_force\_dist}}}{\texttt{wip/\allowbreak{}classical.lean}}{clean}
+\declentry{dist-of-lin}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/linear.lean\#L155}{\texttt{PLLND.\allowbreak{}LinearLax.\allowbreak{}dist\_of\_lin}}}{\texttt{wip/\allowbreak{}linear.lean}}{clean}
+\declentry{converseK-fails-infallible}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/converseK.lean\#L54}{\texttt{ConverseK.\allowbreak{}converseK\_fails\_infallible}}}{\texttt{wip/\allowbreak{}converseK.lean}}{[p,Q]}
+\declentry{converseK-fails-fallible}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/converseK.lean\#L57}{\texttt{ConverseK.\allowbreak{}converseK\_fails\_fallible}}}{\texttt{wip/\allowbreak{}converseK.lean}}{[p,Q]}
+\declentry{depth-box-gap-one-exact}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/depth2.lean\#L411}{\texttt{PLLND.\allowbreak{}Depth.\allowbreak{}depth\_box\_gap\_one\_exact}}}{\texttt{wip/\allowbreak{}depth2.lean}}{clean}
+\declentry{visible-top}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/visible.lean\#L156}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_top}}}{\texttt{wip/\allowbreak{}visible.lean}}{clean}
+\declentry{visible-rnSub-one}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/visible.lean\#L308}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_one}}}{\texttt{wip/\allowbreak{}visible.lean}}{clean}
+\declentry{visible-rnSub-two}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/visible.lean\#L312}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_two}}}{\texttt{wip/\allowbreak{}visible.lean}}{clean}
+\declentry{visible-rnSub-four}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/visible.lean\#L316}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_four}}}{\texttt{wip/\allowbreak{}visible.lean}}{clean}
+\declentry{visible-rnSub-six}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/visible.lean\#L381}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}visible\_rnSub\_six}}}{\texttt{wip/\allowbreak{}visible.lean}}{clean}
+\declentry{not-joinPrime-rnSub-odd}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/wip/visible.lean\#L398}{\texttt{PLLND.\allowbreak{}Visibility.\allowbreak{}not\_joinPrime\_rnSub\_odd}}}{\texttt{wip/\allowbreak{}visible.lean}}{clean}
+\declentry{bite-uniform-split}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L233}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}bite\_uniform\_split}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{clean}
+\declentry{uniform-dist-valid}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L388}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}uniform\_dist\_valid}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{none}
+\declentry{not-provable-somehow-or-dist}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/Frames.lean\#L142}{\texttt{PLLND.\allowbreak{}not\_provable\_somehow\_or\_dist}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{clean}
+\declentry{strategy-realises-obAB}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L529}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}strategy\_realises\_obAB}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{clean}
+\declentry{strategy-dist-refuted}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L558}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}strategy\_dist\_refuted}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{clean}
+\declentry{impdist-not-uniform}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L498}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}impdist\_not\_uniform}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{clean}
+\declentry{realS-fullness-obstruction}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L1234}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realS\_fullness\_obstruction}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{[p,Q]}
+\declentry{FinCM}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CountermodelEmit.lean\#L44}{\texttt{PLLND.\allowbreak{}FinCM}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{none}
+\declentry{forceB}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CountermodelEmit.lean\#L69}{\texttt{PLLND.\allowbreak{}FinCM.\allowbreak{}forceB}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{[p,Q]}
+\declentry{force-iff}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CountermodelEmit.lean\#L149}{\texttt{PLLND.\allowbreak{}FinCM.\allowbreak{}force\_iff}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{[p,Q]}
+\declentry{realP-adequate-and-full}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Realisability/Evidence.lean\#L145}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_adequate\_and\_full}}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{[p,Q]}
+\declentry{realP-refutes-sequent}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Realisability/Evidence.lean\#L270}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_refutes\_sequent}}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{[p,Q]}
+\declentry{Tbl}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Realisability/Evidence.lean\#L332}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}Tbl}}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{none}
+\declentry{tblPca}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Realisability/Evidence.lean\#L356}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}tblPca}}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{[propext]}
+\declentry{realP-refutes-sequent-tbl}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Realisability/Evidence.lean\#L405}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}realP\_refutes\_sequent\_tbl}}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}Evidence.lean}}{[p,Q]}
+\declentry{FTheory}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/FinComp.lean\#L80}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}FTheory}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{[p,Q]}
+\declentry{cons-iff-check}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/FinComp.lean\#L166}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}cons\_iff\_check}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{clean}
+\declentry{cons-insVal-or-insFal}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/FinComp.lean\#L296}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}cons\_insVal\_or\_insFal}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{[p,Q]}
+\declentry{lindenbaum}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/FinComp.lean\#L445}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}lindenbaum}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{[p,Q]}
+\declentry{truth-lemma}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/FinComp.lean\#L605}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}truth\_lemma}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{[p,Q]}
+\declentry{finite-canonical-countermodel}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/FinComp.lean\#L783}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}finite\_canonical\_countermodel}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{[p,Q]}
+\declentry{emitter-completeness}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/FinComp.lean\#L1367}{\texttt{PLLND.\allowbreak{}FinComp.\allowbreak{}emitter\_completeness}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}FinComp.lean}}{[p,Q]}
+\declentry{derivable-iff-no-realP-refutation}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Realisability/RealCompleteness.lean\#L62}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}derivable\_iff\_no\_realP\_refutation}}}{\texttt{PLL/\allowbreak{}Realisability/\allowbreak{}RealCompleteness.lean}}{[p,Q]}
+\declentry{CounterEmit-emit}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CountermodelEmit.lean\#L387}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emit}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{[p,Q]}
+\declentry{demoM}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CountermodelEmit.lean\#L631}{\texttt{PLLND.\allowbreak{}demoM}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{none}
+\declentry{emitMin}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CountermodelEmit.lean\#L510}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emitMin}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{[p,Q]}
+\declentry{emitMinClean}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/CountermodelEmit.lean\#L523}{\texttt{PLLND.\allowbreak{}CounterEmit.\allowbreak{}emitMinClean}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}CountermodelEmit.lean}}{[p,Q]}
+\declentry{force-hered}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/Kripke.lean\#L64}{\texttt{PLLND.\allowbreak{}ConstraintModel.\allowbreak{}force\_hered}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}}{none}
+\declentry{riEquiv}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Search/Diagram.lean\#L57}{\texttt{PLLND.\allowbreak{}Diagram.\allowbreak{}riEquiv}}}{\texttt{PLL/\allowbreak{}Search/\allowbreak{}Diagram.lean}}{[p,Q]}
+\declentry{rmEquiv}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Search/Diagram.lean\#L64}{\texttt{PLLND.\allowbreak{}Diagram.\allowbreak{}rmEquiv}}}{\texttt{PLL/\allowbreak{}Search/\allowbreak{}Diagram.lean}}{[p,Q]}
+\declentry{extract-sound}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L824}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}extract\_sound}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{clean}
+\declentry{ob-strength}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L327}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}ob\_strength}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{none}
+\declentry{mu-eta-not-mutually-inverse}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/ND/Idempotency.lean\#L230}{\texttt{PLLND.\allowbreak{}mu\_eta\_not\_mutually\_inverse}}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Idempotency.lean}}{[propext]}
+\declentry{eta-mu-not-conv-id}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/ND/Idempotency.lean\#L239}{\texttt{PLLND.\allowbreak{}eta\_mu\_not\_conv\_id}}}{\texttt{PLL/\allowbreak{}ND/\allowbreak{}Idempotency.lean}}{clean}
+\declentry{falsePath-beats-topological}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/Timing.lean\#L276}{\texttt{PLLND.\allowbreak{}falsePath\_beats\_topological}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Timing.lean}}{none}
+\declentry{skip-beats-topological}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/TimingAdder.lean\#L202}{\texttt{PLLND.\allowbreak{}skip\_beats\_topological}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingAdder.lean}}{none}
+\declentry{ready-bound}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/TimingRipple.lean\#L92}{\texttt{PLLND.\allowbreak{}RippleN.\allowbreak{}ready\_bound}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingRipple.lean}}{[p,Q]}
+\declentry{ripple-tight}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/TimingRipple.lean\#L110}{\texttt{PLLND.\allowbreak{}RippleN.\allowbreak{}ripple\_tight}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingRipple.lean}}{[p,Q]}
+\declentry{lookahead-beats-ripple}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/TimingLookahead.lean\#L154}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}lookahead\_beats\_ripple}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{clean}
+\declentry{balGP-eq-linGP}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/TimingLookahead.lean\#L245}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}balGP\_eq\_linGP}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{clean}
+\declentry{lookahead-eq-ripple-gp}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/TimingLookahead.lean\#L306}{\texttt{PLLND.\allowbreak{}Lookahead.\allowbreak{}lookahead\_eq\_ripple\_gp}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}TimingLookahead.lean}}{clean}
+\declentry{cElem-beats-sequential}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/Async.lean\#L122}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}cElem\_beats\_sequential}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{clean}
+\declentry{arbiter-no-distribution}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/Async.lean\#L177}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}arbiter\_no\_distribution}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{[p,Q]}
+\declentry{arbiter-not-confluent}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Timing/Async.lean\#L200}{\texttt{PLLND.\allowbreak{}Async.\allowbreak{}arbiter\_not\_confluent}}}{\texttt{PLL/\allowbreak{}Timing/\allowbreak{}Async.lean}}{[p,Q]}
+\declentry{derivU-iff-confluent-valid}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/ConfluentComplete.lean\#L484}{\texttt{PLLND.\allowbreak{}ConfluentU.\allowbreak{}derivU\_iff\_confluent\_valid}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}ConfluentComplete.lean}}{clean}
+\declentry{force-somehow-iff-notnot}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L358}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}force\_somehow\_iff\_notnot}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{clean}
+\declentry{force-somehow-iff-of-confluent}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/Frames.lean\#L225}{\texttt{PLLND.\allowbreak{}force\_somehow\_iff\_of\_confluent}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{none}
+\declentry{force-somehow-or-dist-of-confluent}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/PLL/Semantics/Frames.lean\#L236}{\texttt{PLLND.\allowbreak{}force\_somehow\_or\_dist\_of\_confluent}}}{\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Frames.lean}}{[propext]}
+\declentry{modelOrSplit-not-confluent}{\href{https://github.com/fairflow/lax-logic-in-lean/blob/0de6225e1/LaxLogic/Belief/Realisability.lean\#L1207}{\texttt{PLLND.\allowbreak{}BeliefReal.\allowbreak{}modelOrSplit\_not\_confluent}}}{\texttt{Belief/\allowbreak{}Realisability.lean}}{clean}
 \par}
