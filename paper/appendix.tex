@@ -110,11 +110,11 @@ theorem cutElimination {Γ C} :
     Nonempty (LaxND Γ C) ↔ SC Γ C
 
 theorem disjunction_property {A B}
-    (h : Nonempty (LaxND [] (A.or B))) :
+    (h : Nonempty (LaxND [] (A ∨ B))) :
     Nonempty (LaxND [] A) ∨ Nonempty (LaxND [] B)
 
 theorem somehow_reflection {A}
-    (h : Nonempty (LaxND [] (A.somehow))) :
+    (h : Nonempty (LaxND [] (◯A))) :
     Nonempty (LaxND [] A)
 \end{lstlisting}
 
@@ -176,9 +176,9 @@ def Fa : PLLFormula :=
 def Ga : PLLFormula := Fa.ifThen (prop "p").somehow
 
 theorem sep_SC :                    -- PLL derives it
-  SC [Ga.somehow, Fa] (prop "r")
+  SC [◯Ga, Fa] (prop "r")
 theorem sep_not_G4 :                -- G4iLL cannot
-  ¬ G4 [Ga.somehow, Fa] (prop "r")
+  ¬ G4 [◯Ga, Fa] (prop "r")
 \end{lstlisting}
 
 \noindent (Neither contraction nor cut is admissible in the published
@@ -290,25 +290,23 @@ The separations of Theorem~\ref{thm:separations}, as mechanised:
 \begin{lstlisting}
 theorem bite_uniform_split :
     modelOrSplit.force W3.r
-      (somehow ((prop "A").or (prop "B"))) ∧
+      (◯(prop "A" ∨ prop "B")) ∧
     ∀ x : ℕ,
       ¬ realU natPca (fullEvidence natPca modelOrSplit)
-          (somehow ((prop "A").or (prop "B"))) x W3.r
+          (◯(prop "A" ∨ prop "B")) x W3.r
 
 theorem uniform_dist_valid
     (P : Pca) {C} (Ev : Evidence P C) (I : P.Carrier)
     (hI : ∀ b, P.app I b = some b)
     (φ ψ : PLLFormula) (w : C.W) :
     realU P Ev
-      ((somehow (φ.or ψ)).ifThen
-        ((somehow φ).or (somehow ψ))) I w
+      (◯(φ ∨ ψ) ↠ ◯φ ∨ ◯ψ) I w
 
 theorem impdist_not_uniform (I : P.Carrier)
     (hI : ∀ b, P.app I b = some b) (e : P.Carrier) :
     ¬ realU P (EvChain P)
-        (((somehow (prop "A")).ifThen
-            (somehow (prop "B"))).ifThen
-          (somehow ((prop "A").ifThen (prop "B"))))
+        ((◯(prop "A") ↠ ◯(prop "B")) ↠
+          ◯(prop "A" ↠ prop "B"))
         e W3.r
 \end{lstlisting}
 

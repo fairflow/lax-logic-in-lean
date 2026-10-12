@@ -908,8 +908,7 @@ kernel-checked certificate
 
 \begin{lstlisting}
 theorem somehow_p_not_p :
-    ¬ Nonempty
-        (LaxND [(prop "p").somehow] (prop "p")) :=
+    [◯(prop "p")] ⊬ prop "p" :=
   FinCM.not_provable_of_check
     (M := demoM) (w := 2) (by decide)
 \end{lstlisting}
