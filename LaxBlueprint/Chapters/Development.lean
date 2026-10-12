@@ -158,6 +158,13 @@ modally reachable world, so the modality quantifies over *constraints*, not
 over time or knowledge.
 :::
 
+:::theorem "force_clauses" (parent := "sem") (lean := "ConstraintModel.force.eq_1, ConstraintModel.force.eq_2, ConstraintModel.force.eq_3, ConstraintModel.force.eq_4, ConstraintModel.force.eq_5, ConstraintModel.force.eq_6")
+The clauses of {uses "force"}[], one per connective, in the notation of the
+library.  The definition is written with the constructors of the formula
+type; these are the equations Lean generates from it, so they are checked
+against the definition and are not restated by hand.
+:::
+
 
 :::theorem "force_hered" (parent := "sem") (lean := "ConstraintModel.force_hered")
 Heredity: forcing is preserved upwards along the intuitionistic order.  The
