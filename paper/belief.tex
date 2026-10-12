@@ -25,7 +25,9 @@
 %% listings `literate' table does NOT fire under LuaLaTeX, see unicode.tex).
 \directlua{luaotfload.add_fallback("monofb",
   {"file:STIXTwoMath-Regular.otf:mode=node;"})}
-\setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase,
+%% Scale: MatchLowercase (about 0.78 against Libertine) made inline code look
+%% larger than the text around it; 0.72 sits inside the line (2026-10-12).
+\setmonofont{DejaVu Sans Mono}[Scale=0.72,
   RawFeature={fallback=monofb}]
 
 %% Pandoc artefacts.
@@ -43,7 +45,9 @@
 %% pdflatex/TAPS path, if ever needed, reverts to listings + the literate
 %% table kept in unicode.tex.
 \DefineVerbatimEnvironment{lstlisting}{Verbatim}{}
-\fvset{fontsize=\footnotesize,xleftmargin=0.5em}
+%% Displayed code at the text size: with the mono scale above it is about 15%
+%% larger than the former \footnotesize, and 55 characters fit the column.
+\fvset{fontsize=\normalsize,xleftmargin=0.5em}
 %% Long Lean identifiers in prose may break (without hyphen) after an
 %% escaped underscore — the column is narrow and the names are not.
 \renewcommand{\_}{\textunderscore\allowbreak}

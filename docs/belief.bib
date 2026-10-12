@@ -56,8 +56,8 @@
   doi       = {10.1007/3-540-45842-5_5},
   note      = {Formal development: the context-completeness theorem (Thm~6) and
              the infinitude of the closed lax fragment are mechanised in Lean~4
-             in the present artefact (\texttt{PLLCtxCompleteness.lean},
-             \texttt{PLLLaxInfinite.lean})}
+             in the present artefact (\texttt{PLL/Semantics/CtxCompleteness.lean},
+             \texttt{PLL/Semantics/LaxInfinite.lean})}
 }
 
 @techreport{FairtloughMendlerWalton1997,
@@ -103,7 +103,7 @@
   doi     = {10.1016/0890-5401(91)90052-4},
   note    = {Formal development: the computational lambda-calculus is mechanised
              as an intrinsically-typed term calculus in the present artefact
-             (\texttt{PLLTerms.lean})}
+             (\texttt{PLL/ND/Terms.lean})}
 }
 
 @article{BentonBiermanDePaiva1998,
@@ -667,7 +667,7 @@
              the lattice of belief modalities. Formal development: the collapse
              (every nucleus on a Boolean algebra is closed, incomplete case
              included) is machine-checked in Lean~4 in the present artefact
-             (\texttt{BeliefCollapse.lean}, \texttt{BeliefBooleanIso.lean})}
+             (\texttt{Belief/Collapse.lean}, \texttt{Belief/BooleanIso.lean})}
 }
 
 @incollection{Simmons1978,
@@ -1113,7 +1113,7 @@
              thirty years before its Kripke completeness. Formal development:
              cut elimination is mechanised in many systems, incl. Lean~4
              (FormalizedFormalLogic/Foundation) and the present artefact's
-             cut-free sequent calculus for PLL (\texttt{PLLSequent.lean})}
+             cut-free sequent calculus for PLL (\texttt{PLL/Sequent/Sequent.lean})}
 }
 
 @incollection{Kripke1965,
@@ -1129,7 +1129,7 @@
   note      = {Formal development: Kripke semantics for intuitionistic and
              modal logics has multiple mechanisations; the F\&M constraint
              refinement is mechanised in the present artefact
-             (\texttt{PLLKripke.lean})}
+             (\texttt{PLL/Semantics/Kripke.lean})}
 }
 
 @article{Newman1942,
@@ -1141,7 +1141,7 @@
   pages   = {223--243},
   year    = {1942},
   note    = {Newman's lemma. Formal development: mechanised in Lean~4 in the
-             present artefact (\texttt{PLLConfluence.lean}: confluence of the
+             present artefact (\texttt{PLL/Normalisation/Confluence.lean}: confluence of the
              lax term calculus from strong normalisation); also available in
              Mathlib and in standard Coq/Isabelle rewriting libraries}
 }
@@ -1171,7 +1171,7 @@
              order. Formal development: well-foundedness of the KB order on an
              inductively well-founded tree is mechanised, fully constructively
              (empty axiom footprint), in the present artefact
-             (\texttt{KleeneBrouwer.lean})}
+             (\texttt{Util/KleeneBrouwer.lean})}
 }
 
 @unpublished{Pataraia1997,
@@ -1195,7 +1195,7 @@
   doi       = {10.1007/11417170_20},
   note      = {Formal development: the $\top\top$-lifting strong-normalisation
              argument is mechanised in Lean~4 in the present artefact
-             (\texttt{PLLTopTop.lean}), apparently the first mechanised
+             (\texttt{PLL/Normalisation/TopTop.lean}), apparently the first mechanised
              $\top\top$-lifting with sums}
 }
 
@@ -1207,9 +1207,9 @@
   year   = {2005},
   note   = {Section 3.5: strong normalisation for $\lambda_{ml}$ with
              unrestricted sums via frame stacks, the paper-form counterpart
-             of the sums case of \texttt{PLLTopTop.lean}; the thesis also
+             of the sums case of \texttt{PLL/Normalisation/TopTop.lean}; the thesis also
              proves confluence and decidable convertibility for
-             $\lambda_{ml}$, cf.\ \texttt{PLLConfluence.lean}}
+             $\lambda_{ml}$, cf.\ \texttt{PLL/Normalisation/Confluence.lean}}
 }
 
 @inproceedings{DoczkalSchwinghammer2009,

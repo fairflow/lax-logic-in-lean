@@ -6,7 +6,7 @@ logic of idealised evidential belief.
 ## The draft
 
 [Belief in Lax Logic (PDF, 19 pages)](belief-in-lax-logic.pdf), built
-2026-08-07 from the TeX source in `paper/` of the repository
+2026-10-12 from the TeX source in `paper/` of the repository
 (`belief.tex`, `body.tex`, `appendix.tex`). The PDF on this site is the
 tracked file `paper/belief.pdf`, copied as it is.
 
