@@ -71,6 +71,11 @@ open Informal
 set_option verso.blueprint.externalCode.strictResolve true
 open PLLND
 
+-- Lean generates the equation theorems of a definition by cases
+-- (`force.eq_1`, …) only when something asks for them.  The node
+-- "force_clauses" prints them, so they are asked for here.
+run_meta do let _ ← Lean.Meta.getEqnsFor? ``ConstraintModel.force
+
 
 #doc (Manual) "The PLL development" =>
 
