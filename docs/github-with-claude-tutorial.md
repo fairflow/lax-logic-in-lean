@@ -315,11 +315,14 @@ minutes earlier in the day took 35–41 minutes by evening.
   try to save the same key, one save wins and the other is discarded; the
   work of the second run is lost.
 - **The repository has a 10 GB cache quota,** with least-recently-used
-  eviction. `leanprover/lean-action` saves roughly 2.6 GB per branch, and the
-  Pages workflow saves its own build caches. A day with many branches and
-  many runs pushes useful caches out, and the next run starts cold: Mathlib's
-  outputs are downloaded again and every project module is rebuilt. That is
-  the jump from minutes to tens of minutes.
+  eviction. `leanprover/lean-action` puts the commit hash in its cache key, so
+  it saved a fresh copy of about 2.7 GB on **every run**, in that run's own
+  scope: one for each push to `main` and one for each pull request. The Pages
+  workflow saves its own caches as well. Two or three runs take the total past
+  the quota, GitHub evicts the least recently used cache, and the next run
+  that needed it starts cold: every project module is rebuilt. That is the
+  jump from minutes to tens of minutes. (First diagnosed as "per branch"; the
+  per-run key was found on 2026-10-11, with usage at 11.2 GB.)
 - **Expensive steps multiply it.** The LJF◯ step adds 9–35 minutes depending
   on what is cached.
 
@@ -333,6 +336,90 @@ minutes earlier in the day took 35–41 minutes by evening.
 - The LJF◯ step runs on pull requests only (PR #29).
 - Merges are serialised through the manager, and Pages is dispatched once per
   batch (§1, §4).
+- The build cache is restored by every run and saved only by pushes to
+  `main`, which then delete the copies they supersede (PR #44; next section).
+- The Pages build runs on pull requests that touch the library, not only the
+  documents (PR #49; see "The build that Lean CI does not do").
+
+### Managing the caches: the cache flow
+
+Since 2026-10-11 (PR #44) the workflows manage the build cache themselves.
+The policy is three rules.
+
+1. **Every run restores.** A pull request reads the cache saved on `main`
+   (GitHub lets a run read its own scope and the default branch's). So a pull
+   request starts warm and rebuilds only what it changed.
+2. **Only a push to `main` saves.** A pull request never writes a cache, so
+   open pull requests add nothing to the quota, however many there are. In
+   Lean CI this means turning off the action's own cache
+   (`use-github-cache: false`) and using `actions/cache/restore` before the
+   build and `actions/cache/save` after it, the save guarded by
+   `if: github.event_name == 'push' && github.ref == 'refs/heads/main'`. The
+   Pages workflow is split the same way and saves only outside pull requests.
+3. **A save removes what it supersedes.** The key still ends in the commit
+   hash, so each push to `main` saves a new copy; straight after the save,
+   the older copies on `main` are deleted. `main` then holds one cache of
+   each kind.
+
+The result is steady at about 5.7 GB (one 2.7 GB Lean CI cache, one 2.7 GB
+package cache for Pages, and small build-output caches) against the 10 GB
+quota, and a pull request's Lean CI takes about 15 minutes, 6 without the
+LJF◯ step.
+
+The deleting is done by `scripts/prune-caches.sh <key-prefix> <key-to-keep>`.
+Its core:
+
+```bash
+list=$(gh cache list --repo "$repo" --ref refs/heads/main --key "$prefix" \
+         --limit 100 --json id,key -q '.[] | [.id, .key] | @tsv') || exit 0
+if ! printf '%s\n' "$list" | cut -f2 | grep -qxF "$keep"; then
+  echo "prune: $keep is not saved; deleting nothing"; exit 0
+fi
+printf '%s\n' "$list" | while IFS=$'\t' read -r id key; do
+  [ -z "$id" ] || [ "$key" = "$keep" ] && continue
+  gh cache delete "$id" --repo "$repo" || true
+done
+```
+
+Three properties matter more than the code:
+
+- **It deletes nothing unless the cache it is told to keep exists.** If the
+  save failed, the old cache is still the only one, and it stays.
+- **It never fails the run.** A cache left behind costs space, not
+  correctness.
+- **It needs `actions: write`.** The workflow grants it with a `permissions:`
+  block; a reusable workflow can only receive it if its caller grants it too.
+
+Things that went wrong on the way, worth knowing:
+
+- **A restore can miss although the key matches.** GitHub matches a cache on
+  its key and on the cached path as written. The caches saved by the action
+  were unreachable from the new restore step, so the first two runs after the
+  change built from scratch (30 minutes each); the third, restoring a cache
+  the new step had saved, took 6. Expect one cold run after changing how a
+  cache is saved.
+- **Check usage with numbers, not impressions:**
+  `gh api repos/<owner>/<repo>/actions/cache/usage` and `gh cache list`.
+- **A pull request's own caches are useless after it merges.** Under the old
+  scheme they had to be deleted by hand; under this one there are none.
+- **Pushing while a run is active is not a cancellation problem** (a pull
+  request run has its own concurrency group) **but it was a cache problem,**
+  because each run saved 2.7 GB. With rule 2 that cost is gone for pull
+  requests; it is still good practice to push when nothing is running.
+
+### The build that Lean CI does not do
+
+Lean CI builds the default targets. The Blueprint and the papers import
+library modules that the default targets do not (here, `LaxLogic/QLL`). On
+2026-10-12 a change to 73 library files passed Lean CI, was merged, and broke
+the Pages build on `main`, because a module only the papers import no longer
+compiled. The pull request had not run the Pages build: that workflow was
+triggered only by changes to the documents.
+
+The fix is in the trigger: `pages.yml` now also runs on pull requests that
+touch `LaxLogic/**`. The general rule: **if a second build imports the
+library, a library change must run it before merging**, whatever the first
+build says. "The library builds" is a claim about one set of targets.
 
 ### The draft-PR protocol
 
