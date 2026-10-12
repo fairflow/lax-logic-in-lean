@@ -64,8 +64,16 @@ most likely to have been lost. In the repository's committed
   repository.
 - Settings are read when a session starts, so a running session does not get a
   new hook until it is restarted.
-- Not yet observed firing in locus at the time of writing: no session had
-  restarted since it was added. Confirm before relying on it.
+- **Observed working** (Matthew's test session, 2026-10-12 17:44). At start
+  the context carried the label `SessionStart:startup hook success:` and the
+  whole file; after `/compact` it carried `SessionStart:compact hook
+  success:` and the whole file again. The label tells you which event fired.
+- Decide which copy the command reads. Ours reads the main checkout's file by
+  absolute path, so every worktree sees the current direction whatever its own
+  branch holds; the price is that the main checkout must be kept pulled.
+- Make the command fail loudly. A bare `cat` of a missing file prints nothing
+  and the hook still reports success; test for the file and print a warning
+  the agent cannot miss.
 
 Also put the file in every brief to a subagent. A subagent starts with nothing
 but its brief.
