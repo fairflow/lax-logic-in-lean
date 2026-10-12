@@ -21,7 +21,7 @@ open BeliefLax PLLND PLLND.BeliefReal
 
 The mechanised base of a paper in preparation, *Belief in Lax Logic*: the lax
 modality read as idealised evidential belief.  The draft is
-`docs/belief-paper-draft.md`; `docs/belief-mechanisation-index.md` maps each of
+the TeX source in `paper/` (`paper/belief.pdf`); `docs/belief-mechanisation-index.md` maps each of
 its claims to a declaration.  This chapter covers the results that live in the
 library (`LaxLogic/Belief/`).  The paper also cites results of other chapters:
 context completeness and the infinite closed fragment.  It is not yet

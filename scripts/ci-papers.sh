@@ -55,9 +55,12 @@ echo "ci-papers: $site/tools/ ($(ls "$site/tools" | wc -l | tr -d ' ') pages)"
 # page cannot drift from the source.  Needs pandoc (installed by the workflow).
 scripts/tutorial-html.py docs/github-with-claude-tutorial.md "$site/tools/github-with-claude.html"
 
-# Paper drafts in Markdown, published for comment under /drafts/ with a DRAFT
-# banner.  A draft is published only by naming it here; the Verso papers above
-# are the route for a finished paper.  The Belief draft was switched on
-# at Matthew's word, 2026-10-11:
+# Paper drafts, published for comment under /drafts/.  A draft is published
+# only by naming it here; the Verso papers above are the route for a finished
+# paper.  The Belief draft was switched on at Matthew's word, 2026-10-11: the
+# tracked PDF built from `paper/` (the working master since 2026-07-19), with a
+# landing page carrying the DRAFT banner.  `docs/belief-paper-draft.md` is the
+# superseded revision 2 and is NOT published.
 mkdir -p "$site/drafts"
-scripts/tutorial-html.py docs/belief-paper-draft.md "$site/drafts/belief-in-lax-logic.html" --draft
+cp paper/belief.pdf "$site/drafts/belief-in-lax-logic.pdf"
+scripts/tutorial-html.py docs/belief-draft.md "$site/drafts/belief-in-lax-logic.html" --draft
