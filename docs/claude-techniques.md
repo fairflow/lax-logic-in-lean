@@ -2,7 +2,8 @@
 
 2026-10-12, drafted by the locus overseer session for Matthew, from what
 happened in the locus repository on 10 to 12 October and from the record. A
-companion to *GitHub with Claude* (`docs/github-with-claude-tutorial.md`):
+companion to [*GitHub with Claude*](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/github-with-claude.html)
+(`docs/github-with-claude-tutorial.md`):
 that document is about repositories; this one is about contexts,
 instructions, memory and communication between agents. Dated incidents are
 cited so a rule can be traced to its cause. DRAFT.

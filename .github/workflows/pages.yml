@@ -31,6 +31,7 @@ on:
       - 'scripts/ci-papers.sh'
       - 'scripts/tutorial-html.py'
       - 'docs/github-with-claude-tutorial.md'
+      - 'docs/claude-techniques.md'
       - 'docs/belief-draft.md'
       - 'paper/belief.pdf'
       - 'CLPPaper/**'

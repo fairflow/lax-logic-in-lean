@@ -6,6 +6,10 @@ docs/branch-map-2026-09-16.md, the memory notes). It is meant for any of
 Matthew's Lean repositories, with `fairflow/lax-logic-in-lean` as the worked
 example. Dated incidents are cited so a rule can be traced to its cause.
 
+Its companion is [*Claude Techniques*](https://projects.fairflow.co.uk/lax-logic-in-lean/tools/claude-techniques.html)
+(`docs/claude-techniques.md`): this guide is about repositories; that one is
+about contexts, instructions, memory and communication between agents.
+
 Contents
 
 1. The setup
