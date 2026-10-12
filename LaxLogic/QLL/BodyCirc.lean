@@ -65,7 +65,7 @@ theorem circ_circ_iff (Γ : List Form) (q : Q) (A : Form) :
 
 /-- A body `◯` implies the same clause with the `◯` deleted. -/
 theorem body_circ_to_plain (q : Q) (A B P : Form) :
-    Prv [.imp (A ∧ (.circ q B)) P] (.imp (A ∧ B) P) :=
+    Prv [.imp (.and A (.circ q B)) P] (.imp (.and A B) P) :=
   Prv.impI (Prv.impE (Prv.var (List.Mem.tail _ (List.Mem.head _)))
     (Prv.andI (Prv.andE₁ (Prv.var (List.Mem.head _)))
       (Prv.circI (Prv.andE₂ (Prv.var (List.Mem.head _))))))
@@ -113,8 +113,8 @@ def m2 : KModel where
 
 /-- The converse fails: with a plain head, a body `◯` discharges a constraint. -/
 theorem not_prv_plain_to_body_circ :
-    ¬ Prv [.imp ((.pred "A" []) ∧ (.pred "B" [])) (.pred "P" [])]
-        (.imp ((.pred "A" []) ∧ (.circ .ex (.pred "B" []))) (.pred "P" [])) := by
+    ¬ Prv [.imp (.and (.pred "A" []) (.pred "B" [])) (.pred "P" [])]
+        (.imp (.and (.pred "A" []) (.circ .ex (.pred "B" []))) (.pred "P" [])) := by
   intro h
   have hyp : ∀ C ∈ [Form.imp (.and (.pred "A" []) (.pred "B" [])) (.pred "P" [])],
       m2.force C W2.w0 (fun _ => ()) [] := by
@@ -144,7 +144,7 @@ theorem not_prv_plain_to_body_circ :
 
 /-- `(A ∧ ◯B) ⊃ ◯P  ⊢  (A ∧ B) ⊃ ◯P`. -/
 theorem clause3 (q : Q) (A B P : Form) :
-    Prv [.imp (A ∧ (.circ q B)) (.circ q P)] (.imp (A ∧ B) (.circ q P)) := by
+    Prv [.imp (.and A (.circ q B)) (.circ q P)] (.imp (.and A B) (.circ q P)) := by
   refine Prv.impI ?_
   have hab : Prv [Form.and A B, .imp (.and A (.circ q B)) (.circ q P)] (.and A B) :=
     Prv.var (List.Mem.head _)
@@ -155,7 +155,7 @@ theorem clause3 (q : Q) (A B P : Form) :
 
 /-- The converse, available because the head is modal: `◯E` absorbs the body's `◯`. -/
 theorem clause4 (q : Q) (A B P : Form) :
-    Prv [.imp (A ∧ B) (.circ q P)] (.imp (A ∧ (.circ q B)) (.circ q P)) := by
+    Prv [.imp (.and A B) (.circ q P)] (.imp (.and A (.circ q B)) (.circ q P)) := by
   refine Prv.impI ?_
   have h1 : Prv [Form.and A (.circ q B), .imp (.and A B) (.circ q P)] (.and A (.circ q B)) :=
     Prv.var (List.Mem.head _)
@@ -477,13 +477,13 @@ enclosing clause. -/
 
 /-- `◯(A ∧ B) ⊢ ◯A ∧ ◯B`. -/
 theorem circ_and_split (q : Q) (A B : Form) :
-    Prv [.circ q (A ∧ B)] ((.circ q A) ∧ (.circ q B)) :=
+    Prv [.circ q (.and A B)] (.and (.circ q A) (.circ q B)) :=
   Prv.andI (Prv.circE Prv.hd (Prv.circI (Prv.andE₁ Prv.hd)))
     (Prv.circE Prv.hd (Prv.circI (Prv.andE₂ Prv.hd)))
 
 /-- `◯A ∧ ◯B ⊢ ◯(A ∧ B)`. -/
 theorem circ_and_join (q : Q) (A B : Form) :
-    Prv [((.circ q A) ∧ (.circ q B))] (.circ q (A ∧ B)) :=
+    Prv [.and (.circ q A) (.circ q B)] (.circ q (.and A B)) :=
   Prv.circE (Prv.andE₁ Prv.hd)
     (Prv.circE (Prv.andE₂ (Prv.var (List.Mem.tail _ (List.Mem.head _))))
       (Prv.circI (Prv.andI (Prv.var (List.Mem.tail _ (List.Mem.head _))) Prv.hd)))
@@ -526,18 +526,18 @@ summoned entries all have table value `⊤` extracts `⊤`
 
 /-- `◯(A ∨ ◯B) ⊢ ◯(A ∨ B)`. -/
 theorem circ_or_circ_collapse (q : Q) (A B : Form) :
-    Prv [.circ q (A ∨ (.circ q B))] (.circ q (A ∨ B)) :=
+    Prv [.circ q (.or A (.circ q B))] (.circ q (.or A B)) :=
   Prv.circE Prv.hd (Prv.orE Prv.hd (Prv.circI (Prv.orI₁ Prv.hd))
     (Prv.circE Prv.hd (Prv.circI (Prv.orI₂ Prv.hd))))
 
 /-- `◯(A ∨ B) ⊢ ◯(A ∨ ◯B)`: under `◯` the decoration is invisible. -/
 theorem circ_or_circ_expand (q : Q) (A B : Form) :
-    Prv [.circ q (A ∨ B)] (.circ q (A ∨ (.circ q B))) :=
+    Prv [.circ q (.or A B)] (.circ q (.or A (.circ q B))) :=
   Prv.circE Prv.hd
     (Prv.circI (Prv.orE Prv.hd (Prv.orI₁ Prv.hd) (Prv.orI₂ (Prv.circI Prv.hd))))
 
 /-- `A ∨ B ⊢ A ∨ ◯B`: as a plain goal the decorated form is weaker. -/
-theorem or_to_or_circ (q : Q) (A B : Form) : Prv [(A ∨ B)] (A ∨ (.circ q B)) :=
+theorem or_to_or_circ (q : Q) (A B : Form) : Prv [.or A B] (.or A (.circ q B)) :=
   Prv.orE Prv.hd (Prv.orI₁ Prv.hd) (Prv.orI₂ (Prv.circI Prv.hd))
 
 /-- `∨◯` is a sum: the branch's constraint travels with the injection. -/
@@ -574,8 +574,8 @@ open LaxLogic.QLL LaxLogic.QLL.Engine LaxLogic.QLL.LinQ LaxLogic.QLL.CLPExamples
 
 /-- REFUTED: `P ∨ ◯B ⊬ P ∨ B`; in the two-world model the lax branch is the only one open. -/
 theorem not_prv_or_circ_to_or :
-    ¬ Prv [((.pred "P" []) ∨ (.circ .ex (.pred "B" [])))]
-        ((.pred "P" []) ∨ (.pred "B" [])) := by
+    ¬ Prv [.or (.pred "P" []) (.circ .ex (.pred "B" []))]
+        (.or (.pred "P" []) (.pred "B" [])) := by
   intro h
   have hyp : ∀ C ∈ [Form.or (.pred "P" []) (.circ .ex (.pred "B" []))],
       m2.force C W2.w0 (fun _ => ()) [] := by

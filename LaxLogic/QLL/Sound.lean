@@ -220,23 +220,23 @@ the generic lemma accepted up to definitional unfolding of `Val`. -/
 section Push
 variable (u : Tm) (k : Nat)
 
-theorem cast_and_fst (A B : Form) (v : Val 𝔐 ((Form ∧ A) B)) :
-    (cast (Val_openAt 𝔐 u ((Form ∧ A) B) k).symm v).1
+theorem cast_and_fst (A B : Form) (v : Val 𝔐 (Form.and A B)) :
+    (cast (Val_openAt 𝔐 u (Form.and A B) k).symm v).1
       = cast (Val_openAt 𝔐 u A k).symm v.1 :=
   cast_fst _ (Val_openAt 𝔐 u B k).symm _ v
 
-theorem cast_and_snd (A B : Form) (v : Val 𝔐 ((Form ∧ A) B)) :
-    (cast (Val_openAt 𝔐 u ((Form ∧ A) B) k).symm v).2
+theorem cast_and_snd (A B : Form) (v : Val 𝔐 (Form.and A B)) :
+    (cast (Val_openAt 𝔐 u (Form.and A B) k).symm v).2
       = cast (Val_openAt 𝔐 u B k).symm v.2 :=
   cast_snd (Val_openAt 𝔐 u A k).symm _ _ v
 
 theorem cast_or_inl (A B : Form) (a : Val 𝔐 A) :
-    cast (Val_openAt 𝔐 u ((Form ∨ A) B) k).symm (Sum.inl a)
+    cast (Val_openAt 𝔐 u (Form.or A B) k).symm (Sum.inl a)
       = Sum.inl (cast (Val_openAt 𝔐 u A k).symm a) :=
   cast_inl _ (Val_openAt 𝔐 u B k).symm _ a
 
 theorem cast_or_inr (A B : Form) (b : Val 𝔐 B) :
-    cast (Val_openAt 𝔐 u ((Form ∨ A) B) k).symm (Sum.inr b)
+    cast (Val_openAt 𝔐 u (Form.or A B) k).symm (Sum.inr b)
       = Sum.inr (cast (Val_openAt 𝔐 u B k).symm b) :=
   cast_inr (Val_openAt 𝔐 u A k).symm _ _ b
 
