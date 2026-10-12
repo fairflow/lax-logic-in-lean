@@ -54,21 +54,21 @@ theorem closed_iff {φ ψ : PLLFormula} (h : Interd φ ψ) :
    fun ⟨d⟩ => h.2.elim fun e => ⟨.impElim (.impIntro e) d⟩⟩
 
 theorem and_congr {φ φ' ψ ψ' : PLLFormula} (h₁ : Interd φ φ') (h₂ : Interd ψ ψ') :
-    Interd (φ.and ψ) (φ'.and ψ') :=
+    Interd (φ ∧ ψ) (φ' ∧ ψ') :=
   ⟨Deriv.andIntro (Deriv.cutHead (Deriv.andElim1 (Deriv.iden (.head _))) h₁.1)
       (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) h₂.1),
    Deriv.andIntro (Deriv.cutHead (Deriv.andElim1 (Deriv.iden (.head _))) h₁.2)
       (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) h₂.2)⟩
 
 theorem or_congr {φ φ' ψ ψ' : PLLFormula} (h₁ : Interd φ φ') (h₂ : Interd ψ ψ') :
-    Interd (φ.or ψ) (φ'.or ψ') :=
+    Interd (φ ∨ ψ) (φ' ∨ ψ') :=
   ⟨Deriv.orElim (Deriv.iden (.head _))
       (Deriv.orIntro1 (Deriv.toHead h₁.1)) (Deriv.orIntro2 (Deriv.toHead h₂.1)),
    Deriv.orElim (Deriv.iden (.head _))
       (Deriv.orIntro1 (Deriv.toHead h₁.2)) (Deriv.orIntro2 (Deriv.toHead h₂.2))⟩
 
 theorem imp_congr {φ φ' ψ ψ' : PLLFormula} (h₁ : Interd φ φ') (h₂ : Interd ψ ψ') :
-    Interd (φ.ifThen ψ) (φ'.ifThen ψ') := by
+    Interd (φ ↠ ψ) (φ' ↠ ψ') := by
   refine ⟨?_, ?_⟩
   · refine Deriv.impIntro (Deriv.cutHead
       (Deriv.impElim (Deriv.iden (.tail _ (.head _))) ?_) h₂.1)
@@ -78,7 +78,7 @@ theorem imp_congr {φ φ' ψ ψ' : PLLFormula} (h₁ : Interd φ φ') (h₂ : In
     exact Deriv.cutHead (Deriv.iden (.head _)) h₁.1
 
 theorem box_congr {φ φ' : PLLFormula} (h : Interd φ φ') :
-    Interd (PLLFormula.somehow φ) (PLLFormula.somehow φ') :=
+    Interd (◯φ) (◯φ') :=
   ⟨Deriv.somehowMono h.1, Deriv.somehowMono h.2⟩
 
 end Interd

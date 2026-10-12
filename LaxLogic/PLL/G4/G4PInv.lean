@@ -163,37 +163,37 @@ theorem inv : ∀ {Γ : List PLLFormula} {C : PLLFormula}, G4p Γ C →
 /-! ### Named corollaries -/
 
 theorem andL_inv {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4p Γ C) (hp : Γ.Perm (A.and B :: Δ)) : G4p (A :: B :: Δ) C :=
+    (d : G4p Γ C) (hp : Γ.Perm ((A ∧ B) :: Δ)) : G4p (A :: B :: Δ) C :=
   d.inv (.and A B) hp
 
 theorem orL_inv₁ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4p Γ C) (hp : Γ.Perm (A.or B :: Δ)) : G4p (A :: Δ) C :=
+    (d : G4p Γ C) (hp : Γ.Perm ((A ∨ B) :: Δ)) : G4p (A :: Δ) C :=
   d.inv (.or₁ A B) hp
 
 theorem orL_inv₂ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4p Γ C) (hp : Γ.Perm (A.or B :: Δ)) : G4p (B :: Δ) C :=
+    (d : G4p Γ C) (hp : Γ.Perm ((A ∨ B) :: Δ)) : G4p (B :: Δ) C :=
   d.inv (.or₂ A B) hp
 
 theorem impLProp_inv {Γ Δ : List PLLFormula} {a : String} {B C : PLLFormula}
-    (d : G4p Γ C) (hp : Γ.Perm ((prop a).ifThen B :: Δ)) : G4p (B :: Δ) C :=
+    (d : G4p Γ C) (hp : Γ.Perm (((prop a) ↠ B) :: Δ)) : G4p (B :: Δ) C :=
   d.inv (.impProp a B) hp
 
 theorem impLBot_inv {Γ Δ : List PLLFormula} {B C : PLLFormula}
-    (d : G4p Γ C) (hp : Γ.Perm (falsePLL.ifThen B :: Δ)) : G4p Δ C :=
+    (d : G4p Γ C) (hp : Γ.Perm ((⊥ ↠ B) :: Δ)) : G4p Δ C :=
   d.inv (.impBot B) hp
 
 theorem impLImp_inv₂ {Γ Δ : List PLLFormula} {A B D C : PLLFormula}
-    (d : G4p Γ C) (hp : Γ.Perm ((A.ifThen B).ifThen D :: Δ)) :
+    (d : G4p Γ C) (hp : Γ.Perm (((A ↠ B) ↠ D) :: Δ)) :
     G4p (D :: Δ) C :=
   d.inv (.impImp A B D) hp
 
 theorem impLLax_inv₂ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4p Γ C) (hp : Γ.Perm (A.somehow.ifThen B :: Δ)) : G4p (B :: Δ) C :=
+    (d : G4p Γ C) (hp : Γ.Perm ((◯A ↠ B) :: Δ)) : G4p (B :: Δ) C :=
   d.inv (.impLax A B) hp
 
 /-- **`impR` inversion** for G4iLL′. -/
 theorem impR_inv : ∀ {Γ : List PLLFormula} {G : PLLFormula}, G4p Γ G →
-    ∀ {A B : PLLFormula}, G = A.ifThen B → G4p (A :: Γ) B := by
+    ∀ {A B : PLLFormula}, G = (A ↠ B) → G4p (A :: Γ) B := by
   intro Γ G d
   induction d with
   | init h => intro A B e; cases e

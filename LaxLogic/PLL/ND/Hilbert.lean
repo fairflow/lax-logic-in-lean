@@ -121,11 +121,10 @@ namespace HdOn
 
 /-- `⊢ φ ⊃ φ` from `K` and `S`. -/
 theorem impSelf {Ax : PLLFormula → Prop}
-    (hK : ∀ A B : PLLFormula, Ax (ifThen A (ifThen B A)))
-    (hS : ∀ A B C : PLLFormula, Ax (ifThen (ifThen A (ifThen B C))
-      (ifThen (ifThen A B) (ifThen A C))))
+    (hK : ∀ A B : PLLFormula, Ax (A ↠ (B ↠ A)))
+    (hS : ∀ A B C : PLLFormula, Ax ((A ↠ (B ↠ C)) ↠ ((A ↠ B) ↠ (A ↠ C))))
     {Γ : List PLLFormula} (φ : PLLFormula) :
-    HdOn Ax Γ (φ.ifThen φ) :=
+    HdOn Ax Γ (φ ↠ φ) :=
   .mp (.mp (.ax (hS φ (φ.ifThen φ) φ)) (.ax (hK φ (φ.ifThen φ))))
     (.ax (hK φ φ))
 
@@ -133,11 +132,10 @@ theorem impSelf {Ax : PLLFormula → Prop}
 for any axiom set containing `K` and `S`, because PLL's rules are modus
 ponens only.  F&M note this fails for K, T, S4. -/
 theorem deduction {Ax : PLLFormula → Prop}
-    (hK : ∀ A B : PLLFormula, Ax (ifThen A (ifThen B A)))
-    (hS : ∀ A B C : PLLFormula, Ax (ifThen (ifThen A (ifThen B C))
-      (ifThen (ifThen A B) (ifThen A C))))
+    (hK : ∀ A B : PLLFormula, Ax (A ↠ (B ↠ A)))
+    (hS : ∀ A B C : PLLFormula, Ax ((A ↠ (B ↠ C)) ↠ ((A ↠ B) ↠ (A ↠ C))))
     {Γ : List PLLFormula} {φ ψ : PLLFormula}
-    (h : HdOn Ax (φ :: Γ) ψ) : HdOn Ax Γ (φ.ifThen ψ) := by
+    (h : HdOn Ax (φ :: Γ) ψ) : HdOn Ax Γ (φ ↠ ψ) := by
   induction h with
   | ax h' => exact .mp (.ax (hK _ φ)) (.ax h')
   | hyp h' =>

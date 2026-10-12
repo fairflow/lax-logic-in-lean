@@ -233,38 +233,38 @@ theorem inv : ∀ {Γ : List PLLFormula} {C : PLLFormula}, G4 Γ C →
 /-! ### Named corollaries -/
 
 theorem andL_inv {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4 Γ C) (hp : Γ.Perm (A.and B :: Δ)) : G4 (A :: B :: Δ) C :=
+    (d : G4 Γ C) (hp : Γ.Perm ((A ∧ B) :: Δ)) : G4 (A :: B :: Δ) C :=
   d.inv (.and A B) hp
 
 theorem orL_inv₁ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4 Γ C) (hp : Γ.Perm (A.or B :: Δ)) : G4 (A :: Δ) C :=
+    (d : G4 Γ C) (hp : Γ.Perm ((A ∨ B) :: Δ)) : G4 (A :: Δ) C :=
   d.inv (.or₁ A B) hp
 
 theorem orL_inv₂ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4 Γ C) (hp : Γ.Perm (A.or B :: Δ)) : G4 (B :: Δ) C :=
+    (d : G4 Γ C) (hp : Γ.Perm ((A ∨ B) :: Δ)) : G4 (B :: Δ) C :=
   d.inv (.or₂ A B) hp
 
 theorem impLProp_inv {Γ Δ : List PLLFormula} {a : String} {B C : PLLFormula}
-    (d : G4 Γ C) (hp : Γ.Perm ((prop a).ifThen B :: Δ)) : G4 (B :: Δ) C :=
+    (d : G4 Γ C) (hp : Γ.Perm (((prop a) ↠ B) :: Δ)) : G4 (B :: Δ) C :=
   d.inv (.impProp a B) hp
 
 theorem impLBot_inv {Γ Δ : List PLLFormula} {B C : PLLFormula}
-    (d : G4 Γ C) (hp : Γ.Perm (falsePLL.ifThen B :: Δ)) : G4 Δ C :=
+    (d : G4 Γ C) (hp : Γ.Perm ((⊥ ↠ B) :: Δ)) : G4 Δ C :=
   d.inv (.impBot B) hp
 
 theorem impLImp_inv₂ {Γ Δ : List PLLFormula} {A B D C : PLLFormula}
-    (d : G4 Γ C) (hp : Γ.Perm ((A.ifThen B).ifThen D :: Δ)) : G4 (D :: Δ) C :=
+    (d : G4 Γ C) (hp : Γ.Perm (((A ↠ B) ↠ D) :: Δ)) : G4 (D :: Δ) C :=
   d.inv (.impImp A B D) hp
 
 theorem impLLax_inv₂ {Γ Δ : List PLLFormula} {A B C : PLLFormula}
-    (d : G4 Γ C) (hp : Γ.Perm (A.somehow.ifThen B :: Δ)) : G4 (B :: Δ) C :=
+    (d : G4 Γ C) (hp : Γ.Perm ((◯A ↠ B) :: Δ)) : G4 (B :: Δ) C :=
   d.inv (.impLax A B) hp
 
 /-- **`impR` inversion**: the right implication rule is invertible.
 Separate from `G4.inv` because the goal changes; goal-changing premise
 slots of traversed left rules are carried across by weakening. -/
 theorem impR_inv : ∀ {Γ : List PLLFormula} {G : PLLFormula}, G4 Γ G →
-    ∀ {A B : PLLFormula}, G = A.ifThen B → G4 (A :: Γ) B := by
+    ∀ {A B : PLLFormula}, G = (A ↠ B) → G4 (A :: Γ) B := by
   intro Γ G d
   induction d with
   | init h => intro A B e; cases e

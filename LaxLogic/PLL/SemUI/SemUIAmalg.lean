@@ -393,7 +393,7 @@ is the skeleton applied to the constant family. -/
 theorem flatAmalgAll_bot {p : String} {M : PLLFormula}
     (hMbf : boxFree M = true) (hat : ∀ a ∈ M.atoms, a = p)
     {D : ConstraintModel} (hDF : D.F = ∅) {d : D.W}
-    (hd : ¬ D.force d M) : FlatAmalgAll p M .falsePLL := by
+    (hd : ¬ D.force d M) : FlatAmalgAll p M ⊥ := by
   intro K hKF k _
   refine ⟨k, K.refl_i k, ofreeGraft K D p, ofreeGraft_pbisim K D p,
     .inr (k, d), ?_, rfl, ?_⟩
@@ -408,7 +408,7 @@ theorem flatAmalgAll_bot {p : String} {M : PLLFormula}
 skeleton at the constant family. -/
 theorem semAll_ofree_bot' {p : String} {M : PLLFormula}
     (hbf : boxFree M = true) (hat : ∀ a ∈ M.atoms, a = p)
-    (hM : [] ⊬ M) : IsSemAll p M .falsePLL := by
+    (hM : [] ⊬ M) : IsSemAll p M ⊥ := by
   obtain ⟨D, d, hd⟩ := exists_refuting_world hM
   have hdF : d ∉ D.F := fun hF => hd (D.force_of_fallible hF)
   have hDflat : (flatten D).F = ∅ := rfl

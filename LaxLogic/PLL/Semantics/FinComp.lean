@@ -498,7 +498,7 @@ theorem ded_closed (hM : MaxIn cl T) {φ : PLLFormula} (hφcl : φ ∈ cl)
 
 /-- Primeness of the validated part. -/
 theorem or_mem (hM : MaxIn cl T) (hcl : SubClosed cl) {φ ψ : PLLFormula}
-    (h : φ.or ψ ∈ T.val) : φ ∈ T.val ∨ ψ ∈ T.val := by
+    (h : (φ ∨ ψ) ∈ T.val) : φ ∈ T.val ∨ ψ ∈ T.val := by
   obtain ⟨hCons, ⟨hvcl, hfcl, hmcl⟩, htot⟩ := hM
   rcases htot φ (hcl.or_left (hvcl h)) with hv | hf
   · exact .inl hv
@@ -520,7 +520,7 @@ theorem or_mem (hM : MaxIn cl T) (hcl : SubClosed cl) {φ ψ : PLLFormula}
 
 /-- Implication decomposition. -/
 theorem imp_mem (hM : MaxIn cl T) (hcl : SubClosed cl) {φ ψ : PLLFormula}
-    (h : φ.ifThen ψ ∈ T.val) : φ ∈ T.fal ∨ ψ ∈ T.val := by
+    (h : (φ ↠ ψ) ∈ T.val) : φ ∈ T.fal ∨ ψ ∈ T.val := by
   have hφcl := hcl.imp_left (hM.2.1.1 h)
   have hψcl := hcl.imp_right (hM.2.1.1 h)
   rcases hM.2.2 φ hφcl with hv | hf
@@ -530,7 +530,7 @@ theorem imp_mem (hM : MaxIn cl T) (hcl : SubClosed cl) {φ ψ : PLLFormula}
 
 /-- Falsified disjunctions decompose conjunctively. -/
 theorem fal_or (hM : MaxIn cl T) (hcl : SubClosed cl) {φ ψ : PLLFormula}
-    (h : φ.or ψ ∈ T.fal) : φ ∈ T.fal ∧ ψ ∈ T.fal := by
+    (h : (φ ∨ ψ) ∈ T.fal) : φ ∈ T.fal ∧ ψ ∈ T.fal := by
   have hocl : φ.or ψ ∈ cl := hM.2.1.2.1 h
   constructor
   · rcases hM.2.2 φ (hcl.or_left hocl) with hv | hf
@@ -542,7 +542,7 @@ theorem fal_or (hM : MaxIn cl T) (hcl : SubClosed cl) {φ ψ : PLLFormula}
 
 /-- Falsified conjunctions decompose disjunctively. -/
 theorem fal_and (hM : MaxIn cl T) (hcl : SubClosed cl) {φ ψ : PLLFormula}
-    (h : φ.and ψ ∈ T.fal) : φ ∈ T.fal ∨ ψ ∈ T.fal := by
+    (h : (φ ∧ ψ) ∈ T.fal) : φ ∈ T.fal ∨ ψ ∈ T.fal := by
   have hacl : φ.and ψ ∈ cl := hM.2.1.2.1 h
   rcases hM.2.2 φ (hcl.and_left hacl) with hv | hf
   · rcases hM.2.2 ψ (hcl.and_right hacl) with hv' | hf'
@@ -914,7 +914,7 @@ theorem rm_mem_iff {i j : Nat} :
 theorem fall_mem_iff {i : Nat} :
     i ∈ (canonFinCM cl).fall ↔
       i < (worldList cl).length ∧
-        PLLFormula.falsePLL ∈ (worldList cl)[i]!.val := by
+        ⊥ ∈ (worldList cl)[i]!.val := by
   simp only [canonFinCM, List.mem_filter, List.mem_range,
     decide_eq_true_eq]
 
@@ -971,7 +971,7 @@ theorem rmB_iff {i j : Nat} (hi : i < (worldList cl).length)
 
 theorem fallB_iff {i : Nat} (hi : i < (worldList cl).length) :
     (canonFinCM cl).fallB i = true ↔
-      PLLFormula.falsePLL ∈ (worldList cl)[i]!.val := by
+      ⊥ ∈ (worldList cl)[i]!.val := by
   simp only [FinCM.fallB, decide_eq_true_eq]
   constructor
   · intro h
@@ -1160,7 +1160,7 @@ theorem rmL_mem_iff {i j : Nat} :
 
 theorem fallL_mem_iff {i : Nat} :
     i ∈ (canonCMof wl).fall ↔
-      i < wl.length ∧ PLLFormula.falsePLL ∈ (wl[i]!).1.val := by
+      i < wl.length ∧ ⊥ ∈ (wl[i]!).1.val := by
   simp only [canonCMof, List.mem_filter, List.mem_range,
     decide_eq_true_eq]
 
@@ -1221,7 +1221,7 @@ theorem rmBL_iff {i j : Nat} (hi : i < wl.length) (hj : j < wl.length) :
 
 theorem fallBL_iff {i : Nat} (hi : i < wl.length) :
     (canonCMof wl).fallB i = true ↔
-      PLLFormula.falsePLL ∈ (wl[i]!).1.val := by
+      ⊥ ∈ (wl[i]!).1.val := by
   simp only [FinCM.fallB, decide_eq_true_eq]
   constructor
   · intro h

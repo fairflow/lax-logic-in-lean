@@ -544,7 +544,7 @@ theorem force_applyC_C0 (ψ : PLLFormula) (w : M.W) :
 where the single standard constraint `C0` applied to `ψ` is forced.  Uses only
 finiteness (reachable maximal cluster + cover factorization), no antisymmetry. -/
 theorem lemma7 (ψ : PLLFormula) (w : M.W) :
-    (Mstar M φ₀).force w (.somehow ψ) ↔
+    (Mstar M φ₀).force w (◯ψ) ↔
       (Mstar M φ₀).force w (applyC (C0 M φ₀) ψ) := by
   constructor
   · -- (⟹)
@@ -768,7 +768,7 @@ theorem Rm_zero {u : ℕ} (h : Rmrel 0 u) : u = 0 := by
 /-- `1 ⊨ ◯p_{m+1}` in `M_{m+1}`: from every `v ≥ 1` a world forcing `p_{m+1}`
 (i.e. a world `≥ 2`) is `⊑ₘ`-reachable. -/
 theorem force_box_pvar (m : ℕ) :
-    (Mmod (m+1)).force 1 (.somehow (pvar (m+1))) := by
+    (Mmod (m+1)).force 1 (◯(pvar (m+1))) := by
   show ∀ v : ℕ, (1:ℕ) ≤ v → ∃ u, Rmrel v u ∧ (Mmod (m+1)).force u (pvar (m+1))
   intro v hv
   by_cases hv2 : 2 ≤ v
@@ -876,8 +876,7 @@ dropping it from `C` does not change what `subC C φ` forces. -/
 /-- One-step unfolding of `subC C (χ_{m+1})`. -/
 theorem subC_chi_succ (C : StdCtx) (m : ℕ) :
     subC C (chi (m+1)) =
-      applyC C (.ifThen (applyC C (pvar (m+1)))
-        (.or (pvar (m+1)) (subC C (chi m)))) := rfl
+      applyC C ((applyC C (pvar (m+1))) ↠ ((pvar (m+1)) ∨ (subC C (chi m)))) := rfl
 
 /-- **Substitution-drop congruence.**  If `L` is hereditarily forced from `u`, then
 the constraint `[K,L]` is vacuous there, so `subC (s ++ (K,L) :: t) φ` and
@@ -1101,7 +1100,7 @@ theorem Cequiv_iff_le {C D} : Cequiv C D ↔ Cle C D ∧ Cle D C := by
 /-- **Faithfulness of `Cle`.**  The semantic order coincides with the paper's:
 `C ≤ D` iff `C[x] ⊃ D[x]` is IPL-provable for every `x`. -/
 theorem Cle_iff_provable (C D : StdCtx) :
-    Cle C D ↔ ∀ x, Nonempty (LaxND [] ((applyC C x).ifThen (applyC D x))) := by
+    Cle C D ↔ ∀ x, Nonempty (LaxND [] ((applyC C x) ↠ (applyC D x))) := by
   constructor
   · intro h x
     rw [← valid_iff_provable]
@@ -1126,7 +1125,7 @@ theorem force_Cmeet (M : ConstraintModel) (C D : StdCtx) (x : PLLFormula) (w : M
 
 theorem force_Cjoin (M : ConstraintModel) (C D : StdCtx) (x : PLLFormula) (w : M.W) :
     M.force w (applyC (Cjoin C D) x) ↔
-      ∀ p ∈ C, ∀ q ∈ D, M.force w (basic (p.1.and q.1) (p.2.or q.2) x) := by
+      ∀ p ∈ C, ∀ q ∈ D, M.force w (basic (p.1 ∧ q.1) (p.2 ∨ q.2) x) := by
   rw [Cjoin, force_applyC_iff]
   constructor
   · intro h p hp q hq
@@ -1267,7 +1266,7 @@ theorem force_Cjoin_left (M : ConstraintModel) (C D E : StdCtx) (x : PLLFormula)
     (w : M.W) :
     M.force w (applyC (Cjoin (Cjoin C D) E) x) ↔
       ∀ p ∈ C, ∀ q ∈ D, ∀ e ∈ E,
-        M.force w (basic ((p.1.and q.1).and e.1) ((p.2.or q.2).or e.2) x) := by
+        M.force w (basic ((p.1 ∧ q.1) ∧ e.1) ((p.2 ∨ q.2) ∨ e.2) x) := by
   rw [force_Cjoin]
   constructor
   · intro h p hp q hq e he
@@ -1283,7 +1282,7 @@ theorem force_Cjoin_right (M : ConstraintModel) (C D E : StdCtx) (x : PLLFormula
     (w : M.W) :
     M.force w (applyC (Cjoin C (Cjoin D E)) x) ↔
       ∀ p ∈ C, ∀ q ∈ D, ∀ e ∈ E,
-        M.force w (basic (p.1.and (q.1.and e.1)) (p.2.or (q.2.or e.2)) x) := by
+        M.force w (basic (p.1 ∧ (q.1 ∧ e.1)) (p.2 ∨ (q.2 ∨ e.2)) x) := by
   rw [force_Cjoin]
   constructor
   · intro h p hp q hq e he

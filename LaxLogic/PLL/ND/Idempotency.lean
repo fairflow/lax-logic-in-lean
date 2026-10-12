@@ -76,14 +76,14 @@ def etaMuNf : Tm [] ((somehow (somehow M)).ifThen (somehow (somehow M))) :=
 /-! ## The normaliser computes both composites (by `rfl`, `M` free) -/
 
 theorem reduce_mu_eta :
-    (compTm (muTm M) (etaTm M)).reduceFuel 8 = (idTm (somehow M), true) := rfl
+    (compTm (muTm M) (etaTm M)).reduceFuel 8 = (idTm (◯M), true) := rfl
 
 theorem reduce_eta_mu :
     (compTm (etaTm M) (muTm M)).reduceFuel 8 = (etaMuNf M, true) := rfl
 
 /-- `μ ∘ η` reduces to the identity: the unit law as computation. -/
 theorem mu_eta_steps_id :
-    Steps (compTm (muTm M) (etaTm M)) (idTm (somehow M)) :=
+    Steps (compTm (muTm M) (etaTm M)) (idTm (◯M)) :=
   (Tm.reduceFuel_sound 8 _).1
 
 /-- `η ∘ μ` reduces to the re-thunked normal form. -/
@@ -94,7 +94,7 @@ theorem eta_mu_steps_nf :
 theorem etaMuNf_nf : Nf (etaMuNf M) :=
   (Tm.reduceFuel_sound 8 (compTm (etaTm M) (muTm M))).2 rfl
 
-theorem idTm_nf : Nf (idTm (somehow M)) :=
+theorem idTm_nf : Nf (idTm (◯M)) :=
   (Tm.reduceFuel_sound 8 (compTm (muTm M) (etaTm M))).2 rfl
 
 /-! ## The complete reduction graph of `η ∘ μ`
@@ -178,7 +178,7 @@ private theorem step_T3 {u} (h : Step (etaMuNf M) u) : False := by
 
 /-- The four-term set is closed under reduction. -/
 private theorem steps_inv
-    {t u : Tm [] ((somehow (somehow M)).ifThen (somehow (somehow M)))}
+    {t u : Tm [] ((◯(◯M)) ↠ (◯(◯M)))}
     (h : Steps t u)
     (ht : t = compTm (etaTm M) (muTm M) ∨ t = T1 M ∨ t = T2 M ∨ t = etaMuNf M) :
     u = compTm (etaTm M) (muTm M) ∨ u = T1 M ∨ u = T2 M ∨ u = etaMuNf M := by
@@ -202,13 +202,13 @@ private theorem steps_inv
 sequence: its complete reduction graph is the four terms above, and the
 identity is not among them. -/
 theorem not_steps_eta_mu_id :
-    ¬ Steps (compTm (etaTm M) (muTm M)) (idTm (somehow (somehow M))) := by
+    ¬ Steps (compTm (etaTm M) (muTm M)) (idTm (◯(◯M))) := by
   intro h
   rcases steps_inv M h (Or.inl rfl) with h | h | h | h <;>
     simp [compTm, Tm.weaken, Tm.rename, T1, T2, etaMuNf, idTm, etaTm, muTm] at h
 
 /-- The identity is normal: its only reduct is itself. -/
-private theorem steps_id_eq {φ : PLLFormula} {t u : Tm [] (φ.ifThen φ)}
+private theorem steps_id_eq {φ : PLLFormula} {t u : Tm [] (φ ↠ φ)}
     (h : Steps t u) (ht : t = idTm φ) : u = idTm φ := by
   induction h with
   | refl _ => exact ht
@@ -220,7 +220,7 @@ private theorem steps_id_eq {φ : PLLFormula} {t u : Tm [] (φ.ifThen φ)}
 /-- `η ∘ μ` and the identity have no common reduct. -/
 theorem eta_mu_id_not_joinable :
     ¬ ∃ u, Steps (compTm (etaTm M) (muTm M)) u ∧
-      Steps (idTm (somehow (somehow M))) u := by
+      Steps (idTm (◯(◯M))) u := by
   rintro ⟨u, h1, h2⟩
   exact not_steps_eta_mu_id M (steps_id_eq h2 rfl ▸ h1)
 
@@ -228,8 +228,8 @@ theorem eta_mu_id_not_joinable :
 canonical pair `μ : ◯◯M ⊃ ◯M`, `η : ◯M ⊃ ◯◯M` satisfies the unit law
 `μ ∘ η ⇝* id`, but `η ∘ μ` never reaches the identity. -/
 theorem mu_eta_not_mutually_inverse :
-    Steps (compTm (muTm M) (etaTm M)) (idTm (somehow M)) ∧
-    ¬ Steps (compTm (etaTm M) (muTm M)) (idTm (somehow (somehow M))) :=
+    Steps (compTm (muTm M) (etaTm M)) (idTm (◯M)) ∧
+    ¬ Steps (compTm (etaTm M) (muTm M)) (idTm (◯(◯M))) :=
   ⟨mu_eta_steps_id M, not_steps_eta_mu_id M⟩
 
 /-- **`η ∘ μ` is not convertible to the identity**: the separation up
@@ -237,7 +237,7 @@ to the full equivalence closure of reduction, by Church–Rosser — a
 conversion would give a common reduct, which `eta_mu_id_not_joinable`
 rules out. -/
 theorem eta_mu_not_conv_id :
-    ¬ Conv (compTm (etaTm M) (muTm M)) (idTm (somehow (somehow M))) :=
+    ¬ Conv (compTm (etaTm M) (muTm M)) (idTm (◯(◯M))) :=
   fun h => eta_mu_id_not_joinable M h.joinable
 
 /-! ## Axiom audit (build-time guards) -/

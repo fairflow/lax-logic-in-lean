@@ -359,7 +359,7 @@ frame-legal always; triviality is needed only for the BISIMULATION.) -/
 theorem adjoinAtP_not_em (C : ConstraintModel) (p : String) (z : C.W)
     (hzF : z ∉ C.F) :
     ¬ (adjoinAtP C p z).force (.inl z)
-      ((PLLFormula.prop p).or ((PLLFormula.prop p).ifThen .falsePLL)) := by
+      ((PLLFormula.prop p) ∨ ((PLLFormula.prop p) ↠ ⊥)) := by
   rintro (hp | hnp)
   · have hp' : (Sum.inl z : (adjoinAt C z).W) ∈
         (if p = p then adjoinAtPSet C z else (adjoinAt C z).V p) := hp
@@ -384,8 +384,7 @@ future of z is decorated. -/
 theorem adjoinAtP_not_frontier (C : ConstraintModel) (p : String)
     (z : C.W) (hz : ∀ u, C.Rm z u → u ∉ C.F) :
     ¬ (adjoinAtP C p z).force (.inl z)
-      ((((PLLFormula.prop p).ifThen PLLFormula.falsePLL.somehow).ifThen
-        (.prop p)).ifThen (.prop p)) := by
+      ((((PLLFormula.prop p) ↠ ◯⊥) ↠ (.prop p)) ↠ (.prop p)) := by
   intro hM
   have hzF : z ∉ C.F := hz z (C.refl_m z)
   have hstar_p : (adjoinAtP C p z).force (.inr ()) (.prop p) := by
@@ -577,7 +576,7 @@ supply a `◯p ⊃ p`-witness at z itself, but ⋆₂ above z forces `◯p`
 theorem lobTower_not_lob (C : ConstraintModel) (p : String) (z : C.W)
     (hzF : z ∉ C.F) (hrow : RigidRow C z) :
     ¬ (lobTower C p z hrow).force (.inl (.inl z))
-      (((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow) := by
+      (◯(◯(PLLFormula.prop p) ↠ (.prop p))) := by
   intro hbox
   -- ⋆₂ does not force p …
   have hstar2_np : ¬ (lobTower C p z hrow).force (.inr ()) (.prop p) := by
@@ -624,7 +623,7 @@ the missing degree of freedom, isolated. -/
 theorem adjoin_reaches_lob (p : String) :
     ∃ (N : ConstraintModel) (B : PBisim p oneW N) (v : N.W),
       B.Z () v ∧
-      ¬ N.force v (((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow) := by
+      ¬ N.force v (◯(◯(PLLFormula.prop p) ↠ (.prop p))) := by
   have hrow : RigidRow oneW () := fun u _ => rfl
   have htc : TrivialCluster oneW () := fun v _ _ => rfl
   refine ⟨lobTower oneW p () hrow, lobTower_pbisim oneW p () htc hrow,

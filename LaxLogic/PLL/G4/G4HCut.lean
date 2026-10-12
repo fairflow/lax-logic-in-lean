@@ -36,7 +36,7 @@ namespace G4c
 
 /-- **Ex falso, admissibly.** -/
 theorem exfalso_adm : ∀ {n : Nat} {Γ : List PLLFormula} {G : PLLFormula},
-    G4h n Γ G → G = falsePLL → ∀ (E : PLLFormula), G4c Γ E := by
+    G4h n Γ G → G = ⊥ → ∀ (E : PLLFormula), G4c Γ E := by
   intro n Γ G d
   induction d with
   | init _ => intro e; cases e
@@ -60,7 +60,7 @@ theorem exfalso_adm : ∀ {n : Nat} {Γ : List PLLFormula} {G : PLLFormula},
       exact impLLaxLax h hX ⟨_, d₁⟩ (ih₂ e E)
 
 /-- Ex falso at the working judgment. -/
-theorem exfalso' {Γ : List PLLFormula} (d : G4c Γ falsePLL)
+theorem exfalso' {Γ : List PLLFormula} (d : G4c Γ ⊥)
     (E : PLLFormula) : G4c Γ E := by
   obtain ⟨n, hd⟩ := d
   exact exfalso_adm hd rfl E
@@ -322,7 +322,7 @@ private theorem cross_split' {P q : PLLFormula} {Γ' Δ Γ : List PLLFormula}
 
 /-- Height-preserving right inversion of `∧`. -/
 private theorem andR_inv : ∀ {n : Nat} {Γ : List PLLFormula} {G : PLLFormula},
-    G4h n Γ G → ∀ {A B : PLLFormula}, G = A.and B →
+    G4h n Γ G → ∀ {A B : PLLFormula}, G = (A ∧ B) →
     G4h n Γ A ∧ G4h n Γ B := by
   intro n Γ G d
   induction d with
@@ -863,9 +863,9 @@ height-preserving inversion at the principal.
 
 private theorem selfAbsorb_aux :
     ∀ {na : Nat} {Γ : List PLLFormula} {G : PLLFormula}, G4h na Γ G →
-    ∀ {A B : PLLFormula}, G = A.somehow →
+    ∀ {A B : PLLFormula}, G = ◯A →
     ∀ {l₀ : List PLLFormula} {E : PLLFormula},
-    Γ.Perm (A.somehow.ifThen B :: l₀) → G4c (B :: l₀) E → G4c Γ E := by
+    Γ.Perm ((◯A ↠ B) :: l₀) → G4c (B :: l₀) E → G4c Γ E := by
   intro na Γ G d
   induction d with
   | init _ => intro A B e; cases e
@@ -1013,7 +1013,7 @@ Dyckhoff rules *restructure* the implication (e.g. `(D₁∧D₂)→B` becomes
 proof would re-derive cut.  Hence: minimal instance first, cut second,
 this general corollary third. -/
 theorem impL_adm {Γ l₀ : List PLLFormula} {D B E : PLLFormula}
-    (hΓ : Γ.Perm (D.ifThen B :: l₀)) (d₁ : G4c Γ D)
+    (hΓ : Γ.Perm ((D ↠ B) :: l₀)) (d₁ : G4c Γ D)
     (d₂ : G4c (B :: l₀) E) : G4c Γ E := by
   have lB : G4c Γ B :=
     cut d₁ ((mp D B l₀).perm (hΓ.symm.cons D))

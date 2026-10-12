@@ -26,7 +26,7 @@ abbrev iffPLL (M N : PLLFormula) : PLLFormula := (M.ifThen N).and (N.ifThen M)
 /-- Deduction theorem, both directions.  In the Hilbert presentation this
 needs an induction (F&M Prop. 2.2); natural deduction internalises it. -/
 theorem deduction_iff {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Nonempty (LaxND (φ :: Γ) ψ) ↔ Nonempty (LaxND Γ (φ.ifThen ψ)) :=
+    Nonempty (LaxND (φ :: Γ) ψ) ↔ Nonempty (LaxND Γ (φ ↠ ψ)) :=
   ⟨fun ⟨p⟩ => ⟨.impIntro p⟩,
    fun ⟨p⟩ => ⟨.impElim (p.weaken φ) (.iden (.head _))⟩⟩
 
@@ -77,13 +77,13 @@ namespace SetDeriv
 
 variable {Γ : Set PLLFormula}
 
-theorem andI {φ ψ : PLLFormula} (h₁ : Γ ⊢ φ) (h₂ : Γ ⊢ ψ) : Γ ⊢ φ.and ψ :=
+theorem andI {φ ψ : PLLFormula} (h₁ : Γ ⊢ φ) (h₂ : Γ ⊢ ψ) : Γ ⊢ (φ ∧ ψ) :=
   map₂ (fun p₁ p₂ => .andIntro p₁ p₂) h₁ h₂
 
-theorem andE1 {φ ψ : PLLFormula} (h : Γ ⊢ φ.and ψ) : Γ ⊢ φ :=
+theorem andE1 {φ ψ : PLLFormula} (h : Γ ⊢ (φ ∧ ψ)) : Γ ⊢ φ :=
   map (fun p => .andElim1 p) h
 
-theorem andE2 {φ ψ : PLLFormula} (h : Γ ⊢ φ.and ψ) : Γ ⊢ ψ :=
+theorem andE2 {φ ψ : PLLFormula} (h : Γ ⊢ (φ ∧ ψ)) : Γ ⊢ ψ :=
   map (fun p => .andElim2 p) h
 
 /-- `≡` is reflexive. -/
@@ -95,7 +95,7 @@ are compatible with it argument-wise.  Used via the three instances below. -/
 theorem iff_congr₂ {P P' Q Q' : PLLFormula}
     (conn : PLLFormula → PLLFormula → PLLFormula)
     (compat : ∀ {Δ : Set PLLFormula} {X X' Y Y' : PLLFormula},
-      Δ ⊢ iffPLL X X' → Δ ⊢ iffPLL Y Y' → Δ ⊢ (conn X Y).ifThen (conn X' Y'))
+      Δ ⊢ iffPLL X X' → Δ ⊢ iffPLL Y Y' → Δ ⊢ ((conn X Y) ↠ (conn X' Y')))
     (h₁ : Γ ⊢ iffPLL P P') (h₂ : Γ ⊢ iffPLL Q Q') :
     Γ ⊢ iffPLL (conn P Q) (conn P' Q') := by
   refine andI (compat h₁ h₂) (compat ?_ ?_)
@@ -104,7 +104,7 @@ theorem iff_congr₂ {P P' Q Q' : PLLFormula}
 
 theorem iff_congr_and {P P' Q Q' : PLLFormula}
     (h₁ : Γ ⊢ iffPLL P P') (h₂ : Γ ⊢ iffPLL Q Q') :
-    Γ ⊢ iffPLL (P.and Q) (P'.and Q') := by
+    Γ ⊢ iffPLL (P ∧ Q) (P' ∧ Q') := by
   refine iff_congr₂ PLLFormula.and (fun {Δ X X' Y Y'} hX hY => deduct ?_) h₁ h₂
   have hXY : insert (X.and Y) Δ ⊢ X.and Y := of_mem (Set.mem_insert ..)
   have hX' : insert (X.and Y) Δ ⊢ iffPLL X X' :=
@@ -115,7 +115,7 @@ theorem iff_congr_and {P P' Q Q' : PLLFormula}
 
 theorem iff_congr_or {P P' Q Q' : PLLFormula}
     (h₁ : Γ ⊢ iffPLL P P') (h₂ : Γ ⊢ iffPLL Q Q') :
-    Γ ⊢ iffPLL (P.or Q) (P'.or Q') := by
+    Γ ⊢ iffPLL (P ∨ Q) (P' ∨ Q') := by
   refine iff_congr₂ PLLFormula.or (fun {Δ X X' Y Y'} hX hY => deduct ?_) h₁ h₂
   refine orE (of_mem (Set.mem_insert ..)) ?_ ?_
   · refine orL _ (mp ?_ (of_mem (Set.mem_insert ..)))
@@ -125,7 +125,7 @@ theorem iff_congr_or {P P' Q Q' : PLLFormula}
 
 theorem iff_congr_imp {P P' Q Q' : PLLFormula}
     (h₁ : Γ ⊢ iffPLL P P') (h₂ : Γ ⊢ iffPLL Q Q') :
-    Γ ⊢ iffPLL (P.ifThen Q) (P'.ifThen Q') := by
+    Γ ⊢ iffPLL (P ↠ Q) (P' ↠ Q') := by
   refine iff_congr₂ PLLFormula.ifThen
     (fun {Δ X X' Y Y'} hX hY => deduct (deduct ?_)) h₁ h₂
   -- context:  X', X ⊃ Y, Δ  ⊢  Y'   (note `⊃` is contravariant on the left)
@@ -138,7 +138,7 @@ theorem iff_congr_imp {P P' Q Q' : PLLFormula}
   exact mono ((Set.subset_insert ..).trans (Set.subset_insert ..)) (andE1 hY)
 
 theorem iff_congr_somehow {P P' : PLLFormula}
-    (h : Γ ⊢ iffPLL P P') : Γ ⊢ iffPLL (somehow P) (somehow P') := by
+    (h : Γ ⊢ iffPLL P P') : Γ ⊢ iffPLL (◯P) (◯P') := by
   have half : ∀ {X X' : PLLFormula}, Γ ⊢ iffPLL X X' →
       Γ ⊢ (somehow X).ifThen (somehow X') := by
     intro X X' hX
@@ -176,8 +176,7 @@ theorem extensionality_setDeriv (a : String) (M N : PLLFormula) :
 /-- **Strong extensionality** (F&M Theorem 2.5), schematic form:
 `⊢ (M ≡ N) ⊃ (C[M] ≡ C[N])`. -/
 theorem strong_extensionality (a : String) (M N C : PLLFormula) :
-    Nonempty (LaxND [] ((iffPLL M N).ifThen
-      (iffPLL (substProp a M C) (substProp a N C)))) := by
+    Nonempty (LaxND [] ((iffPLL M N) ↠ (iffPLL (substProp a M C) (substProp a N C)))) := by
   have h1 : insert (iffPLL M N) (∅ : Set PLLFormula) ⊢
       iffPLL (substProp a M C) (substProp a N C) := by
     refine SetDeriv.mono ?_ (extensionality_setDeriv a M N C)

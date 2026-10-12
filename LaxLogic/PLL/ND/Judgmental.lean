@@ -146,7 +146,7 @@ theorem sound_tru (p : PD .tru Γ φ) : Nonempty (LaxND Γ φ) := ⟨erase p⟩
 
 /-- **Soundness for `lax`**: `Γ ⊢ φ lax` gives `Γ ⊢ ◯φ` in `LaxND` — the
 `lax` judgment *is* the boxed one, which is the content of the presentation. -/
-theorem sound_lax (p : PD .lax Γ φ) : Nonempty (LaxND Γ φ.somehow) := ⟨erase p⟩
+theorem sound_lax (p : PD .lax Γ φ) : Nonempty (LaxND Γ ◯φ) := ⟨erase p⟩
 
 /-! ## Completeness
 
@@ -210,7 +210,7 @@ theorem equiv_nd : Nonempty (PD .tru Γ φ) ↔ Nonempty (LaxND Γ φ) :=
 
 /-- And in the `lax` judgment: `Γ ⊢ φ lax` iff `Γ ⊢ ◯φ` in `LaxND`.  This is
 the precise sense in which the second judgment *is* the modality. -/
-theorem equiv_lax : Nonempty (PD .lax Γ φ) ↔ Nonempty (LaxND Γ φ.somehow) :=
+theorem equiv_lax : Nonempty (PD .lax Γ φ) ↔ Nonempty (LaxND Γ ◯φ) :=
   ⟨fun ⟨p⟩ => sound_lax p, fun ⟨p⟩ => ⟨circInvert (complete p)⟩⟩
 
 /-! ## The unit and the two derived shapes, unconditional

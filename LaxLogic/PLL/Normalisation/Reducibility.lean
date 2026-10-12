@@ -122,7 +122,7 @@ inductive RSteps {Γ : List PLLFormula} {φ : PLLFormula} :
 Each is `Acc.of_inversion(₂)` at the step-inversion fact for one
 constructor: a step of the compound is a step of a component. -/
 
-theorem RSN.abort {Γ : List PLLFormula} (φ : PLLFormula) {t : Tm Γ .falsePLL}
+theorem RSN.abort {Γ : List PLLFormula} (φ : PLLFormula) {t : Tm Γ ⊥}
     (h : RSN t) : RSN (Tm.abort φ t) :=
   Acc.of_inversion (f := Tm.abort φ)
     (fun hy => by cases hy with | abortCong h' => exact ⟨_, rfl, h'⟩) h
@@ -234,14 +234,14 @@ theorem RSN.of_rename {Γ Δ : List PLLFormula} {φ : PLLFormula}
 /-! ### Constructor inversion under renaming -/
 
 theorem Tm.rename_eq_lam {Γ Δ : List PLLFormula} {φ ψ : PLLFormula}
-    {t : Tm Γ (φ.ifThen ψ)} {ρ : Ren Γ Δ} {b : Tm (φ :: Δ) ψ}
+    {t : Tm Γ (φ ↠ ψ)} {ρ : Ren Γ Δ} {b : Tm (φ :: Δ) ψ}
     (h : t.rename ρ = .lam b) :
     ∃ b₀ : Tm (φ :: Γ) ψ, t = .lam b₀ ∧ b = b₀.rename ρ.lift := by
   cases t <;> simp [Tm.rename] at h
   case lam b₀ => exact ⟨b₀, rfl, h.symm⟩
 
 theorem Tm.rename_eq_pair {Γ Δ : List PLLFormula} {φ ψ : PLLFormula}
-    {t : Tm Γ (φ.and ψ)} {ρ : Ren Γ Δ} {a : Tm Δ φ} {b : Tm Δ ψ}
+    {t : Tm Γ (φ ∧ ψ)} {ρ : Ren Γ Δ} {a : Tm Δ φ} {b : Tm Δ ψ}
     (h : t.rename ρ = .pair a b) :
     ∃ (a₀ : Tm Γ φ) (b₀ : Tm Γ ψ),
       t = .pair a₀ b₀ ∧ a = a₀.rename ρ ∧ b = b₀.rename ρ := by
@@ -249,21 +249,21 @@ theorem Tm.rename_eq_pair {Γ Δ : List PLLFormula} {φ ψ : PLLFormula}
   case pair a₀ b₀ => exact ⟨a₀, b₀, rfl, h.1.symm, h.2.symm⟩
 
 theorem Tm.rename_eq_inl {Γ Δ : List PLLFormula} {φ ψ : PLLFormula}
-    {t : Tm Γ (φ.or ψ)} {ρ : Ren Γ Δ} {a : Tm Δ φ}
+    {t : Tm Γ (φ ∨ ψ)} {ρ : Ren Γ Δ} {a : Tm Δ φ}
     (h : t.rename ρ = .inl a) :
     ∃ a₀ : Tm Γ φ, t = .inl a₀ ∧ a = a₀.rename ρ := by
   cases t <;> simp [Tm.rename] at h
   case inl a₀ => exact ⟨a₀, rfl, h.symm⟩
 
 theorem Tm.rename_eq_inr {Γ Δ : List PLLFormula} {φ ψ : PLLFormula}
-    {t : Tm Γ (φ.or ψ)} {ρ : Ren Γ Δ} {a : Tm Δ ψ}
+    {t : Tm Γ (φ ∨ ψ)} {ρ : Ren Γ Δ} {a : Tm Δ ψ}
     (h : t.rename ρ = .inr a) :
     ∃ a₀ : Tm Γ ψ, t = .inr a₀ ∧ a = a₀.rename ρ := by
   cases t <;> simp [Tm.rename] at h
   case inr a₀ => exact ⟨a₀, rfl, h.symm⟩
 
 theorem Tm.rename_eq_val {Γ Δ : List PLLFormula} {φ : PLLFormula}
-    {t : Tm Γ (somehow φ)} {ρ : Ren Γ Δ} {a : Tm Δ φ}
+    {t : Tm Γ (◯φ)} {ρ : Ren Γ Δ} {a : Tm Δ φ}
     (h : t.rename ρ = .val a) :
     ∃ a₀ : Tm Γ φ, t = .val a₀ ∧ a = a₀.rename ρ := by
   cases t <;> simp [Tm.rename] at h
@@ -693,7 +693,7 @@ theorem subst_lift_rename_subst1 {Γ Δ Δ' : List PLLFormula}
 
 /-- Abort terms over SN scrutinees are reducible. -/
 theorem red_abort {Γ : List PLLFormula} {φ : PLLFormula}
-    {t : Tm Γ .falsePLL} (h : RSN t) : Red φ (.abort φ t) :=
+    {t : Tm Γ ⊥} (h : RSN t) : Red φ (.abort φ t) :=
   Acc.selfInduction (P := fun t => Red φ (Tm.abort φ t)) h fun t _ ih =>
     Red.cr3 trivial fun y hy => by
       cases hy with
@@ -723,14 +723,14 @@ theorem red_lam {Γ : List PLLFormula} {A B : PLLFormula} {b : Tm (A :: Γ) B}
     (hbsn : RSN b)
     (H : ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) (s : Tm Δ A),
       Red A s → Red B ((b.rename ρ.lift).subst1 s)) :
-    Red (A.ifThen B) (.lam b) :=
+    Red (A ↠ B) (.lam b) :=
   ⟨hbsn.lam, fun ρ _s hs =>
     red_beta_exp (hbsn.rename ρ.lift) hs (fun s' hs' => H ρ s' hs')⟩
 
 /-- Pairs of reducibles are reducible. -/
 theorem red_pair {Γ : List PLLFormula} {A B : PLLFormula}
     {a : Tm Γ A} {b : Tm Γ B} (ha : Red A a) (hb : Red B b) :
-    Red (A.and B) (.pair a b) := by
+    Red (A ∧ B) (.pair a b) := by
   refine Acc.pairInduction (P := fun a b =>
       Red A a → Red B b → Red (A.and B) (.pair a b)) ha.sn hb.sn ?_ ha hb
   intro a b _ _ iha ihb ha hb
@@ -752,7 +752,7 @@ theorem red_pair {Γ : List PLLFormula} {A B : PLLFormula}
 
 /-- Reduction sequences from `inl` stay `inl`. -/
 theorem rsteps_inl : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
-    {x z : Tm Γ (A.or B)}, RSteps x z →
+    {x z : Tm Γ (A ∨ B)}, RSteps x z →
     ∀ {a : Tm Γ A}, x = .inl a → ∃ a', z = .inl a' ∧ RSteps a a' := by
   intro Γ A B x z h
   induction h with
@@ -769,7 +769,7 @@ theorem rsteps_inl : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
 
 /-- Reduction sequences from `inr` stay `inr`. -/
 theorem rsteps_inr : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
-    {x z : Tm Γ (A.or B)}, RSteps x z →
+    {x z : Tm Γ (A ∨ B)}, RSteps x z →
     ∀ {a : Tm Γ B}, x = .inr a → ∃ a', z = .inr a' ∧ RSteps a a' := by
   intro Γ A B x z h
   induction h with
@@ -786,7 +786,7 @@ theorem rsteps_inr : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
 
 /-- Reduction sequences from `val` stay `val`. -/
 theorem rsteps_val : ∀ {Γ : List PLLFormula} {A : PLLFormula}
-    {x z : Tm Γ (somehow A)}, RSteps x z →
+    {x z : Tm Γ (◯A)}, RSteps x z →
     ∀ {a : Tm Γ A}, x = .val a → ∃ a', z = .val a' ∧ RSteps a a' := by
   intro Γ A x z h
   induction h with
@@ -803,7 +803,7 @@ theorem rsteps_val : ∀ {Γ : List PLLFormula} {A : PLLFormula}
 
 /-- Left injections of reducibles are reducible. -/
 theorem red_inl {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ A}
-    (ha : Red A a) : Red (A.or B) (.inl a) :=
+    (ha : Red A a) : Red (A ∨ B) (.inl a) :=
   ⟨RSN.inl ha.sn,
    fun hst => by
      obtain ⟨a', heq, hsteps⟩ := rsteps_inl hst rfl
@@ -815,7 +815,7 @@ theorem red_inl {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ A}
 
 /-- Right injections of reducibles are reducible. -/
 theorem red_inr {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ B}
-    (ha : Red B a) : Red (A.or B) (.inr a) := by
+    (ha : Red B a) : Red (A ∨ B) (.inr a) := by
   -- (Lean ≥4.31: as a single term-mode anonymous constructor, listing the
   -- impossible `.inl`-shape branch *first* leaves the ambient goal's sort
   -- unresolved when `cases heq` reaches for its zero-goal no-confusion
@@ -832,7 +832,7 @@ theorem red_inr {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ B}
 
 /-- `val`s of reducibles are reducible. -/
 theorem red_val {Γ : List PLLFormula} {A : PLLFormula} {a : Tm Γ A}
-    (ha : Red A a) : Red (somehow A) (.val a) :=
+    (ha : Red A a) : Red (◯A) (.val a) :=
   ⟨RSN.val ha.sn,
    fun hst => by
      obtain ⟨a', heq, hsteps⟩ := rsteps_val hst rfl
@@ -841,8 +841,8 @@ theorem red_val {Γ : List PLLFormula} {A : PLLFormula} {a : Tm Γ A}
 
 /-- Case analysis over reducibles with reducible branches is reducible. -/
 theorem red_case {Γ : List PLLFormula} {A B χ : PLLFormula}
-    {t : Tm Γ (A.or B)} {u₁ : Tm (A :: Γ) χ} {u₂ : Tm (B :: Γ) χ}
-    (h1sn : RSN u₁) (h2sn : RSN u₂) (ht : Red (A.or B) t)
+    {t : Tm Γ (A ∨ B)} {u₁ : Tm (A :: Γ) χ} {u₂ : Tm (B :: Γ) χ}
+    (h1sn : RSN u₁) (h2sn : RSN u₂) (ht : Red (A ∨ B) t)
     (H₁ : ∀ s : Tm Γ A, Red A s → Red χ (u₁.subst1 s))
     (H₂ : ∀ s : Tm Γ B, Red B s → Red χ (u₂.subst1 s)) :
     Red χ (.case t u₁ u₂) := by
@@ -864,10 +864,10 @@ theorem red_case {Γ : List PLLFormula} {A B χ : PLLFormula}
 /-- Value analysis of reduction sequences from a `bind` (no assoc rule in
 the β-fragment, so a `bind` reaches a `val` only through `let`-β). -/
 theorem rsteps_bind_val : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
-    {x z : Tm Γ (somehow B)}, RSteps x z →
-    ∀ {t : Tm Γ (somehow A)} {u : Tm (A :: Γ) (somehow B)}, x = .bind t u →
-    Red (somehow A) t →
-    (∀ s : Tm Γ A, Red A s → Red (somehow B) (u.subst1 s)) →
+    {x z : Tm Γ (◯B)}, RSteps x z →
+    ∀ {t : Tm Γ (◯A)} {u : Tm (A :: Γ) (◯B)}, x = .bind t u →
+    Red (◯A) t →
+    (∀ s : Tm Γ A, Red A s → Red (◯B) (u.subst1 s)) →
     ∀ {w : Tm Γ B}, z = .val w → Red B w := by
   intro Γ A B x z h
   induction h with
@@ -890,10 +890,10 @@ theorem rsteps_bind_val : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
 
 /-- Binds of reducibles with reducible bodies are reducible. -/
 theorem red_bind {Γ : List PLLFormula} {A B : PLLFormula}
-    {t : Tm Γ (somehow A)} {u : Tm (A :: Γ) (somehow B)}
-    (husn : RSN u) (ht : Red (somehow A) t)
-    (H : ∀ s : Tm Γ A, Red A s → Red (somehow B) (u.subst1 s)) :
-    Red (somehow B) (.bind t u) := by
+    {t : Tm Γ (◯A)} {u : Tm (A :: Γ) (◯B)}
+    (husn : RSN u) (ht : Red (◯A) t)
+    (H : ∀ s : Tm Γ A, Red A s → Red (◯B) (u.subst1 s)) :
+    Red (◯B) (.bind t u) := by
   refine Acc.pairInduction (P := fun t u =>
       Red (somehow A) t → (∀ s, Red A s → Red (somehow B) (u.subst1 s)) →
       Red (somehow B) (.bind t u)) ht.sn husn ?_ ht H

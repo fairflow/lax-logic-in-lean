@@ -55,7 +55,7 @@ def Ga : PLLFormula := Fa.ifThen (prop "p").somehow
 
 /-- … but it *is* derivable in the G3 calculus `SC`, reusing `F'` on
 both sides of the box-opening. -/
-theorem sep_SC : SC [Ga.somehow, Fa] (prop "r") := by
+theorem sep_SC : SC [◯Ga, Fa] (prop "r") := by
   -- impL on F' : premises ◯G', F' ⇒ ◯p and r, ◯G', F' ⇒ r
   refine SC.impL (A := (prop "p").somehow) (.tail _ (.head _)) ?_ ?_
   · -- ◯G', F' ⇒ ◯p : open the box, then impL on G'
@@ -140,7 +140,7 @@ private abbrev G' : PLLFormula := F'.ifThen p₀.somehow
 
 /-- `◯p, r→◯p ⇒ r`: the modus-ponens residue is underivable — `Lp→`
 on `r→◯p` needs `r` in the remaining context, and it is not there. -/
-private theorem not_S5 : ¬ G4 [p₀.somehow, r₀.ifThen p₀.somehow] r₀ := by
+private theorem not_S5 : ¬ G4 [◯p₀, (r₀ ↠ ◯p₀)] r₀ := by
   intro d
   cases d with
   | init h => simp at h
@@ -175,7 +175,7 @@ private theorem not_S5 : ¬ G4 [p₀.somehow, r₀.ifThen p₀.somehow] r₀ := 
 
 /-- `r→◯p ⇒ F′` is underivable: `impR` leads to `not_S5`, and `Lp→`
 would need an `r` that is not there. -/
-private theorem not_S4 : ¬ G4 [r₀.ifThen p₀.somehow] F' := by
+private theorem not_S4 : ¬ G4 [(r₀ ↠ ◯p₀)] F' := by
   intro d
   cases d with
   | botL h => simp at h
@@ -231,7 +231,7 @@ private theorem not_S3 : ¬ G4 [G'] p₀ := by
 
 /-- `G′ ⇒ ◯p` is underivable — **the invalid premise of `L◯→`**:
 `laxR` leads to `not_S3`, `impLImp` to `not_S4`. -/
-private theorem not_S2 : ¬ G4 [G'] p₀.somehow := by
+private theorem not_S2 : ¬ G4 [G'] ◯p₀ := by
   intro d
   cases d with
   | botL h => simp at h
@@ -261,7 +261,7 @@ private theorem not_S2 : ¬ G4 [G'] p₀.somehow := by
 
 /-- `◯G′ ⇒ p` is underivable — **the invalid premise of `R◯→`**:
 nothing engages a boxed hypothesis towards an atomic goal. -/
-private theorem not_S1 : ¬ G4 [G'.somehow] p₀ := by
+private theorem not_S1 : ¬ G4 [◯G'] p₀ := by
   intro d
   cases d with
   | init h => simp at h
@@ -288,7 +288,7 @@ private theorem not_S1 : ¬ G4 [G'.somehow] p₀ := by
 /-- The root: `◯G′, F′ ⇒ r` is underivable.  The only two live rule
 instances are `impLLax` on `F′` (→ `not_S1`) and `impLLaxLax` on `F′`
 with box `◯G′` (→ `not_S2`). -/
-private theorem not_S0 : ¬ G4 [G'.somehow, F'] r₀ := by
+private theorem not_S0 : ¬ G4 [◯G', F'] r₀ := by
   intro d
   cases d with
   | init h => simp at h
@@ -337,13 +337,13 @@ end Kernel
 /-- **Kernel-checked** underivability of the separating sequent: the
 same verdict as the `decide … = false` guard above, but established by
 an explicit proof term — no compiled evaluation in the trusted base. -/
-theorem sep_not_G4 : ¬ G4 [Ga.somehow, Fa] (prop "r") := not_S0
+theorem sep_not_G4 : ¬ G4 [◯Ga, Fa] (prop "r") := not_S0
 
 /-- The separation, packaged: G3iLL derives what G4iLL provably cannot.
 Left component kernel-checked in §above; right component kernel-checked
 by `sep_not_G4`. -/
 theorem sc_but_not_G4 :
-    SC [Ga.somehow, Fa] (prop "r") ∧ ¬ G4 [Ga.somehow, Fa] (prop "r") :=
+    SC [◯Ga, Fa] (prop "r") ∧ ¬ G4 [◯Ga, Fa] (prop "r") :=
   ⟨sep_SC, sep_not_G4⟩
 
 /-! ## The failures of contraction and cut, as explicit derivations
@@ -354,7 +354,7 @@ failures need no decision procedure at all. -/
 /-- `G′, F′ ⊢ ◯p`: inside the box-opening, `G′` and a copy of `F′`
 produce `◯p` (this is the sequent whose `F′`-free version `G′ ⊢ ◯p`
 is refuted by `not_S2`). -/
-private theorem GF_proves_boxp : G4 [G', F'] p₀.somehow :=
+private theorem GF_proves_boxp : G4 [G', F'] ◯p₀ :=
   .impLImp (List.Perm.refl _)
     (-- r→◯p, F′ ⊢ F′ : the copy of F′ fires under `impR`
       .impR
@@ -368,7 +368,7 @@ private theorem GF_proves_boxp : G4 [G', F'] p₀.somehow :=
 /-- **Two copies of `F′` suffice**: the explicit derivation, one copy
 consumed by `impLLaxLax` outside the box-opening, the other inside it
 (within `GF_proves_boxp`). -/
-theorem two_copies_G4 : G4 [Ga.somehow, Fa, Fa] (prop "r") :=
+theorem two_copies_G4 : G4 [◯Ga, Fa, Fa] (prop "r") :=
   .impLLaxLax (List.Perm.swap _ _ _)
     GF_proves_boxp
     (.init (.head _))
@@ -376,17 +376,17 @@ theorem two_copies_G4 : G4 [Ga.somehow, Fa, Fa] (prop "r") :=
 /-- **Contraction is not admissible in G4iLL**: derivable with two
 copies of `F′`, underivable with one — both directions kernel-checked. -/
 theorem contraction_not_admissible :
-    G4 [Ga.somehow, Fa, Fa] (prop "r") ∧ ¬ G4 [Ga.somehow, Fa] (prop "r") :=
+    G4 [◯Ga, Fa, Fa] (prop "r") ∧ ¬ G4 [◯Ga, Fa] (prop "r") :=
   ⟨two_copies_G4, sep_not_G4⟩
 
 /-- `◯G′, F′ ⊢ ◯p`: the left premise of the failing cut. -/
-theorem cut_left_G4 : G4 [Ga.somehow, Fa] ((prop "p").somehow) :=
+theorem cut_left_G4 : G4 [◯Ga, Fa] (◯(prop "p")) :=
   .laxL (List.Perm.refl _) GF_proves_boxp
 
 /-- `◯p, ◯G′, F′ ⊢ r`: the right premise of the failing cut — with
 `◯p` supplied as a hypothesis, `impLLaxLax` can use it as the box. -/
 theorem cut_right_G4 :
-    G4 [(prop "p").somehow, Ga.somehow, Fa] (prop "r") :=
+    G4 [◯(prop "p"), ◯Ga, Fa] (prop "r") :=
   .impLLaxLax (List.perm_middle (l₁ := [p₀.somehow, G'.somehow]))
     (.laxR (.init (.head _)))
     (.init (.head _))
@@ -394,9 +394,9 @@ theorem cut_right_G4 :
 /-- **Cut is not admissible in G4iLL** either: `◯p` interpolates
 between `◯G′, F′` and `r`, but the cut cannot be eliminated. -/
 theorem cut_not_admissible :
-    G4 [Ga.somehow, Fa] ((prop "p").somehow) ∧
-    G4 [(prop "p").somehow, Ga.somehow, Fa] (prop "r") ∧
-    ¬ G4 [Ga.somehow, Fa] (prop "r") :=
+    G4 [◯Ga, Fa] (◯(prop "p")) ∧
+    G4 [◯(prop "p"), ◯Ga, Fa] (prop "r") ∧
+    ¬ G4 [◯Ga, Fa] (prop "r") :=
   ⟨cut_left_G4, cut_right_G4, sep_not_G4⟩
 
 /-! Axiom audit, pinned at build time: the underivability needs

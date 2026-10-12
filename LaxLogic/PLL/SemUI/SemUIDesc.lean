@@ -357,7 +357,7 @@ theorem boxRowAmalgAll_of_desc {p : String} {φ ψ : PLLFormula}
     (h : ∀ (C : ConstraintModel) (x : C.W),
       (∀ y, C.Rm x y → ¬ C.force y ψ) →
       ∃ (K : ConstraintModel) (P : DescPack C K p dom) (k : K.W),
-        P.R x k ∧ ¬ K.force k φ.somehow) :
+        P.R x k ∧ ¬ K.force k ◯φ) :
     BoxRowAmalgAll p φ ψ := by
   intro C x hrow
   obtain ⟨K, P, k, hRk, hk⟩ := h C x hrow
@@ -372,7 +372,7 @@ theorem boxRowAmalgEx_of_desc {p : String} {φ ψ : PLLFormula}
     (h : ∀ (C : ConstraintModel) (w : C.W),
       (∀ x, C.Ri w x → ∃ y, C.Rm x y ∧ C.force y ψ) →
       ∃ (K : ConstraintModel) (P : DescPack C K p dom) (k : K.W),
-        P.R w k ∧ K.force k φ.somehow) :
+        P.R w k ∧ K.force k ◯φ) :
     BoxRowAmalgEx p φ ψ := by
   intro C w hw
   obtain ⟨K, P, k, hRk, hk⟩ := h C w hw

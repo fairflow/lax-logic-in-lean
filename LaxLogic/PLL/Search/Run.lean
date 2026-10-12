@@ -305,7 +305,7 @@ on no axioms at all. -/
 
 /-- A named specimen of a `pll_g4c`-produced natural-deduction proof,
 for the axiom audit. -/
-theorem unit_nd : Nonempty (LaxND [] (A₀.ifThen A₀.somehow)) := by pll_g4c
+theorem unit_nd : Nonempty (LaxND [] (A₀ ↠ ◯A₀)) := by pll_g4c
 
 /-- info: 'PLLND.unit_nd' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

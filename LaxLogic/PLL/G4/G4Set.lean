@@ -465,7 +465,7 @@ def leftStep (P : Finset PLLFormula → PLLFormula → Prop)
 
 /-- **Inversion at height 0**: only the axioms apply. -/
 theorem g4sh_zero_iff (Γ : Finset PLLFormula) (C : PLLFormula) :
-    G4sh 0 Γ C ↔ falsePLL ∈ Γ ∨ isInit Γ C := by
+    G4sh 0 Γ C ↔ ⊥ ∈ Γ ∨ isInit Γ C := by
   constructor
   · intro d
     cases d with
@@ -485,7 +485,7 @@ theorem g4sh_zero_iff (Γ : Finset PLLFormula) (C : PLLFormula) :
 premises one lower, or a left rule at some context formula. -/
 theorem g4sh_succ_iff (n : Nat) (Γ : Finset PLLFormula) (C : PLLFormula) :
     G4sh (n + 1) Γ C ↔
-      falsePLL ∈ Γ ∨ isInit Γ C ∨ rightStep (G4sh n) Γ C ∨
+      ⊥ ∈ Γ ∨ isInit Γ C ∨ rightStep (G4sh n) Γ C ∨
         ∃ F ∈ Γ, leftStep (G4sh n) Γ C F := by
   constructor
   · intro d

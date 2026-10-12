@@ -43,7 +43,7 @@ def curryImp (As : List PLLFormula) (B : PLLFormula) : PLLFormula :=
 @[simp] theorem curryImp_nil (B : PLLFormula) : curryImp [] B = B := rfl
 
 @[simp] theorem curryImp_cons (C : PLLFormula) (As : List PLLFormula)
-    (B : PLLFormula) : curryImp (C :: As) B = C.ifThen (curryImp As B) := rfl
+    (B : PLLFormula) : curryImp (C :: As) B = (C ↠ (curryImp As B)) := rfl
 
 /-- Total weight of a telescope. -/
 def telWeight (As : List PLLFormula) (B : PLLFormula) : Nat :=
@@ -210,7 +210,7 @@ theorem identity_mem {A : PLLFormula} {Γ : List PLLFormula} (h : A ∈ Γ) :
 
 /-- **Modus ponens in the context**: `A, A ⊃ B, Γ ⊢ B`. -/
 theorem mp (A B : PLLFormula) (Γ : List PLLFormula) :
-    G4 (A :: A.ifThen B :: Γ) B := by
+    G4 (A :: (A ↠ B) :: Γ) B := by
   simpa using (identity_mpt (telWeight [A] B)).2 [A] B Γ (Nat.le_refl _)
 
 end G4

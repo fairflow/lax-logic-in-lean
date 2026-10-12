@@ -41,8 +41,8 @@ def bot : Closed := mk .falsePLL rfl
 def top : Closed := mk (.ifThen .falsePLL .falsePLL) rfl
 
 @[simp] theorem mk_val (φ h) : (mk φ h).1 = φ := rfl
-@[simp] theorem and_val (x y : Closed) : (and x y).1 = .and x.1 y.1 := rfl
-@[simp] theorem or_val (x y : Closed) : (or x y).1 = .or x.1 y.1 := rfl
+@[simp] theorem and_val (x y : Closed) : (and x y).1 = (x.1 ∧ y.1) := rfl
+@[simp] theorem or_val (x y : Closed) : (or x y).1 = (x.1 ∨ y.1) := rfl
 
 end Closed
 

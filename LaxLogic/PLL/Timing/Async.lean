@@ -167,9 +167,9 @@ theorem arbiter_believes_grant : FinCM.forceB arbiterM 0 Ogrant = true := by dec
 
 /-- **But neither grant is believed.**  No constraint discharges to `g₁` along
 every future --- the `g₂`-resolution is a future in which it never does. -/
-theorem arbiter_denies_g1 : FinCM.forceB arbiterM 0 (somehow g1) = false := by decide
+theorem arbiter_denies_g1 : FinCM.forceB arbiterM 0 (◯g1) = false := by decide
 
-theorem arbiter_denies_g2 : FinCM.forceB arbiterM 0 (somehow g2) = false := by decide
+theorem arbiter_denies_g2 : FinCM.forceB arbiterM 0 (◯g2) = false := by decide
 
 /-- **The arbiter refutes `◯`-distribution over `∨`**, through the verified
 checker: believing that *a* grant occurs does not amount to believing, of some

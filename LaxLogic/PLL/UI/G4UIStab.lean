@@ -405,10 +405,10 @@ multiplication to flatten.  This is the engine for truncating the
 self-referential ◯-goal disjunct in the uniformity layer. -/
 
 theorem lax_fixpoint (α β : PLLFormula) :
-    (G4c [((α.or (α.and β).somehow).and β).somehow]
-      ((α.and β).somehow)) ∧
-    (G4c [(α.and β).somehow]
-      (((α.or (α.and β).somehow).and β).somehow)) := by
+    (G4c [◯((α ∨ ◯(α ∧ β)) ∧ β)]
+      (◯(α ∧ β))) ∧
+    (G4c [◯(α ∧ β)]
+      (◯((α ∨ ◯(α ∧ β)) ∧ β))) := by
   constructor
   · -- collapse: distribute, then multiply
     refine G4c.laxL (.head _) ?_
