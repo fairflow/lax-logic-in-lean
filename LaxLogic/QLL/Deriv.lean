@@ -222,23 +222,23 @@ theorem botE {Γ p A} : Derivable p Γ .bot → Derivable (.exf A p) Γ A
   | ⟨d⟩ => ⟨.botE d⟩
 
 theorem andI {Γ p q A B} : Derivable p Γ A → Derivable q Γ B →
-    Derivable (.pair p q) Γ (A ∧ B)
+    Derivable (.pair p q) Γ (.and A B)
   | ⟨d⟩, ⟨e⟩ => ⟨.andI d e⟩
 
-theorem andE₁ {Γ r A B} : Derivable r Γ (A ∧ B) → Derivable (.fst r) Γ A
+theorem andE₁ {Γ r A B} : Derivable r Γ (.and A B) → Derivable (.fst r) Γ A
   | ⟨d⟩ => ⟨.andE₁ d⟩
 
-theorem andE₂ {Γ r A B} : Derivable r Γ (A ∧ B) → Derivable (.snd r) Γ B
+theorem andE₂ {Γ r A B} : Derivable r Γ (.and A B) → Derivable (.snd r) Γ B
   | ⟨d⟩ => ⟨.andE₂ d⟩
 
-theorem orI₁ {Γ p A B} : Derivable p Γ A → Derivable (.inl p) Γ (A ∨ B)
+theorem orI₁ {Γ p A B} : Derivable p Γ A → Derivable (.inl p) Γ (.or A B)
   | ⟨d⟩ => ⟨.orI₁ d⟩
 
-theorem orI₂ {Γ q A B} : Derivable q Γ B → Derivable (.inr q) Γ (A ∨ B)
+theorem orI₂ {Γ q A B} : Derivable q Γ B → Derivable (.inr q) Γ (.or A B)
   | ⟨d⟩ => ⟨.orI₂ d⟩
 
 theorem orE {Γ r p q A B K} (y z : String) (hy : FreshP y Γ p) (hz : FreshP z Γ q) :
-    Derivable r Γ (A ∨ B) →
+    Derivable r Γ (.or A B) →
     Derivable (p.openPWith y) ((Pf.fvar y, A) :: Γ) K →
     Derivable (q.openPWith z) ((Pf.fvar z, B) :: Γ) K →
     Derivable (.caseOr r p q) Γ K

@@ -21,6 +21,10 @@ name: Blueprint Pages
 on:
   pull_request:
     paths:
+      # The library: the Blueprint and the papers import modules the default
+      # targets never build (LaxLogic/QLL among them), so a library change that
+      # passes Lean CI can still break this build (2026-10-12, the notation sweep).
+      - 'LaxLogic/**'
       - 'LaxBlueprint/**'
       - 'LaxBlueprintMain.lean'
       - 'scripts/ci-pages.sh'
