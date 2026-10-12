@@ -94,7 +94,7 @@ theorem map₃ {Γ : Set Form} {A B C K : Form}
   · intro X h; simp [h]
 
 theorem orE' {Γ : Set Form} {A B K : Form}
-    (h : Γ ⊢ (A ∨ B)) (h₁ : insert A Γ ⊢ K) (h₂ : insert B Γ ⊢ K) : Γ ⊢ K :=
+    (h : Γ ⊢ .or A B) (h₁ : insert A Γ ⊢ K) (h₂ : insert B Γ ⊢ K) : Γ ⊢ K :=
   map₃ (fun _ p q r => .orE p (.impE (q.weaken (by intro _ h; simp [h]))
       (.var (List.mem_cons_self ..)))
     (.impE (r.weaken (by intro _ h; simp [h])) (.var (List.mem_cons_self ..))))
@@ -335,13 +335,13 @@ theorem Avoids.mono {R : Set String} {A B : Form} (h : Avoids R B)
 @[simp] theorem avoids_empty (A : Form) : Avoids ∅ A := fun _ _ h => h
 
 theorem Avoids.left {R : Set String} {A B : Form}
-    (h : Avoids R (A ∧ B) ∨ Avoids R (A ∨ B) ∨ Avoids R (.imp A B)) :
+    (h : Avoids R (.and A B) ∨ Avoids R (.or A B) ∨ Avoids R (.imp A B)) :
     Avoids R A := by
   rcases h with h | h | h <;>
     exact h.mono (fun _ hx => by simp [Form.fv]; exact Or.inl hx)
 
 theorem Avoids.right {R : Set String} {A B : Form}
-    (h : Avoids R (A ∧ B) ∨ Avoids R (A ∨ B) ∨ Avoids R (.imp A B)) :
+    (h : Avoids R (.and A B) ∨ Avoids R (.or A B) ∨ Avoids R (.imp A B)) :
     Avoids R B := by
   rcases h with h | h | h <;>
     exact h.mono (fun _ hx => by simp [Form.fv]; exact Or.inr hx)
@@ -554,8 +554,8 @@ theorem not_mem_fal_of_mem_val (hG : Good R T) {A : Form} (h : A ∈ T.val) :
     A ∉ T.fal := fun hf => hG.not_fal_deriv hf (SetPrv.of_mem h)
 
 /-- Primeness. -/
-theorem or_mem (hG : Good R T) {A B : Form} (hav : Avoids R (A ∨ B))
-    (h : (Form ∨ A) B ∈ T.val) : A ∈ T.val ∨ B ∈ T.val := by
+theorem or_mem (hG : Good R T) {A B : Form} (hav : Avoids R (.or A B))
+    (h : Form.or A B ∈ T.val) : A ∈ T.val ∨ B ∈ T.val := by
   by_contra hcon
   push Not at hcon
   have hA : A ∈ T.fal := (hG.2 A (Avoids.left (Or.inr (Or.inl hav)))).resolve_left hcon.1
@@ -580,8 +580,8 @@ theorem imp_mem (hG : Good R T) {A B : Form} (hav : Avoids R (.imp A B))
     (SetPrv.map₂ (fun _ p q => .impE p q) (SetPrv.of_mem h) (SetPrv.of_mem hA)))
 
 /-- A falsified disjunction falsifies both disjuncts. -/
-theorem fal_or (hG : Good R T) {A B : Form} (hav : Avoids R (A ∨ B))
-    (h : (Form ∨ A) B ∈ T.fal) : A ∈ T.fal ∧ B ∈ T.fal := by
+theorem fal_or (hG : Good R T) {A B : Form} (hav : Avoids R (.or A B))
+    (h : Form.or A B ∈ T.fal) : A ∈ T.fal ∧ B ∈ T.fal := by
   constructor
   · rcases hG.2 A (Avoids.left (Or.inr (Or.inl hav))) with hA | hA
     · exact absurd (hG.not_fal_deriv h ((SetPrv.of_mem hA).map (fun _ p => .orI₁ p))) (by simp)
@@ -591,8 +591,8 @@ theorem fal_or (hG : Good R T) {A B : Form} (hav : Avoids R (A ∨ B))
     · exact hB
 
 /-- A falsified conjunction falsifies one conjunct. -/
-theorem fal_and (hG : Good R T) {A B : Form} (hav : Avoids R (A ∧ B))
-    (h : (Form ∧ A) B ∈ T.fal) : A ∈ T.fal ∨ B ∈ T.fal := by
+theorem fal_and (hG : Good R T) {A B : Form} (hav : Avoids R (.and A B))
+    (h : Form.and A B ∈ T.fal) : A ∈ T.fal ∨ B ∈ T.fal := by
   by_contra hcon
   push Not at hcon
   have hA : A ∈ T.val := (hG.2 A (Avoids.left (Or.inl hav))).resolve_right hcon.1

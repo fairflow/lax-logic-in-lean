@@ -106,7 +106,7 @@ theorem CTyped.prv_total {isC : String → Bool} {Θ : Program} {S : Form} {p : 
 
 /-- `total = latent ⊗ active`, up to provable equivalence. -/
 theorem CProof.total_equiv : ∀ p : CProof,
-    Prv [p.total] (p.latent ∧ p.active) ∧ Prv [(p.latent ∧ p.active)] p.total
+    Prv [p.total] (.and p.latent p.active) ∧ Prv [.and p.latent p.active] p.total
   | .top => ⟨.andI .topI .topI, .topI⟩
   | .cstr _ _ => ⟨.andI .topI .hd, .andE₂ .hd⟩
   | .andI p q => by

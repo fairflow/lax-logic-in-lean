@@ -112,12 +112,12 @@ The commutativity of `∧` is read off the semantics and handed to
 
 def Q : Form := .pred "Q" []
 
-theorem and_comm_valid : [(Form ∧ P) Q] ⊨ (Form ∧ Q) P := by
+theorem and_comm_valid : [Form.and P Q] ⊨ Form.and Q P := by
   intro M s ρ _ hΓ
   have h := hΓ (Form.and P Q) (List.mem_singleton.mpr rfl)
   exact ⟨h.2, h.1⟩
 
-theorem and_comm_prv : Prv [(Form ∧ P) Q] ((Form ∧ Q) P) :=
+theorem and_comm_prv : Prv [Form.and P Q] (Form.and Q P) :=
   completeness (by
     intro B hB
     rcases List.mem_singleton.mp hB with rfl
@@ -176,7 +176,7 @@ def FA : Form := .pred "A" []
 /-- `B x`, with `x` the bound individual. -/
 def FB : Form := .pred "B" [.bvar 0]
 
-theorem cd_holds : dom2.force (.forall_ (FA ∨ FB)) false ρ₃ [] := by
+theorem cd_holds : dom2.force (.forall_ (.or FA FB)) false ρ₃ [] := by
   intro v _ d hd
   cases d
   · exact Or.inr (Or.inr (Or.inr ⟨rfl, rfl⟩))
@@ -184,7 +184,7 @@ theorem cd_holds : dom2.force (.forall_ (FA ∨ FB)) false ρ₃ [] := by
     · exact Or.inl (Or.inr (Or.inl ⟨rfl, hv⟩))
     · exact Bool.noConfusion hd
 
-theorem cd_fails : ¬ dom2.force (FA ∨ (.forall_ FB)) false ρ₃ [] := by
+theorem cd_fails : ¬ dom2.force (.or FA (.forall_ FB)) false ρ₃ [] := by
   rintro (hA | hall)
   · rcases hA with hF | hI
     · exact hF
@@ -200,7 +200,7 @@ theorem cd_fails : ¬ dom2.force (FA ∨ (.forall_ FB)) false ρ₃ [] := by
 
 /-- **The Constant Domain axiom is not derivable.**  By soundness, against a
 model whose two states have different domains. -/
-theorem cd_not_prv : ¬ Prv [.forall_ (FA ∨ FB)] (FA ∨ (.forall_ FB)) := by
+theorem cd_not_prv : ¬ Prv [.forall_ (.or FA FB)] (.or FA (.forall_ FB)) := by
   intro h
   exact cd_fails (h.sound dom2 false ρ₃ (fun _ _ => Or.inr rfl) (fun B hB => by
     rcases List.mem_singleton.mp hB with rfl

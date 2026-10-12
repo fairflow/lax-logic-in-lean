@@ -74,17 +74,17 @@ theorem PEq.trans {A B C : Form} (h₁ : PEq A B) (h₂ : PEq B C) : PEq A C :=
 
 /-- `⊣⊢` is a congruence for `∧`. -/
 theorem PEq.and {A A' B B' : Form} (hA : PEq A A') (hB : PEq B B') :
-    PEq (A ∧ B) (A' ∧ B') :=
+    PEq (.and A B) (.and A' B') :=
   ⟨.andI (Prv.cut1 (.andE₁ .hd) hA.1) (Prv.cut1 (.andE₂ .hd) hB.1),
    .andI (Prv.cut1 (.andE₁ .hd) hA.2) (Prv.cut1 (.andE₂ .hd) hB.2)⟩
 
 /-- `∧` is associative up to `⊣⊢`. -/
-theorem PEq.and_assoc (A B C : Form) : PEq ((A ∧ B) ∧ C) (A ∧ (B ∧ C)) :=
+theorem PEq.and_assoc (A B C : Form) : PEq (.and (.and A B) C) (.and A (.and B C)) :=
   ⟨.andI (.andE₁ (.andE₁ .hd)) (.andI (.andE₂ (.andE₁ .hd)) (.andE₂ .hd)),
    .andI (.andI (.andE₁ .hd) (.andE₁ (.andE₂ .hd))) (.andE₂ (.andE₂ .hd))⟩
 
 /-- `∧` is commutative up to `⊣⊢`. -/
-theorem PEq.and_comm (A B : Form) : PEq (A ∧ B) (B ∧ A) :=
+theorem PEq.and_comm (A B : Form) : PEq (.and A B) (.and B A) :=
   ⟨.andI (.andE₂ .hd) (.andE₁ .hd), .andI (.andE₂ .hd) (.andE₁ .hd)⟩
 
 /-- `⊤` is a left unit for `∧` up to `⊣⊢`. -/
@@ -100,7 +100,7 @@ def conjs : List Form → Form
 
 /-- Pulling an element out of the middle. -/
 theorem conjs_mid : ∀ (l r : List Form) (x : Form),
-    PEq (conjs (l ++ x :: r)) (x ∧ (conjs (l ++ r)))
+    PEq (conjs (l ++ x :: r)) (.and x (conjs (l ++ r)))
   | [], _, x => PEq.refl _
   | a :: l, r, x => by
       show PEq (.and a (conjs (l ++ x :: r))) (.and x (.and a (conjs (l ++ r))))
@@ -150,7 +150,7 @@ def totals (ps : List CProof) : Form := conjs (ps.map CProof.total)
 
 /-- A tree's total can be moved to the front, up to `⊣⊢`. -/
 theorem totals_mid (psl psr : List CProof) (p : CProof) :
-    PEq (totals (psl ++ p :: psr)) (p.total ∧ (totals (psl ++ psr))) := by
+    PEq (totals (psl ++ p :: psr)) (.and p.total (totals (psl ++ psr))) := by
   unfold totals
   rw [List.map_append, List.map_cons, List.map_append]
   exact conjs_mid _ _ _
@@ -165,7 +165,7 @@ of the goals whose totals, conjoined with the initial constraint, are
 equivalent to the answer constraint. -/
 theorem steps_forest {isC : String → Bool} {Θ : Program} {ok : Form → Prop} :
     ∀ {g g' : Goal}, Steps isC Θ ok g g' → g'.gs = [] →
-      ∃ ps, Forest isC Θ g.gs ps ∧ PEq g'.c (g.c ∧ (totals ps))
+      ∃ ps, Forest isC Θ g.gs ps ∧ PEq g'.c (.and g.c (totals ps))
   | _, _, .refl ⟨c, gs⟩, hnil => by
       simp only at hnil; subst hnil
       exact ⟨[], .nil, (PEq.and_top c).symm⟩
@@ -228,7 +228,7 @@ theorem Forest.prv {isC : String → Bool} {Θ : Program} :
 entails the initial constraint and the goals. -/
 theorem steps_sound {isC : String → Bool} {Θ : Program} {ok : Form → Prop} {g g' : Goal}
     (h : Steps isC Θ ok g g') (hnil : g'.gs = []) :
-    Prv Θ.forms (.imp g'.c (g.c ∧ (conjs g.gs))) := by
+    Prv Θ.forms (.imp g'.c (.and g.c (conjs g.gs))) := by
   obtain ⟨ps, hF, hE⟩ := steps_forest h hnil
   have hf := hF.prv
   have e' : Prv (g'.c :: Θ.forms) (.and g.c (totals ps)) :=
