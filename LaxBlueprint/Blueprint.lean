@@ -40,7 +40,7 @@ Papers, published on this site beside the Blueprint:
 In preparation, not yet publishable: *Belief in Lax Logic*.  Its mechanised base
 is the chapter of that name below; the
 [draft](https://projects.fairflow.co.uk/lax-logic-in-lean/drafts/belief-in-lax-logic.html)
-is `docs/belief-paper-draft.md` in the repository.
+is the PDF built from `paper/` in the repository.
 
 Explorers and guides, self-contained pages (each states its own version and
 date):
