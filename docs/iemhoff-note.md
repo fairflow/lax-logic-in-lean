@@ -2,6 +2,9 @@
 
 *Draft — for M. Fairtlough to review and, if he judges it useful, to send.*
 
+*Revised 2026-10-14: §1, §6 and §7 no longer say that the repaired calculus is
+the one the argument needs. It is not terminating in the paper's sense (§6).*
+
 This note records some findings from a machine-checked formalisation, in Lean 4,
 of Propositional Lax Logic (PLL) and of the sequent calculi used in your
 *Proof Theory for Lax Logic* (arXiv:2209.08976v1; the book chapter of the same
@@ -15,9 +18,10 @@ proved (machine-checked), refuted (with an explicit witness), or open.
 
 The formalisation turned up two genuine problems in the G4iLL route to uniform
 interpolation, plus one purely local slip in the soundness proof of the
-interpolant assignment. It also confirms the positive core: Craig interpolation
-for PLL goes through cleanly, and a small repair of G4iLL restores exactly the
-calculus your programme needs. None of this is offered as anything other than
+interpolant assignment. It also confirms part of the positive core: Craig
+interpolation for PLL goes through cleanly, and a small repair of G4iLL gives a
+complete calculus with cut and contraction admissible. That calculus is not
+terminating, however, so it is not the calculus your argument needs (§6). None of this is offered as anything other than
 the ordinary business of mechanisation, which is good at finding the places
 where a paper proof and a machine disagree.
 
@@ -44,8 +48,10 @@ single-succedent.
    calculus), machine-checked.
 5. **A minimally repaired G4iLL exists** — three rules retain their principal
    formulas — and is proved complete for PLL, with cut and contraction
-   admissible and equivalent to natural deduction. So the target calculus your
-   argument wants does exist; uniform interpolation for PLL itself remains open
+   admissible and equivalent to natural deduction. It is not terminating in
+   your sense: the retaining rules have instances whose premises do not come
+   before their conclusions, so it is not balanced and cannot replace G4iLL in
+   Theorem 5 (§6). Uniform interpolation for PLL itself remains open
    in the formalisation (one lemma outstanding).
 
 ---
@@ -217,8 +223,27 @@ the box rules keep their box and R○→ keeps its context. The result
 (`G4c`, `LaxLogic/PLL/G4/G4H*.lean`) is proved complete for PLL, slotting
 into G4c = SC = natural deduction = term calculus (`PLLG4HComp.lean`:
 `completeness`, `equiv_sc`, `equiv_nd`, `equiv_tm`), with cut
-(`PLLG4HCut.lean`) and contraction admissible. So the calculus your
-programme needs does exist: your G4iLL with these three retentions.
+(`PLLG4HCut.lean`) and contraction admissible.
+
+What it is not is terminating in the sense of §2.2 of your paper. A calculus
+terminating with respect to a reductive order must put every premise before its
+conclusion, and a reductive order puts every proper subsequent of a sequent
+before that sequent. Each retaining rule has instances that break this:
+
+* the conclusion Γ, ◯χ ⇒ ◯B of the retaining L○ is a proper subsequent of its
+  premise Γ, ◯χ, χ ⇒ ◯B;
+* the retaining R○→ with conclusion succedent φ has first premise
+  Γ, ◯φ→ψ ⇒ φ, which is its conclusion;
+* the retaining L○→ with conclusion succedent ◯φ has its conclusion as a
+  proper subsequent of its first premise.
+
+So the repaired calculus is not balanced in the sense of (Iemhoff, 2019b,
+§7.1), and cannot stand in for G4iLL in Theorem 5. Backward proof search in it
+terminates only over set-contexts with a loop check (A.4), which is a property
+of the search procedure, not of the calculus. Whether PLL has a complete
+balanced calculus is open. Howe (MSCS 2001, §5) conjectured that lax logic has
+no contraction-free calculus at all, and the separating sequent of §2 has his
+shape.
 
 **Uniform interpolation for PLL.** Open in the formalisation. With the
 tables transcribed faithfully, essentially all of it is machine-checked
@@ -239,9 +264,10 @@ company, and the separating sequent of §2 is a small and, I think, genuinely
 interesting one. The substantive corrections are two — the incompleteness of
 G4iLL (with the attendant failure of Corollary 1, Fact 3, and the completeness
 premise of the Theorem 5–6 chain) and the local L◯ slip in Lemma 7 —
-and the programme's positive goal is intact: Craig interpolation holds, and a
-minimally repaired calculus recovers the structural properties the argument
-relies on.
+and two positive results stand: Craig interpolation holds, and a minimally
+repaired calculus is complete with cut and contraction admissible. The repair
+loses the termination the argument relies on, and whether a complete calculus
+can also be terminating is the question it leaves open.
 
 Every claim above is a checkable Lean statement in
 `github.com/fairflow/lax-logic-in-lean`; the file and theorem names are given
