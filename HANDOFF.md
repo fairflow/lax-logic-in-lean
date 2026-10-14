@@ -5426,3 +5426,12 @@ items 2 and 10 still cite her result as established and are now wrong.
 and merging; 29,710 → 29,783 rows, 606 → 607 modules, `23 sorryAx / 2
 native_decide` unchanged.  The estate was NOT rebuilt for this; CI's
 `--built-only` check is the confirmation.
+
+Then, at the manager's request and in the same PR, the seven rows owed since
+PR #42 for `LaxLogic.PLL.Semantics.CtxCompletenessIPL`, by the same route:
+29,790 rows, 608 modules, taints unchanged.  Checked the other way round: a
+fresh run of `scripts/ledger.lean` over all 144 listed modules the root imports
+reproduces the record's 6,190 rows for them exactly, and reports 7 additions
+against the record one commit earlier.  The one-module route is sound for a
+LEAF module or a module nothing has changed under; it is not a substitute for
+`--update` after a change to shared definitions.
