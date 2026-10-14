@@ -185,3 +185,9 @@ right, Visser's and Ghilardi–Zawadowski's).
 About 15 seconds on top of the built dependencies.  The `#guard_msgs` pins
 were watched failing (the pin of `S_clause_needed` first asserted
 `[propext]`; the kernel reports no axioms).
+
+## 6. Addendum: step 3 PROVED
+
+`amalgamation` (`LaxLogic/PLL/SemUI/SubframeAmalg.lean`), level `3ν + 2`, with
+the invariance lemma `PBisim.force_iff`.  Record:
+`docs/subframe-step3-2026-10-14.md`.

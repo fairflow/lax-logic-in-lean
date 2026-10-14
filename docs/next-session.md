@@ -17,8 +17,10 @@ the summary.
    (`SubframeModel.derivable_iff_valid`, record §9).  Step 2 PROVED after
    that (`layered_of_agree`, `docs/subframe-step2-2026-10-14.md`): agreement
    at crank `3n + 1` gives a layered bisimulation at level `n`, ◯-free
-   instance first.  Next would be step 3, amalgamation for subframe models,
-   refutation-first.
+   instance first.  Step 3 PROVED after that (`amalgamation`, level
+   `3ν + 2`; `docs/subframe-step3-2026-10-14.md`).  Next would be the
+   `∃`-side of uniform interpolation by assembly (record §4), then the
+   `∀`-side gluing.
    Also open: whether Goldblatt's 1981 J-frames are the `Rᵢ`/`Rₘ` models
    (his text not checked; Matthew wants his name kept if so).
 2. Whether `SemUILayered.amalgamation` becomes a `Prop` (rule 1).  It means
