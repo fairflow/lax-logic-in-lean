@@ -18,9 +18,10 @@ the summary.
    that (`layered_of_agree`, `docs/subframe-step2-2026-10-14.md`): agreement
    at crank `3n + 1` gives a layered bisimulation at level `n`, ◯-free
    instance first.  Step 3 PROVED after that (`amalgamation`, level
-   `3ν + 2`; `docs/subframe-step3-2026-10-14.md`).  Next would be the
-   `∃`-side of uniform interpolation by assembly (record §4), then the
-   `∀`-side gluing.
+   `3ν + 2`; `docs/subframe-step3-2026-10-14.md`).  The `∃`-side of
+   uniform interpolation for PLL PROVED after that (`uniform_ex`,
+   `docs/subframe-ui-ex-2026-10-14.md`).  Next would be the `∀`-side.
+   Queued: lighter CI for experimental branches (Matthew), for the manager.
    Also open: whether Goldblatt's 1981 J-frames are the `Rᵢ`/`Rₘ` models
    (his text not checked; Matthew wants his name kept if so).
 2. Whether `SemUILayered.amalgamation` becomes a `Prop` (rule 1).  It means

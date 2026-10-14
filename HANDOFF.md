@@ -5577,3 +5577,32 @@ PROVED).  Then the `∀`-side gluing.  OPEN: the level `2ν + 1` for PLL.
 
 **Ledger.**  110 rows by the one-module route; 30,024 rows in 611 modules;
 `23 sorryAx / 2 native_decide` unchanged.
+
+## 2026-10-14 (afternoon, later) — the `∃`-side of uniform interpolation for PLL PROVED
+
+Branch `subframe-ui-ex`.  Matthew: "go ahead with the ∃-side".  Record:
+`docs/subframe-ui-ex-2026-10-14.md`; also a bullet in `docs/calculus-map.md`
+under `LaxND`.
+
+**PROVED.**  `LaxLogic/PLL/SemUI/SubframeUI.lean`, `uniform_ex`
+`[propext, Classical.choice, Quot.sound]`: for every `φ` and `p` some `ψ` with
+`atoms(ψ) ⊆ atoms(φ) ∖ {p}`, `⊢ φ ⊃ ψ`, and `⊢ φ ⊃ χ ⟹ ⊢ ψ ⊃ χ` for every
+`p`-free `χ`.  ◯-free instance first (`uniform_exI`).  The interpolant is the
+conjunction of the representatives `D` of crank ≤ `3(3ν+2) + 2` over
+`atoms(φ) ∖ {p}` with `⊢ φ ⊃ D`; the proof composes completeness, step 2,
+step 3 and invariance (record §2).
+
+**The `2ν + 1` question is closed** (Matthew, 2026-10-14: he had been relaying
+what earlier sessions told him).  Nothing in the route needs that constant;
+the amalgamation level only sizes the fragment.
+
+**OPEN**: the `∀`-side (Visser's push-down; Craig interpolation to restrict
+`χ` to the atoms of `φ`), hence full uniform interpolation for PLL.
+
+**Queued for Matthew and the LaxLogic manager** (Matthew, 2026-10-14): lighter
+CI for experimental branches, building only the changed modules, what depends
+on them, and the blueprint, not the whole suite.  Not drafted yet; CI is the
+manager's.
+
+**Ledger.**  6 rows by the one-module route; 30,030 rows in 612 modules;
+`23 sorryAx / 2 native_decide` unchanged.

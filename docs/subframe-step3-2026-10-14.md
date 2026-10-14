@@ -20,9 +20,9 @@ Context: `docs/subframe-step2-2026-10-14.md` (step 2) and
 Every level inequality in the proof is an `omega` obligation checked by the
 kernel; none is argued in prose only.
 
-**OPEN**: the level `2ν + 1` for PLL; the assembly of steps 1 to 3 into the
-`∃`-side of uniform interpolation (§4, all ingredients PROVED); the `∀`-side;
-uniform interpolation for PLL.
+**OPEN**: the level `2ν + 1` for PLL (not needed by the route); the `∀`-side;
+uniform interpolation for PLL in full.  The `∃`-side assembly of §4 was PROVED
+later the same day (`uniform_ex`, `docs/subframe-ui-ex-2026-10-14.md`).
 
 ## 1. The statement
 
@@ -112,7 +112,8 @@ The last row is the tight one, and it is where the factor 3 comes from.  The
 | compl. | PLL sound and complete for subframe models | PROVED (`SubframeModel.derivable_iff_valid`) |
 | 4 | the `∀`-side gluing | OPEN |
 
-**The `∃`-side assembly** (OPEN, not built; every ingredient is PROVED).  Put
+**The `∃`-side assembly** (PROVED later the same day as `uniform_ex`;
+`docs/subframe-ui-ex-2026-10-14.md`).  Put
 `V` the atoms of `φ` other than `p`, `X` the subformulas of `φ` with `⊥`,
 `L := 3ν + 2`, `r := 3L + 1`, and let `∃p φ` be the conjunction of the
 representatives `D` of crank ≤ `r + 1` over `V` with `⊢ φ ⊃ D`.  Then
