@@ -63,12 +63,12 @@ As of 2026-10-14:
 
 | | |
 |---|--:|
-| declarations recorded | 29,914 in 610 modules |
-| theorems | 13,735 |
-| axiom-free | 12,915 |
-| `[propext, Quot.sound]` | 8,492 |
-| `[propext]` | 5,710 |
-| using `Classical.choice` | 2,773 |
+| declarations recorded | 30,024 in 611 modules |
+| theorems | 13,782 |
+| axiom-free | 12,945 |
+| `[propext, Quot.sound]` | 8,496 |
+| `[propext]` | 5,712 |
+| using `Classical.choice` | 2,847 |
 | carrying `sorryAx` | **23** |
 | `native_decide`-tainted | **2** |
 
