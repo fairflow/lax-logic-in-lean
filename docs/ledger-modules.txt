@@ -222,6 +222,7 @@ LaxLogic.PLL.SemUI.SemUIOFree
 LaxLogic.PLL.SemUI.SemUIRes
 LaxLogic.PLL.SemUI.SemUISplit
 LaxLogic.PLL.SemUI.SemUITrace
+LaxLogic.PLL.SemUI.SubframeAmalg
 LaxLogic.PLL.SemUI.SubframeLayered
 LaxLogic.PLL.Semantics.Completeness
 LaxLogic.PLL.Semantics.ConfluentComplete
