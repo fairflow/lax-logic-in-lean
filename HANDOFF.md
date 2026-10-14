@@ -5537,8 +5537,43 @@ agreement satisfies the back-and-forth clauses, for `r ≥ 1`:
 
 (`Agree.forth`, `Agree.sforth`, and mirror images), so `≡_{3n+1}` is a layered
 bisimulation at level `n` (`layered_of_agree`); the invariance lemma
-`agree_of_layered` is what step 3 uses to carry truth along links.  Linkage at
-level `n` lies between agreement at crank `3n + 1` and at crank `n`; the
-factor 3 is the cost of an `S`-move's character `θ⁺ ⊃ ◯θ⁻`.  Two sharpenings
+`agree_of_layered` is what step 3 uses to carry truth along links.  As a
+bracketing bound on relations, `≡_{3n+1} ⊆ ⇄ₙ ⊆ ≡ₙ` (Matthew likes the
+notation; keep it); the factor 3 is the cost of an `S`-move's character
+`θ⁺ ⊃ ◯θ⁻`.  Two sharpenings
 NOT checked in Lean are in the record §1.  The formulas `∀p φ`, `∃p φ` do not
 change with the semantics; their semantic characterisation does (record §4).
+
+## 2026-10-14 (afternoon) — step 3 PROVED in the subframe semantics
+
+Branch `subframe-amalg`.  Matthew: "go ahead with step 3" (and he is
+sceptical of bound calculations, which repeatedly blocked the route; every
+level inequality below is an `omega` obligation the kernel checked).  Record:
+`docs/subframe-step3-2026-10-14.md`.
+
+**PROVED.**  `LaxLogic/PLL/SemUI/SubframeAmalg.lean` (110 declarations, none
+sorried):
+
+    k₀ ⇄_{3ν+2} m₀   ⟹   some p-variant N of M has a copy n₀ of m₀
+                          agreeing with k₀ on every formula of X
+
+(`amalgamation`, `[propext, Classical.choice, Quot.sound]`); the ◯-free
+instance at `2ν + 1`, first (`amalgamationI`); invariance of `p`-free formulas
+under `p`-variants (`PBisim.force_iff`, `[propext, Quot.sound]`).
+
+The construction is Litak–Visser's reservoir/current pairs (`3d + 2`,
+`3d + 1`) plus one kind of world, the `S`-world (current pair at `3d`, both
+ends `S`-points), which refutes same-theory `◯`-formulas in place.  That
+replaces the `X`-rigid worlds of the constraint proof (`4ν + 2`) and saves a
+level.  Tight inequality: a theory-enlarging move from a current pair at `3d`
+lands on a reservoir at `3d′ + 2 ≤ 3d − 1`.
+
+**Next, on Matthew's word:** the `∃`-side of uniform interpolation, by
+assembly (record §4 has the statement and the proof; every ingredient is
+PROVED).  Then the `∀`-side gluing.  OPEN: the level `2ν + 1` for PLL.
+
+**Also in this branch:** the notation restore for the step-2 record
+(`≡_{3n+1} ⊆ ⇄ₙ ⊆ ≡ₙ`), which missed PR #58.
+
+**Ledger.**  110 rows by the one-module route; 30,024 rows in 611 modules;
+`23 sorryAx / 2 native_decide` unchanged.

@@ -101,6 +101,7 @@ import LaxLogic.PLL.SemUI.SemUILayered
 import LaxLogic.PLL.SemUI.SemUILayeredAmalg
 import LaxLogic.PLL.SemUI.SemUIFrag
 import LaxLogic.PLL.SemUI.SubframeLayered
+import LaxLogic.PLL.SemUI.SubframeAmalg
 import LaxLogic.PLL.ND.Judgmental
 import LaxLogic.PLL.Syntax.Polar
 import LaxLogic.PLL.Sequent.Focused

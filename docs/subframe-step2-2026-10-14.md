@@ -55,8 +55,13 @@ pair linked at level `n` (`agreeBisim`, `layered_of_agree`).  Conversely a pair
 linked at level `n` agrees on every formula of crank ≤ `n`
 (`agree_of_layered`).
 
-The bounds.  Linkage at level `n` lies between agreement at crank `3n + 1`
-and agreement at crank `n`.  The factor 3 is lost in the first direction only:
+The bounds.  Write `w ⇄ₙ w'` when some layered bisimulation over `V` links `w`
+and `w'` at level `n`.  As relations on pairs of worlds, linkage at level `n`
+is bracketed by agreement:
+
+    ≡_{3n+1}   ⊆   ⇄ₙ   ⊆   ≡ₙ
+
+The factor 3 is lost in the first inclusion only:
 one level for an `S`-move costs three ranks of character formula, `θ⁺ ⊃ ◯θ⁻`.
 For the route the size of the bound does not matter, since fragment finiteness
 holds at every crank.  Two sharpenings, NOT checked in Lean:
@@ -67,10 +72,13 @@ holds at every crank.  Two sharpenings, NOT checked in Lean:
   preserves every formula in which `⊃` and `◯` are nested at most `n` deep,
   counting `◯` as one.
 
-The ◯-free instance (`LayeredBisimI`, without the `S`-clauses): agreement on
-◯-free formulas at crank `n + 1` gives a link at level `n`, which gives
-agreement at crank `n`.  With the first sharpening the two coincide, the
-textbook statement for IPC.
+The ◯-free instance: with `≡°ᵣ` agreement on ◯-free formulas and `⇄°ₙ`
+linkage by a bisimulation without the `S`-clauses (`LayeredBisimI`),
+
+    ≡°_{n+1}   ⊆   ⇄°ₙ   ⊆   ≡°ₙ
+
+and with the first sharpening the bracket closes, `⇄°ₙ = ≡°ₙ`, the textbook
+statement for IPC.
 
 ## 2. The refutation stage
 
@@ -177,3 +185,9 @@ right, Visser's and Ghilardi–Zawadowski's).
 About 15 seconds on top of the built dependencies.  The `#guard_msgs` pins
 were watched failing (the pin of `S_clause_needed` first asserted
 `[propext]`; the kernel reports no axioms).
+
+## 6. Addendum: step 3 PROVED
+
+`amalgamation` (`LaxLogic/PLL/SemUI/SubframeAmalg.lean`), level `3ν + 2`, with
+the invariance lemma `PBisim.force_iff`.  Record:
+`docs/subframe-step3-2026-10-14.md`.
