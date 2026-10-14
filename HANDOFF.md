@@ -5586,10 +5586,10 @@ under `LaxND`.
 
 **PROVED.**  `LaxLogic/PLL/SemUI/SubframeUI.lean`, `uniform_ex`
 `[propext, Classical.choice, Quot.sound]`: for every `φ` and `p` some `ψ` with
-`atoms(ψ) ⊆ atoms(φ) ∖ {p}`, `⊢ φ ⊃ ψ`, and `⊢ φ ⊃ χ ⟹ ⊢ ψ ⊃ χ` for every
+`atoms(ψ) ⊆ atoms(φ) ∖ {p}`, `⊢ φ ↠ ψ`, and `⊢ φ ↠ χ ⟹ ⊢ ψ ↠ χ` for every
 `p`-free `χ`.  ◯-free instance first (`uniform_exI`).  The interpolant is the
 conjunction of the representatives `D` of crank ≤ `3(3ν+2) + 2` over
-`atoms(φ) ∖ {p}` with `⊢ φ ⊃ D`; the proof composes completeness, step 2,
+`atoms(φ) ∖ {p}` with `⊢ φ ↠ D`; the proof composes completeness, step 2,
 step 3 and invariance (record §2).
 
 **The `2ν + 1` question is closed** (Matthew, 2026-10-14: he had been relaying
@@ -5614,14 +5614,14 @@ Same branch, `subframe-ui-ex`.  Matthew: "go ahead with the ∀-side".  Record
 
 **PROVED.**  `uniform_all` `[propext, Classical.choice, Quot.sound]` in
 `LaxLogic/PLL/SemUI/SubframeUI.lean`: for every `φ` and `p` some `ψ` in the
-atoms of `φ` other than `p` with `⊢ ψ ⊃ φ` and `⊢ χ ⊃ φ ⟹ ⊢ χ ⊃ ψ` for every
+atoms of `φ` other than `p` with `⊢ ψ ↠ φ` and `⊢ χ ↠ φ ⟹ ⊢ χ ↠ ψ` for every
 `p`-free `χ`.  ◯-free instance first (`uniform_allI`).  With `uniform_ex`, this
 is uniform interpolation for PLL in Pitts's sense.
 
-`∀p φ := ⋀ { ⋀T ⊃ ⋁(R ∖ T) | T ⊆ R, ⊬ ⋀T ⊃ (⋁(R ∖ T) ∨ φ) }` over the
+`∀p φ := ⋀ { ⋀T ↠ ⋁(R ∖ T) | T ⊆ R, ⊬ ⋀T ↠ (⋁(R ∖ T) ∨ φ) }` over the
 representatives `R` of crank ≤ `3(3ν+2) + 1`: each conjunct says "no world
 above has type `T`", for the types realised by a refutation of `φ` (Litak and
-Visser's `Θ⁺ ⊬ Θ⁻ ∨ φ`).  `⊢ ∀p φ ⊃ φ` needs no amalgamation; the other half
+Visser's `Θ⁺ ⊬ Θ⁻ ∨ φ`).  `⊢ ∀p φ ↠ φ` needs no amalgamation; the other half
 uses step 2, step 3 and invariance at a world above.  No gluing lemma.
 
 **Owed** (record §5): Matthew's review of the two statements; a literature

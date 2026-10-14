@@ -41,7 +41,7 @@ PROVED earlier today).  Fix a finite atom set `V`.  Write
     w ≡ᵣ w'   :⟺   for every φ with crank φ ≤ r and atoms(φ) ⊆ V,
                     w ⊩ φ ⟺ w' ⊩ φ                            (`Agree`)
 
-with `crank` the rank in which `⊃` costs 1 and `◯` costs 2 (`SemUI.crank`).
+with `crank` the rank in which `↠` costs 1 and `◯` costs 2 (`SemUI.crank`).
 **The theorem**: for `r ≥ 1`,
 
     w ≡_{r+1} w',  w ≤ v           ⟹   some v' ≥ w' has v ≡ᵣ v'
@@ -62,14 +62,14 @@ is bracketed by agreement:
     ≡_{3n+1}   ⊆   ⇄ₙ   ⊆   ≡ₙ
 
 The factor 3 is lost in the first inclusion only:
-one level for an `S`-move costs three ranks of character formula, `θ⁺ ⊃ ◯θ⁻`.
+one level for an `S`-move costs three ranks of character formula, `θ⁺ ↠ ◯θ⁻`.
 For the route the size of the bound does not matter, since fragment finiteness
 holds at every crank.  Two sharpenings, NOT checked in Lean:
 
 * the `+1` pays only for the empty conjunction `⊤`; using `θ⁻` alone (or `◯θ⁻`
   alone) when `θ⁺` is empty gives `3n` in place of `3n + 1`;
 * the invariance lemma spends one level on a `◯`, so a link at level `n`
-  preserves every formula in which `⊃` and `◯` are nested at most `n` deep,
+  preserves every formula in which `↠` and `◯` are nested at most `n` deep,
   counting `◯` as one.
 
 The ◯-free instance: with `≡°ᵣ` agreement on ◯-free formulas and `⇄°ₙ`
@@ -99,7 +99,7 @@ Answered from the rules, with designed cells (rule 9).
   the bisimulation without `S`-clauses does not preserve forcing for PLL, and
   the `S`-step is visible to formulas.
 * **The cost of the `S`-step is three ranks.**  The character of an `S`-move
-  is `θ⁺ ⊃ ◯θ⁻`; `◯θ⁻` alone is not enough, since `u ⊮ ◯θ⁻` gives an
+  is `θ⁺ ↠ ◯θ⁻`; `◯θ⁻` alone is not enough, since `u ⊮ ◯θ⁻` gives an
   `S`-point above `u` refuting `θ⁻` but says nothing of `θ⁺` there.  (The
   record's §6 sketch guessed four ranks.)
 
@@ -119,17 +119,17 @@ put
 `v ⊩ θ⁺` and `v ⊮ θ⁻`, since `⊥` is forced nowhere.  A world forcing `θ⁺` and
 refuting `θ⁻` agrees with `v` on `L` (`agree_of_char`).
 
-* *Forth.*  If `u ≤ v` then `u ⊮ θ⁺ ⊃ θ⁻`, which has crank ≤ r + 1.  If
-  `u ≡_{r+1} u'` then `u' ⊮ θ⁺ ⊃ θ⁻`, so some `v' ≥ u'` forces `θ⁺` and
+* *Forth.*  If `u ≤ v` then `u ⊮ θ⁺ ↠ θ⁻`, which has crank ≤ r + 1.  If
+  `u ≡_{r+1} u'` then `u' ⊮ θ⁺ ↠ θ⁻`, so some `v' ≥ u'` forces `θ⁺` and
   refutes `θ⁻`, and `v ≡ᵣ v'`.
-* *S-forth.*  If `u ≤ v ∈ S` then `u ⊮ θ⁺ ⊃ ◯θ⁻` (witness `v` itself), of
+* *S-forth.*  If `u ≤ v ∈ S` then `u ⊮ θ⁺ ↠ ◯θ⁻` (witness `v` itself), of
   crank ≤ r + 3.  If `u ≡_{r+3} u'` then some `x ≥ u'` forces `θ⁺` and some
   `y ≥ x` in `S` refutes `θ⁻`; `y` forces `θ⁺` by persistence, so `v ≡ᵣ y`.
 * *Back, S-back* by symmetry of `≡`.
 
 So `Zₙ := ≡_{3n+1}` is a layered bisimulation (`agreeBisim`); the `+1` pays for
 `⋀ [] = ⊤`, of crank 1.  The converse is induction on formulas
-(`LayeredBisim.force_iff`): `⊃` uses forth/back, `◯` uses S-forth/S-back.
+(`LayeredBisim.force_iff`): `↠` uses forth/back, `◯` uses S-forth/S-back.
 
 For the ◯-free instance the representatives must be ◯-free.  `eraseBox`
 replaces each `◯ψ` by `⊤`; in the same model with `S` emptied (`noS`) every

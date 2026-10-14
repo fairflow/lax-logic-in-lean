@@ -25,8 +25,8 @@ result is really about**.
   repository. When a paper-level claim is stated, it is stated in these terms.
 * **Uniform interpolation** (2026-10-14, ours): for every `φ` and `p` there are
   `∃p φ` and `∀p φ` in the atoms of `φ` other than `p` with, for every `p`-free
-  `χ`, `⊢ φ ⊃ ∃p φ`, `⊢ φ ⊃ χ ⟹ ⊢ ∃p φ ⊃ χ`, `⊢ ∀p φ ⊃ φ` and
-  `⊢ χ ⊃ φ ⟹ ⊢ χ ⊃ ∀p φ` (`SubframeModel.uniform_ex`, `SubframeModel.uniform_all`,
+  `χ`, `⊢ φ ↠ ∃p φ`, `⊢ φ ↠ χ ⟹ ⊢ ∃p φ ↠ χ`, `⊢ ∀p φ ↠ φ` and
+  `⊢ χ ↠ φ ⟹ ⊢ χ ↠ ∀p φ` (`SubframeModel.uniform_ex`, `SubframeModel.uniform_all`,
   `LaxLogic/PLL/SemUI/SubframeUI.lean`), proved semantically over subframe
   models, for which `LaxND` is complete (`SubframeModel.derivable_iff_valid`).
   Record: `docs/pll-uniform-interpolation-2026-10-14.md`.

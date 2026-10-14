@@ -81,7 +81,7 @@ has both ends in `S`; atoms other than `p` are read from `M`, `p` from the
 current `K`-world.
 
 * *Truth lemma* (`amal_force`): a world forces `φ ∈ X` iff its current
-  `K`-world does.  For `φ ⊃ ψ` and `◯ξ` refuted at `k`, either the world
+  `K`-world does.  For `φ ↠ ψ` and `◯ξ` refuted at `k`, either the world
   refutes in place, or the refuting `K`-world has a larger `X`-theory, the
   depth drops (`dep_lt`), and the current link one level down lands on a fresh
   reservoir (`land_strict`); or, for `◯ξ` with the same theory, the world moves
@@ -117,14 +117,14 @@ The last row is the tight one, and it is where the factor 3 comes from.  The
 `docs/pll-uniform-interpolation-2026-10-14.md`).  Put
 `V` the atoms of `φ` other than `p`, `X` the subformulas of `φ` with `⊥`,
 `L := 3ν + 2`, `r := 3L + 1`, and let `∃p φ` be the conjunction of the
-representatives `D` of crank ≤ `r + 1` over `V` with `⊢ φ ⊃ D`.  Then
-`p ∉ atoms(∃p φ)` and `⊢ φ ⊃ ∃p φ` are immediate.  For a `p`-free `χ` with
-`⊢ φ ⊃ χ`, and a world `w` forcing `∃p φ`: with `θ⁺`, `θ⁻` the
-representatives of crank ≤ `r` forced and refuted at `w`, `⊬ φ ⊃ (θ⁺ ⊃ θ⁻)`
+representatives `D` of crank ≤ `r + 1` over `V` with `⊢ φ ↠ D`.  Then
+`p ∉ atoms(∃p φ)` and `⊢ φ ↠ ∃p φ` are immediate.  For a `p`-free `χ` with
+`⊢ φ ↠ χ`, and a world `w` forcing `∃p φ`: with `θ⁺`, `θ⁻` the
+representatives of crank ≤ `r` forced and refuted at `w`, `⊬ φ ↠ (θ⁺ ↠ θ⁻)`
 (else that formula, of crank ≤ `r + 1`, is a conjunct and `w` forces `θ⁻`), so
 completeness gives a world `k ⊩ φ` with the `r`-type of `w`; step 2 links `k`
 and `w` at level `L`; step 3 gives a `p`-variant of `w` forcing `φ`, hence
-`χ`; invariance gives `w ⊩ χ`; completeness gives `⊢ ∃p φ ⊃ χ`.
+`χ`; invariance gives `w ⊩ χ`; completeness gives `⊢ ∃p φ ↠ χ`.
 
 ## 5. Reproduce
 

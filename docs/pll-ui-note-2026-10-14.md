@@ -1,38 +1,39 @@
 # Uniform interpolation for PLL
 
-The ∀-side is proved, so uniform interpolation for PLL now holds in both directions, checked by the kernel. Both sides are in draft [PR #60](https://github.com/fairflow/lax-logic-in-lean/pull/60), pushed only after confirming no CI run was active, and I've told the LaxLogic manager it's open.
+The ∀-side is proved, so uniform interpolation for PLL now holds in both directions, checked by the kernel.
 
 `LaxLogic/PLL/SemUI/SubframeUI.lean` has no sorry. Each theorem depends only on `[propext, Classical.choice, Quot.sound]`. For every φ and p, and every p-free χ:
 
 ```
-⊢ φ ⊃ ∃p φ,       ⊢ φ ⊃ χ  ⟹  ⊢ ∃p φ ⊃ χ          (uniform_ex)
-⊢ ∀p φ ⊃ φ,       ⊢ χ ⊃ φ  ⟹  ⊢ χ ⊃ ∀p φ          (uniform_all)
+⊢ φ ↠ ∃p φ,       ⊢ φ ↠ χ  ⟹  ⊢ ∃p φ ↠ χ          (uniform_ex)
+⊢ ∀p φ ↠ φ,       ⊢ χ ↠ φ  ⟹  ⊢ χ ↠ ∀p φ          (uniform_all)
 ```
 
 * Both interpolants use only the atoms of φ other than p, and ⊢ is derivability in `LaxND`.
 * The ◯-free instances (`uniform_exI`, `uniform_allI`), which are Pitts's theorem for IPC, came first.
-* ∀-side construction: ∀p φ is the conjunction of `⋀T ⊃ ⋁(R∖T)` over the types T that some refutation of φ realises. It needed no gluing lemma.
+* ∀-side construction: ∀p φ is the conjunction of `⋀T ↠ ⋁(R∖T)` over the types T that some refutation of φ realises. It needed no gluing lemma.
 * ∃ and ∀ are independent here: neither proof uses the other, unlike Pitts's syntactic proof, where they are defined together.
 
 ## The Lean
 
-Reading key: `Nonempty (LaxND [] A)` is `⊢ A`; `φ.ifThen ψ` is `φ ⊃ ψ`;
-`ψ.atoms` is the set of atoms of `ψ`.
+Reading key: inside the namespace `PLLND`, `Γ ⊢ A` is the type of `LaxND`
+derivations of `A` from the list `Γ`, so `Nonempty ([] ⊢ A)` says that `A` is
+derivable, written `⊢ A` above; `ψ.atoms` is the set of atoms of `ψ`.
 
 The two theorems, exactly as stated in the file:
 
 ```lean
 theorem uniform_ex (p : String) (φ : PLLFormula) :
     ∃ ψ : PLLFormula, (∀ a ∈ ψ.atoms, a ∈ φ.atoms ∧ a ≠ p) ∧
-      Nonempty (LaxND [] (φ.ifThen ψ)) ∧
+      Nonempty ([] ⊢ φ ↠ ψ) ∧
       ∀ χ : PLLFormula, p ∉ χ.atoms →
-        Nonempty (LaxND [] (φ.ifThen χ)) → Nonempty (LaxND [] (ψ.ifThen χ))
+        Nonempty ([] ⊢ φ ↠ χ) → Nonempty ([] ⊢ ψ ↠ χ)
 
 theorem uniform_all (p : String) (φ : PLLFormula) :
     ∃ ψ : PLLFormula, (∀ a ∈ ψ.atoms, a ∈ φ.atoms ∧ a ≠ p) ∧
-      Nonempty (LaxND [] (ψ.ifThen φ)) ∧
+      Nonempty ([] ⊢ ψ ↠ φ) ∧
       ∀ χ : PLLFormula, p ∉ χ.atoms →
-        Nonempty (LaxND [] (χ.ifThen φ)) → Nonempty (LaxND [] (χ.ifThen ψ))
+        Nonempty ([] ⊢ χ ↠ φ) → Nonempty ([] ⊢ χ ↠ ψ)
 ```
 
 The interpolants, as the proofs supply them.  `R` is a finite list of
@@ -47,7 +48,7 @@ obtain ⟨R, hRb, hR⟩ := frag_reps_exist' (φ.atoms.erase p)
 bigAnd (R.filter fun D => decide (Nonempty (LaxND [] (φ.ifThen D))))
 
 -- ∀p φ : over the representatives (crank ≤ 3(3ν+2)+1), the characters
---        ⋀T ⊃ ⋁(R∖T) of the types T that some refutation of φ realises
+--        ⋀T ↠ ⋁(R∖T) of the types T that some refutation of φ realises
 obtain ⟨R, hRb, hR⟩ := frag_reps_exist' (φ.atoms.erase p)
   (3 * (3 * nu (insert PLLFormula.falsePLL (subF φ)) + 2) + 1)
 bigAnd (((R.sublists).filter fun T => decide

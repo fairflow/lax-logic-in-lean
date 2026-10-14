@@ -12,8 +12,8 @@ For every formula `φ` and atom `p` there are formulas `∃p φ` and `∀p φ` i
 atoms of `φ` other than `p` such that, for every formula `χ` with
 `p ∉ atoms(χ)`,
 
-    ⊢ φ ⊃ ∃p φ,       ⊢ φ ⊃ χ  ⟹  ⊢ ∃p φ ⊃ χ          (uniform_ex)
-    ⊢ ∀p φ ⊃ φ,       ⊢ χ ⊃ φ  ⟹  ⊢ χ ⊃ ∀p φ          (uniform_all)
+    ⊢ φ ↠ ∃p φ,       ⊢ φ ↠ χ  ⟹  ⊢ ∃p φ ↠ χ          (uniform_ex)
+    ⊢ ∀p φ ↠ φ,       ⊢ χ ↠ φ  ⟹  ⊢ χ ↠ ∀p φ          (uniform_all)
 
 `⊢` is derivability in `LaxND`, the repository's reference system for PLL
 (`docs/calculus-map.md`).  `χ` ranges over all `p`-free formulas, in any atoms.
@@ -40,14 +40,14 @@ sound and complete (`SubframeModel.derivable_iff_valid`).
 
 ## 2. The `∃`-side
 
-    ∃p φ  :=  ⋀ { D  |  D a representative of crank ≤ r + 1,  ⊢ φ ⊃ D }.
+    ∃p φ  :=  ⋀ { D  |  D a representative of crank ≤ r + 1,  ⊢ φ ↠ D }.
 
-`⊢ φ ⊃ ∃p φ` is immediate.  For `⊢ ∃p φ ⊃ χ`, let `w` force `∃p φ` and let
-`θ⁺ ⊃ θ⁻` be the character of `w` over the representatives of crank ≤ `r`
+`⊢ φ ↠ ∃p φ` is immediate.  For `⊢ ∃p φ ↠ χ`, let `w` force `∃p φ` and let
+`θ⁺ ↠ θ⁻` be the character of `w` over the representatives of crank ≤ `r`
 (`charImp`).
 
-1. `⊬ φ ⊃ (θ⁺ ⊃ θ⁻)`: otherwise the representative of `θ⁺ ⊃ θ⁻` is a conjunct
-   of `∃p φ`, so `w` forces `θ⁺ ⊃ θ⁻`, which it refutes.
+1. `⊬ φ ↠ (θ⁺ ↠ θ⁻)`: otherwise the representative of `θ⁺ ↠ θ⁻` is a conjunct
+   of `∃p φ`, so `w` forces `θ⁺ ↠ θ⁻`, which it refutes.
 2. Completeness gives a world `k ⊩ φ` with the `r`-type of `w`.
 3. Step 2 links `k` and `w` at level `L` (`layered_of_agree`).
 4. Step 3 gives a `p`-variant of `w`'s model whose copy of `w` agrees with `k`
@@ -57,18 +57,18 @@ sound and complete (`SubframeModel.derivable_iff_valid`).
 ## 3. The `∀`-side
 
 Let `R` list the representatives of crank ≤ `r`.  For `T ⊆ R` put
-`char(T) := ⋀T ⊃ ⋁(R ∖ T)` (`charT`).  A world refutes `char(T)` exactly when
+`char(T) := ⋀T ↠ ⋁(R ∖ T)` (`charT`).  A world refutes `char(T)` exactly when
 some world above it has `R`-type exactly `T` (`type_of_char`).
 
-    ∀p φ  :=  ⋀ { char(T)  |  T ⊆ R,  ⊬ ⋀T ⊃ (⋁(R ∖ T) ∨ φ) }.
+    ∀p φ  :=  ⋀ { char(T)  |  T ⊆ R,  ⊬ ⋀T ↠ (⋁(R ∖ T) ∨ φ) }.
 
 The side condition says that some world of type `T` refutes `φ`; it is
 Litak and Visser's `Θ⁺ ⊬ Θ⁻ ∨ φ`.
 
-* `⊢ ∀p φ ⊃ φ`, without amalgamation: a world `w` refuting `φ` qualifies its
+* `⊢ ∀p φ ↠ φ`, without amalgamation: a world `w` refuting `φ` qualifies its
   own type `T` (`good_posL`), so it forces `char(T)` while having type `T`,
   which is impossible.
-* `⊢ χ ⊃ φ ⟹ ⊢ χ ⊃ ∀p φ`: if `w ⊩ χ` refutes `char(T)`, some `v ≥ w` has type
+* `⊢ χ ↠ φ ⟹ ⊢ χ ↠ ∀p φ`: if `w ⊩ χ` refutes `char(T)`, some `v ≥ w` has type
   `T`.  A countermodel world `k` has type `T` and refutes `φ`.  Step 2 links
   `k` and `v` at level `L`; step 3 gives a `p`-variant of `v`'s model whose
   copy of `v` agrees with `k` on `X`, so refutes `φ`.  It forces `χ`
