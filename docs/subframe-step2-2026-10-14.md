@@ -8,10 +8,15 @@ Context: `docs/semui-amalgamation-2026-10-14.md` §5, §6 and §9.
 
 **PROVED** (kernel-checked, axioms pinned in the module):
 
-* `layered_of_agree`: agreement at crank `3n + 1` gives a layered bisimulation
-  at level `n` (`[propext, Classical.choice, Quot.sound]`).
-* `agree_of_layered`: a layered bisimulation at level `n` gives agreement at
-  crank `n` (`[propext, Quot.sound]`).
+* `Agree.forth`, `Agree.sforth` and their mirror images: agreement on formulas
+  satisfies the back-and-forth clauses of a bisimulation, one level down for
+  one, respectively three, ranks of crank (§1).  This is the content of step 2,
+  and it is what fails over constraint models.
+* `layered_of_agree`: hence agreement at crank `3n + 1` is a layered
+  bisimulation at level `n` (`[propext, Classical.choice, Quot.sound]`).
+* `agree_of_layered`: the invariance lemma, a link at level `n` preserves the
+  formulas of crank ≤ `n` (`[propext, Quot.sound]`).  Step 3 needs it to carry
+  truth along the links of the amalgam.
 * The ◯-free (IPC) instance, proved first (rule 8): `layeredI_of_agree` and
   `agreeI_of_layeredI`.
 * `S_clause_needed`: the designed cell showing the `S`-clauses cannot be
@@ -36,24 +41,36 @@ PROVED earlier today).  Fix a finite atom set `V`.  Write
     w ≡ᵣ w'   :⟺   for every φ with crank φ ≤ r and atoms(φ) ⊆ V,
                     w ⊩ φ ⟺ w' ⊩ φ                            (`Agree`)
 
-with `crank` the rank in which `⊃` costs 1 and `◯` costs 2
-(`SemUI.crank`).  A *layered bisimulation over `V`* (`LayeredBisim`) is a family
-`Zₙ ⊆ W × W'` with `Zₙ₊₁ ⊆ Zₙ`, `Zₙ` respecting the atoms of `V`, and for
-`w Zₙ₊₁ w'`:
+with `crank` the rank in which `⊃` costs 1 and `◯` costs 2 (`SemUI.crank`).
+**The theorem**: for `r ≥ 1`,
 
-    w ≤ v          ⟹  ∃ v' ≥ w',          v Zₙ v'        (forth)
-    w' ≤ v'        ⟹  ∃ v ≥ w,            v Zₙ v'        (back)
-    w ≤ v, v ∈ S   ⟹  ∃ v' ≥ w', v' ∈ S', v Zₙ v'        (S-forth)
-    w' ≤ v', v' ∈ S' ⟹ ∃ v ≥ w, v ∈ S,   v Zₙ v'        (S-back)
+    w ≡_{r+1} w',  w ≤ v           ⟹   some v' ≥ w' has v ≡ᵣ v'
+    w ≡_{r+3} w',  w ≤ v,  v ∈ S   ⟹   some v' ≥ w' in S' has v ≡ᵣ v'
 
-Write `w ⇄ₙ w'` when some layered bisimulation over `V` has `w Zₙ w'`.  Then
+and the mirror images from `w'` to `w`.  So the relations `≡_{3n+1}` form a
+*layered bisimulation over V* (`LayeredBisim`): a family of relations `Zₙ`,
+decreasing in `n`, respecting the atoms of `V`, in which a pair linked at level
+`n + 1` answers every `≤`-move and every move to an `S`-point above it with a
+pair linked at level `n` (`agreeBisim`, `layered_of_agree`).  Conversely a pair
+linked at level `n` agrees on every formula of crank ≤ `n`
+(`agree_of_layered`).
 
-    w ≡_{3n+1} w'   ⟹   w ⇄ₙ w'   ⟹   w ≡ₙ w'.
+The bounds.  Linkage at level `n` lies between agreement at crank `3n + 1`
+and agreement at crank `n`.  The factor 3 is lost in the first direction only:
+one level for an `S`-move costs three ranks of character formula, `θ⁺ ⊃ ◯θ⁻`.
+For the route the size of the bound does not matter, since fragment finiteness
+holds at every crank.  Two sharpenings, NOT checked in Lean:
 
-The ◯-free instance: `≡°ᵣ` is agreement on ◯-free formulas, `⇄°ₙ` drops the
-two `S`-clauses (`LayeredBisimI`), and
+* the `+1` pays only for the empty conjunction `⊤`; using `θ⁻` alone (or `◯θ⁻`
+  alone) when `θ⁺` is empty gives `3n` in place of `3n + 1`;
+* the invariance lemma spends one level on a `◯`, so a link at level `n`
+  preserves every formula in which `⊃` and `◯` are nested at most `n` deep,
+  counting `◯` as one.
 
-    w ≡°_{n+1} w'   ⟹   w ⇄°ₙ w'   ⟹   w ≡°ₙ w'.
+The ◯-free instance (`LayeredBisimI`, without the `S`-clauses): agreement on
+◯-free formulas at crank `n + 1` gives a link at level `n`, which gives
+agreement at crank `n`.  With the first sharpening the two coincide, the
+textbook statement for IPC.
 
 ## 2. The refutation stage
 
@@ -64,15 +81,15 @@ Answered from the rules, with designed cells (rule 9).
   chain with a fallible top agrees with a single point on every atom-free
   formula of crank ≤ 1, but the `Rᵢ`-move to the fallible top has no partner;
   in `pair_escape_not_from_agreement` the fork agrees with a single point on
-  every formula, but its `Rₘ`-move into its fallible branch has no partner.  Subframe models have no fallible worlds, and `◯` has no
-  second relation: its clause quantifies over `≤ ∩ S`, one relation, so a
+  every formula, but its `Rₘ`-move into its fallible branch has no partner.
+  Subframe models have no fallible worlds, and `◯` has no second relation: its clause quantifies over `≤ ∩ S`, one relation, so a
   bisimulation clause for `◯` is a single forth/back step that one character
   formula can force.
 * **The new clause is needed** (`S_clause_needed`, kernel-checked).  Two
   one-point models, the point in `S` in one and not in the other, are linked at
   every level by the `≤`-bisimulation, and `◯⊥` (crank 2) separates them.  So
-  `⇄°` does not preserve forcing for PLL, and the `S`-step is visible to
-  formulas.
+  the bisimulation without `S`-clauses does not preserve forcing for PLL, and
+  the `S`-step is visible to formulas.
 * **The cost of the `S`-step is three ranks.**  The character of an `S`-move
   is `θ⁺ ⊃ ◯θ⁻`; `◯θ⁻` alone is not enough, since `u ⊮ ◯θ⁻` gives an
   `S`-point above `u` refuting `θ⁻` but says nothing of `θ⁺` there.  (The
@@ -111,8 +128,8 @@ replaces each `◯ψ` by `⊤`; in the same model with `S` emptied (`noS`) every
 `◯`-formula holds, so a formula and its erasure are forced at the same worlds,
 and a ◯-free formula is forced in `noS` exactly where it is forced in the
 model.  Hence an erased representative still represents
-(`force_iff_eraseBox_of_interd`), and `Zₙ := ≡°_{n+1}` is a ◯-free layered
-bisimulation (`agreeBisimI`).
+(`force_iff_eraseBox_of_interd`), and agreement on ◯-free formulas at crank
+`n + 1`, as level `n`, is a ◯-free layered bisimulation (`agreeBisimI`).
 
 ## 4. What this does to the route
 
@@ -134,10 +151,24 @@ it needs is not yet known; any level linear in the depth suffices for step 5,
 since step 1 holds at every crank.  Steps 3 to 5 also need the invariance of
 p-free formulas under a full subframe bisimulation, not yet stated (easy).
 
-This is a route to uniform interpolation for PLL itself: the subframe
-semantics is complete, so a uniform interpolant proved semantically there is
-one for derivability.  It does not address `SemExDefinable`, which quantifies
-over constraint models.
+This is a route to uniform interpolation for PLL itself.  The formulas `∀p φ`
+and `∃p φ` do not depend on the semantics: uniform interpolation is a statement
+about derivability, its interpolants are unique up to interderivability, and
+PLL is complete for both semantics.  What changes is the semantic
+characterisation used to prove that they exist.  `IsSemEx`/`IsSemAll` in
+`SemUI.lean` quantify over constraint models and `PBisim p`; the subframe
+versions have the same shape (`w` forces `∃p φ` iff some p-variant of `w`
+forces `φ`; `w` forces `∀p φ` iff for every `v ≥ w` every p-variant of `v`
+forces `φ`), with p-variants now subframe models linked by a bisimulation over
+the atoms other than `p`, `S`-clauses included.  The universal properties
+(definability ⟹ uniform interpolation) go through as in `SemUI.lean`, from
+soundness, completeness and the invariance lemma above.  The constraint-model
+results about the old definitions (base and compositional cases, box laws,
+`ofree_semAll_definable`) do not transfer automatically.  `SemExDefinable` and
+`SemAllDefinable` in their constraint form stay separate questions: uniform
+interpolation proved through subframe models would not make the constraint
+bisimulation quantifiers definable (for IPC that is a theorem in its own
+right, Visser's and Ghilardi–Zawadowski's).
 
 ## 5. Reproduce
 
