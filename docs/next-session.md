@@ -16,8 +16,10 @@ the summary.
    new semantics module and a port, not a search; unbuilt and unchecked.
 2. Whether `SemUILayered.amalgamation` becomes a `Prop` (rule 1).  It means
    editing a file upstream of the LJF build.
-3. `docs/second-order-pll-survey.md` §0 items 2 and 10 say Iemhoff proved
-   uniform interpolation for PLL.  Her v2 withdraws it.
+3. `docs/second-order-pll-survey.md` §0 items 2 and 10 said Iemhoff proved
+   uniform interpolation for PLL; her v2 withdraws it.  Corrected on branch
+   `survey-iemhoff-v2` (`HANDOFF.md` §2026-10-14 (later)).  One wording left
+   for Matthew: the "L◯ consumes" indicator in §0 item 10 and §3.7(c).
 
 **Do not** restart the witnessing-triple scaffold (`wip/semui_henkin.lean`) to
 close pillar 3: it is closed.  **Do not** try to derive an escape-form or
