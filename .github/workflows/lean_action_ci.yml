@@ -34,12 +34,18 @@ on:
       - 'README.md'
       - 'docs/status-ledger.md'
   workflow_dispatch:
+  # The weekly full check (Matthew, 2026-10-14): the LJF◯ chain and the
+  # lean-certify regression test, which pull requests build only when they
+  # touch them.  Monday 03:17 UTC.
+  schedule:
+    - cron: '17 3 * * 1'
 
 # One run per branch or PR at a time: a newer push cancels the older run, which
 # its commit already contains.  Overlapping runs on `main` raced to save the same
 # cache (2026-10-09: three concurrent main runs within six minutes).
 concurrency:
-  group: ci-${{ github.ref }}
+  # The event is in the group so that the weekly run never cancels a push run on main.
+  group: ci-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 # `actions: write` lets the run delete the caches it supersedes.
@@ -127,16 +133,27 @@ jobs:
             *) echo "::error::the proof-status ledger could not be generated (exit $rc)"; exit 1 ;;
           esac
 
-      # The LJF◯ modules the two-sided engine's proof side rests on (Matthew,
-      # 2026-10-09: "add LJF to CI").  NOT the whole `LJF` lib: its globs include
-      # `LJF.OFuelPFam` (and `OFuelPCofinal`, which imports it), measured at
-      # 25–28 min and 17.8 GB peak RSS, beyond the runner.  `LJF.OCheckDeriv` (the
-      # fuel-free proof-side checker) is built and its pins checked here.  Placed after the ledger so the ledger's scope is
-      # unchanged.
-      #
-      # Pull requests only (Matthew, 2026-10-09): the step took 9–35 min, too much
-      # for every push to main; a change reaches main through a PR, so it is still
-      # checked before it lands.
-      - name: LJF◯ search and bridge build
-        if: github.event_name == 'pull_request'
-        run: lake build LJF.OSearch LJF.OBridge LJF.OCheckDeriv
+      # The LJF◯ chain and the lean-certify regression test (2026-10-14).
+      # `CertifyAdoption.Regression` pins what lean-certify reports on every
+      # certifier, engine and theorem proved by evaluation here, and runs each
+      # checker once; a lean-certify release that changes behaviour fails it.
+      # It imports `LJF.OCheckDeriv`, so it shares the LJF◯ chain's cost (9-35
+      # min), which the step pays only when something it rests on could have
+      # changed: a pull request touching `LJF/`, `CertifyAdoption`, the Lake
+      # configuration or the toolchain; the weekly run; a manual run.  Matthew,
+      # 2026-10-14: LJF◯ has not moved for weeks; check it occasionally.  NOT
+      # the whole `LJF` lib: its globs include `LJF.OFuelPFam` (25-28 min, 17.8
+      # GB peak), beyond the runner.
+      - name: Does this run need the LJF◯ chain?
+        id: ljf
+        run: |
+          if [ "${{ github.event_name }}" != pull_request ]; then echo "need=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed.txt
+          if grep -qE '^(LJF/|CertifyAdoption|lakefile\.toml$|lake-manifest\.json$|lean-toolchain$)' changed.txt; then
+            echo "need=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "need=false" >> "$GITHUB_OUTPUT"; echo "LJF◯ chain and certify regression not needed: nothing they rest on changed"
+          fi
+      - name: LJF◯ chain and lean-certify regression
+        if: steps.ljf.outputs.need == 'true'
+        run: lake build LJF.OSearch LJF.OBridge LJF.OCheckDeriv CertifyAdoption CertifyAdoption.CheckDeriv CertifyAdoption.Regression
