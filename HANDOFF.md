@@ -5527,3 +5527,18 @@ the assembly.  Completeness, which the assembly needs, is PROVED.
 
 **Ledger.**  93 rows by the one-module route; 29,914 rows in 610 modules;
 `23 sorryAx / 2 native_decide` unchanged.
+
+**Restated later the same day** (Matthew: the chain `≡_{3n+1} ⟹ ⇄ₙ ⟹ ≡ₙ`
+reads as trivial, since its two ends imply each other).  The content is that
+agreement satisfies the back-and-forth clauses, for `r ≥ 1`:
+
+    w ≡_{r+1} w',  w ≤ v           ⟹   some v' ≥ w' has v ≡ᵣ v'
+    w ≡_{r+3} w',  w ≤ v,  v ∈ S   ⟹   some v' ≥ w' in S' has v ≡ᵣ v'
+
+(`Agree.forth`, `Agree.sforth`, and mirror images), so `≡_{3n+1}` is a layered
+bisimulation at level `n` (`layered_of_agree`); the invariance lemma
+`agree_of_layered` is what step 3 uses to carry truth along links.  Linkage at
+level `n` lies between agreement at crank `3n + 1` and at crank `n`; the
+factor 3 is the cost of an `S`-move's character `θ⁺ ⊃ ◯θ⁻`.  Two sharpenings
+NOT checked in Lean are in the record §1.  The formulas `∀p φ`, `∃p φ` do not
+change with the semantics; their semantic characterisation does (record §4).
