@@ -12991,6 +12991,13 @@
 {"axioms":[],"decl":"PLLND.Ctx.truePLL_intro","kind":"def","module":"LaxLogic.PLL.Semantics.CtxCompleteness","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"PLLND.Ctx.unitC","kind":"def","module":"LaxLogic.PLL.Semantics.CtxCompleteness","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"PLLND.Ctx.unit_sem","kind":"theorem","module":"LaxLogic.PLL.Semantics.CtxCompleteness","native":false,"sorry":false}
+{"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.Ctx.C0_isIPL","kind":"theorem","module":"LaxLogic.PLL.Semantics.CtxCompletenessIPL","native":false,"sorry":false}
+{"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.Ctx.alpha.congr_simp","kind":"theorem","module":"LaxLogic.PLL.Semantics.CtxCompletenessIPL","native":false,"sorry":false}
+{"axioms":[],"decl":"PLLND.Ctx.bigOr_isIPL","kind":"theorem","module":"LaxLogic.PLL.Semantics.CtxCompletenessIPL","native":false,"sorry":false}
+{"axioms":[],"decl":"PLLND.Ctx.laxND_of_IPLND","kind":"theorem","module":"LaxLogic.PLL.Semantics.CtxCompletenessIPL","native":false,"sorry":false}
+{"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.Ctx.thm6_completeness_paper","kind":"theorem","module":"LaxLogic.PLL.Semantics.CtxCompletenessIPL","native":false,"sorry":false}
+{"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.Ctx.thm6_paper","kind":"theorem","module":"LaxLogic.PLL.Semantics.CtxCompletenessIPL","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"PLLND.Ctx.thm6_soundness_paper","kind":"theorem","module":"LaxLogic.PLL.Semantics.CtxCompletenessIPL","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"PLLND.FinComp.FTheory","kind":"inductive","module":"LaxLogic.PLL.Semantics.FinComp","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"PLLND.FinComp.FTheory.Cons","kind":"def","module":"LaxLogic.PLL.Semantics.FinComp","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"PLLND.FinComp.FTheory.casesOn","kind":"def","module":"LaxLogic.PLL.Semantics.FinComp","native":false,"sorry":false}

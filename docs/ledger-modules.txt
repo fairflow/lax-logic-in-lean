@@ -227,6 +227,7 @@ LaxLogic.PLL.Semantics.ConfluentComplete
 LaxLogic.PLL.Semantics.Countermodel
 LaxLogic.PLL.Semantics.CountermodelEmit
 LaxLogic.PLL.Semantics.CtxCompleteness
+LaxLogic.PLL.Semantics.CtxCompletenessIPL
 LaxLogic.PLL.Semantics.FinComp
 LaxLogic.PLL.Semantics.FiniteModel
 LaxLogic.PLL.Semantics.Frames
