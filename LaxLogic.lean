@@ -97,6 +97,7 @@ import LaxLogic.PLL.SemUI.SemUIBox
 import LaxLogic.PLL.SemUI.SemUIDesc
 import LaxLogic.PLL.SemUI.SemUITrace
 import LaxLogic.PLL.SemUI.SemUILayered
+import LaxLogic.PLL.SemUI.SemUILayeredAmalg
 import LaxLogic.PLL.SemUI.SemUIFrag
 import LaxLogic.PLL.ND.Judgmental
 import LaxLogic.PLL.Syntax.Polar

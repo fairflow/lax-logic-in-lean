@@ -5370,3 +5370,68 @@ public statement in `LaxLogic/PLL/Timing/Constraints.lean` mentions private
 constants.  Merged remote branches awaiting deletion: certify-adoption,
 checkderiv, blueprint-notation, clp-open-namespaces, laxpaper-open-pllnd,
 blueprint-open-namespaces, ci-ljf.
+
+## 2026-10-14 — the amalgamation lemma PROVED at level 4ν + 2; the semantic route's gap is now its second step
+
+Branch `semui-amalg-push`, cut from `main` at 04fd908.  Full record:
+`docs/semui-amalgamation-2026-10-14.md`.
+
+**PROVED.**  `LaxLogic/PLL/SemUI/SemUILayeredAmalg.lean`, 73 declarations, none
+sorried, pins in-file, `[propext, Classical.choice, Quot.sound]`:
+
+    amalgamationE : SubClosed X → (∀ a, a ≠ p → prop a ∈ X → A a) →
+      (B : LayeredBisimE A K M) → B.Z (4 * nu X + 2) k₀ m₀ →
+      ∃ N (C : PBisim p M N) n₀, C.Z m₀ n₀ ∧ ∀ φ ∈ X, (N.force n₀ φ ↔ K.force k₀ φ)
+
+and `amalgamation_strong` for `LayeredBisim (· ≠ p)`.  This is the lemma
+`SemUILayered.amalgamation` leaves open, from the weaker escape form of the
+link and protecting only the atoms of `X`, at twice the budget.
+
+**OPEN.**  The level `2·ν + 1`.  `SemUILayered.amalgamation` is untouched and
+still a `sorry`; no proof term uses it.  Uniform interpolation for PLL.
+
+**How.**  (i) Every world has an `Rₘ`-successor that is `X`-rigid (its
+`Rₘ`-successors force the same `X`-formulas), and a rigid world refutes in
+place every `◯ξ` it lacks, so the same-theory forward `◯`-case that stopped the
+witnessing-triple construction never needs a second move.  (ii) The amalgam
+has two kinds of world, normal (reservoir `4d+2`, current `4d+1`) and rigid
+(reservoir `4d+2`, rigid pair `4d`, current `4d−1`); an `Rₘ`-move of `M` out of
+a rigid world is answered from the rigid pair by transitivity, with no decay.
+
+**Method.**  Statement first, refutation stage second (`METHOD.md`).  The
+refutation tool, `scripts/semui_fibres.py`, decides the lemma exactly on finite
+poset models through a greatest-fixpoint characterisation of the realisable
+closure-types.  On three designed families the level at which types can still
+differ never exceeds 3 against budgets of 7 to 15.  That margin, and a check
+that two kinds of type suffice (8,602 cells, 0 differences), fixed the design
+before a line of Lean; the proof then elaborated at the first attempt.
+
+**What it does to the route.**  Steps 1 (fragment finiteness) and 3
+(amalgamation) are PROVED.  Step 2, agreement ⟹ link, is REFUTED in the escape
+form step 3 consumes (`pair_escape_not_from_agreement`, 2026-07).  The gap is a
+mismatch of notions: the bisimulations of this development see `Rₘ`-structure
+no formula sees.  §6 of the record proposes running the route in the subframe
+semantics, `x ⊩ ◯φ ⟺ ∀ y ≥ x, y ∈ S → y ⊩ φ`, where step 2 is standard and
+step 3 is this proof with less in it.  NOT BUILT and not started: the UI search
+was halted on 2026-09-06 and this needs Matthew's word.
+
+**Iemhoff.**  arXiv:2209.08976v2 (21 Aug 2026) withdraws the uniform
+interpolation theorem: the G3iLL/G4iLL equivalence needs closure under
+contraction, which she does not have.  `G4Gap.lean` (2026-07-08) answers her
+open question negatively.  Contraction is used once, to make G4iLL balanced,
+and the gap is not local (record, §7).  `docs/second-order-pll-survey.md` §0
+items 2 and 10 still cite her result as established and are now wrong.
+
+**Ledger.**  73 rows added by running `scripts/ledger.lean` on the one module
+and merging; 29,710 → 29,783 rows, 606 → 607 modules, `23 sorryAx / 2
+native_decide` unchanged.  The estate was NOT rebuilt for this; CI's
+`--built-only` check is the confirmation.
+
+Then, at the manager's request and in the same PR, the seven rows owed since
+PR #42 for `LaxLogic.PLL.Semantics.CtxCompletenessIPL`, by the same route:
+29,790 rows, 608 modules, taints unchanged.  Checked the other way round: a
+fresh run of `scripts/ledger.lean` over all 144 listed modules the root imports
+reproduces the record's 6,190 rows for them exactly, and reports 7 additions
+against the record one commit earlier.  The one-module route is sound for a
+LEAF module or a module nothing has changed under; it is not a substitute for
+`--update` after a change to shared definitions.
