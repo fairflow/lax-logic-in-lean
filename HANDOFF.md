@@ -5632,3 +5632,26 @@ for Matthew because some are drafts or notes to others.
 
 **Ledger.**  `SubframeUI` now 15 rows; 30,039 rows in 612 modules;
 `23 sorryAx / 2 native_decide` unchanged.
+
+## 2026-10-14 (afternoon, last) — the proof tidied; a guide; the choice question
+
+Branch `subframe-ui-tidy` (on top of PR #60).  Matthew asked for improvements,
+condensed proofs, missed shortcuts, and a comprehensible presentation.
+
+* **Tidy-up** (statements unchanged, no declaration vanished, axioms
+  unchanged): one structural invariance induction (`LayeredBisim.force_iff`)
+  with the ◯-free and unbounded versions as corollaries (`LayeredBisimI.noS`,
+  `PBisim.toLayered`); `realise`/`realiseI` packaging steps 2, 3 and invariance
+  (k, v agree up to crank r ⟹ some n₀ agrees with v on p-free formulas and
+  with k on φ); `erase_reps`.  63+ lines shorter.
+* **Guide**: `docs/pll-ui-proof-guide.md`, from Hennessy–Milner for K through
+  Visser's IPC version to the PLL extension, amalgamation, realisation and the
+  interpolants, citing the Lean names.
+* **Choice** (Matthew questioned my first account, rightly).  A trace of the
+  first classical step (Lean derives excluded middle from `Classical.choice`):
+  fragment finiteness (`Finset.toList`, `Nonempty.some` in
+  `Deriv.bigOrElim`, a Mathlib union lemma), subframe soundness (`by_cases`
+  on `S` in `toConstraint_force`), completeness (`byContradiction`) are all
+  incidental; step 2's characters and the amalgam decide forcing in arbitrary
+  models, which finite decidable models (FMP) avoid.  A choice-free version is
+  expected possible; NOT built; it would not simplify the proof.
