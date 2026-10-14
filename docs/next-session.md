@@ -1,4 +1,7 @@
-# 2026-10-14 — semantic UI: the amalgamation lemma is proved; read this first
+# 2026-10-14 — uniform interpolation for PLL is PROVED; read this first
+
+`docs/pll-uniform-interpolation-2026-10-14.md` is the record (`uniform_ex`,
+`uniform_all`, `LaxLogic/PLL/SemUI/SubframeUI.lean`).  Earlier the same day:
 
 `docs/semui-amalgamation-2026-10-14.md` is the record; `HANDOFF.md` §2026-10-14
 the summary.
@@ -18,9 +21,11 @@ the summary.
    that (`layered_of_agree`, `docs/subframe-step2-2026-10-14.md`): agreement
    at crank `3n + 1` gives a layered bisimulation at level `n`, ◯-free
    instance first.  Step 3 PROVED after that (`amalgamation`, level
-   `3ν + 2`; `docs/subframe-step3-2026-10-14.md`).  The `∃`-side of
-   uniform interpolation for PLL PROVED after that (`uniform_ex`,
-   `docs/subframe-ui-ex-2026-10-14.md`).  Next would be the `∀`-side.
+   `3ν + 2`; `docs/subframe-step3-2026-10-14.md`).  **Uniform interpolation
+   for PLL PROVED after that, both sides** (`uniform_ex`, `uniform_all`,
+   `docs/pll-uniform-interpolation-2026-10-14.md`).  Owed: Matthew's review
+   of the two statements; a literature check before any external claim; the
+   prose that still calls UI OPEN (record §5).
    Queued: lighter CI for experimental branches (Matthew), for the manager.
    Also open: whether Goldblatt's 1981 J-frames are the `Rᵢ`/`Rₘ` models
    (his text not checked; Matthew wants his name kept if so).

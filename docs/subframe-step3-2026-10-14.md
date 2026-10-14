@@ -20,9 +20,10 @@ Context: `docs/subframe-step2-2026-10-14.md` (step 2) and
 Every level inequality in the proof is an `omega` obligation checked by the
 kernel; none is argued in prose only.
 
-**OPEN**: the level `2ν + 1` for PLL (not needed by the route); the `∀`-side;
-uniform interpolation for PLL in full.  The `∃`-side assembly of §4 was PROVED
-later the same day (`uniform_ex`, `docs/subframe-ui-ex-2026-10-14.md`).
+**OPEN**: the level `2ν + 1` for PLL (not needed by the route).  Later the
+same day the `∃`-side assembly of §4 and the `∀`-side were PROVED: uniform
+interpolation for PLL (`uniform_ex`, `uniform_all`,
+`docs/pll-uniform-interpolation-2026-10-14.md`).
 
 ## 1. The statement
 
@@ -110,10 +111,10 @@ The last row is the tight one, and it is where the factor 3 comes from.  The
 | 3 | amalgamation at `3ν + 2` | PROVED today (`amalgamation`) |
 | inv. | `p`-variants preserve `p`-free formulas | PROVED today (`PBisim.force_iff`) |
 | compl. | PLL sound and complete for subframe models | PROVED (`SubframeModel.derivable_iff_valid`) |
-| 4 | the `∀`-side gluing | OPEN |
+| 4 | the `∀`-side | PROVED later the same day (`uniform_all`), with no gluing lemma |
 
 **The `∃`-side assembly** (PROVED later the same day as `uniform_ex`;
-`docs/subframe-ui-ex-2026-10-14.md`).  Put
+`docs/pll-uniform-interpolation-2026-10-14.md`).  Put
 `V` the atoms of `φ` other than `p`, `X` the subformulas of `φ` with `⊥`,
 `L := 3ν + 2`, `r := 3L + 1`, and let `∃p φ` be the conjunction of the
 representatives `D` of crank ≤ `r + 1` over `V` with `⊢ φ ⊃ D`.  Then
