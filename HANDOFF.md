@@ -5537,8 +5537,9 @@ agreement satisfies the back-and-forth clauses, for `r ≥ 1`:
 
 (`Agree.forth`, `Agree.sforth`, and mirror images), so `≡_{3n+1}` is a layered
 bisimulation at level `n` (`layered_of_agree`); the invariance lemma
-`agree_of_layered` is what step 3 uses to carry truth along links.  Linkage at
-level `n` lies between agreement at crank `3n + 1` and at crank `n`; the
-factor 3 is the cost of an `S`-move's character `θ⁺ ⊃ ◯θ⁻`.  Two sharpenings
+`agree_of_layered` is what step 3 uses to carry truth along links.  As a
+bracketing bound on relations, `≡_{3n+1} ⊆ ⇄ₙ ⊆ ≡ₙ` (Matthew likes the
+notation; keep it); the factor 3 is the cost of an `S`-move's character
+`θ⁺ ⊃ ◯θ⁻`.  Two sharpenings
 NOT checked in Lean are in the record §1.  The formulas `∀p φ`, `∃p φ` do not
 change with the semantics; their semantic characterisation does (record §4).
