@@ -1,3 +1,31 @@
+# 2026-10-14 — semantic UI: the amalgamation lemma is proved; read this first
+
+`docs/semui-amalgamation-2026-10-14.md` is the record; `HANDOFF.md` §2026-10-14
+the summary.
+
+* **PROVED**: `LayeredAmalg.amalgamationE` — the amalgamation lemma from an
+  escape-form link at level `4·ν + 2` (`LaxLogic/PLL/SemUI/SemUILayeredAmalg.lean`).
+* **OPEN**: the level `2·ν + 1` (`SemUILayered.amalgamation`, still a `sorry`,
+  used by nothing); uniform interpolation.
+* **The live gap** is step 2 of the route, not step 3: agreement on formulas
+  does not give the escape-form link (REFUTED, `pair_escape_not_from_agreement`).
+
+**What needs Matthew.**
+
+1. Whether to try the route in the subframe semantics (record, §6).  It is a
+   new semantics module and a port, not a search; unbuilt and unchecked.
+2. Whether `SemUILayered.amalgamation` becomes a `Prop` (rule 1).  It means
+   editing a file upstream of the LJF build.
+3. `docs/second-order-pll-survey.md` §0 items 2 and 10 say Iemhoff proved
+   uniform interpolation for PLL.  Her v2 withdraws it.
+
+**Do not** restart the witnessing-triple scaffold (`wip/semui_henkin.lean`) to
+close pillar 3: it is closed.  **Do not** try to derive an escape-form or
+weak-form link from agreement: the first is refuted and the second does not
+preserve forcing.
+
+---
+
 # WHILE YOU WERE AWAY (2026-09-16 → 19) — read this first
 
 Branch `ledger`, fast-forwarded into `main` at every verified milestone; CI

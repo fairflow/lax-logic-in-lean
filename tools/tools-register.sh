@@ -26,6 +26,7 @@ for p in \
   wip/check_closed.lean \
   docs/rn-catalogue.html \
   Meta/Audit.lean \
+  scripts/semui_fibres.py \
 ; do
   printf '%-36s %s\n' "$p" "$(git log -1 --format='%h · %ad' --date=short -- "$p")"
 done

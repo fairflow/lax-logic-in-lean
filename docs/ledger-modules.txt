@@ -217,6 +217,7 @@ LaxLogic.PLL.SemUI.SemUIDesc
 LaxLogic.PLL.SemUI.SemUIFrag
 LaxLogic.PLL.SemUI.SemUILaw
 LaxLogic.PLL.SemUI.SemUILayered
+LaxLogic.PLL.SemUI.SemUILayeredAmalg
 LaxLogic.PLL.SemUI.SemUIOFree
 LaxLogic.PLL.SemUI.SemUIRes
 LaxLogic.PLL.SemUI.SemUISplit
