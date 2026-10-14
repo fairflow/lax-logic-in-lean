@@ -14,8 +14,9 @@ invented. Items marked *(carried)* are inherited from `second-order-pll-survey.m
 status recorded there.*
 
 > **Correction to the survey, carried at the top.** `second-order-pll-survey.md` §0.2 and
-> §2.5(i) state that PLL has uniform interpolation, PROVED by Iemhoff 2024. That is not
-> this project's assessment. Iemhoff's uniform-interpolation theorem routes through her
+> §2.5(i) stated, until their correction of 2026-10-14, that PLL has uniform interpolation,
+> PROVED by Iemhoff 2024. Iemhoff's arXiv v2 (21 August 2026) withdraws that theorem herself
+> (survey §2.5(i)). It was never this project's assessment. Iemhoff's uniform-interpolation theorem routes through her
 > Corollary 8.1, whose adequacy needs `G4iLL ≡ PLL`, and `G4iLL` is machine-checked
 > **INCOMPLETE** for PLL here: the sequent `◯((◯p→r)→◯p), ◯p→r ⇒ r` is derivable in `SC`
 > and rejected by the verified `G4` decider (`LaxLogic/PLL/G4/G4Gap.lean`, and

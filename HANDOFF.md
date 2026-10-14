@@ -5435,3 +5435,29 @@ reproduces the record's 6,190 rows for them exactly, and reports 7 additions
 against the record one commit earlier.  The one-module route is sound for a
 LEAF module or a module nothing has changed under; it is not a substitute for
 `--update` after a change to shared definitions.
+
+## 2026-10-14 (later) — the second-order survey corrected for Iemhoff's v2
+
+Branch `survey-iemhoff-v2`, cut from `main` at 5f4b5a7.  Docs only, no build.
+
+`docs/second-order-pll-survey.md` no longer says that Iemhoff 2024 proved
+uniform interpolation for PLL.  §0 items 2 and 10, §2.5(i) and (vii), §3.5,
+§3.7(c), §4 item 5, §5.4 and §6 now say it is OPEN, citing the erratum of
+arXiv:2209.08976v2 (21 Aug 2026) and `LaxLogic/PLL/G4/G4Gap.lean`
+(`PLLG4Gap.sc_but_not_G4`, `contraction_not_admissible`, `cut_not_admissible`).
+Verified at source: the v2 abstract and §§2, 4, 6.8 of the v2 PDF; her 2020
+note, arXiv:2011.11847v2, whose Theorem 3.4 carries the contraction hypothesis
+and says its first arXiv version omitted it.  §2.5(i) also corrects the memo's
+description of G4iLL: G4ip plus FOUR rules (R◯, L◯, R◯→, L◯→), not two.
+`docs/pll2-plan.md`'s correction note now says the survey has been corrected.
+
+**Not fixed, for Matthew.**  §0 item 10 and §3.7(c) still count "L◯ consumes
+rather than duplicates" as evidence for UI.  The repaired complete calculus
+`G4c` keeps the box in L◯ and keeps the implication in L◯→ (calculus map,
+"`G4h` / `G4c`"), so the evidence is weaker than the memo says.  Rewording it
+changes the memo's heuristic conclusion, which is a decision for Matthew.
+
+**Found.**  `docs/semui-amalgamation-2026-10-14.md` is an EMPTY file on `main`
+(blob e69de29, committed so in 56eeceb, PR #53); the copy in the `merge-main`
+worktree is empty too.  The §2026-10-14 entry above and `docs/next-session.md`
+cite it as the record, including its §§6–7.

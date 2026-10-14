@@ -4,6 +4,12 @@
 unless explicitly said to be; everything is labelled PROVED / REFUTED / OPEN / CONJECTURED /
 DERIVABLE-BY-HAND.*
 
+*Corrected 2026-10-14. The first version stated that Iemhoff 2024 proved uniform interpolation
+for PLL. Her arXiv revision v2 (21 August 2026) withdraws that theorem, and this repository had
+machine-checked on 2026-07-08 that the calculus it rests on is incomplete. Uniform
+interpolation for PLL is OPEN. Changed: §0 items 2 and 10, §2.5(i) and (vii), §3.5, §3.7(c),
+§4 item 5, §5.4, §6. No other conclusion of the memo is changed.*
+
 *Verification discipline: every citation in §5 carries a status. CONFIRMED means the
 bibliographic data was read off a publisher record, DOI record, Project Euclid / arXiv page,
 or a fetched PDF. SEMI-VERIFIED means the item is certainly real and the core data confirmed,
@@ -17,11 +23,20 @@ confirm it and it must not be cited as fact. No page numbers or theorem numbers 
 1. **Uniform interpolation *is* the Pitts-style interpretation of second-order propositional
    quantification.** This is not an analogy: Pitts' 1992 theorem is literally stated as an
    interpretation of IPC2 in IPC. Matthew's observation is the received view of the subject.
-2. **Propositional lax logic already has uniform interpolation** — Iemhoff, *Proof Theory for
-   Lax Logic* (2024), proof-theoretically, from a cut-free terminating sequent calculus whose
-   ◯-rules are exactly the `circL`/`◯R` pair the project's `PLLFocused.lean` implements. So the
-   Pitts-style quantifiers for PLL are known to exist; the project's contribution is a
-   *construction* and a *machine-checked* one, not an existence result.
+2. **The existence of the Pitts-style quantifiers for propositional lax logic is OPEN.**
+   Iemhoff, *Proof Theory for Lax Logic* (2024; arXiv:2209.08976), claimed uniform
+   interpolation for PLL, proved over her terminating sequent calculus G4iLL. Her arXiv
+   revision v2 (21 August 2026) opens with an erratum: the main theorem "cannot be considered
+   proven", and no proof of the opposite is known either. The fault is in her Corollary 1
+   (G3iLL and G4iLL are equivalent). It is drawn from a transfer theorem, her Theorem 2, quoted
+   from her 2020 note without a hypothesis the note needs: that G4ip + R be closed under
+   contraction. She does not know whether G4iLL is, nor whether G3iLL and G4iLL are
+   equivalent. This repository answered both questions negatively on 2026-07-08
+   (`LaxLogic/PLL/G4/G4Gap.lean`): the sequent `◯((◯p→r)→◯p), ◯p→r ⇒ r` is derivable in
+   G3iLL and not in G4iLL, and becomes G4iLL-derivable when `◯p→r` is duplicated. So the
+   Pitts-style quantifiers for PLL are not known to exist. A completed, machine-checked
+   construction here would be an existence result as well as a construction. Details in
+   §2.5(i).
 3. **Pitts-style quantifiers and genuine (Kripke-semantic) second-order quantifiers are
    different objects for IPC**, and provably so. Połacik 1998 separates Pitts' quantifiers from
    the topological interpretation; Kremer 1997 shows the Kripke-semantic second-order IPC is
@@ -52,10 +67,11 @@ confirm it and it must not be cited as fact. No page numbers or theorem numbers 
    which plain ∀-intro does not need.
 10. **Obstruction check: PLL resembles the succeeding cases, not the failing ones.** UI fails for
     K4 and S4 (transitivity of the *accessibility* relation duplicating context); it holds for
-    K, T, KD, GL, Grz, IPC, iSL and — by Iemhoff — PLL. PLL's ◯ is monotone with no negative
-    introspection, its L◯ rule consumes rather than duplicates, and its ∨-free fragment is
-    locally finite (Bezhanishvili et al. 2021 on nuclear implicative semilattices). Every
-    indicator points the succeeding way.
+    K, T, KD, GL, Grz, IPC and iSL. For PLL it is OPEN: Iemhoff's proof is withdrawn (item 2).
+    PLL's ◯ is monotone with no negative introspection, its L◯ rule consumes rather than
+    duplicates, and its ∨-free fragment is locally finite (Bezhanishvili et al. 2021 on nuclear
+    implicative semilattices). Every indicator points the succeeding way; they are evidence,
+    not a proof.
 
 ---
 
@@ -390,36 +406,74 @@ second-order Kripke semantics (which, by analogy with Kremer/Skvortsov, is expec
 
 ### 2.5 Lax logic specifically
 
-**(i) PLL has uniform interpolation — PROVED, and recently.**
+**(i) Uniform interpolation for PLL: claimed by Iemhoff (2024), withdrawn by her (2026); OPEN.**
 
 > **R. Iemhoff, "Proof theory for lax logic", in N. Bezhanishvili, R. Iemhoff and F. Yang (eds.),
 > *Dick de Jongh on Intuitionistic and Provability Logics*, Outstanding Contributions to Logic
 > 28, Springer Cham, 2024, pp. 203–229.** DOI 10.1007/978-3-031-47921-2_8. Preprint
-> **arXiv:2209.08976**, 19 September 2022. [CONFIRMED — abstract fetched from arXiv.]
+> **arXiv:2209.08976**, 19 September 2022; revised as v2, 21 August 2026. [CONFIRMED — v1
+> abstract fetched from arXiv; v2 abstract and §§2, 4, 5, 6.8 read off the fetched v2 PDF.]
 
-Abstract, verbatim: *"In this paper some proof theory for propositional Lax Logic is developed.
-A cut free terminating sequent calculus is introduced for the logic, and based on that calculus
-it is shown that the logic has uniform interpolation."* The chapter also gives a separate simple
-proof of ordinary interpolation from the same calculus, and notes that PLL's interpolation was
-previously known only model-theoretically.
+The v1 abstract, verbatim: *"In this paper some proof theory for propositional Lax Logic is
+developed. A cut free terminating sequent calculus is introduced for the logic, and based on that
+calculus it is shown that the logic has uniform interpolation."* The chapter also gives a separate
+simple proof of ordinary (Craig) interpolation, over G3iLL (her Theorem 3), and notes that PLL's
+interpolation was previously known only model-theoretically.
 
-The calculus (call it GLL) is Dyckhoff's G4ip plus
+**The v2 erratum.** The revision of 21 August 2026 prefixes the abstract with an erratum: the
+main theorem, that PLL has uniform interpolation, "cannot be considered proven", and no proof
+of the opposite is known either. The details are in the discussion below her Corollary 1 (v2
+§4):
+
+* Corollary 1 (G3iLL and G4iLL are equivalent, and the structural rules are admissible in
+  both) is derived from her Theorem 2, the transfer theorem of her 2020 note
+  (**R. Iemhoff, "The G4i analogue of a G3i sequent calculus", *Studia Logica*
+  110(6):1493–1506, 2022**; arXiv:2011.11847). Theorem 2 is quoted without a hypothesis the
+  note requires: that G4ip + R be closed under contraction. (The note's own v2, also of
+  21 August 2026, records that the word "contraction" was missing from its first arXiv version
+  and is present in the published one, as its Theorem 3.4.)
+* She does not know whether G4iLL is closed under contraction, and therefore does not know
+  whether G3iLL and G4iLL are equivalent. Her proof of Theorem 6 (PLL has uniform
+  interpolation, v2 §6.8) is marked as not correct, being based on Corollary 1. Theorem 3
+  (Craig interpolation) uses G3iLL only and is unaffected.
+
+**This repository answers her open question negatively.** `LaxLogic/PLL/G4/G4Gap.lean`
+(2026-07-08), with G4iLL transcribed from her Figures 2.2–2.3 as `G4`, proves that the sequent
+
+    ◯((◯p→r)→◯p), ◯p→r ⇒ r
+
+is derivable in G3iLL (`SC`) and not derivable in G4iLL (`PLLG4Gap.sc_but_not_G4`, axioms
+`[propext, Quot.sound]`), and that it is G4iLL-derivable once `◯p→r` is duplicated
+(`PLLG4Gap.contraction_not_admissible`, axioms `[propext]`). So contraction is not admissible
+in G4iLL, G4iLL and G3iLL are not equivalent, and G4iLL is incomplete for PLL; cut is not
+admissible in it either (`PLLG4Gap.cut_not_admissible`, `[propext]`). Corollary 1 is therefore
+false, not merely unproved, and her proof of Theorem 6 does not go through over G4iLL. This
+does not refute uniform interpolation for PLL; it removes her proof of it. The repository's
+standing position is that uniform interpolation for PLL is **OPEN** (`docs/interpolation-guide.md`
+§5; `docs/calculus-map.md`, under "`G3iLL`, `G4iLL`").
+
+The calculi (v2 §2.1, Figure 2.3): G3iLL is G3ip plus F&M's two modal rules
 
     Γ ⇒ φ                Γ, φ ⇒ ◯ψ
     ─────── (R◯)         ────────── (L◯)
     Γ ⇒ ◯φ               Γ, ◯φ ⇒ ◯ψ
 
-[SEMI-VERIFIED — read off Iemhoff's LLAMA/ILLC slides of 25 January 2023, "On the existence of
-sequent calculi: uniform interpolation for Lax Logic", not off the published chapter.] These are
-exactly the rules the repository implements: `LaxLogic/PLL/Sequent/Focused.lean` line 111,
+and G4iLL is Dyckhoff's G4ip plus these two and two rules `R◯→`, `L◯→` for an antecedent
+implication `◯φ → ψ`. [CONFIRMED — read off the v2 PDF. The first version of this memo took the
+rule shapes from Iemhoff's LLAMA/ILLC slides of 25 January 2023, "On the existence of sequent
+calculi: uniform interpolation for Lax Logic", and described the calculus as G4ip plus R◯ and
+L◯ alone; the two implication rules were missing from that description.] R◯ and L◯ are exactly
+the rules the repository implements: `LaxLogic/PLL/Sequent/Focused.lean` line 111,
 `circL : Inv Γ [Q] .lax (.up P) → LFoc Γ (.circ Q) .lax P`, with the `.lax` mode marking the
-second judgment that L◯ needs.
+second judgment that L◯ needs. The gap of `G4Gap.lean` is in `L◯→`, whose first premise
+`Γ, χ ⇒ ◯φ` no longer contains the implication `◯φ → ψ`.
 
 **Consequence for the project's framing.** The *existence* of uniform interpolants for PLL is
-not open. What the project can claim is: an explicit, terminating, **machine-checked**
-construction over a focused calculus, in a setting where the modal-logic precedent (Férée et al.
-2024, IJCAR) shows published UI proofs have contained gaps. That is a defensible and honest
-positioning, and it should be stated that way rather than as a first proof.
+OPEN. An explicit, terminating, **machine-checked** construction, over a calculus proved
+complete for PLL, would therefore be an existence result as well as a construction, and should
+be stated as one, citing the v2 erratum and `G4Gap.lean`. The modal-logic precedent (Férée et
+al. 2024, IJCAR) showed that published UI proofs have contained gaps; PLL's own published proof
+is another instance.
 
 **(ii) The lax modality is already definable in IPC2 — Aczel's Russell–Prawitz modality.**
 
@@ -512,7 +566,8 @@ second-order lax as **not yet done**.
 
 **(vii) Verdict.** **Second-order propositional lax logic does not exist in the literature.**
 The nearest objects are Aczel's *definable* lax modality in IPC2 (2001), Iemhoff's *Pitts-style
-quantifiers definable inside PLL* (2024), Goldblatt's *first-order* quantified lax logic (2011),
+quantifiers inside PLL* (2024; their existence proof withdrawn in her arXiv v2, so OPEN:
+§2.5(i)), Goldblatt's *first-order* quantified lax logic (2011),
 and Møgelberg–Simpson's *second-order monadic type theory with a defined monad* (2007). Nobody
 has studied **IPC2 plus a primitive, uninterpreted nucleus ◯**: its semantics, its proof theory,
 or its collapse behaviour. That is the gap.
@@ -663,16 +718,18 @@ metatheory (undecidability, non-axiomatisability) lives.
 
 ### 3.5 Pitts-style PLL2: the conjecture
 
-**Conjecture (Pitts-projection for PLL) [CONJECTURED; the existence half is PROVED by Iemhoff
-2024].** Define `∃p φ` and `∀p φ` to be PLL's uniform interpolants. Then the map `(−)°` sending
-`∀p.φ ↦ ∀p(φ°)` and `∃p.φ ↦ ∃p(φ°)` is an interpretation of PLL2 in PLL restricting to the
+**Conjecture (Pitts-projection for PLL) [CONJECTURED; its existence half, that PLL has uniform
+interpolants, is OPEN: §2.5(i)].** Define `∃p φ` and `∀p φ` to be PLL's uniform interpolants.
+Then the map `(−)°` sending `∀p.φ ↦ ∀p(φ°)` and `∃p.φ ↦ ∃p(φ°)` is an interpretation of PLL2 in PLL restricting to the
 identity on ◯-formulas and first-order formulas — i.e. PLL2 ⊢ φ implies PLL ⊢ φ°. Corollary:
 **PLL2 is conservative over PLL**.
 
 Status of the pieces:
 
-* That uniform interpolants for PLL exist and satisfy the four characteristic laws: **PROVED**,
-  Iemhoff 2024.
+* That uniform interpolants for PLL exist and satisfy the four characteristic laws: **OPEN**.
+  Iemhoff 2024 claimed it; her arXiv v2 (2026) withdraws the claim, and the calculus it rests
+  on is machine-checked incomplete here (§2.5(i)). The rest of the conjecture is conditional on
+  this piece.
 * That the four laws suffice to validate the ∀/∃ rules under `(−)°`: this is Pitts' own argument
   for IPC and should transfer verbatim; the only new obligation is the ◯-case of the induction.
   **OPEN** for PLL, but expected routine.
@@ -764,8 +821,8 @@ bisimulation-invariant approximation suffices.
 
 **PLL resembles the succeeding cases on every indicator:**
 
-* **PLL has UI — PROVED** (Iemhoff 2024). The question is settled; the rest of this list is
-  explanation, not evidence.
+* **Whether PLL has UI is OPEN** (§2.5(i)). Iemhoff 2024 claimed it and her arXiv v2 (2026)
+  withdraws the claim. The rest of this list is therefore evidence, not a proof.
 * **◯ is monotone with no negative introspection.** The S4/K4 obstruction is `□φ → □□φ`
   *feeding the context back into itself*. PLL's transitivity axiom runs the other way,
   `◯◯φ → ◯φ`, which *consumes*.
@@ -810,6 +867,7 @@ Ordered by cost, cheapest first.
 4. **[medium]** Write out PLL2's ND rules and the second-order constraint semantics of §3.3;
    prove soundness. Confirm `∀p.p ≡ ⊥`.
 5. **[larger]** Pitts-projection for PLL (§3.5): transport Pitts' argument, with the ◯-case new.
+   Conditional on uniform interpolation for PLL, which is OPEN (§2.5(i)).
 6. **[larger, and probably a negative result]** Undecidability of PLL2 by transport of
    Löb/Sobolev, and non-axiomatisability of the full-range Kripke semantics by transport of
    Kremer/Skvortsov.
@@ -884,8 +942,9 @@ Ordered by cost, cheapest first.
 | M. Fairtlough, M. Mendler, "On the logical content of computational type theory: a solution to Curry's problem", TYPES 2000, LNCS 2277, Springer, 2002, pp. 63–78 | CONFIRMED |
 | M. Fairtlough, M. Mendler, M. Walton, "First-order lax logic as a framework for constraint logic programming", TR MIP-9714, University of Passau, 1997 | SEMI-VERIFIED |
 | M. Fairtlough, M. Walton, "Quantified lax logic", TR CS-97-11, University of Sheffield, July 1997 | SEMI-VERIFIED |
-| R. Iemhoff, "Proof theory for lax logic", in *Dick de Jongh on Intuitionistic and Provability Logics*, Outstanding Contributions to Logic 28, Springer, 2024, pp. 203–229. DOI 10.1007/978-3-031-47921-2_8; arXiv:2209.08976 | CONFIRMED (abstract fetched) |
-| R. Iemhoff, LLAMA/ILLC slides, "On the existence of sequent calculi: uniform interpolation for Lax Logic", 25 January 2023 | SEMI-VERIFIED (source of the GLL rule shapes) |
+| R. Iemhoff, "Proof theory for lax logic", in *Dick de Jongh on Intuitionistic and Provability Logics*, Outstanding Contributions to Logic 28, Springer, 2024, pp. 203–229. DOI 10.1007/978-3-031-47921-2_8; arXiv:2209.08976 | CONFIRMED (abstract fetched). arXiv v2, 21 August 2026, read: it withdraws the uniform-interpolation theorem (§2.5(i)) |
+| R. Iemhoff, "The G4i analogue of a G3i sequent calculus", *Studia Logica* 110(6):1493–1506, 2022. DOI 10.1007/s11225-022-10008-3; arXiv:2011.11847 (v2, 21 August 2026) | CONFIRMED via Crossref and arXiv; v2 Theorem 3.4 read off the fetched PDF |
+| R. Iemhoff, LLAMA/ILLC slides, "On the existence of sequent calculi: uniform interpolation for Lax Logic", 25 January 2023 | SEMI-VERIFIED (first source of the rule shapes; superseded by v2 Figure 2.3, §2.5(i)) |
 | P. Aczel, "The Russell–Prawitz modality", *MSCS* 11(4):541–554, 2001 | CONFIRMED |
 | P. Aczel, "The Russell–Prawitz modality", in M. Fairtlough (ed.), *Informal Proceedings of IMLA'99*, Trento, 1999 | SEMI-VERIFIED |
 | M. Fairtlough, M. Mendler, E. Moggi (eds.), special issue *Modalities in Type Theory*, *MSCS* 11(4), August 2001 | CONFIRMED |
@@ -960,6 +1019,9 @@ corroborated by Valliappan's own "further work" statement (December 2025).
   "The contract that remains".
 * `LaxLogic/PLL/Sequent/Focused.lean` — `LJF◯`, the lax extension; `circL` is the `L◯` rule, in the
   `.lax` mode.
+* `LaxLogic/PLL/G4/G4Gap.lean` — Iemhoff's G4iLL is incomplete for PLL, and contraction and
+  cut are not admissible in it (`sc_but_not_G4`, `contraction_not_admissible`,
+  `cut_not_admissible`); the reason §2.5(i) records uniform interpolation for PLL as OPEN.
 * `LaxLogic/PLL/Semantics/Kripke.lean` — `ConstraintModel`, the fallible two-frame semantics used in §3.3.
 * `LaxLogic/PLL/Semantics/Frames.lean` — F&M's three countermodels by `decide`, including the `◯⊥`
   countermodel that Proposition B (§3.4) rests on.
