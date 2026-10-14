@@ -21,6 +21,18 @@ on:
   pull_request:
     branches:
       - main
+    # A pull request that changes only prose skips the Lean build (Matthew,
+    # 2026-10-14: a lighter CI where the full one buys nothing).  The patterns
+    # are read in order and a later one overrides an earlier: everything counts,
+    # except Markdown, except the README and the ledger summary, whose figures
+    # `readme-figures.py --check` verifies.  Docs-only PRs took 10-13 minutes of
+    # CI for no check on 2026-10-14 (#54, #58).  No status check is required to
+    # merge, so a skipped run blocks nothing.
+    paths:
+      - '**'
+      - '!**/*.md'
+      - 'README.md'
+      - 'docs/status-ledger.md'
   workflow_dispatch:
 
 # One run per branch or PR at a time: a newer push cancels the older run, which

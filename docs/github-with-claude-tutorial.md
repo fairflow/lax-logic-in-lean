@@ -296,6 +296,16 @@ by the rules in §2 and §4 rather than by prompts.
 - **The root checkout can fall behind.** On 2026-10-09 the main checkout was
   206 commits behind `origin/main`, and a survey that read it as "main" cited
   stale paths. Pull before reading.
+- **A pull request on a public repository announces its result,** merged or
+  not, the moment it is opened; closing it later does not hide its commits, and
+  only GitHub Support can remove it. On 2026-10-14 a proof was opened as a
+  public pull request before the author whose work it bears on had been told;
+  it was withdrawn within the hour and moved to a private sibling repository
+  (`fairflow/lax-logic-private`, which depends on the public library). Work
+  that is not yet to be announced starts in the private repository.
+- **A pull request that changes only Markdown skips Lean CI** (2026-10-14),
+  except for `README.md` and the ledger summary, whose figures CI checks. Such
+  a pull request shows no checks; it is merged on review of its text.
 - **Timestamps come from `date`,** not from memory: footers drifted by up to
   an hour on 2026-10-09.
 
