@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-10-14 11:09 BST from `219c44c` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-10-14 11:28 BST from `653652d` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**30024 declarations** in **611 modules**: 13782 theorems, 16242 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**30030 declarations** in **612 modules**: 13788 theorems, 16242 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -100,7 +100,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.PLL.Normalisation` | 398 | 170 | 398 |  |  |
 | `LaxLogic.PLL.Realisability` | 112 | 40 | 112 |  |  |
 | `LaxLogic.PLL.Search` | 437 | 74 | 437 |  |  |
-| `LaxLogic.PLL.SemUI` | 939 | 537 | 938 | 1 |  |
+| `LaxLogic.PLL.SemUI` | 945 | 543 | 944 | 1 |  |
 | `LaxLogic.PLL.Semantics` | 623 | 352 | 623 |  |  |
 | `LaxLogic.PLL.Sequent` | 266 | 116 | 266 |  |  |
 | `LaxLogic.PLL.Syntax` | 394 | 143 | 394 |  |  |
@@ -397,9 +397,9 @@ Every distinct axiom set in the estate, most common first.
 | axioms | declarations |
 |---|--:|
 | *(none — axiom-free)* | 12945 |
-| `propext`, `Quot.sound` | 8496 |
+| `propext`, `Quot.sound` | 8498 |
 | `propext` | 5712 |
-| `propext`, `Classical.choice`, `Quot.sound` | 2837 |
+| `propext`, `Classical.choice`, `Quot.sound` | 2841 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
 | `propext`, `Classical.choice` | 6 |
