@@ -507,20 +507,22 @@ theorem Agree.sback {V : Finset String} {r : Nat} (hr : 1 ≤ r)
   obtain ⟨v, hle, hS, hag⟩ := h.symm.sforth hr hv hvS
   exact ⟨v, hle, hS, hag.symm⟩
 
+/-- Erased representatives keep the crank and atom bounds, and are ◯-free. -/
+theorem erase_reps {V : Finset String} {r : Nat} {L : List PLLFormula}
+    (hL : ∀ D ∈ L, crank D ≤ r ∧ ∀ a ∈ D.atoms, a ∈ V) :
+    ∀ D ∈ L.map eraseBox, (crank D ≤ r ∧ ∀ a ∈ D.atoms, a ∈ V) ∧ boxFree D = true := by
+  intro D hD
+  obtain ⟨E, hE, rfl⟩ := List.mem_map.mp hD
+  exact ⟨⟨le_trans (crank_eraseBox_le E) (hL E hE).1,
+    fun a ha => (hL E hE).2 a (mem_atoms_eraseBox ha)⟩, boxFree_eraseBox E⟩
+
 /-- `≤`-forth from ◯-free agreement. -/
 theorem AgreeI.forth {V : Finset String} {r : Nat} (hr : 1 ≤ r)
     {u : M.W} {u' : N.W} (h : AgreeI M N V (r+1) u u') {v : M.W}
     (huv : M.le u v) : ∃ v', N.le u' v' ∧ AgreeI M N V r v v' := by
   obtain ⟨L, hLb, hL⟩ := frag_reps_exist' V r
-  have hLe : ∀ D ∈ L.map eraseBox, crank D ≤ r ∧ ∀ a ∈ D.atoms, a ∈ V := by
-    intro D hD
-    obtain ⟨E, hE, rfl⟩ := List.mem_map.mp hD
-    exact ⟨le_trans (crank_eraseBox_le E) (hLb E hE).1,
-      fun a ha => (hLb E hE).2 a (mem_atoms_eraseBox ha)⟩
-  have hLf : ∀ D ∈ L.map eraseBox, boxFree D = true := by
-    intro D hD
-    obtain ⟨E, -, rfl⟩ := List.mem_map.mp hD
-    exact boxFree_eraseBox E
+  have hLe := fun D hD => (erase_reps hLb D hD).1
+  have hLf := fun D hD => (erase_reps hLb D hD).2
   have hc := crank_charImp_le (M := M) hr (fun D hD => (hLe D hD).1) v
   have ha := atoms_charImp (M := M) (fun D hD => (hLe D hD).2) v
   have hb := boxFree_charImp (M := M) hLf v
@@ -557,53 +559,6 @@ structure LayeredBisim (A : String → Prop) (M N : SubframeModel)
     ∃ v', N.le w' v' ∧ v' ∈ N.S ∧ Z n v v'
   sback : ∀ {n w w'}, Z (n+1) w w' → ∀ {v'}, N.le w' v' → v' ∈ N.S →
     ∃ v, M.le w v ∧ v ∈ M.S ∧ Z n v v'
-
-/-- **Rank preservation, ◯-free**: worlds linked at level n agree on the
-◯-free formulas of crank ≤ n over `A`. -/
-theorem LayeredBisimI.force_iff {A : String → Prop} (B : LayeredBisimI A M N) :
-    ∀ (φ : PLLFormula) {n : Nat} {w : M.W} {w' : N.W}, B.Z n w w' →
-      boxFree φ = true → crank φ ≤ n → (∀ a ∈ φ.atoms, A a) →
-      (M.force w φ ↔ N.force w' φ)
-  | .prop a, _, _, _, hZ, _, _, ha => B.atoms hZ a (ha a (by simp))
-  | .falsePLL, _, _, _, _, _, _, _ => Iff.rfl
-  | .and φ ψ, n, w, w', hZ, hb, hc, ha => by
-      simp only [boxFree, Bool.and_eq_true] at hb
-      have hcφ : crank φ ≤ n := by simp only [crank] at hc; omega
-      have hcψ : crank ψ ≤ n := by simp only [crank] at hc; omega
-      exact and_congr
-        (LayeredBisimI.force_iff B φ hZ hb.1 hcφ fun a h =>
-          ha a (mem_atoms_and.mpr (Or.inl h)))
-        (LayeredBisimI.force_iff B ψ hZ hb.2 hcψ fun a h =>
-          ha a (mem_atoms_and.mpr (Or.inr h)))
-  | .or φ ψ, n, w, w', hZ, hb, hc, ha => by
-      simp only [boxFree, Bool.and_eq_true] at hb
-      have hcφ : crank φ ≤ n := by simp only [crank] at hc; omega
-      have hcψ : crank ψ ≤ n := by simp only [crank] at hc; omega
-      exact or_congr
-        (LayeredBisimI.force_iff B φ hZ hb.1 hcφ fun a h =>
-          ha a (mem_atoms_or.mpr (Or.inl h)))
-        (LayeredBisimI.force_iff B ψ hZ hb.2 hcψ fun a h =>
-          ha a (mem_atoms_or.mpr (Or.inr h)))
-  | .ifThen φ ψ, n, w, w', hZ, hb, hc, ha => by
-      simp only [boxFree, Bool.and_eq_true] at hb
-      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 :=
-        ⟨n - 1, by simp only [crank] at hc; omega⟩
-      have hcφ : crank φ ≤ m := by simp only [crank] at hc; omega
-      have hcψ : crank ψ ≤ m := by simp only [crank] at hc; omega
-      have haφ : ∀ a ∈ φ.atoms, A a := fun a h =>
-        ha a (mem_atoms_ifThen.mpr (Or.inl h))
-      have haψ : ∀ a ∈ ψ.atoms, A a := fun a h =>
-        ha a (mem_atoms_ifThen.mpr (Or.inr h))
-      constructor
-      · intro hM v' hle hφ
-        obtain ⟨v, hv, hZ'⟩ := B.back hZ hle
-        exact (LayeredBisimI.force_iff B ψ hZ' hb.2 hcψ haψ).mp
-          (hM v hv ((LayeredBisimI.force_iff B φ hZ' hb.1 hcφ haφ).mpr hφ))
-      · intro hN v hle hφ
-        obtain ⟨v', hv', hZ'⟩ := B.forth hZ hle
-        exact (LayeredBisimI.force_iff B ψ hZ' hb.2 hcψ haψ).mpr
-          (hN v' hv' ((LayeredBisimI.force_iff B φ hZ' hb.1 hcφ haφ).mp hφ))
-  | .somehow _, _, _, _, _, hb, _, _ => by simp [boxFree] at hb
 
 /-- **Rank preservation**: worlds linked at level n agree on the formulas of
 crank ≤ n over `A`. -/
@@ -657,6 +612,28 @@ theorem LayeredBisim.force_iff {A : String → Prop} (B : LayeredBisim A M N) :
       · intro hN v hle hS
         obtain ⟨v', hv', hv'S, hZ'⟩ := B.sforth hZ hle hS
         exact (LayeredBisim.force_iff B φ hZ' hcφ ha).mpr (hN v' hv' hv'S)
+
+/-- A `≤`-bisimulation is a layered bisimulation between the two models with `S`
+emptied, where the `S`-clauses hold vacuously. -/
+def LayeredBisimI.noS {A : String → Prop} (B : LayeredBisimI A M N) :
+    LayeredBisim A M.noS N.noS where
+  Z := B.Z
+  mono := B.mono
+  atoms := B.atoms
+  forth := B.forth
+  back := B.back
+  sforth := fun _ _ _ hS => False.elim hS
+  sback := fun _ _ _ hS => False.elim hS
+
+/-- **Rank preservation, ◯-free**: worlds linked at level n agree on the
+◯-free formulas of crank ≤ n over `A`.  A corollary of the full statement:
+emptying `S` changes no ◯-free formula. -/
+theorem LayeredBisimI.force_iff {A : String → Prop} (B : LayeredBisimI A M N) :
+    ∀ (φ : PLLFormula) {n : Nat} {w : M.W} {w' : N.W}, B.Z n w w' →
+      boxFree φ = true → crank φ ≤ n → (∀ a ∈ φ.atoms, A a) →
+      (M.force w φ ↔ N.force w' φ) := fun φ _ _ _ hZ hb hc ha =>
+  (force_noS_of_boxFree M φ hb _).symm.trans
+    ((LayeredBisim.force_iff B.noS φ hZ hc ha).trans (force_noS_of_boxFree N φ hb _))
 
 /-! ## The agreement bisimulations -/
 

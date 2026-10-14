@@ -49,7 +49,7 @@ open PLLFormula
 namespace PLLND
 namespace SubframeModel
 
-open SemUI (boxFree isBudget nu)
+open SemUI (boxFree isBudget nu crank)
 
 /-! ## `p`-variants of subframe models -/
 
@@ -75,72 +75,39 @@ theorem ne_of_not_mem_atoms_prop {p a : String}
   rintro rfl
   exact hp (by simp)
 
+/-- An unbounded bisimulation off `p` without `S`-clauses is a layered one at
+every level (the constant family). -/
+def PBisimI.toLayeredI {p : String} (C : PBisimI p M N) : LayeredBisimI (· ≠ p) M N where
+  Z := fun _ => C.Z
+  mono := fun h => h
+  atoms := fun h a ha => C.atoms h a ha
+  forth := fun h _ hv => C.forth h hv
+  back := fun h _ hv => C.back h hv
+
+/-- An unbounded bisimulation off `p` is a layered one at every level. -/
+def PBisim.toLayered {p : String} (C : PBisim p M N) : LayeredBisim (· ≠ p) M N where
+  toLayeredBisimI := C.toPBisimI.toLayeredI
+  sforth := fun h _ hv hS => C.sforth h hv hS
+  sback := fun h _ hv hS => C.sback h hv hS
+
+theorem ne_of_mem_atoms {p : String} {φ : PLLFormula} (hp : p ∉ φ.atoms) :
+    ∀ a ∈ φ.atoms, a ≠ p := fun _ ha h => hp (h ▸ ha)
+
 /-- **Invariance, ◯-free**: a `p`-variant preserves the ◯-free `p`-free
-formulas. -/
+formulas (rank preservation at level `crank φ` for the constant family). -/
 theorem PBisimI.force_iff {p : String} (C : PBisimI p M N) :
     ∀ (φ : PLLFormula), boxFree φ = true → p ∉ φ.atoms →
-      ∀ {m : M.W} {n : N.W}, C.Z m n → (M.force m φ ↔ N.force n φ)
-  | .prop a, _, hp, _, _, hZ => C.atoms hZ a (ne_of_not_mem_atoms_prop hp)
-  | .falsePLL, _, _, _, _, _ => Iff.rfl
-  | .and φ ψ, hb, hp, _, _, hZ => by
-      simp only [boxFree, Bool.and_eq_true] at hb
-      exact and_congr
-        (PBisimI.force_iff C φ hb.1 (fun h => hp (mem_atoms_and.mpr (Or.inl h))) hZ)
-        (PBisimI.force_iff C ψ hb.2 (fun h => hp (mem_atoms_and.mpr (Or.inr h))) hZ)
-  | .or φ ψ, hb, hp, _, _, hZ => by
-      simp only [boxFree, Bool.and_eq_true] at hb
-      exact or_congr
-        (PBisimI.force_iff C φ hb.1 (fun h => hp (mem_atoms_or.mpr (Or.inl h))) hZ)
-        (PBisimI.force_iff C ψ hb.2 (fun h => hp (mem_atoms_or.mpr (Or.inr h))) hZ)
-  | .ifThen φ ψ, hb, hp, _, _, hZ => by
-      simp only [boxFree, Bool.and_eq_true] at hb
-      have hpφ : p ∉ φ.atoms := fun h => hp (mem_atoms_ifThen.mpr (Or.inl h))
-      have hpψ : p ∉ ψ.atoms := fun h => hp (mem_atoms_ifThen.mpr (Or.inr h))
-      constructor
-      · intro hM n₂ hn hφ
-        obtain ⟨m₂, hm, hZ'⟩ := C.back hZ hn
-        exact (PBisimI.force_iff C ψ hb.2 hpψ hZ').mp
-          (hM m₂ hm ((PBisimI.force_iff C φ hb.1 hpφ hZ').mpr hφ))
-      · intro hN m₂ hm hφ
-        obtain ⟨n₂, hn, hZ'⟩ := C.forth hZ hm
-        exact (PBisimI.force_iff C ψ hb.2 hpψ hZ').mpr
-          (hN n₂ hn ((PBisimI.force_iff C φ hb.1 hpφ hZ').mp hφ))
-  | .somehow _, hb, _, _, _, _ => by simp [boxFree] at hb
+      ∀ {m : M.W} {n : N.W}, C.Z m n → (M.force m φ ↔ N.force n φ) :=
+  fun φ hb hp _ _ hZ => C.toLayeredI.force_iff φ (n := crank φ) hZ hb le_rfl
+    (ne_of_mem_atoms hp)
 
-/-- **Invariance**: a `p`-variant preserves the `p`-free formulas. -/
+/-- **Invariance**: a `p`-variant preserves the `p`-free formulas (rank
+preservation at level `crank φ` for the constant family). -/
 theorem PBisim.force_iff {p : String} (C : PBisim p M N) :
     ∀ (φ : PLLFormula), p ∉ φ.atoms →
-      ∀ {m : M.W} {n : N.W}, C.Z m n → (M.force m φ ↔ N.force n φ)
-  | .prop a, hp, _, _, hZ => C.atoms hZ a (ne_of_not_mem_atoms_prop hp)
-  | .falsePLL, _, _, _, _ => Iff.rfl
-  | .and φ ψ, hp, _, _, hZ =>
-      and_congr
-        (PBisim.force_iff C φ (fun h => hp (mem_atoms_and.mpr (Or.inl h))) hZ)
-        (PBisim.force_iff C ψ (fun h => hp (mem_atoms_and.mpr (Or.inr h))) hZ)
-  | .or φ ψ, hp, _, _, hZ =>
-      or_congr
-        (PBisim.force_iff C φ (fun h => hp (mem_atoms_or.mpr (Or.inl h))) hZ)
-        (PBisim.force_iff C ψ (fun h => hp (mem_atoms_or.mpr (Or.inr h))) hZ)
-  | .ifThen φ ψ, hp, _, _, hZ => by
-      have hpφ : p ∉ φ.atoms := fun h => hp (mem_atoms_ifThen.mpr (Or.inl h))
-      have hpψ : p ∉ ψ.atoms := fun h => hp (mem_atoms_ifThen.mpr (Or.inr h))
-      constructor
-      · intro hM n₂ hn hφ
-        obtain ⟨m₂, hm, hZ'⟩ := C.back hZ hn
-        exact (PBisim.force_iff C ψ hpψ hZ').mp
-          (hM m₂ hm ((PBisim.force_iff C φ hpφ hZ').mpr hφ))
-      · intro hN m₂ hm hφ
-        obtain ⟨n₂, hn, hZ'⟩ := C.forth hZ hm
-        exact (PBisim.force_iff C ψ hpψ hZ').mpr
-          (hN n₂ hn ((PBisim.force_iff C φ hpφ hZ').mp hφ))
-  | .somehow φ, hp, _, _, hZ => by
-      constructor
-      · intro hM n₂ hn hS
-        obtain ⟨m₂, hm, hmS, hZ'⟩ := C.sback hZ hn hS
-        exact (PBisim.force_iff C φ hp hZ').mp (hM m₂ hm hmS)
-      · intro hN m₂ hm hS
-        obtain ⟨n₂, hn, hnS, hZ'⟩ := C.sforth hZ hm hS
-        exact (PBisim.force_iff C φ hp hZ').mpr (hN n₂ hn hnS)
+      ∀ {m : M.W} {n : N.W}, C.Z m n → (M.force m φ ↔ N.force n φ) :=
+  fun φ hp _ _ hZ => C.toLayered.force_iff φ (n := crank φ) hZ le_rfl
+    (ne_of_mem_atoms hp)
 
 /-- Levels drop along `≤`. -/
 theorem LayeredBisimI.mono_le {A : String → Prop} (B : LayeredBisimI A M N) :

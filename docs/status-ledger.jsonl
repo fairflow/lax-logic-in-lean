@@ -12777,6 +12777,7 @@
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisim.recOn","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisim.sback","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisim.sforth","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
+{"axioms":[],"decl":"PLLND.SubframeModel.PBisim.toLayered","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisim.toPBisimI","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisimI","kind":"inductive","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisimI.Z","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
@@ -12795,8 +12796,10 @@
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisimI.noConfusionType","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisimI.rec","kind":"rec","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.PBisimI.recOn","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
+{"axioms":[],"decl":"PLLND.SubframeModel.PBisimI.toLayeredI","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.amalgamation","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.amalgamationI","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"PLLND.SubframeModel.ne_of_mem_atoms","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"PLLND.SubframeModel.ne_of_not_mem_atoms_prop","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeAmalg","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"PLLND.SemUI.boxFree_bigAnd","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"PLLND.SemUI.boxFree_bigOr","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
@@ -12850,6 +12853,7 @@
 {"axioms":[],"decl":"PLLND.SubframeModel.LayeredBisimI.mono","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.LayeredBisimI.noConfusion","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.LayeredBisimI.noConfusionType","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
+{"axioms":[],"decl":"PLLND.SubframeModel.LayeredBisimI.noS","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.LayeredBisimI.rec","kind":"rec","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.LayeredBisimI.recOn","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.S_clause_needed","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
@@ -12868,6 +12872,7 @@
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.charImp","kind":"def","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.crank_charBox_le","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.crank_charImp_le","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
+{"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.erase_reps","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.exists_of_not_force_charBox","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.exists_of_not_force_charImp","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
 {"axioms":[],"decl":"PLLND.SubframeModel.force.eq_def","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeLayered","native":false,"sorry":false}
@@ -12899,9 +12904,12 @@
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.UIEx.good_posL","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"PLLND.SubframeModel.UIEx.mem_compl","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.UIEx.not_force_compl_posL","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
+{"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.UIEx.of_mem_erase","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.UIEx.posL_mem_sublists","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.UIEx.protect","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"PLLND.SubframeModel.UIEx.type_of_char","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
+{"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.realise","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
+{"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.realiseI","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.uniform_all","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.uniform_allI","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"PLLND.SubframeModel.uniform_ex","kind":"theorem","module":"LaxLogic.PLL.SemUI.SubframeUI","native":false,"sorry":false}

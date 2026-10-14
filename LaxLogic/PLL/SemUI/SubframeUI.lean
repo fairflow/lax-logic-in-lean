@@ -67,8 +67,7 @@ namespace PLLND
 namespace SubframeModel
 
 open SemUI (crank bigAnd boxFree nu eraseBox frag_reps_exist' atoms_bigAnd
-  atoms_bigOr crank_eraseBox_le mem_atoms_eraseBox boxFree_eraseBox boxFree_bigAnd
-  boxFree_bigOr)
+  atoms_bigOr boxFree_bigAnd boxFree_bigOr)
 
 namespace UIEx
 
@@ -212,13 +211,64 @@ theorem good_posL {M : SubframeModel} {R : List PLLFormula} {w : M.W}
   · exact not_force_compl_posL M R w h
   · exact hφ h
 
+theorem of_mem_erase {s : Finset String} {a p : String} (h : a ∈ s.erase p) :
+    a ∈ s ∧ a ≠ p :=
+  ⟨(Finset.mem_erase.mp h).2, (Finset.mem_erase.mp h).1⟩
+
 end UIEx
 
 open UIEx Amalg
 
 attribute [local instance] Classical.propDecidable
 
-/-! ## The ◯-free instance (IPC) -/
+/-! ## Realisation: steps 2 and 3 and invariance in one statement -/
+
+/-- **Realisation, ◯-free.**  If `k` and `v` agree on the ◯-free
+representatives of crank `2ν + 2` over the atoms of `φ` other than `p`, some
+world `n₀` agrees with `v` on every ◯-free `p`-free formula and with `k` on
+`φ`. -/
+theorem realiseI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true)
+    {R : List PLLFormula}
+    (hR : ∀ ψ : PLLFormula, crank ψ ≤ 2 * nu (insert ⊥ (subF φ)) + 1 + 1 →
+      (∀ a ∈ ψ.atoms, a ∈ φ.atoms.erase p) →
+        ∃ D ∈ R, Nonempty ([ψ] ⊢ D) ∧ Nonempty ([D] ⊢ ψ))
+    {K M : SubframeModel} {k : K.W} {v : M.W}
+    (hag : ∀ D ∈ R.map eraseBox, (K.force k D ↔ M.force v D)) :
+    ∃ (N : SubframeModel) (n₀ : N.W),
+      (∀ χ : PLLFormula, boxFree χ = true → p ∉ χ.atoms →
+        (M.force v χ ↔ N.force n₀ χ)) ∧ (N.force n₀ φ ↔ K.force k φ) := by
+  have hX0 : ∀ ψ ∈ insert ⊥ (subF φ), boxFree ψ = true := by
+    intro ψ hψ
+    rcases Finset.mem_insert.mp hψ with rfl | hψ
+    · rfl
+    · exact boxFree_of_mem_subF hφ hψ
+  obtain ⟨B, hB⟩ := layeredI_of_agree (agreeI_of_reps hR hag)
+  obtain ⟨N, C, n₀, hC, hagr⟩ := amalgamationI _ (subClosed_insert_bot_subF φ) hX0
+    p K M k v (· ∈ φ.atoms.erase p) (protect φ p) B hB
+  exact ⟨N, n₀, fun χ hb hp => C.force_iff χ hb hp hC,
+    hagr φ (Finset.mem_insert_of_mem (self_mem_subF φ))⟩
+
+/-- **Realisation.**  If `k` and `v` agree on the representatives of crank
+`3(3ν + 2) + 1` over the atoms of `φ` other than `p`, some world `n₀` agrees
+with `v` on every `p`-free formula and with `k` on `φ`: step 2 links `k` and
+`v` at level `3ν + 2`, step 3 builds the `p`-variant, invariance transfers the
+`p`-free formulas. -/
+theorem realise (p : String) (φ : PLLFormula) {R : List PLLFormula}
+    (hR : ∀ ψ : PLLFormula, crank ψ ≤ 3 * (3 * nu (insert ⊥ (subF φ)) + 2) + 1 →
+      (∀ a ∈ ψ.atoms, a ∈ φ.atoms.erase p) →
+        ∃ D ∈ R, Nonempty ([ψ] ⊢ D) ∧ Nonempty ([D] ⊢ ψ))
+    {K M : SubframeModel} {k : K.W} {v : M.W}
+    (hag : ∀ D ∈ R, (K.force k D ↔ M.force v D)) :
+    ∃ (N : SubframeModel) (n₀ : N.W),
+      (∀ χ : PLLFormula, p ∉ χ.atoms → (M.force v χ ↔ N.force n₀ χ)) ∧
+        (N.force n₀ φ ↔ K.force k φ) := by
+  obtain ⟨B, hB⟩ := layered_of_agree (agree_of_reps hR hag)
+  obtain ⟨N, C, n₀, hC, hagr⟩ := amalgamation _ (subClosed_insert_bot_subF φ) p K M k v
+    (· ∈ φ.atoms.erase p) (protect φ p) B hB
+  exact ⟨N, n₀, fun χ hp => C.force_iff χ hp hC,
+    hagr φ (Finset.mem_insert_of_mem (self_mem_subF φ))⟩
+
+/-! ## The `∃`-side -/
 
 /-- **The `∃`-side of uniform interpolation, ◯-free instance.**  For a
 ◯-free `φ` there is a ◯-free `ψ` in the atoms of `φ` other than `p` with
@@ -228,52 +278,32 @@ theorem uniform_exI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true) :
       Nonempty ([] ⊢ φ ↠ ψ) ∧
       ∀ χ : PLLFormula, boxFree χ = true → p ∉ χ.atoms →
         Nonempty ([] ⊢ φ ↠ χ) → Nonempty ([] ⊢ ψ ↠ χ) := by
-  have hX : SubClosed (insert PLLFormula.falsePLL (subF φ)) :=
-    subClosed_insert_bot_subF φ
-  have hX0 : ∀ ψ ∈ insert PLLFormula.falsePLL (subF φ), boxFree ψ = true := by
-    intro ψ hψ
-    rcases Finset.mem_insert.mp hψ with rfl | hψ
-    · rfl
-    · exact boxFree_of_mem_subF hφ hψ
   obtain ⟨R, hRb, hR⟩ := frag_reps_exist' (φ.atoms.erase p)
-    (2 * nu (insert PLLFormula.falsePLL (subF φ)) + 1 + 1 + 1)
+    (2 * nu (insert ⊥ (subF φ)) + 1 + 1 + 1)
   obtain ⟨Q, hQb, hQ⟩ := frag_reps_exist' (φ.atoms.erase p)
-    (2 * nu (insert PLLFormula.falsePLL (subF φ)) + 1 + 1)
-  have hQe : ∀ D ∈ Q.map eraseBox,
-      crank D ≤ 2 * nu (insert PLLFormula.falsePLL (subF φ)) + 1 + 1 ∧
-        ∀ a ∈ D.atoms, a ∈ φ.atoms.erase p := by
-    intro D hD
-    obtain ⟨E, hE, rfl⟩ := List.mem_map.mp hD
-    exact ⟨le_trans (crank_eraseBox_le E) (hQb E hE).1,
-      fun a ha => (hQb E hE).2 a (mem_atoms_eraseBox ha)⟩
-  have hQf : ∀ D ∈ Q.map eraseBox, boxFree D = true := by
-    intro D hD
-    obtain ⟨E, -, rfl⟩ := List.mem_map.mp hD
-    exact boxFree_eraseBox E
+    (2 * nu (insert ⊥ (subF φ)) + 1 + 1)
+  have hQe := fun D hD => (erase_reps hQb D hD).1
+  have hQf := fun D hD => (erase_reps hQb D hD).2
   refine ⟨bigAnd ((R.map eraseBox).filter
-    fun D => decide (Nonempty (LaxND [] (φ.ifThen D)))), ?_, ?_, ?_, ?_⟩
-  · refine boxFree_bigAnd fun D hD => ?_
-    obtain ⟨E, -, rfl⟩ := List.mem_map.mp (List.mem_filter.mp hD).1
-    exact boxFree_eraseBox E
+    fun D => decide (Nonempty ([] ⊢ φ ↠ D))), ?_, ?_, ?_, ?_⟩
+  · exact boxFree_bigAnd fun D hD => (erase_reps hRb D (List.mem_filter.mp hD).1).2
   · intro a ha
-    have h := atoms_bigAnd (Q := fun a => a ∈ φ.atoms.erase p) (fun D hD => by
-      obtain ⟨E, hE, rfl⟩ := List.mem_map.mp (List.mem_filter.mp hD).1
-      exact fun b hb => (hRb E hE).2 b (mem_atoms_eraseBox hb)) a ha
-    exact ⟨(Finset.mem_erase.mp h).2, (Finset.mem_erase.mp h).1⟩
+    exact of_mem_erase (atoms_bigAnd (Q := fun a => a ∈ φ.atoms.erase p)
+      (fun D hD => (erase_reps hRb D (List.mem_filter.mp hD).1).1.2) a ha)
   · refine derivable_iff_valid.mpr fun M x y _ hφy => ?_
     refine (force_bigAnd_iff M y _).mpr fun D hD => ?_
     obtain ⟨d⟩ := of_decide_eq_true (List.mem_filter.mp hD).2
     exact SubframeModel.soundness d M y (by simp) y (M.refl y) hφy
-  · intro χ hχb hp hχ
+  · intro χ hχb hp ⟨dχ⟩
     refine derivable_iff_valid.mpr fun M x w _ hψ => ?_
-    -- 1. the character of `w` is not a consequence of `φ`
+    -- the character of `w` is not a consequence of `φ`
     have hcζ := crank_charImp_le (M := M) (by omega) (fun D hD => (hQe D hD).1) w
     have haζ := atoms_charImp (M := M) (fun D hD => (hQe D hD).2) w
     have hbζ := boxFree_charImp (M := M) hQf w
-    have hnot : ¬ Nonempty (LaxND [] (φ.ifThen (charImp M (Q.map eraseBox) w))) := by
+    have hnot : [] ⊬ φ ↠ charImp M (Q.map eraseBox) w := by
       rintro ⟨d⟩
       obtain ⟨D, hD, h₁, h₂⟩ := hR _ hcζ haζ
-      have hD' : Nonempty (LaxND [] (φ.ifThen (eraseBox D))) := by
+      have hD' : Nonempty ([] ⊢ φ ↠ eraseBox D) := by
         refine derivable_iff_valid.mpr fun M' x' y' hxy' hφ' => ?_
         exact (force_iff_eraseBox_of_interd hbζ h₁ h₂ M' y').mp
           (SubframeModel.soundness d M' x' (by simp) y' hxy' hφ')
@@ -281,23 +311,13 @@ theorem uniform_exI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true) :
         (List.mem_filter.mpr ⟨List.mem_map_of_mem hD, decide_eq_true hD'⟩)
       exact not_force_charImp (M.refl w) _
         ((force_iff_eraseBox_of_interd hbζ h₁ h₂ M w).mpr hwD)
-    -- 2. a world forcing `φ` with the type of `w`
+    -- so a world `k₂ ⊩ φ` has the type of `w`; realise it over `w`
     obtain ⟨K, k₀, hk₀⟩ := exists_countermodel hnot
-    obtain ⟨k₁, hk₁, hφk₁, hnζ⟩ := exists_of_not_force_imp hk₀
+    obtain ⟨k₁, -, hφk₁, hnζ⟩ := exists_of_not_force_imp hk₀
     obtain ⟨k₂, hk₂, hagQ⟩ := exists_of_not_force_charImp hnζ
-    have hag := (agreeI_of_reps hQ hagQ).symm
-    -- 3. the link, 4. the amalgam, 5. invariance
-    obtain ⟨B, hB⟩ := layeredI_of_agree hag
-    obtain ⟨N, C, n₀, hC, hagr⟩ := amalgamationI _ hX hX0 p K M k₂ w
-      (· ∈ φ.atoms.erase p) (protect φ p) B hB
-    have hφn : N.force n₀ φ :=
-      (hagr φ (Finset.mem_insert_of_mem (self_mem_subF φ))).mpr
-        (K.force_mono φ hk₂ hφk₁)
-    obtain ⟨dχ⟩ := hχ
-    exact (C.force_iff χ hχb hp hC).mpr
-      (SubframeModel.soundness dχ N n₀ (by simp) n₀ (N.refl n₀) hφn)
-
-/-! ## PLL -/
+    obtain ⟨N, n₀, hv, hk⟩ := realiseI p φ hφ hQ fun D hD => (hagQ D hD).symm
+    exact (hv χ hχb hp).mpr (SubframeModel.soundness dχ N n₀ (by simp) n₀ (N.refl n₀)
+      (hk.mpr (K.force_mono φ hk₂ hφk₁)))
 
 /-- **The `∃`-side of uniform interpolation for PLL.**  For every `φ` and `p`
 there is a `ψ` in the atoms of `φ` other than `p` with `⊢ φ ↠ ψ` and
@@ -307,54 +327,42 @@ theorem uniform_ex (p : String) (φ : PLLFormula) :
       Nonempty ([] ⊢ φ ↠ ψ) ∧
       ∀ χ : PLLFormula, p ∉ χ.atoms →
         Nonempty ([] ⊢ φ ↠ χ) → Nonempty ([] ⊢ ψ ↠ χ) := by
-  have hX : SubClosed (insert PLLFormula.falsePLL (subF φ)) :=
-    subClosed_insert_bot_subF φ
   obtain ⟨R, hRb, hR⟩ := frag_reps_exist' (φ.atoms.erase p)
-    (3 * (3 * nu (insert PLLFormula.falsePLL (subF φ)) + 2) + 1 + 1)
+    (3 * (3 * nu (insert ⊥ (subF φ)) + 2) + 1 + 1)
   obtain ⟨Q, hQb, hQ⟩ := frag_reps_exist' (φ.atoms.erase p)
-    (3 * (3 * nu (insert PLLFormula.falsePLL (subF φ)) + 2) + 1)
-  refine ⟨bigAnd (R.filter fun D => decide (Nonempty (LaxND [] (φ.ifThen D)))),
-    ?_, ?_, ?_⟩
+    (3 * (3 * nu (insert ⊥ (subF φ)) + 2) + 1)
+  refine ⟨bigAnd (R.filter fun D => decide (Nonempty ([] ⊢ φ ↠ D))), ?_, ?_, ?_⟩
   · intro a ha
-    have h := atoms_bigAnd (Q := fun a => a ∈ φ.atoms.erase p)
-      (fun D hD => (hRb D (List.mem_filter.mp hD).1).2) a ha
-    exact ⟨(Finset.mem_erase.mp h).2, (Finset.mem_erase.mp h).1⟩
+    exact of_mem_erase (atoms_bigAnd (Q := fun a => a ∈ φ.atoms.erase p)
+      (fun D hD => (hRb D (List.mem_filter.mp hD).1).2) a ha)
   · refine derivable_iff_valid.mpr fun M x y _ hφy => ?_
     refine (force_bigAnd_iff M y _).mpr fun D hD => ?_
     obtain ⟨d⟩ := of_decide_eq_true (List.mem_filter.mp hD).2
     exact SubframeModel.soundness d M y (by simp) y (M.refl y) hφy
-  · intro χ hp hχ
+  · intro χ hp ⟨dχ⟩
     refine derivable_iff_valid.mpr fun M x w _ hψ => ?_
-    -- 1. the character of `w` is not a consequence of `φ`
+    -- the character of `w` is not a consequence of `φ`
     have hcζ := crank_charImp_le (M := M) (by omega) (fun D hD => (hQb D hD).1) w
     have haζ := atoms_charImp (M := M) (fun D hD => (hQb D hD).2) w
-    have hnot : ¬ Nonempty (LaxND [] (φ.ifThen (charImp M Q w))) := by
+    have hnot : [] ⊬ φ ↠ charImp M Q w := by
       rintro ⟨d⟩
       obtain ⟨D, hD, h₁, h₂⟩ := hR _ hcζ haζ
-      have hD' : Nonempty (LaxND [] (φ.ifThen D)) := by
+      have hD' : Nonempty ([] ⊢ φ ↠ D) := by
         refine derivable_iff_valid.mpr fun M' x' y' hxy' hφ' => ?_
         exact (force_iff_of_interd h₁ h₂ M' y').mp
           (SubframeModel.soundness d M' x' (by simp) y' hxy' hφ')
       have hwD : M.force w D := (force_bigAnd_iff M w _).mp hψ D
         (List.mem_filter.mpr ⟨hD, decide_eq_true hD'⟩)
       exact not_force_charImp (M.refl w) Q ((force_iff_of_interd h₁ h₂ M w).mpr hwD)
-    -- 2. a world forcing `φ` with the type of `w`
+    -- so a world `k₂ ⊩ φ` has the type of `w`; realise it over `w`
     obtain ⟨K, k₀, hk₀⟩ := exists_countermodel hnot
-    obtain ⟨k₁, hk₁, hφk₁, hnζ⟩ := exists_of_not_force_imp hk₀
+    obtain ⟨k₁, -, hφk₁, hnζ⟩ := exists_of_not_force_imp hk₀
     obtain ⟨k₂, hk₂, hagQ⟩ := exists_of_not_force_charImp hnζ
-    have hag := (agree_of_reps hQ hagQ).symm
-    -- 3. the link, 4. the amalgam, 5. invariance
-    obtain ⟨B, hB⟩ := layered_of_agree hag
-    obtain ⟨N, C, n₀, hC, hagr⟩ := amalgamation _ hX p K M k₂ w
-      (· ∈ φ.atoms.erase p) (protect φ p) B hB
-    have hφn : N.force n₀ φ :=
-      (hagr φ (Finset.mem_insert_of_mem (self_mem_subF φ))).mpr
-        (K.force_mono φ hk₂ hφk₁)
-    obtain ⟨dχ⟩ := hχ
-    exact (C.force_iff χ hp hC).mpr
-      (SubframeModel.soundness dχ N n₀ (by simp) n₀ (N.refl n₀) hφn)
+    obtain ⟨N, n₀, hv, hk⟩ := realise p φ hQ fun D hD => (hagQ D hD).symm
+    exact (hv χ hp).mpr (SubframeModel.soundness dχ N n₀ (by simp) n₀ (N.refl n₀)
+      (hk.mpr (K.force_mono φ hk₂ hφk₁)))
 
-/-! ## The `∀`-side, ◯-free instance (IPC) -/
+/-! ## The `∀`-side -/
 
 /-- **The `∀`-side of uniform interpolation, ◯-free instance.**  For a
 ◯-free `φ` there is a ◯-free `ψ` in the atoms of `φ` other than `p` with
@@ -364,27 +372,13 @@ theorem uniform_allI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true) :
       Nonempty ([] ⊢ ψ ↠ φ) ∧
       ∀ χ : PLLFormula, boxFree χ = true → p ∉ χ.atoms →
         Nonempty ([] ⊢ χ ↠ φ) → Nonempty ([] ⊢ χ ↠ ψ) := by
-  have hX : SubClosed (insert PLLFormula.falsePLL (subF φ)) :=
-    subClosed_insert_bot_subF φ
-  have hX0 : ∀ ψ ∈ insert PLLFormula.falsePLL (subF φ), boxFree ψ = true := by
-    intro ψ hψ
-    rcases Finset.mem_insert.mp hψ with rfl | hψ
-    · rfl
-    · exact boxFree_of_mem_subF hφ hψ
   obtain ⟨R, hRb, hR⟩ := frag_reps_exist' (φ.atoms.erase p)
-    (2 * nu (insert PLLFormula.falsePLL (subF φ)) + 1 + 1)
-  have hRe : ∀ D ∈ R.map eraseBox, ∀ a ∈ D.atoms, a ∈ φ.atoms.erase p := by
-    intro D hD
-    obtain ⟨E, hE, rfl⟩ := List.mem_map.mp hD
-    exact fun a ha => (hRb E hE).2 a (mem_atoms_eraseBox ha)
-  have hRf : ∀ D ∈ R.map eraseBox, boxFree D = true := by
-    intro D hD
-    obtain ⟨E, -, rfl⟩ := List.mem_map.mp hD
-    exact boxFree_eraseBox E
+    (2 * nu (insert ⊥ (subF φ)) + 1 + 1)
+  have hRe := fun D hD => (erase_reps hRb D hD).1.2
+  have hRf := fun D hD => (erase_reps hRb D hD).2
   refine ⟨bigAnd ((((R.map eraseBox).sublists).filter fun T => decide
-      (¬ Nonempty (LaxND [] ((bigAnd T).ifThen
-        ((bigOr (compl (R.map eraseBox) T)).or φ))))).map (charT (R.map eraseBox))),
-    ?_, ?_, ?_, ?_⟩
+      ([] ⊬ bigAnd T ↠ bigOr (compl (R.map eraseBox) T) ∨ φ)).map
+        (charT (R.map eraseBox))), ?_, ?_, ?_, ?_⟩
   · refine boxFree_bigAnd fun c hc => ?_
     obtain ⟨T, hT, rfl⟩ := List.mem_map.mp hc
     have hTs := (List.mem_sublists.mp (List.mem_filter.mp hT).1).subset
@@ -392,44 +386,35 @@ theorem uniform_allI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true) :
     exact ⟨boxFree_bigAnd fun D hD => hRf D (hTs hD),
       boxFree_bigOr fun D hD => hRf D (mem_compl.mp hD).1⟩
   · intro a ha
-    have h := atoms_bigAnd (Q := fun a => a ∈ φ.atoms.erase p) (fun c hc => by
-      obtain ⟨T, hT, rfl⟩ := List.mem_map.mp hc
-      have hTs := (List.mem_sublists.mp (List.mem_filter.mp hT).1).subset
-      intro b hb
-      rcases mem_atoms_ifThen.mp hb with hb | hb
-      · exact atoms_bigAnd (fun D hD => hRe D (hTs hD)) b hb
-      · exact atoms_bigOr (fun D hD => hRe D (mem_compl.mp hD).1) b hb) a ha
-    exact ⟨(Finset.mem_erase.mp h).2, (Finset.mem_erase.mp h).1⟩
+    refine of_mem_erase (atoms_bigAnd (Q := fun a => a ∈ φ.atoms.erase p)
+      (fun c hc => ?_) a ha)
+    obtain ⟨T, hT, rfl⟩ := List.mem_map.mp hc
+    have hTs := (List.mem_sublists.mp (List.mem_filter.mp hT).1).subset
+    intro b hb
+    rcases mem_atoms_ifThen.mp hb with hb | hb
+    · exact atoms_bigAnd (fun D hD => hRe D (hTs hD)) b hb
+    · exact atoms_bigOr (fun D hD => hRe D (mem_compl.mp hD).1) b hb
   · refine derivable_iff_valid.mpr fun M x w _ hψ => ?_
     by_contra hnφ
     have hc := (force_bigAnd_iff M w _).mp hψ (charT (R.map eraseBox)
       (posL M (R.map eraseBox) w)) (List.mem_map_of_mem (List.mem_filter.mpr
         ⟨posL_mem_sublists M _ w, decide_eq_true (good_posL hnφ)⟩))
     exact not_force_compl_posL M _ w (hc w (M.refl w) (force_pos M _ w))
-  · intro χ hχb hp hχ
+  · intro χ hχb hp ⟨dχ⟩
     refine derivable_iff_valid.mpr fun M x w _ hχw => ?_
     refine (force_bigAnd_iff M w _).mpr fun c hc => ?_
     obtain ⟨T, hT, rfl⟩ := List.mem_map.mp hc
-    have hng := of_decide_eq_true (List.mem_filter.mp hT).2
+    -- a world `v ≥ w` of type `T` and a world `k₁` of type `T` refuting `φ`
     intro v hwv hvT
     by_contra hvn
-    have htv := type_of_char hvT hvn
-    obtain ⟨K, k₀, hk₀⟩ := exists_countermodel hng
+    obtain ⟨K, k₀, hk₀⟩ := exists_countermodel (of_decide_eq_true (List.mem_filter.mp hT).2)
     obtain ⟨k₁, -, hT₁, hn₁⟩ := exists_of_not_force_imp hk₀
-    have hn₁' : ¬ K.force k₁ (bigOr (compl (R.map eraseBox) T)) := fun h => hn₁ (Or.inl h)
-    have hnφ : ¬ K.force k₁ φ := fun h => hn₁ (Or.inr h)
-    have htk := type_of_char hT₁ hn₁'
-    have hag := agreeI_of_reps hR fun D hD => (htk D hD).trans (htv D hD).symm
-    obtain ⟨B, hB⟩ := layeredI_of_agree hag
-    obtain ⟨N, C, n₀, hC, hagr⟩ := amalgamationI _ hX hX0 p K M k₁ v
-      (· ∈ φ.atoms.erase p) (protect φ p) B hB
-    have hχn : N.force n₀ χ :=
-      (C.force_iff χ hχb hp hC).mp (M.force_mono χ hwv hχw)
-    obtain ⟨dχ⟩ := hχ
-    exact hnφ ((hagr φ (Finset.mem_insert_of_mem (self_mem_subF φ))).mp
-      (SubframeModel.soundness dχ N n₀ (by simp) n₀ (N.refl n₀) hχn))
-
-/-! ## The `∀`-side for PLL -/
+    have htk := type_of_char hT₁ fun h => hn₁ (Or.inl h)
+    have htv := type_of_char hvT hvn
+    obtain ⟨N, n₀, hv, hk⟩ :=
+      realiseI p φ hφ hR fun D hD => (htk D hD).trans (htv D hD).symm
+    exact hn₁ (Or.inr (hk.mp (SubframeModel.soundness dχ N n₀ (by simp) n₀ (N.refl n₀)
+      ((hv χ hχb hp).mp (M.force_mono χ hwv hχw)))))
 
 /-- **The `∀`-side of uniform interpolation for PLL.**  For every `φ` and `p`
 there is a `ψ` in the atoms of `φ` other than `p` with `⊢ ψ ↠ φ` and
@@ -439,49 +424,39 @@ theorem uniform_all (p : String) (φ : PLLFormula) :
       Nonempty ([] ⊢ ψ ↠ φ) ∧
       ∀ χ : PLLFormula, p ∉ χ.atoms →
         Nonempty ([] ⊢ χ ↠ φ) → Nonempty ([] ⊢ χ ↠ ψ) := by
-  have hX : SubClosed (insert PLLFormula.falsePLL (subF φ)) :=
-    subClosed_insert_bot_subF φ
   obtain ⟨R, hRb, hR⟩ := frag_reps_exist' (φ.atoms.erase p)
-    (3 * (3 * nu (insert PLLFormula.falsePLL (subF φ)) + 2) + 1)
+    (3 * (3 * nu (insert ⊥ (subF φ)) + 2) + 1)
   refine ⟨bigAnd (((R.sublists).filter fun T => decide
-      (¬ Nonempty (LaxND [] ((bigAnd T).ifThen ((bigOr (compl R T)).or φ))))).map
-        (charT R)), ?_, ?_, ?_⟩
+      ([] ⊬ bigAnd T ↠ bigOr (compl R T) ∨ φ)).map (charT R)), ?_, ?_, ?_⟩
   · intro a ha
-    have h := atoms_bigAnd (Q := fun a => a ∈ φ.atoms.erase p) (fun c hc => by
-      obtain ⟨T, hT, rfl⟩ := List.mem_map.mp hc
-      have hTs := (List.mem_sublists.mp (List.mem_filter.mp hT).1).subset
-      intro b hb
-      rcases mem_atoms_ifThen.mp hb with hb | hb
-      · exact atoms_bigAnd (fun D hD => (hRb D (hTs hD)).2) b hb
-      · exact atoms_bigOr (fun D hD => (hRb D (mem_compl.mp hD).1).2) b hb) a ha
-    exact ⟨(Finset.mem_erase.mp h).2, (Finset.mem_erase.mp h).1⟩
+    refine of_mem_erase (atoms_bigAnd (Q := fun a => a ∈ φ.atoms.erase p)
+      (fun c hc => ?_) a ha)
+    obtain ⟨T, hT, rfl⟩ := List.mem_map.mp hc
+    have hTs := (List.mem_sublists.mp (List.mem_filter.mp hT).1).subset
+    intro b hb
+    rcases mem_atoms_ifThen.mp hb with hb | hb
+    · exact atoms_bigAnd (fun D hD => (hRb D (hTs hD)).2) b hb
+    · exact atoms_bigOr (fun D hD => (hRb D (mem_compl.mp hD).1).2) b hb
   · refine derivable_iff_valid.mpr fun M x w _ hψ => ?_
     by_contra hnφ
     have hc := (force_bigAnd_iff M w _).mp hψ (charT R (posL M R w))
       (List.mem_map_of_mem (List.mem_filter.mpr
         ⟨posL_mem_sublists M R w, decide_eq_true (good_posL hnφ)⟩))
     exact not_force_compl_posL M R w (hc w (M.refl w) (force_pos M R w))
-  · intro χ hp hχ
+  · intro χ hp ⟨dχ⟩
     refine derivable_iff_valid.mpr fun M x w _ hχw => ?_
     refine (force_bigAnd_iff M w _).mpr fun c hc => ?_
     obtain ⟨T, hT, rfl⟩ := List.mem_map.mp hc
-    have hng := of_decide_eq_true (List.mem_filter.mp hT).2
+    -- a world `v ≥ w` of type `T` and a world `k₁` of type `T` refuting `φ`
     intro v hwv hvT
     by_contra hvn
-    have htv := type_of_char hvT hvn
-    obtain ⟨K, k₀, hk₀⟩ := exists_countermodel hng
+    obtain ⟨K, k₀, hk₀⟩ := exists_countermodel (of_decide_eq_true (List.mem_filter.mp hT).2)
     obtain ⟨k₁, -, hT₁, hn₁⟩ := exists_of_not_force_imp hk₀
-    have hn₁' : ¬ K.force k₁ (bigOr (compl R T)) := fun h => hn₁ (Or.inl h)
-    have hnφ : ¬ K.force k₁ φ := fun h => hn₁ (Or.inr h)
-    have htk := type_of_char hT₁ hn₁'
-    have hag := agree_of_reps hR fun D hD => (htk D hD).trans (htv D hD).symm
-    obtain ⟨B, hB⟩ := layered_of_agree hag
-    obtain ⟨N, C, n₀, hC, hagr⟩ := amalgamation _ hX p K M k₁ v
-      (· ∈ φ.atoms.erase p) (protect φ p) B hB
-    have hχn : N.force n₀ χ := (C.force_iff χ hp hC).mp (M.force_mono χ hwv hχw)
-    obtain ⟨dχ⟩ := hχ
-    exact hnφ ((hagr φ (Finset.mem_insert_of_mem (self_mem_subF φ))).mp
-      (SubframeModel.soundness dχ N n₀ (by simp) n₀ (N.refl n₀) hχn))
+    have htk := type_of_char hT₁ fun h => hn₁ (Or.inl h)
+    have htv := type_of_char hvT hvn
+    obtain ⟨N, n₀, hv, hk⟩ := realise p φ hR fun D hD => (htk D hD).trans (htv D hD).symm
+    exact hn₁ (Or.inr (hk.mp (SubframeModel.soundness dχ N n₀ (by simp) n₀ (N.refl n₀)
+      ((hv χ hp).mp (M.force_mono χ hwv hχw)))))
 
 /-! ## Axiom audit (pinned) -/
 
