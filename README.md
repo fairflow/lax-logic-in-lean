@@ -63,12 +63,12 @@ As of 2026-10-14:
 
 | | |
 |---|--:|
-| declarations recorded | 30,030 in 612 modules |
-| theorems | 13,788 |
+| declarations recorded | 30,039 in 612 modules |
+| theorems | 13,795 |
 | axiom-free | 12,945 |
-| `[propext, Quot.sound]` | 8,498 |
-| `[propext]` | 5,712 |
-| using `Classical.choice` | 2,851 |
+| `[propext, Quot.sound]` | 8,500 |
+| `[propext]` | 5,714 |
+| using `Classical.choice` | 2,856 |
 | carrying `sorryAx` | **23** |
 | `native_decide`-tainted | **2** |
 
@@ -113,9 +113,12 @@ lines, by size:
 * **`PLL/Normalisation` (3.7k)** — the proof-term calculus: Church–Rosser for the
   full reduction via Newman's lemma, and strong normalisation by ⊤⊤-lifting.
 * **`PLL/UI` (8.0k) and `PLL/SemUI` (9.2k)** — uniform interpolation, syntactic
-  and semantic. The semantic route was **shelved** in August 2026; its one
-  remaining library `sorry` is the amalgamation lemma, and the rest of the
-  shelved work now lives in `wip/`.
+  and semantic. The semantic route was **shelved** in August 2026 and restarted
+  in October in the subframe semantics, where it closes: **uniform interpolation
+  for PLL is proved**, both sides (`SubframeModel.uniform_ex`,
+  `SubframeModel.uniform_all`; `docs/pll-uniform-interpolation-2026-10-14.md`).
+  The constraint-model route's one remaining library `sorry` is its own
+  amalgamation lemma at level `2ν + 1`, used by nothing.
 * **`PLL/Timing`, `PLL/Realisability`** — the paper's intended application:
   constraints as timing, circuits verified against them.
 * **`QLL/` (17.3k, 55 files)** — the largest single line, and a different paper:
