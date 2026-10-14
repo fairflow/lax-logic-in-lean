@@ -272,3 +272,56 @@ measure, and that is the part nobody has.
     python3 scripts/semui_fibres.py all        # exit 0; 11 s
 
 Pull `main` (or check out `semui-amalg-push`) first.
+
+## 9. Addendum, later on 2026-10-14: completeness for subframe models PROVED
+
+At Matthew's suggestion the completeness question of §6 was settled through
+the existing constraint-model theorems rather than a new canonical model.
+`LaxLogic/PLL/Semantics/Subframe.lean`, sorry-free, pins
+`[propext, Classical.choice, Quot.sound]`:
+
+    theorem SubframeModel.derivable_iff_valid {φ : PLLFormula} :
+        Nonempty (LaxND [] φ) ↔ ∀ (M : SubframeModel) (x : M.W), M.force x φ
+
+* **Subframe model → constraint model** (`toConstraint_force`): add one
+  fallible top; each `S`-point is rigid (its only `Rₘ`-successor is itself);
+  every other point has the fallible top as an `Rₘ`-successor.  The `∀∃` clause
+  then says exactly "every `S`-point above forces `φ`".  Soundness, with
+  contexts, follows from `soundness`.
+* **Finite constraint model → subframe model** (`toSubframe_force`): drop the
+  fallible worlds; `S` = the `Rₘ`-final worlds (every `Rₘ`-successor reaches them
+  back).  On a finite model every world has an `Rₘ`-final `Rₘ`-successor
+  (`exists_rmFinal`), so the witness of the `∀∃` clause can always be taken
+  there.  Completeness follows from `not_provable_iff_exists_finite_countermodel`.
+
+So the subframe semantics validates exactly the PLL theorems: it is not a
+variant with extra validities, as the confluent models are.
+
+**Where it sits in the literature** (checked against the papers):
+
+* Subframe models are the J-spaces of Goldblatt 1981 whose covers are generated
+  by points, `J(w) := {U hereditary | U ⊇ S ∩ ↑w}` (conditions N1–N5 of
+  Fairtlough–Mendler 1997, Def. 3.4, checked by hand).  "`φ` is locally true at
+  `w`" becomes "`φ` holds at every `S`-point above `w`".  On a FINITE constraint
+  model the translation of F&M 1997 Theorem 3.5 (covers = the `Rₘ`-cofinal
+  hereditary sets) is exactly this point-generated J-space, with `S` the
+  `Rₘ`-final non-fallible worlds.
+* F&M 1997 §1 and §3 record that Goldblatt 1981 gave two semantics, J-spaces
+  (neighbourhoods) and J-frames ("a notion of closeness of worlds"), both
+  reading `◯M` as "M is locally true", and leave the translation of J-frames
+  open.  Matthew recalls that Goldblatt was first with the two-relation models;
+  Goldblatt's own text (ZML 27, 1981; ch. 6 of *Mathematics of Modality*, CSLI
+  1993) was not available here, so whether his J-frames are exactly the
+  `Rᵢ`/`Rₘ` models is NOT verified.
+* Benton–Bierman–de Paiva (JFP 8(2), 1998) §7, Definition 4: two partial orders
+  `≤`, `R`, the `∀∃` clause `w ⊨ ◯A iff ∀v ≥ w ∃u (vRu ∧ u ⊨ A)`, no fallible
+  worlds (`w ⊨ ⊥` iff `w` forces every atom), heredity along `R` imposed on
+  `⊨`; completeness (their Theorem 16) asserted "by standard Henkin
+  constructions".  They credit "similar models" to Fairtlough–Mendler 1995.
+  Their main semantics (§6) is categorical: a cartesian closed category with
+  finite coproducts and a strong monad.
+
+**Status of the §6 proposal after this.**  Gate one (completeness) passed.
+Still unbuilt: bounded bisimulation for subframe models and the character
+argument (step 2), the port of §3 (step 3), the gluing lemma for the `∀`-side,
+and the assembly.  Uniform interpolation remains OPEN.

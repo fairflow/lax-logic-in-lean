@@ -73,6 +73,7 @@ import LaxLogic.PLL.Search.Demos
 import LaxLogic.PLL.Search.Exec
 import LaxLogic.PLL.Semantics.CtxCompleteness
 import LaxLogic.PLL.Semantics.CtxCompletenessIPL
+import LaxLogic.PLL.Semantics.Subframe
 import LaxLogic.PLL.Semantics.LaxInfinite
 import LaxLogic.Belief.Collapse
 import LaxLogic.Belief.BooleanIso
