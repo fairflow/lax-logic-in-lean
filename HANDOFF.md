@@ -5461,3 +5461,37 @@ changes the memo's heuristic conclusion, which is a decision for Matthew.
 (blob e69de29, committed so in 56eeceb, PR #53); the copy in the `merge-main`
 worktree is empty too.  The §2026-10-14 entry above and `docs/next-session.md`
 cite it as the record, including its §§6–7.
+
+## 2026-10-14 (later) — PLL is complete for subframe models; the literature on the `Rᵢ`/`Rₘ` models
+
+Branch `subframe-semantics`.  Matthew's two corrections first, recorded so they
+are not repeated: (1) the amalgamation lemma was NOT "the only thing standing in
+the way of UI", whatever an earlier session told him: the record already showed
+step 2 of the route refuted in every form step 3 can consume, and the July
+status report listed `amalgamation` as dead and step 2's `Rₘ`-clauses as open.
+I should have said so before proving it.  (2) The `2·ν + 1` constant: he holds
+that it was what was needed; my reading is that only the fragment's size
+depends on it.  Unresolved; he may have a use for the constant in mind.
+
+**PROVED.**  `LaxLogic/PLL/Semantics/Subframe.lean` (31 declarations, none
+sorried): `SubframeModel.derivable_iff_valid`, PLL is sound and complete for
+subframe models (`x ⊩ ◯φ ⟺ ∀ y ≥ x, y ∈ S → y ⊩ φ`, no fallible worlds), by
+two translations through the existing theorems (Matthew's suggestion): a
+subframe model is a constraint model with one added fallible top; a finite
+constraint model is a subframe model on its non-fallible worlds with `S` the
+`Rₘ`-final ones.  Record: `docs/semui-amalgamation-2026-10-14.md` §9.
+
+**Literature, checked against the papers** (record §9): subframe models are
+Goldblatt's J-spaces with point-generated covers, and on finite models F&M 1997
+Thm 3.5's translation lands exactly there.  Benton–Bierman–de Paiva 1998 §7 use
+two-relation `∀∃` models without fallible worlds, crediting F&M 1995.  NOT
+verified: whether Goldblatt's 1981 J-frames are the `Rᵢ`/`Rₘ` models (Matthew's
+recollection; his text was not available).  If they are, Matthew wants
+Goldblatt's name for them kept.
+
+**Next, on Matthew's word:** step 2 for subframe models (bounded bisimulation
+from agreement, by characters), refutation-first with an extended
+`scripts/semui_fibres.py`.
+
+**Ledger.**  31 rows by the one-module route; 29,821 rows in 609 modules;
+`23 sorryAx / 2 native_decide` unchanged.

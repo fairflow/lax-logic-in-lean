@@ -12,8 +12,12 @@ the summary.
 
 **What needs Matthew.**
 
-1. Whether to try the route in the subframe semantics (record, §6).  It is a
-   new semantics module and a port, not a search; unbuilt and unchecked.
+1. Whether to go on with the route in the subframe semantics (record, §6).
+   Gate one PASSED later the same day: PLL is complete for subframe models
+   (`SubframeModel.derivable_iff_valid`, record §9).  Next would be step 2,
+   bounded bisimulation from agreement, refutation-first.
+   Also open: whether Goldblatt's 1981 J-frames are the `Rᵢ`/`Rₘ` models
+   (his text not checked; Matthew wants his name kept if so).
 2. Whether `SemUILayered.amalgamation` becomes a `Prop` (rule 1).  It means
    editing a file upstream of the LJF build.
 3. `docs/second-order-pll-survey.md` §0 items 2 and 10 said Iemhoff proved

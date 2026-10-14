@@ -233,6 +233,7 @@ LaxLogic.PLL.Semantics.FiniteModel
 LaxLogic.PLL.Semantics.Frames
 LaxLogic.PLL.Semantics.Kripke
 LaxLogic.PLL.Semantics.LaxInfinite
+LaxLogic.PLL.Semantics.Subframe
 LaxLogic.PLL.Sequent.Craig
 LaxLogic.PLL.Sequent.Focused
 LaxLogic.PLL.Sequent.Sequent
