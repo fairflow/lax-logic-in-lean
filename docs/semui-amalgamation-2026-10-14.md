@@ -325,3 +325,9 @@ variant with extra validities, as the confluent models are.
 Still unbuilt: bounded bisimulation for subframe models and the character
 argument (step 2), the port of §3 (step 3), the gluing lemma for the `∀`-side,
 and the assembly.  Uniform interpolation remains OPEN.
+
+## 10. Addendum: step 2 PROVED in the subframe semantics
+
+`layered_of_agree` (`LaxLogic/PLL/SemUI/SubframeLayered.lean`): agreement at
+crank `3n + 1` gives a layered bisimulation at level `n`, and the converse at
+crank `n`.  Record: `docs/subframe-step2-2026-10-14.md`.

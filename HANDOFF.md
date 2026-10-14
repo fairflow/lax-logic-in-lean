@@ -5495,3 +5495,35 @@ from agreement, by characters), refutation-first with an extended
 
 **Ledger.**  31 rows by the one-module route; 29,821 rows in 609 modules;
 `23 sorryAx / 2 native_decide` unchanged.
+
+## 2026-10-14 (later still) — step 2 of the route PROVED in the subframe semantics
+
+Branch `subframe-layered`.  Goal set by Matthew: "complete step 2 as a fresh
+route to UI for PLL".  Record: `docs/subframe-step2-2026-10-14.md`.
+
+**PROVED.**  `LaxLogic/PLL/SemUI/SubframeLayered.lean` (93 declarations, none
+sorried).  With `≡ᵣ` agreement on the formulas of crank ≤ r over a finite `V`
+and `⇄ₙ` linkage at level n by a layered bisimulation over `V` (atoms,
+`≤`-forth/back, `S`-forth/back along `≤ ∩ S`):
+
+    w ≡_{3n+1} w'   ⟹   w ⇄ₙ w'   ⟹   w ≡ₙ w'
+
+(`layered_of_agree` `[propext, Classical.choice, Quot.sound]`,
+`agree_of_layered` `[propext, Quot.sound]`).  The ◯-free (IPC) instance first,
+rule 8: `w ≡°_{n+1} w' ⟹ w ⇄°ₙ w' ⟹ w ≡°ₙ w'` (`layeredI_of_agree`,
+`agreeI_of_layeredI`), using representatives with every `◯ψ` erased to `⊤`.
+Designed cell `S_clause_needed` (no axioms): two one-point models differing in
+`S` are `≤`-bisimilar at every level and separated by `◯⊥`.
+
+The proof is the Hennessy–Milner character argument: `θ⁺ ⊃ θ⁻` for a
+`≤`-move, `θ⁺ ⊃ ◯θ⁻` for an `S`-move (three ranks, not the four the record's
+§6 guessed).  The constraint refutations of step 2 do not transfer: each is a
+move into a fallible world, and subframe models have none.
+
+**OPEN**, in the subframe semantics: step 3 (amalgamation; the constraint
+proof consumes the escape-form link and does not port), the `∀`-side gluing,
+the invariance of p-free formulas under full subframe bisimulation (easy), and
+the assembly.  Completeness, which the assembly needs, is PROVED.
+
+**Ledger.**  93 rows by the one-module route; 29,914 rows in 610 modules;
+`23 sorryAx / 2 native_decide` unchanged.

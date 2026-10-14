@@ -14,8 +14,11 @@ the summary.
 
 1. Whether to go on with the route in the subframe semantics (record, §6).
    Gate one PASSED later the same day: PLL is complete for subframe models
-   (`SubframeModel.derivable_iff_valid`, record §9).  Next would be step 2,
-   bounded bisimulation from agreement, refutation-first.
+   (`SubframeModel.derivable_iff_valid`, record §9).  Step 2 PROVED after
+   that (`layered_of_agree`, `docs/subframe-step2-2026-10-14.md`): agreement
+   at crank `3n + 1` gives a layered bisimulation at level `n`, ◯-free
+   instance first.  Next would be step 3, amalgamation for subframe models,
+   refutation-first.
    Also open: whether Goldblatt's 1981 J-frames are the `Rᵢ`/`Rₘ` models
    (his text not checked; Matthew wants his name kept if so).
 2. Whether `SemUILayered.amalgamation` becomes a `Prop` (rule 1).  It means

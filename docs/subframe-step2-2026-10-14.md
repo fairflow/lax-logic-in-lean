@@ -1,0 +1,148 @@
+# Step 2 of the semantic route in the subframe semantics: PROVED
+
+2026-10-14.  Branch `subframe-layered`.  Module
+`LaxLogic/PLL/SemUI/SubframeLayered.lean` (93 ledger rows, none sorried).
+Context: `docs/semui-amalgamation-2026-10-14.md` §5, §6 and §9.
+
+## 0. Status
+
+**PROVED** (kernel-checked, axioms pinned in the module):
+
+* `layered_of_agree`: agreement at crank `3n + 1` gives a layered bisimulation
+  at level `n` (`[propext, Classical.choice, Quot.sound]`).
+* `agree_of_layered`: a layered bisimulation at level `n` gives agreement at
+  crank `n` (`[propext, Quot.sound]`).
+* The ◯-free (IPC) instance, proved first (rule 8): `layeredI_of_agree` and
+  `agreeI_of_layeredI`.
+* `S_clause_needed`: the designed cell showing the `S`-clauses cannot be
+  dropped (no axioms).
+
+**OPEN**: step 3 (amalgamation) in the subframe semantics, the `∀`-side gluing,
+and uniform interpolation for PLL.
+
+Step 2 over constraint models stays REFUTED (`SemUI.layered_of_frag_agree_refuted`,
+`SemUI.pair_escape_not_from_agreement`).  Nothing is superseded.
+
+## 1. The statement
+
+A subframe model is `(W, ≤, S, V)` with `≤` a preorder, `S ⊆ W`, `V`
+hereditary, `⊥` forced nowhere, and
+
+    x ⊩ ◯φ   ⟺   ∀ y ≥ x, y ∈ S → y ⊩ φ.
+
+PLL is sound and complete for these models (`SubframeModel.derivable_iff_valid`,
+PROVED earlier today).  Fix a finite atom set `V`.  Write
+
+    w ≡ᵣ w'   :⟺   for every φ with crank φ ≤ r and atoms(φ) ⊆ V,
+                    w ⊩ φ ⟺ w' ⊩ φ                            (`Agree`)
+
+with `crank` the rank in which `⊃` costs 1 and `◯` costs 2
+(`SemUI.crank`).  A *layered bisimulation over `V`* (`LayeredBisim`) is a family
+`Zₙ ⊆ W × W'` with `Zₙ₊₁ ⊆ Zₙ`, `Zₙ` respecting the atoms of `V`, and for
+`w Zₙ₊₁ w'`:
+
+    w ≤ v          ⟹  ∃ v' ≥ w',          v Zₙ v'        (forth)
+    w' ≤ v'        ⟹  ∃ v ≥ w,            v Zₙ v'        (back)
+    w ≤ v, v ∈ S   ⟹  ∃ v' ≥ w', v' ∈ S', v Zₙ v'        (S-forth)
+    w' ≤ v', v' ∈ S' ⟹ ∃ v ≥ w, v ∈ S,   v Zₙ v'        (S-back)
+
+Write `w ⇄ₙ w'` when some layered bisimulation over `V` has `w Zₙ w'`.  Then
+
+    w ≡_{3n+1} w'   ⟹   w ⇄ₙ w'   ⟹   w ≡ₙ w'.
+
+The ◯-free instance: `≡°ᵣ` is agreement on ◯-free formulas, `⇄°ₙ` drops the
+two `S`-clauses (`LayeredBisimI`), and
+
+    w ≡°_{n+1} w'   ⟹   w ⇄°ₙ w'   ⟹   w ≡°ₙ w'.
+
+## 2. The refutation stage
+
+Answered from the rules, with designed cells (rule 9).
+
+* **The constraint refutations have no subframe counterpart.**  Both are moves
+  into a fallible world: in `layered_of_frag_agree_refuted` the two-point
+  chain with a fallible top agrees with a single point on every atom-free
+  formula of crank ≤ 1, but the `Rᵢ`-move to the fallible top has no partner;
+  in `pair_escape_not_from_agreement` the fork agrees with a single point on
+  every formula, but its `Rₘ`-move into its fallible branch has no partner.  Subframe models have no fallible worlds, and `◯` has no
+  second relation: its clause quantifies over `≤ ∩ S`, one relation, so a
+  bisimulation clause for `◯` is a single forth/back step that one character
+  formula can force.
+* **The new clause is needed** (`S_clause_needed`, kernel-checked).  Two
+  one-point models, the point in `S` in one and not in the other, are linked at
+  every level by the `≤`-bisimulation, and `◯⊥` (crank 2) separates them.  So
+  `⇄°` does not preserve forcing for PLL, and the `S`-step is visible to
+  formulas.
+* **The cost of the `S`-step is three ranks.**  The character of an `S`-move
+  is `θ⁺ ⊃ ◯θ⁻`; `◯θ⁻` alone is not enough, since `u ⊮ ◯θ⁻` gives an
+  `S`-point above `u` refuting `θ⁻` but says nothing of `θ⁺` there.  (The
+  record's §6 sketch guessed four ranks.)
+
+No cell refuted the statement, and the proof below then went through as
+sketched.
+
+## 3. The proof
+
+Let `L` list representatives of the formulas of crank ≤ r over `V` up to
+interderivability (`SemUI.frag_reps_exist'`, PROVED 2026-07-20).
+Interderivable formulas are forced at the same worlds (soundness), so
+agreement on `L` is agreement at crank `r` (`agree_of_reps`).  For a world `v`
+put
+
+    θ⁺ := ⋀ { D ∈ L | v ⊩ D },      θ⁻ := ⋁ { D ∈ L | v ⊮ D }.
+
+`v ⊩ θ⁺` and `v ⊮ θ⁻`, since `⊥` is forced nowhere.  A world forcing `θ⁺` and
+refuting `θ⁻` agrees with `v` on `L` (`agree_of_char`).
+
+* *Forth.*  If `u ≤ v` then `u ⊮ θ⁺ ⊃ θ⁻`, which has crank ≤ r + 1.  If
+  `u ≡_{r+1} u'` then `u' ⊮ θ⁺ ⊃ θ⁻`, so some `v' ≥ u'` forces `θ⁺` and
+  refutes `θ⁻`, and `v ≡ᵣ v'`.
+* *S-forth.*  If `u ≤ v ∈ S` then `u ⊮ θ⁺ ⊃ ◯θ⁻` (witness `v` itself), of
+  crank ≤ r + 3.  If `u ≡_{r+3} u'` then some `x ≥ u'` forces `θ⁺` and some
+  `y ≥ x` in `S` refutes `θ⁻`; `y` forces `θ⁺` by persistence, so `v ≡ᵣ y`.
+* *Back, S-back* by symmetry of `≡`.
+
+So `Zₙ := ≡_{3n+1}` is a layered bisimulation (`agreeBisim`); the `+1` pays for
+`⋀ [] = ⊤`, of crank 1.  The converse is induction on formulas
+(`LayeredBisim.force_iff`): `⊃` uses forth/back, `◯` uses S-forth/S-back.
+
+For the ◯-free instance the representatives must be ◯-free.  `eraseBox`
+replaces each `◯ψ` by `⊤`; in the same model with `S` emptied (`noS`) every
+`◯`-formula holds, so a formula and its erasure are forced at the same worlds,
+and a ◯-free formula is forced in `noS` exactly where it is forced in the
+model.  Hence an erased representative still represents
+(`force_iff_eraseBox_of_interd`), and `Zₙ := ≡°_{n+1}` is a ◯-free layered
+bisimulation (`agreeBisimI`).
+
+## 4. What this does to the route
+
+The route in the subframe semantics, step by step:
+
+| step | statement | status |
+|---|---|---|
+| 1 | fragment finiteness up to interderivability | PROVED (`SemUI.frag_reps_exist'`; syntactic, so semantics-free) |
+| 2 | agreement ⟹ layered bisimulation | PROVED today (`layered_of_agree`) |
+| 3 | amalgamation from a layered link | OPEN in the subframe semantics |
+| 4 | the `∀`-side gluing (Visser's push-down) | OPEN |
+| 5 | assembly: semantic quantifiers definable ⟹ uniform interpolation | OPEN; completeness for subframe models is PROVED |
+
+Step 3 needs its own proof: `LayeredAmalg.amalgamationE` is for constraint
+models and consumes the escape-form link, which has no subframe analogue.  The
+§6 sketch of the record: an `S`-point of the amalgam pairs an `S`-point of `M`
+with a reflexive theory and refutes in place every `◯ξ` it lacks.  The level
+it needs is not yet known; any level linear in the depth suffices for step 5,
+since step 1 holds at every crank.  Steps 3 to 5 also need the invariance of
+p-free formulas under a full subframe bisimulation, not yet stated (easy).
+
+This is a route to uniform interpolation for PLL itself: the subframe
+semantics is complete, so a uniform interpolant proved semantically there is
+one for derivability.  It does not address `SemExDefinable`, which quantifies
+over constraint models.
+
+## 5. Reproduce
+
+    lake build LaxLogic.PLL.SemUI.SubframeLayered
+
+About 15 seconds on top of the built dependencies.  The `#guard_msgs` pins
+were watched failing (the pin of `S_clause_needed` first asserted
+`[propext]`; the kernel reports no axioms).
