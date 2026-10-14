@@ -213,9 +213,9 @@ theorem dep_lt {X : Finset PLLFormula} (hX : SubClosed X) {k k' : K.W}
     rw [← hEq] at hm
     exact (Finset.mem_filter.mp hm).2.2 hf
 
-/-- A world refuting `φ ⊃ ψ` has a successor forcing `φ` and refuting `ψ`. -/
+/-- A world refuting `φ ↠ ψ` has a successor forcing `φ` and refuting `ψ`. -/
 theorem exists_of_not_force_imp {K : SubframeModel} {k : K.W} {φ ψ : PLLFormula}
-    (hn : ¬ K.force k (φ.ifThen ψ)) :
+    (hn : ¬ K.force k (φ ↠ ψ)) :
     ∃ k₂, K.le k k₂ ∧ K.force k₂ φ ∧ ¬ K.force k₂ ψ := by
   by_contra hc
   refine hn fun v hv hf => ?_
@@ -224,7 +224,7 @@ theorem exists_of_not_force_imp {K : SubframeModel} {k : K.W} {φ ψ : PLLFormul
 
 /-- A world refuting `◯ξ` has an `S`-point above it refuting `ξ`. -/
 theorem exists_of_not_force_box {K : SubframeModel} {k : K.W} {ξ : PLLFormula}
-    (hn : ¬ K.force k ξ.somehow) :
+    (hn : ¬ K.force k (◯ξ)) :
     ∃ s, K.le k s ∧ s ∈ K.S ∧ ¬ K.force s ξ := by
   by_contra hc
   refine hn fun v hv hS => ?_

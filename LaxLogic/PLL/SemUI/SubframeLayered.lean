@@ -35,9 +35,9 @@ The characters.  Let `L` list representatives of the formulas of crank ≤ r
 over `V` up to interderivability (`SemUI.frag_reps_exist'`).  For a world
 `v`, put `θ⁺ := ⋀ {D ∈ L | v ⊩ D}` and `θ⁻ := ⋁ {D ∈ L | v ⊮ D}`.  Then
 
-* `u ≤ v` gives `u ⊮ θ⁺ ⊃ θ⁻`, of crank ≤ r + 1; a world `u'` refuting it has
+* `u ≤ v` gives `u ⊮ θ⁺ ↠ θ⁻`, of crank ≤ r + 1; a world `u'` refuting it has
   some `v' ≥ u'` with the same `L`-type as `v` (`≤`-forth);
-* `u ≤ v ∈ S` gives `u ⊮ θ⁺ ⊃ ◯θ⁻`, of crank ≤ r + 3; a world `u'` refuting
+* `u ≤ v ∈ S` gives `u ⊮ θ⁺ ↠ ◯θ⁻`, of crank ≤ r + 3; a world `u'` refuting
   it has some `v' ≥ u'` in `S` with the same `L`-type as `v` (`S`-forth; the
   `S`-point is reached through persistence of `θ⁺`).
 
@@ -213,8 +213,8 @@ theorem force_bigOr_iff (M : SubframeModel) (x : M.W) :
       simp
 
 /-- Interderivable formulas are forced at the same worlds. -/
-theorem force_iff_of_interd {φ D : PLLFormula} (h₁ : Nonempty (LaxND [φ] D))
-    (h₂ : Nonempty (LaxND [D] φ)) (M : SubframeModel) (x : M.W) :
+theorem force_iff_of_interd {φ D : PLLFormula} (h₁ : Nonempty ([φ] ⊢ D))
+    (h₂ : Nonempty ([D] ⊢ φ)) (M : SubframeModel) (x : M.W) :
     M.force x φ ↔ M.force x D := by
   obtain ⟨d₁⟩ := h₁
   obtain ⟨d₂⟩ := h₂
@@ -277,7 +277,7 @@ theorem force_noS_of_boxFree (M : SubframeModel) :
 
 /-- An erased representative of a ◯-free formula still represents it. -/
 theorem force_iff_eraseBox_of_interd {φ D : PLLFormula} (hφ : boxFree φ = true)
-    (h₁ : Nonempty (LaxND [φ] D)) (h₂ : Nonempty (LaxND [D] φ))
+    (h₁ : Nonempty ([φ] ⊢ D)) (h₂ : Nonempty ([D] ⊢ φ))
     (M : SubframeModel) (x : M.W) :
     M.force x φ ↔ M.force x (eraseBox D) :=
   (force_noS_of_boxFree M φ hφ x).symm.trans
@@ -320,7 +320,7 @@ theorem AgreeI.mono {V : Finset String} {r s : Nat} (hrs : r ≤ s)
 /-- Agreement on a representative list is agreement on the fragment. -/
 theorem agree_of_reps {V : Finset String} {r : Nat} {L : List PLLFormula}
     (hL : ∀ φ : PLLFormula, crank φ ≤ r → (∀ a ∈ φ.atoms, a ∈ V) →
-      ∃ D ∈ L, Nonempty (LaxND [φ] D) ∧ Nonempty (LaxND [D] φ))
+      ∃ D ∈ L, Nonempty ([φ] ⊢ D) ∧ Nonempty ([D] ⊢ φ))
     {w : M.W} {w' : N.W} (h : ∀ D ∈ L, (M.force w D ↔ N.force w' D)) :
     Agree M N V r w w' := by
   intro φ hc ha
@@ -331,7 +331,7 @@ theorem agree_of_reps {V : Finset String} {r : Nat} {L : List PLLFormula}
 /-- The ◯-free form: agreement on the erased representatives. -/
 theorem agreeI_of_reps {V : Finset String} {r : Nat} {L : List PLLFormula}
     (hL : ∀ φ : PLLFormula, crank φ ≤ r → (∀ a ∈ φ.atoms, a ∈ V) →
-      ∃ D ∈ L, Nonempty (LaxND [φ] D) ∧ Nonempty (LaxND [D] φ))
+      ∃ D ∈ L, Nonempty ([φ] ⊢ D) ∧ Nonempty ([D] ⊢ φ))
     {w : M.W} {w' : N.W}
     (h : ∀ D ∈ L.map eraseBox, (M.force w D ↔ N.force w' D)) :
     AgreeI M N V r w w' := by
@@ -363,12 +363,12 @@ theorem mem_negL {L : List PLLFormula} {v : M.W} {D : PLLFormula} :
     D ∈ negL M L v ↔ D ∈ L ∧ ¬ M.force v D := by
   simp [negL]
 
-/-- `θ⁺ ⊃ θ⁻`, the `≤`-character of `v` over `L`. -/
+/-- `θ⁺ ↠ θ⁻`, the `≤`-character of `v` over `L`. -/
 noncomputable def charImp (M : SubframeModel) (L : List PLLFormula) (v : M.W) :
     PLLFormula :=
   (bigAnd (posL M L v)).ifThen (bigOr (negL M L v))
 
-/-- `θ⁺ ⊃ ◯θ⁻`, the `S`-character of `v` over `L`. -/
+/-- `θ⁺ ↠ ◯θ⁻`, the `S`-character of `v` over `L`. -/
 noncomputable def charBox (M : SubframeModel) (L : List PLLFormula) (v : M.W) :
     PLLFormula :=
   (bigAnd (posL M L v)).ifThen (bigOr (negL M L v)).somehow
@@ -737,8 +737,7 @@ def ptBisimI : LayeredBisimI (fun _ => True) (pt True) (pt False) where
 by a `≤`-bisimulation, yet `◯⊥` (crank 2) separates them. -/
 theorem S_clause_needed :
     (∀ n, ptBisimI.Z n () ()) ∧
-      ¬ ((pt True).force () (.somehow .falsePLL) ↔
-        (pt False).force () (.somehow .falsePLL)) := by
+      ¬ ((pt True).force () (◯⊥) ↔ (pt False).force () (◯⊥)) := by
   refine ⟨fun _ => trivial, fun h => ?_⟩
   have hF : (pt False).force () (.somehow .falsePLL) :=
     fun _ _ hS => False.elim hS

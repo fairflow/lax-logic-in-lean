@@ -7,7 +7,7 @@ The assembly of the semantic route in the subframe semantics.  For every
 formula `φ` and atom `p` there is a formula `ψ` (written `∃p φ`) in the atoms
 of `φ` other than `p` with
 
-    ⊢ φ ⊃ ψ,      and for every p-free χ:   ⊢ φ ⊃ χ  ⟹  ⊢ ψ ⊃ χ.
+    ⊢ φ ↠ ψ,      and for every p-free χ:   ⊢ φ ↠ χ  ⟹  ⊢ ψ ↠ χ.
 
 (`uniform_ex`).  The ◯-free instance, Pitts's `∃p` for IPC read inside PLL,
 comes first (`uniform_exI`, rule 8).
@@ -16,19 +16,19 @@ The interpolant.  Put `X` the subformulas of `φ` together with `⊥`, `V` the
 atoms of `φ` other than `p`, `L := 3·ν(X) + 2` the level of the amalgamation
 lemma and `r := 3L + 1` the crank at which agreement gives a level-`L` link
 (step 2).  Then `∃p φ` is the conjunction of the representatives `D` of crank
-≤ `r + 1` over `V` (`SemUI.frag_reps_exist'`) with `⊢ φ ⊃ D`.
+≤ `r + 1` over `V` (`SemUI.frag_reps_exist'`) with `⊢ φ ↠ D`.
 
 The proof that `∃p φ ⊢ χ`: let `w` force `∃p φ` in a subframe model, and let
-`θ⁺ ⊃ θ⁻` be the character of `w` over the representatives of crank ≤ `r`.
+`θ⁺ ↠ θ⁻` be the character of `w` over the representatives of crank ≤ `r`.
 
-1. `⊬ φ ⊃ (θ⁺ ⊃ θ⁻)`: otherwise a representative of that crank-`(r+1)`
+1. `⊬ φ ↠ (θ⁺ ↠ θ⁻)`: otherwise a representative of that crank-`(r+1)`
    formula is a conjunct of `∃p φ`, so `w` forces it, which `w` cannot.
 2. Completeness gives a world `k ⊩ φ` with the same `r`-type as `w`.
 3. Step 2 links `k` and `w` at level `L` (`layered_of_agree`).
 4. Step 3 gives a `p`-variant of `w`'s model whose copy of `w` agrees with
    `k` on `X`, so forces `φ`, so forces `χ` (`amalgamation`).
 5. `χ` is `p`-free, so `w ⊩ χ` (`PBisim.force_iff`); completeness gives
-   `⊢ ∃p φ ⊃ χ`.
+   `⊢ ∃p φ ↠ χ`.
 
 The size of `L` affects only the crank of the fragment, hence the size of
 `∃p φ`, not its existence.
@@ -38,27 +38,27 @@ The size of `L` affects only the crank of the fragment, hence the size of
 For every `φ` and `p` there is a formula `ψ` (written `∀p φ`) in the atoms of
 `φ` other than `p` with
 
-    ⊢ ψ ⊃ φ,      and for every p-free χ:   ⊢ χ ⊃ φ  ⟹  ⊢ χ ⊃ ψ
+    ⊢ ψ ↠ φ,      and for every p-free χ:   ⊢ χ ↠ φ  ⟹  ⊢ χ ↠ ψ
 
 (`uniform_all`; ◯-free instance `uniform_allI` first).  Semantically the two
 sides do not depend on each other.  With `R` the representatives of crank ≤
-`r` over `V` and, for `T ⊆ R`, `char(T) := ⋀T ⊃ ⋁(R ∖ T)` (`charT`), which a
+`r` over `V` and, for `T ⊆ R`, `char(T) := ⋀T ↠ ⋁(R ∖ T)` (`charT`), which a
 world refutes exactly when some world above it has `R`-type exactly `T`
 (`type_of_char`),
 
-    ∀p φ  :=  ⋀ { char(T)  |  T ⊆ R,  ⊬ ⋀T ⊃ (⋁(R ∖ T) ∨ φ) }.
+    ∀p φ  :=  ⋀ { char(T)  |  T ⊆ R,  ⊬ ⋀T ↠ (⋁(R ∖ T) ∨ φ) }.
 
 The side condition says that some world of type `T` refutes `φ` (Litak and
 Visser's `Θ⁺ ⊬ Θ⁻ ∨ φ`).
 
-* `⊢ ∀p φ ⊃ φ` needs no amalgamation: a world `w` refuting `φ` qualifies its
+* `⊢ ∀p φ ↠ φ` needs no amalgamation: a world `w` refuting `φ` qualifies its
   own type `T`, so it forces `char(T)` while having type `T`, which is
   impossible.
-* `⊢ χ ⊃ φ` gives `⊢ χ ⊃ ∀p φ`: if `w ⊩ χ` refutes `char(T)`, some `v ≥ w`
+* `⊢ χ ↠ φ` gives `⊢ χ ↠ ∀p φ`: if `w ⊩ χ` refutes `char(T)`, some `v ≥ w`
   has type `T`; a countermodel world `k` has type `T` and refutes `φ`; step 2
   links `k` and `v`, step 3 gives a `p`-variant of `v` agreeing with `k` on
   `X`, which refutes `φ` and forces `χ` (persistence and invariance): a
-  contradiction with `⊢ χ ⊃ φ`.
+  contradiction with `⊢ χ ↠ φ`.
 -/
 
 open PLLFormula
@@ -149,7 +149,7 @@ theorem boxFree_of_mem_subF :
 /-- The atoms of `{⊥} ∪ subF φ` other than `p` are atoms of `φ` other than
 `p`. -/
 theorem protect (φ : PLLFormula) (p : String) :
-    ∀ a, a ≠ p → PLLFormula.prop a ∈ insert PLLFormula.falsePLL (subF φ) →
+    ∀ a, a ≠ p → PLLFormula.prop a ∈ insert ⊥ (subF φ) →
       a ∈ φ.atoms.erase p := by
   intro a ha h
   rcases Finset.mem_insert.mp h with h | h
@@ -157,7 +157,7 @@ theorem protect (φ : PLLFormula) (p : String) :
   · exact Finset.mem_erase.mpr ⟨ha, atoms_of_mem_subF h a (by simp)⟩
 
 /-- A world refuting a formula exists when the formula is not derivable. -/
-theorem exists_countermodel {θ : PLLFormula} (h : ¬ Nonempty (LaxND [] θ)) :
+theorem exists_countermodel {θ : PLLFormula} (h : [] ⊬ θ) :
     ∃ (K : SubframeModel) (k : K.W), ¬ K.force k θ := by
   by_contra hc
   exact h (derivable_iff_valid.mpr fun K k => by
@@ -174,7 +174,7 @@ theorem mem_compl {R T : List PLLFormula} {D : PLLFormula} :
     D ∈ compl R T ↔ D ∈ R ∧ D ∉ T := by
   simp [compl]
 
-/-- `⋀T ⊃ ⋁(R ∖ T)`: refuted exactly above a world whose `R`-type is `T`. -/
+/-- `⋀T ↠ ⋁(R ∖ T)`: refuted exactly above a world whose `R`-type is `T`. -/
 noncomputable def charT (R T : List PLLFormula) : PLLFormula :=
   (bigAnd T).ifThen (bigOr (compl R T))
 
@@ -205,8 +205,7 @@ theorem posL_mem_sublists (M : SubframeModel) (R : List PLLFormula) (w : M.W) :
 /-- A world qualifies its own type when it refutes `φ`. -/
 theorem good_posL {M : SubframeModel} {R : List PLLFormula} {w : M.W}
     {φ : PLLFormula} (hφ : ¬ M.force w φ) :
-    ¬ Nonempty (LaxND [] ((bigAnd (posL M R w)).ifThen
-      ((bigOr (compl R (posL M R w))).or φ))) := by
+    [] ⊬ bigAnd (posL M R w) ↠ bigOr (compl R (posL M R w)) ∨ φ := by
   rintro ⟨d⟩
   have h := SubframeModel.soundness d M w (by simp) w (M.refl w) (force_pos M R w)
   rcases h with h | h
@@ -223,12 +222,12 @@ attribute [local instance] Classical.propDecidable
 
 /-- **The `∃`-side of uniform interpolation, ◯-free instance.**  For a
 ◯-free `φ` there is a ◯-free `ψ` in the atoms of `φ` other than `p` with
-`⊢ φ ⊃ ψ` and `⊢ ψ ⊃ χ` for every ◯-free `p`-free `χ` with `⊢ φ ⊃ χ`. -/
+`⊢ φ ↠ ψ` and `⊢ ψ ↠ χ` for every ◯-free `p`-free `χ` with `⊢ φ ↠ χ`. -/
 theorem uniform_exI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true) :
     ∃ ψ : PLLFormula, boxFree ψ = true ∧ (∀ a ∈ ψ.atoms, a ∈ φ.atoms ∧ a ≠ p) ∧
-      Nonempty (LaxND [] (φ.ifThen ψ)) ∧
+      Nonempty ([] ⊢ φ ↠ ψ) ∧
       ∀ χ : PLLFormula, boxFree χ = true → p ∉ χ.atoms →
-        Nonempty (LaxND [] (φ.ifThen χ)) → Nonempty (LaxND [] (ψ.ifThen χ)) := by
+        Nonempty ([] ⊢ φ ↠ χ) → Nonempty ([] ⊢ ψ ↠ χ) := by
   have hX : SubClosed (insert PLLFormula.falsePLL (subF φ)) :=
     subClosed_insert_bot_subF φ
   have hX0 : ∀ ψ ∈ insert PLLFormula.falsePLL (subF φ), boxFree ψ = true := by
@@ -301,13 +300,13 @@ theorem uniform_exI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true) :
 /-! ## PLL -/
 
 /-- **The `∃`-side of uniform interpolation for PLL.**  For every `φ` and `p`
-there is a `ψ` in the atoms of `φ` other than `p` with `⊢ φ ⊃ ψ` and
-`⊢ ψ ⊃ χ` for every `p`-free `χ` with `⊢ φ ⊃ χ`. -/
+there is a `ψ` in the atoms of `φ` other than `p` with `⊢ φ ↠ ψ` and
+`⊢ ψ ↠ χ` for every `p`-free `χ` with `⊢ φ ↠ χ`. -/
 theorem uniform_ex (p : String) (φ : PLLFormula) :
     ∃ ψ : PLLFormula, (∀ a ∈ ψ.atoms, a ∈ φ.atoms ∧ a ≠ p) ∧
-      Nonempty (LaxND [] (φ.ifThen ψ)) ∧
+      Nonempty ([] ⊢ φ ↠ ψ) ∧
       ∀ χ : PLLFormula, p ∉ χ.atoms →
-        Nonempty (LaxND [] (φ.ifThen χ)) → Nonempty (LaxND [] (ψ.ifThen χ)) := by
+        Nonempty ([] ⊢ φ ↠ χ) → Nonempty ([] ⊢ ψ ↠ χ) := by
   have hX : SubClosed (insert PLLFormula.falsePLL (subF φ)) :=
     subClosed_insert_bot_subF φ
   obtain ⟨R, hRb, hR⟩ := frag_reps_exist' (φ.atoms.erase p)
@@ -359,12 +358,12 @@ theorem uniform_ex (p : String) (φ : PLLFormula) :
 
 /-- **The `∀`-side of uniform interpolation, ◯-free instance.**  For a
 ◯-free `φ` there is a ◯-free `ψ` in the atoms of `φ` other than `p` with
-`⊢ ψ ⊃ φ` and `⊢ χ ⊃ ψ` for every ◯-free `p`-free `χ` with `⊢ χ ⊃ φ`. -/
+`⊢ ψ ↠ φ` and `⊢ χ ↠ ψ` for every ◯-free `p`-free `χ` with `⊢ χ ↠ φ`. -/
 theorem uniform_allI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true) :
     ∃ ψ : PLLFormula, boxFree ψ = true ∧ (∀ a ∈ ψ.atoms, a ∈ φ.atoms ∧ a ≠ p) ∧
-      Nonempty (LaxND [] (ψ.ifThen φ)) ∧
+      Nonempty ([] ⊢ ψ ↠ φ) ∧
       ∀ χ : PLLFormula, boxFree χ = true → p ∉ χ.atoms →
-        Nonempty (LaxND [] (χ.ifThen φ)) → Nonempty (LaxND [] (χ.ifThen ψ)) := by
+        Nonempty ([] ⊢ χ ↠ φ) → Nonempty ([] ⊢ χ ↠ ψ) := by
   have hX : SubClosed (insert PLLFormula.falsePLL (subF φ)) :=
     subClosed_insert_bot_subF φ
   have hX0 : ∀ ψ ∈ insert PLLFormula.falsePLL (subF φ), boxFree ψ = true := by
@@ -433,13 +432,13 @@ theorem uniform_allI (p : String) (φ : PLLFormula) (hφ : boxFree φ = true) :
 /-! ## The `∀`-side for PLL -/
 
 /-- **The `∀`-side of uniform interpolation for PLL.**  For every `φ` and `p`
-there is a `ψ` in the atoms of `φ` other than `p` with `⊢ ψ ⊃ φ` and
-`⊢ χ ⊃ ψ` for every `p`-free `χ` with `⊢ χ ⊃ φ`. -/
+there is a `ψ` in the atoms of `φ` other than `p` with `⊢ ψ ↠ φ` and
+`⊢ χ ↠ ψ` for every `p`-free `χ` with `⊢ χ ↠ φ`. -/
 theorem uniform_all (p : String) (φ : PLLFormula) :
     ∃ ψ : PLLFormula, (∀ a ∈ ψ.atoms, a ∈ φ.atoms ∧ a ≠ p) ∧
-      Nonempty (LaxND [] (ψ.ifThen φ)) ∧
+      Nonempty ([] ⊢ ψ ↠ φ) ∧
       ∀ χ : PLLFormula, p ∉ χ.atoms →
-        Nonempty (LaxND [] (χ.ifThen φ)) → Nonempty (LaxND [] (χ.ifThen ψ)) := by
+        Nonempty ([] ⊢ χ ↠ φ) → Nonempty ([] ⊢ χ ↠ ψ) := by
   have hX : SubClosed (insert PLLFormula.falsePLL (subF φ)) :=
     subClosed_insert_bot_subF φ
   obtain ⟨R, hRb, hR⟩ := frag_reps_exist' (φ.atoms.erase p)

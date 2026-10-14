@@ -218,7 +218,7 @@ theorem toConstraint_force (M : SubframeModel) :
 
 /-- **Soundness for subframe models**, through the constraint-model
 translation and the existing `soundness`. -/
-theorem soundness {Γ : List PLLFormula} {φ : PLLFormula} (p : LaxND Γ φ)
+theorem soundness {Γ : List PLLFormula} {φ : PLLFormula} (p : Γ ⊢ φ)
     (M : SubframeModel) (x : M.W) (hΓ : ∀ χ ∈ Γ, M.force x χ) :
     M.force x φ :=
   (toConstraint_force M φ x).mp
@@ -325,7 +325,7 @@ non-theorem has a finite constraint countermodel, its refuting world is not
 fallible, and `toSubframe` keeps the refutation. -/
 theorem completeness {φ : PLLFormula}
     (h : ∀ (M : SubframeModel) (x : M.W), M.force x φ) :
-    Nonempty (LaxND [] φ) := by
+    Nonempty ([] ⊢ φ) := by
   by_contra hn
   obtain ⟨C, hfin, w, hw⟩ := not_provable_iff_exists_finite_countermodel.mp hn
   have hwF : w ∉ C.F := fun hF => hw (C.force_of_fallible hF)
@@ -333,7 +333,7 @@ theorem completeness {φ : PLLFormula}
 
 /-- **PLL is the logic of subframe models.** -/
 theorem derivable_iff_valid {φ : PLLFormula} :
-    Nonempty (LaxND [] φ) ↔ ∀ (M : SubframeModel) (x : M.W), M.force x φ :=
+    Nonempty ([] ⊢ φ) ↔ ∀ (M : SubframeModel) (x : M.W), M.force x φ :=
   ⟨fun ⟨p⟩ M x => soundness p M x (by simp), completeness⟩
 
 end SubframeModel
