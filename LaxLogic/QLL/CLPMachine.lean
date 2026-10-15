@@ -833,17 +833,17 @@ inductive ExpandAt (isC : String → Bool) (Θ : Program) (ok : Form → Prop) :
       ExpandAt isC Θ ok 0 c (.hole (.and A B)) (.andI (.hole A) (.hole B)) c
   | orL {c : Form} {A B : Form} : ExpandAt isC Θ ok 0 c (.hole (.or A B)) (.orL (.hole A)) c
   | orR {c : Form} {A B : Form} : ExpandAt isC Θ ok 0 c (.hole (.or A B)) (.orR (.hole B)) c
-  | ex {c : Form} {A : Form} (t : Tm) : Tm.lcAt 0 t →
-      ExpandAt isC Θ ok 0 c (.hole (.exists_ A)) (.exI t (.hole (A.openAt 0 t))) c
-  | clause {c : Form} {cl : Clause} (w : Nat) (ts : List Tm) :
+  | ex {c : Form} {A B : Form} (t : Tm) : Tm.lcAt 0 t → B = A.openAt 0 t →
+      ExpandAt isC Θ ok 0 c (.hole (.exists_ A)) (.exI t (.hole B)) c
+  | clause {c : Form} {cl : Clause} {P : String} {us : List Tm} {B : Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = false → ts.length = cl.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      ExpandAt isC Θ ok 0 c (.hole (.pred cl.head (Tm.instAllList ts (headVars cl.arity))))
-        (.clause w ts (.hole (Form.instAll ts cl.body))) c
+      P = cl.head → us = Tm.instAllList ts (headVars cl.arity) → B = Form.instAll ts cl.body →
+      ExpandAt isC Θ ok 0 c (.hole (.pred P us)) (.clause w ts (.hole B)) c
   | andL {i : Nat} {c c' : Form} {p p' q : PTree} :
       ExpandAt isC Θ ok i c p p' c' → ExpandAt isC Θ ok i c (.andI p q) (.andI p' q) c'
-  | andR {i : Nat} {c c' : Form} {p q q' : PTree} :
-      ExpandAt isC Θ ok i c q q' c' →
-      ExpandAt isC Θ ok (p.opens.length + i) c (.andI p q) (.andI p q') c'
+  | andR {i j : Nat} {c c' : Form} {p q q' : PTree} :
+      ExpandAt isC Θ ok i c q q' c' → j = p.opens.length + i →
+      ExpandAt isC Θ ok j c (.andI p q) (.andI p q') c'
   | inOrL {i : Nat} {c c' : Form} {p p' : PTree} :
       ExpandAt isC Θ ok i c p p' c' → ExpandAt isC Θ ok i c (.orL p) (.orL p') c'
   | inOrR {i : Nat} {c c' : Form} {p p' : PTree} :
@@ -861,10 +861,10 @@ theorem ExpandAt.toExpand {i : Nat} {c c' : Form} {p p' : PTree}
   | and => exact .and
   | orL => exact .orL
   | orR => exact .orR
-  | ex t ht => exact .ex t ht rfl
-  | clause w ts hc hm hlen hts => exact .clause w ts hc hm hlen hts rfl rfl rfl
+  | ex t ht hB => exact .ex t ht hB
+  | clause w ts hc hm hlen hts hP hus hB => exact .clause w ts hc hm hlen hts hP hus hB
   | andL _ ih => exact .andL ih
-  | andR _ ih => exact .andR ih
+  | andR _ _ ih => exact .andR ih
   | inOrL _ ih => exact .inOrL ih
   | inOrR _ ih => exact .inOrR ih
   | inEx _ ih => exact .inEx ih
@@ -878,11 +878,10 @@ theorem Expand.exists_at {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p 
   | and => exact ⟨0, .and⟩
   | orL => exact ⟨0, .orL⟩
   | orR => exact ⟨0, .orR⟩
-  | ex t ht hB => subst hB; exact ⟨0, .ex t ht⟩
-  | clause w ts hc hm hlen hts hP hus hB =>
-      subst hP hus hB; exact ⟨0, .clause w ts hc hm hlen hts⟩
+  | ex t ht hB => exact ⟨0, .ex t ht hB⟩
+  | clause w ts hc hm hlen hts hP hus hB => exact ⟨0, .clause w ts hc hm hlen hts hP hus hB⟩
   | andL _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .andL hi⟩
-  | andR _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨_, .andR hi⟩
+  | andR _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨_, .andR hi rfl⟩
   | inOrL _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .inOrL hi⟩
   | inOrR _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .inOrR hi⟩
   | inEx _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .inEx hi⟩
@@ -901,16 +900,17 @@ theorem ExpandAt.delta {i : Nat} {c c' : Form} {p p' : PTree}
   | and => exact Or.inl ⟨rfl, fun _ => .and⟩
   | orL => exact Or.inl ⟨rfl, fun _ => .orL⟩
   | orR => exact Or.inl ⟨rfl, fun _ => .orR⟩
-  | ex t ht => exact Or.inl ⟨rfl, fun _ => .ex t ht⟩
-  | clause w ts hc hm hlen hts => exact Or.inl ⟨rfl, fun _ => .clause w ts hc hm hlen hts⟩
+  | ex t ht hB => exact Or.inl ⟨rfl, fun _ => .ex t ht hB⟩
+  | clause w ts hc hm hlen hts hP hus hB =>
+      exact Or.inl ⟨rfl, fun _ => .clause w ts hc hm hlen hts hP hus hB⟩
   | andL _ ih =>
       rcases ih with ⟨rfl, hd⟩ | ⟨B, ts, rfl, hd⟩
       · exact Or.inl ⟨rfl, fun d => .andL (hd d)⟩
       · exact Or.inr ⟨B, ts, rfl, fun d => .andL (hd d)⟩
-  | andR _ ih =>
+  | andR _ hj ih =>
       rcases ih with ⟨rfl, hd⟩ | ⟨B, ts, rfl, hd⟩
-      · exact Or.inl ⟨rfl, fun d => .andR (hd d)⟩
-      · exact Or.inr ⟨B, ts, rfl, fun d => .andR (hd d)⟩
+      · exact Or.inl ⟨rfl, fun d => .andR (hd d) hj⟩
+      · exact Or.inr ⟨B, ts, rfl, fun d => .andR (hd d) hj⟩
   | inOrL _ ih =>
       rcases ih with ⟨rfl, hd⟩ | ⟨B, ts, rfl, hd⟩
       · exact Or.inl ⟨rfl, fun d => .inOrL (hd d)⟩
@@ -960,26 +960,29 @@ theorem ExpandAt.diamond {i j : Nat} {c c₁ c₂ : Form} {p p₁ p₂ : PTree}
       | andL h₂' =>
           obtain ⟨p₃, c₃, c₃', i', j', e₁, e₂, hpe⟩ := ih h₂' hij
           exact ⟨.andI p₃ q, c₃, c₃', i', j', .andL e₁, .andL e₂, hpe⟩
-      | andR h₂' =>
+      | andR h₂' hj₂ =>
+          subst hj₂
           rcases h₁'.delta with ⟨rfl, d₁⟩ | ⟨B₁, ts₁, rfl, d₁⟩ <;>
             rcases h₂'.delta with ⟨rfl, d₂⟩ | ⟨B₂, ts₂, rfl, d₂⟩
-          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _), .andL (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _), .andL (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _), .andL (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _), .andL (d₁ _), PEq.swap_leaves _ _ _⟩
-  | @andR i c c₁ p q q₁ h₁' ih =>
+          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _) rfl, .andL (d₁ _), PEq.refl _⟩
+          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _) rfl, .andL (d₁ _), PEq.refl _⟩
+          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _) rfl, .andL (d₁ _), PEq.refl _⟩
+          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _) rfl, .andL (d₁ _), PEq.swap_leaves _ _ _⟩
+  | @andR i k c c₁ p q q₁ h₁' hk ih =>
+      subst hk
       cases h₂ with
       | andL h₂' =>
           rcases h₁'.delta with ⟨rfl, d₁⟩ | ⟨B₁, ts₁, rfl, d₁⟩ <;>
             rcases h₂'.delta with ⟨rfl, d₂⟩ | ⟨B₂, ts₂, rfl, d₂⟩
-          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _), PEq.swap_leaves _ _ _⟩
-      | andR h₂' =>
+          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _) rfl, PEq.refl _⟩
+          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _) rfl, PEq.refl _⟩
+          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _) rfl, PEq.refl _⟩
+          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _) rfl, PEq.swap_leaves _ _ _⟩
+      | andR h₂' hj₂ =>
+          subst hj₂
           obtain ⟨p₃, c₃, c₃', i', j', e₁, e₂, hpe⟩ :=
             ih h₂' (fun hh => hij (congrArg (p.opens.length + ·) hh))
-          exact ⟨.andI p p₃, c₃, c₃', _, _, .andR e₁, .andR e₂, hpe⟩
+          exact ⟨.andI p p₃, c₃, c₃', _, _, .andR e₁ rfl, .andR e₂ rfl, hpe⟩
   | inOrL h₁' ih =>
       cases h₂ with
       | inOrL h₂' =>
