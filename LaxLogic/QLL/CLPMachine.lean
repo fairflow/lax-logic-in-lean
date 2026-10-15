@@ -154,12 +154,12 @@ inductive Expand (isC : String → Bool) (Θ : Program) (ok : Form → Prop) :
       Expand isC Θ ok c (.hole (.and A B)) (.andI (.hole A) (.hole B)) c
   | orL {c : Form} {A B : Form} : Expand isC Θ ok c (.hole (.or A B)) (.orL (.hole A)) c
   | orR {c : Form} {A B : Form} : Expand isC Θ ok c (.hole (.or A B)) (.orR (.hole B)) c
-  | ex {c : Form} {A : Form} (t : Tm) : Tm.lcAt 0 t →
-      Expand isC Θ ok c (.hole (.exists_ A)) (.exI t (.hole (A.openAt 0 t))) c
-  | clause {c : Form} {cl : Clause} (w : Nat) (ts : List Tm) :
+  | ex {c : Form} {A B : Form} (t : Tm) : Tm.lcAt 0 t → B = A.openAt 0 t →
+      Expand isC Θ ok c (.hole (.exists_ A)) (.exI t (.hole B)) c
+  | clause {c : Form} {cl : Clause} {P : String} {us : List Tm} {B : Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = false → ts.length = cl.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      Expand isC Θ ok c (.hole (.pred cl.head (Tm.instAllList ts (headVars cl.arity))))
-        (.clause w ts (.hole (Form.instAll ts cl.body))) c
+      P = cl.head → us = Tm.instAllList ts (headVars cl.arity) → B = Form.instAll ts cl.body →
+      Expand isC Θ ok c (.hole (.pred P us)) (.clause w ts (.hole B)) c
   | andL {c c' : Form} {p p' q : PTree} :
       Expand isC Θ ok c p p' c' → Expand isC Θ ok c (.andI p q) (.andI p' q) c'
   | andR {c c' : Form} {p q q' : PTree} :
@@ -206,8 +206,9 @@ theorem Expand.opens {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
   | and => intro l r; exact Step.and rfl rfl
   | orL => intro l r; exact Step.orL rfl rfl
   | orR => intro l r; exact Step.orR rfl rfl
-  | ex t ht => intro l r; exact Step.ex t ht rfl rfl
-  | clause w ts hc hm hlen hts => intro l r; exact Step.clause w ts hc hm hlen hts rfl rfl
+  | ex t ht hB => subst hB; intro l r; exact Step.ex t ht rfl rfl
+  | clause w ts hc hm hlen hts hP hus hB =>
+      subst hP hus hB; intro l r; exact Step.clause w ts hc hm hlen hts rfl rfl
   | @andL c₁' p₁ p₁' q₁ _ ih =>
       intro l r
       show Step isC Θ ok ⟨c, l ++ ((p₁.opens ++ q₁.opens) ++ r)⟩
@@ -262,8 +263,9 @@ theorem Expand.typed {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
   | and => intro S hp; cases hp; exact .andI (.hole _) (.hole _)
   | orL => intro S hp; cases hp; exact .orL (.hole _)
   | orR => intro S hp; cases hp; exact .orR (.hole _)
-  | ex t ht => intro S hp; cases hp; exact .exI t ht (.hole _)
-  | clause w ts hc hm hlen hts =>
+  | ex t ht hB => subst hB; intro S hp; cases hp; exact .exI t ht (.hole _)
+  | clause w ts hc hm hlen hts hP hus hB =>
+      subst hP hus hB
       intro S hp; cases hp; exact .clause w ts hc hm hlen hts (.hole _) rfl rfl
   | andL _ ih => intro S hp; cases hp with | andI h₁ h₂ => exact .andI (ih h₁) h₂
   | andR _ ih => intro S hp; cases hp with | andI h₁ h₂ => exact .andI h₁ (ih h₂)
@@ -633,10 +635,12 @@ theorem Expand.toA (q : Q) (hH : Θ.HeadsOK isC) {c c' : Form} {p p' : PTree}
   | and => exact .and
   | orL => exact .orL
   | orR => exact .orR
-  | ex t ht =>
+  | ex t ht hB =>
+      subst hB
       show ExpandA _ _ (.hole (.exists_ (Form.strip isC _))) (.exC t (.hole ((Form.openAt 0 t _).strip isC)))
       rw [Form.strip_openAt]; exact .ex t ht
-  | @clause cl w ts hc hm hlen hts =>
+  | @clause cl _ _ _ w ts hc hm hlen hts hP hus hB =>
+      subst hP hus hB
       show ExpandA _ _ (.hole ((Form.pred cl.head _).strip isC))
         (.impC w ts (.hole ((Form.instAll ts cl.body).strip isC)))
       rw [Form.strip_pred_of _ (hH cl (List.mem_of_getElem? hc)), Form.strip_instAll]
@@ -720,9 +724,9 @@ theorem PTree.lift : ∀ (p : PTree) (l₁ r₁ : List Form) {S : Form} {new : L
           | and => exact ⟨.andI (.hole _) (.hole _), .and, rfl⟩
           | orL => exact ⟨.orL (.hole _), .orL, rfl⟩
           | orR => exact ⟨.orR (.hole _), .orR, rfl⟩
-          | ex t ht => exact ⟨.exI t (.hole _), .ex t ht, rfl⟩
+          | ex t ht => exact ⟨.exI t (.hole _), .ex t ht rfl, rfl⟩
           | clause w ts hc hm hlen hts =>
-              exact ⟨.clause w ts (.hole _), .clause w ts hc hm hlen hts, rfl⟩
+              exact ⟨.clause w ts (.hole _), .clause w ts hc hm hlen hts rfl rfl rfl, rfl⟩
   | .top, l₁, _, _, _, _, _, h, _ => by
       cases l₁ with
       | nil => exact nomatch h
@@ -847,8 +851,8 @@ theorem ExpandAt.toExpand {i : Nat} {c c' : Form} {p p' : PTree}
   | and => exact .and
   | orL => exact .orL
   | orR => exact .orR
-  | ex t ht => exact .ex t ht
-  | clause w ts hc hm hlen hts => exact .clause w ts hc hm hlen hts
+  | ex t ht => exact .ex t ht rfl
+  | clause w ts hc hm hlen hts => exact .clause w ts hc hm hlen hts rfl rfl rfl
   | andL _ ih => exact .andL ih
   | andR _ ih => exact .andR ih
   | inOrL _ ih => exact .inOrL ih
@@ -864,8 +868,9 @@ theorem Expand.exists_at {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p 
   | and => exact ⟨0, .and⟩
   | orL => exact ⟨0, .orL⟩
   | orR => exact ⟨0, .orR⟩
-  | ex t ht => exact ⟨0, .ex t ht⟩
-  | clause w ts hc hm hlen hts => exact ⟨0, .clause w ts hc hm hlen hts⟩
+  | ex t ht hB => subst hB; exact ⟨0, .ex t ht⟩
+  | clause w ts hc hm hlen hts hP hus hB =>
+      subst hP hus hB; exact ⟨0, .clause w ts hc hm hlen hts⟩
   | andL _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .andL hi⟩
   | andR _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨_, .andR hi⟩
   | inOrL _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .inOrL hi⟩
@@ -999,8 +1004,8 @@ theorem Expand.noPrune {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p'
   | and => exact .and
   | orL => exact .orL
   | orR => exact .orR
-  | ex t ht => exact .ex t ht
-  | clause w ts hc hm hlen hts => exact .clause w ts hc hm hlen hts
+  | ex t ht hB => exact .ex t ht hB
+  | clause w ts hc hm hlen hts hP hus hB => exact .clause w ts hc hm hlen hts hP hus hB
   | andL _ ih => exact .andL ih
   | andR _ ih => exact .andR ih
   | inOrL _ ih => exact .inOrL ih
@@ -1016,8 +1021,8 @@ theorem Expand.of_noPrune {c c' : Form} {p p' : PTree} (h : Expand isC Θ NoPrun
   | and => exact fun _ => .and
   | orL => exact fun _ => .orL
   | orR => exact fun _ => .orR
-  | ex t ht => exact fun _ => .ex t ht
-  | clause w ts hc hm hlen hts => exact fun _ => .clause w ts hc hm hlen hts
+  | ex t ht hB => exact fun _ => .ex t ht hB
+  | clause w ts hc hm hlen hts hP hus hB => exact fun _ => .clause w ts hc hm hlen hts hP hus hB
   | andL _ ih => exact fun hc => .andL (ih hc)
   | andR _ ih => exact fun hc => .andR (ih hc)
   | inOrL _ ih => exact fun hc => .inOrL (ih hc)
