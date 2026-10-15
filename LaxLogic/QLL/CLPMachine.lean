@@ -690,11 +690,12 @@ inductive Base (isC : String → Bool) (Θ : Program) (ok : Form → Prop) :
   | and {c A B : Form} : Base isC Θ ok c (.and A B) [A, B] c
   | orL {c A B : Form} : Base isC Θ ok c (.or A B) [A] c
   | orR {c A B : Form} : Base isC Θ ok c (.or A B) [B] c
-  | ex {c A : Form} (t : Tm) : Tm.lcAt 0 t → Base isC Θ ok c (.exists_ A) [A.openAt 0 t] c
-  | clause {c : Form} {cl : Clause} (w : Nat) (ts : List Tm) :
+  | ex {c A B : Form} (t : Tm) : Tm.lcAt 0 t → B = A.openAt 0 t →
+      Base isC Θ ok c (.exists_ A) [B] c
+  | clause {c : Form} {cl : Clause} {P : String} {us : List Tm} {B : Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = false → ts.length = cl.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      Base isC Θ ok c (.pred cl.head (Tm.instAllList ts (headVars cl.arity)))
-        [Form.instAll ts cl.body] c
+      P = cl.head → us = Tm.instAllList ts (headVars cl.arity) → B = Form.instAll ts cl.body →
+      Base isC Θ ok c (.pred P us) [B] c
 
 section
 variable {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
@@ -708,9 +709,9 @@ theorem _root_.LaxLogic.QLL.Step.base {g g' : Goal} (h : Step isC Θ ok g g') :
   | orL h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .orL⟩
   | orR h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .orR⟩
   | and h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_, _], rfl, rfl, .and⟩
-  | ex t ht h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .ex t ht⟩
+  | ex t ht h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .ex t ht rfl⟩
   | clause w ts hc hm hlen hts h₁ h₂ =>
-      subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .clause w ts hc hm hlen hts⟩
+      subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .clause w ts hc hm hlen hts rfl rfl rfl⟩
 
 /-- A rule shape applied at a given open leaf of a tree is an expansion of the tree. -/
 theorem PTree.lift : ∀ (p : PTree) (l₁ r₁ : List Form) {S : Form} {new : List Form} {c c' : Form},
@@ -733,9 +734,9 @@ theorem PTree.lift : ∀ (p : PTree) (l₁ r₁ : List Form) {S : Form} {new : L
           | and => exact ⟨.andI (.hole _) (.hole _), .and, rfl⟩
           | orL => exact ⟨.orL (.hole _), .orL, rfl⟩
           | orR => exact ⟨.orR (.hole _), .orR, rfl⟩
-          | ex t ht => exact ⟨.exI t (.hole _), .ex t ht rfl, rfl⟩
-          | clause w ts hc hm hlen hts =>
-              exact ⟨.clause w ts (.hole _), .clause w ts hc hm hlen hts rfl rfl rfl, rfl⟩
+          | ex t ht hB => exact ⟨.exI t (.hole _), .ex t ht hB, rfl⟩
+          | clause w ts hc hm hlen hts hP hus hB =>
+              exact ⟨.clause w ts (.hole _), .clause w ts hc hm hlen hts hP hus hB, rfl⟩
   | .top, l₁, _, _, _, _, _, h, _ => by
       cases l₁ with
       | nil => exact nomatch h
