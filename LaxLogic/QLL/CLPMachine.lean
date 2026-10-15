@@ -467,13 +467,13 @@ inductive ExpandA (Θ : Program) (q : Q) : ATree → ATree → Prop
   | and {A B : Form} : ExpandA Θ q (.hole (.and A B)) (.andC (.hole A) (.hole B))
   | orL {A B : Form} : ExpandA Θ q (.hole (.or A B)) (.orL (.hole A))
   | orR {A B : Form} : ExpandA Θ q (.hole (.or A B)) (.orR (.hole B))
-  | ex {A : Form} (t : Tm) : Tm.lcAt 0 t →
-      ExpandA Θ q (.hole (.exists_ A)) (.exC t (.hole (A.openAt 0 t)))
-  | clause {cl : Clause} (w : Nat) (ts : List Tm) :
+  | ex {A B : Form} (t : Tm) : Tm.lcAt 0 t → B = A.openAt 0 t →
+      ExpandA Θ q (.hole (.exists_ A)) (.exC t (.hole B))
+  | clause {cl : Clause} {P : String} {us : List Tm} {B : Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = true → cl.q = q → ts.length = cl.arity →
       (∀ t ∈ ts, Tm.lcAt 0 t) →
-      ExpandA Θ q (.hole (.pred cl.head (Tm.instAllList ts (headVars cl.arity))))
-        (.impC w ts (.hole (Form.instAll ts cl.body)))
+      P = cl.head → us = Tm.instAllList ts (headVars cl.arity) → B = Form.instAll ts cl.body →
+      ExpandA Θ q (.hole (.pred P us)) (.impC w ts (.hole B))
   | andL {p p' r : ATree} : ExpandA Θ q p p' → ExpandA Θ q (.andC p r) (.andC p' r)
   | andR {p r r' : ATree} : ExpandA Θ q r r' → ExpandA Θ q (.andC p r) (.andC p r')
   | inOrL {p p' : ATree} : ExpandA Θ q p p' → ExpandA Θ q (.orL p) (.orL p')
@@ -517,8 +517,9 @@ theorem ExpandA.typed {p p' : ATree} (h : ExpandA Θ q p p') :
   | and => intro S hp; cases hp; exact .andC (.hole _) (.hole _)
   | orL => intro S hp; cases hp; exact .orL (.hole _)
   | orR => intro S hp; cases hp; exact .orR (.hole _)
-  | ex t ht => intro S hp; cases hp; exact .exC t ht (.hole _)
-  | clause w ts hc hm hq hlen hts =>
+  | ex t ht hB => subst hB; intro S hp; cases hp; exact .exC t ht (.hole _)
+  | clause w ts hc hm hq hlen hts hP hus hB =>
+      subst hP hus hB
       intro S hp; cases hp; exact .impC w ts hc hm hq hlen hts (.hole _) rfl rfl
   | andL _ ih => intro S hp; cases hp with | andC h₁ h₂ => exact .andC (ih h₁) h₂
   | andR _ ih => intro S hp; cases hp with | andC h₁ h₂ => exact .andC h₁ (ih h₂)
@@ -643,13 +644,14 @@ theorem Expand.toA (q : Q) (hH : Θ.HeadsOK isC) {c c' : Form} {p p' : PTree}
   | ex t ht hB =>
       subst hB
       show ExpandA _ _ (.hole (.exists_ (Form.strip isC _))) (.exC t (.hole ((Form.openAt 0 t _).strip isC)))
-      rw [Form.strip_openAt]; exact .ex t ht
+      rw [Form.strip_openAt]; exact .ex t ht rfl
   | @clause cl _ _ _ w ts hc hm hlen hts hP hus hB =>
       subst hP hus hB
       show ExpandA _ _ (.hole ((Form.pred cl.head _).strip isC))
         (.impC w ts (.hole ((Form.instAll ts cl.body).strip isC)))
       rw [Form.strip_pred_of _ (hH cl (List.mem_of_getElem? hc)), Form.strip_instAll]
       exact .clause (cl := cl.abs isC q) w ts (Program.abs_getElem? hc) rfl rfl hlen hts
+        rfl rfl rfl
   | andL _ ih => exact .andL ih
   | andR _ ih => exact .andR ih
   | inOrL _ ih => exact .inOrL ih
