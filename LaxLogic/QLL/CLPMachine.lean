@@ -316,7 +316,7 @@ theorem PTree.close_typed {S : Form} {p : PTree} (hp : PTyped isC Θ S p) :
       | none => simp [PTree.close, hp₁] at h
       | some q₁ =>
         simp only [PTree.close, hp₁, Option.some.injEq] at h
-        subst h; exact .clause w ts hc hm hlen hts (ih hp₁)
+        subst h; exact .clause w ts hc hm hlen hts (ih hp₁) rfl rfl
 
 /-! ### Theorem 9.4 as a step invariant: the store is `c₀ ∧ store` -/
 

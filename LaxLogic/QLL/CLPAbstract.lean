@@ -210,7 +210,8 @@ theorem CTyped.toA (q : Q) (hH : Θ.HeadsOK isC) {S : Form} {p : CProof} (h : CT
   | orL _ ih => exact .orL ih
   | orR _ ih => exact .orR ih
   | exI t ht _ ih => exact .exC t ht (by rw [← Form.strip_openAt]; exact ih)
-  | @clause c p w ts hc hm hlen hts _ ih =>
+  | @clause c p _ _ w ts hc hm hlen hts _ hP hus ih =>
+      subst hP hus
       rw [Form.strip_pred_of _ (hH c (List.mem_of_getElem? hc))]
       exact .impC (c := c.abs isC q) w ts (Program.abs_getElem? hc) rfl rfl hlen hts
         (by show ATyped _ q (Form.instAll ts (c.body.strip isC)) p.toA
@@ -320,7 +321,8 @@ theorem CTyped.ctable_wit (hH : Θ.HeadsOK isC) {S : Form} {p : CProof} (h : CTy
   | orL _ ih => exact ih
   | orR _ ih => exact ih
   | exI t _ _ ih => exact ih
-  | @clause c p w ts hc _ _ _ _ _ =>
+  | @clause c p _ _ w ts hc _ _ _ _ hP hus _ =>
+      subst hP hus
       show (if isC c.head = true then _ else _) = Form.top
       rw [if_neg (by rw [hH c (List.mem_of_getElem? hc)]; decide)]
 
@@ -341,7 +343,8 @@ theorem CTyped.ext_toA (hH : Θ.HeadsOK isC) {S : Form} {p : CProof} (h : CTyped
       exact ⟨by show Wit.inr _ = Wit.inr _; rw [ih.1], (PEq.and_top _).trans ih.2⟩
   | exI t _ _ ih =>
       exact ⟨by show Wit.pack t _ = Wit.pack t _; rw [ih.1], (PEq.and_top _).trans ih.2⟩
-  | @clause c p w ts hc _ _ _ hp ih =>
+  | @clause c p _ _ w ts hc _ _ _ hp hP hus ih =>
+      subst hP hus
       refine ⟨rfl, ?_⟩
       have e : Θ.table isC w ts (p.toA.ext (Θ.table isC)).2 = p.active := by
         rw [ih.1]; unfold Program.table; rw [hc]; exact hp.ctable_wit hH

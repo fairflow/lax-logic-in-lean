@@ -43,10 +43,12 @@ inductive CTyped (isC : String → Bool) (Θ : Program) : Form → CProof → Pr
   | orR {A B : Form} {p : CProof} : CTyped isC Θ B p → CTyped isC Θ (.or A B) (.orR p)
   | exI {A : Form} {p : CProof} (t : Tm) : Tm.lcAt 0 t →
       CTyped isC Θ (A.openAt 0 t) p → CTyped isC Θ (.exists_ A) (.exI t p)
-  | clause {c : Clause} {p : CProof} (w : Nat) (ts : List Tm) : Θ[w]? = some c →
-      c.modal = false → ts.length = c.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
+  -- the instantiated head is carried by equation fields, not computed in the index
+  | clause {c : Clause} {p : CProof} {P : String} {us : List Tm} (w : Nat) (ts : List Tm) :
+      Θ[w]? = some c → c.modal = false → ts.length = c.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
       CTyped isC Θ (Form.instAll ts c.body) p →
-      CTyped isC Θ (.pred c.head (Tm.instAllList ts (headVars c.arity))) (.clause w ts p)
+      P = c.head → us = Tm.instAllList ts (headVars c.arity) →
+      CTyped isC Θ (.pred P us) (.clause w ts p)
 
 /-! ## Definition 8.1: total, active and latent constraints -/
 
@@ -93,7 +95,8 @@ theorem CTyped.prv_total {isC : String → Bool} {Θ : Program} {S : Form} {p : 
   | orL _ ih => exact .impI (.orI₁ (.impE ih.weaken_cons .hd))
   | orR _ ih => exact .impI (.orI₂ (.impE ih.weaken_cons .hd))
   | exI t ht _ ih => exact .impI (.exI t ht (.impE ih.weaken_cons .hd))
-  | @clause c p w ts hc hm hlen hts _ ih =>
+  | @clause c p _ _ w ts hc hm hlen hts _ hP hus ih =>
+      subst hP hus
       have hmem : c ∈ Θ := List.mem_of_getElem? hc
       have hf : Prv Θ.forms (Form.foralls ts.length (.imp c.body c.headForm)) := by
         rw [hlen]; exact .var (List.mem_map.2 ⟨c, hmem, rfl⟩)
@@ -189,7 +192,7 @@ theorem checkC_sound (isC : String → Bool) (Θ : Program) :
             simp only [Bool.and_eq_true, Bool.not_eq_true', beq_iff_eq, List.all_eq_true] at h
             obtain ⟨⟨⟨⟨⟨hm, rfl⟩, hlen⟩, hts⟩, rfl⟩, hb⟩ := h
             exact .clause w ts hc hm hlen (fun t ht => (Tm.lcAtB_iff 0 t).1 (hts t ht))
-              (checkC_sound isC Θ p _ hb)
+              (checkC_sound isC Θ p _ hb) rfl rfl
           · exact absurd h (by simp)
       | _ => exact absurd h (by simp [checkC])
 

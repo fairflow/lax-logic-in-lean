@@ -210,7 +210,7 @@ theorem steps_forest {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
       | @clause c l r cl w ts hc hm hlen hts =>
           obtain ⟨psl, p, psr, rfl, hl, hx, hr⟩ := Forest.split l hF
           refine ⟨psl ++ .clause w ts p :: psr,
-            Forest.append hl (.cons (.clause w ts hc hm hlen hts hx) hr), ?_⟩
+            Forest.append hl (.cons (.clause w ts hc hm hlen hts hx rfl rfl) hr), ?_⟩
           rw [totals_congr psl psr (x := .clause w ts p) (y := p) rfl]
           exact hE
 

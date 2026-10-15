@@ -113,7 +113,7 @@ theorem Holds.cproof (hRC : ∀ p us, R p us → isC p = true)
       obtain ⟨p', hp'', e⟩ := CTyped.of_sel (c.body_sigma.instAll ts)
         (by rw [ind_instAll]; exact hg) hp'
       obtain ⟨w, hw⟩ := List.mem_iff_getElem?.1 hc
-      exact ⟨.clause w ts p', .clause w ts hw (hm c hc) hlen hts hp'',
+      exact ⟨.clause w ts p', .clause w ts hw (hm c hc) hlen hts hp'' rfl rfl,
         by show HTrue R p'.total; rw [e]; exact tp⟩
 
 /-- The least Herbrand model of a program's Horn clauses is a model of its clauses. -/
@@ -143,7 +143,8 @@ theorem CTyped.HTrue_of_total (hWF : ∀ c ∈ Θ, c.WF)
   | exI t ht' _ ih =>
       intro hc ht
       exact HTrue_exists.2 ⟨t, ht', ih (Form.lcAt_openAt _ 0 t ht' hc) ht⟩
-  | @clause c p w ts hc' hm' hlen hts _ ih =>
+  | @clause c p _ _ w ts hc' hm' hlen hts _ hP hus ih =>
+      subst hP hus
       intro _ ht
       have hmem : c ∈ Θ := List.mem_of_getElem? hc'
       have hbody := ih (Form.lcAt_instAll ts _ hts (by rw [hlen]; exact hWF c hmem)) ht
