@@ -1,0 +1,2450 @@
+% references.bib -- the master list of references for lax-logic-in-lean.
+%
+% One list to pick from whenever anything is written: papers, the Blueprint,
+% notes, surveys.  Started 2026-10-15 by the LaxLogic manager from
+%   * docs/belief.bib (the Belief paper's bibliography, kept there unchanged;
+%     its entries are copied here as they are, notes included), and
+%   * every DOI and arXiv identifier cited in docs/*.md and the Verso papers,
+%     with BibTeX fetched from doi.org and arxiv.org; each such entry records
+%     where it is cited in a `citedin` field (ignored by BibTeX).
+% Duplicates were removed by title.  Entries fetched automatically have NOT
+% been checked against the works themselves; check before citing, and say so
+% in the entry's note when you have.
+%
+% Keys: surnames of up to three authors and the year (FairtloughMendler1997);
+% four or more authors give FirstEtAl.  Add new references here, keep it
+% sorted by key, and copy what a document cites into its own .bib.
+%
+% Private material (the uniform-interpolation work) keeps its references in
+% fairflow/lax-logic-private, docs/references-private.bib, never here.
+
+@inproceedings{Abadi2006,
+  author    = {Abadi, Mart{\'i}n},
+  title     = {Access Control in a Core Calculus of Dependency},
+  booktitle = {Proceedings of the 11th ACM SIGPLAN International Conference on Functional Programming (ICFP 2006)},
+  publisher = {ACM},
+  year      = {2006},
+  note      = {The ``says'' modality of authorization logic as a monadic
+             (lax-style) modality indexed by a principal: a published
+             non-factive, agent-flavoured reading of the computational
+             lambda-calculus}
+}
+
+@article{AbelEtAl2019,
+  author  = {Abel, Andreas and Allais, Guillaume and Hameer, Aliya and Momigliano, Alberto and Pientka, Brigitte and Sch{\"a}fer, Steven and Stark, Kathrin},
+  title   = {{POPLM}ark Reloaded: Mechanizing Proofs by Logical Relations},
+  journal = {Journal of Functional Programming},
+  volume  = {29},
+  year    = {2019},
+  note    = {Formal development: strong normalisation by logical relations
+             mechanised in Beluga, Coq and Agda; the benchmark neighbour of the
+             artefact's $\top\top$-lifting mechanisation}
+}
+
+@article{Aczel2001,
+  author  = {Aczel, Peter},
+  title   = {The {R}ussell--{P}rawitz Modality},
+  journal = {Mathematical Structures in Computer Science},
+  volume  = {11},
+  number  = {4},
+  year    = {2001},
+  note    = {A lax-style modality arising from second-order propositional
+             quantification; same IMLA special issue as Pfenning--Davies and Howe}
+}
+
+@misc{AdamekEtAl2014,
+  author = {Jiří Adámek and Nathan Bowler and Paul B. Levy and Stefan Milius},
+  title = {Coproducts of Monads on Set},
+  year = {2014},
+  eprint = {1409.3804},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/1409.3804},
+  citedin = {docs/surveys/nuclei-model-completions-monads.md}
+}
+
+@inproceedings{AlechinaMendlerDePaivaRitter2001,
+  author    = {Alechina, Natasha and Mendler, Michael and de Paiva, Valeria and Ritter, Eike},
+  title     = {Categorical and {K}ripke Semantics for Constructive {S4} Modal Logic},
+  booktitle = {Computer Science Logic (CSL 2001)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {2142},
+  publisher = {Springer},
+  year      = {2001},
+  doi       = {10.1007/3-540-44802-0_21}
+}
+
+@inbook{Altenkirch1993,
+  author = {Altenkirch, Thorsten},
+  title = {A formalization of the strong normalization proof for System F in LEGO},
+  booktitle = {Typed Lambda Calculi and Applications},
+  publisher = {Springer-Verlag},
+  pages = {13--28},
+  year = {1993},
+  doi = {10.1007/bfb0037095},
+  url = {http://dx.doi.org/10.1007/BFb0037095},
+  citedin = {docs/pll2-plan.md}
+}
+
+@misc{Arai2017,
+  author = {Toshiyasu Arai},
+  title = {Cut-eliminability in second order logic calculi},
+  year = {2017},
+  eprint = {1701.00929},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/1701.00929},
+  citedin = {docs/pll2-plan.md}
+}
+
+@article{Artemov1994,
+  author  = {Artemov, Sergei},
+  title   = {Logic of Proofs},
+  journal = {Annals of Pure and Applied Logic},
+  volume  = {67},
+  year    = {1994},
+  note    = {UNVERIFIED: volume/pages not independently confirmed this pass
+             (cited via the SEP Justification Logic entry)}
+}
+
+@article{Artemov2001,
+  author  = {Artemov, Sergei},
+  title   = {Explicit Provability and Constructive Semantics},
+  journal = {The Bulletin of Symbolic Logic},
+  volume  = {7},
+  number  = {1},
+  pages   = {1--36},
+  year    = {2001}
+}
+
+@article{Artemov2008,
+  author  = {Artemov, Sergei},
+  title   = {The Logic of Justification},
+  journal = {The Review of Symbolic Logic},
+  volume  = {1},
+  number  = {4},
+  pages   = {477--513},
+  year    = {2008}
+}
+
+@book{ArtemovFitting2019,
+  author    = {Artemov, Sergei and Fitting, Melvin},
+  title     = {Justification Logic: Reasoning with Reasons},
+  series    = {Cambridge Tracts in Mathematics},
+  number    = {216},
+  publisher = {Cambridge University Press},
+  year      = {2019}
+}
+
+@incollection{ArtemovFittingSEP,
+  author    = {Artemov, Sergei and Fitting, Melvin},
+  title     = {Justification Logic},
+  booktitle = {The Stanford Encyclopedia of Philosophy},
+  editor    = {Zalta, Edward N.},
+  publisher = {Metaphysics Research Lab, Stanford University},
+  howpublished = {\url{https://plato.stanford.edu/entries/logic-justification/}},
+  year      = {2021},
+  note      = {UNVERIFIED: edition year; the entry is periodically revised}
+}
+
+@article{ArtemovProtopopescu2016,
+  author  = {Artemov, Sergei and Protopopescu, Tudor},
+  title   = {Intuitionistic Epistemic Logic},
+  journal = {The Review of Symbolic Logic},
+  volume  = {9},
+  number  = {2},
+  pages   = {266--298},
+  year    = {2016},
+  eprint  = {1406.1582},
+  archiveprefix = {arXiv},
+  note    = {IEL and the belief system IEL$^-$ (co-reflection without
+             factivity); the nearest published neighbour of the doxastic
+             reading of the lax modality}
+}
+
+@article{AvilaBezhanishviliMorandiZaldivar2020,
+  author  = {{\'A}vila, Francisco and Bezhanishvili, Guram and Morandi, Patrick J. and Zald{\'i}var, Angel},
+  title   = {When Is the Frame of Nuclei Spatial: A New Approach},
+  journal = {Journal of Pure and Applied Algebra},
+  volume  = {224},
+  number  = {7},
+  pages   = {106302},
+  year    = {2020},
+  doi     = {10.1016/j.jpaa.2019.106302},
+  eprint  = {1906.03636},
+  archiveprefix = {arXiv},
+  note    = {Nuclei via Esakia-dual nuclear sets; recovers Beazer--Macnab,
+             Simmons, Niefield--Rosenthal and Isbell as corollaries}
+}
+
+@article{AvilaBezhanishviliMorandiZaldivar2021,
+  author  = {{\'A}vila, Francisco and Bezhanishvili, Guram and Morandi, Patrick J. and Zald{\'i}var, Angel},
+  title   = {The Frame of Nuclei on an {A}lexandroff Space},
+  journal = {Order},
+  volume  = {38},
+  number  = {1},
+  pages   = {67--78},
+  year    = {2021},
+  doi     = {10.1007/s11083-020-09528-1},
+  eprint  = {1906.03640},
+  archiveprefix = {arXiv}
+}
+
+@inbook{AydemirEtAl2005,
+  author = {Aydemir, Brian E. and Bohannon, Aaron and Fairbairn, Matthew and Foster, J. Nathan and Pierce, Benjamin C. and Sewell, Peter and Vytiniotis, Dimitrios and Washburn, Geoffrey and Weirich, Stephanie and Zdancewic, Steve},
+  title = {Mechanized Metatheory for the Masses: The PoplMark Challenge},
+  booktitle = {Theorem Proving in Higher Order Logics},
+  publisher = {Springer Berlin Heidelberg},
+  pages = {50--65},
+  year = {2005},
+  doi = {10.1007/11541868_4},
+  url = {http://dx.doi.org/10.1007/11541868_4},
+  citedin = {docs/pll2-plan.md}
+}
+
+@inproceedings{AydemirEtAl2008,
+  author = {Aydemir, Brian and Charguéraud, Arthur and Pierce, Benjamin C. and Pollack, Randy and Weirich, Stephanie},
+  title = {Engineering formal metatheory},
+  booktitle = {Proceedings of the 35th annual ACM SIGPLAN-SIGACT symposium on Principles of programming languages},
+  publisher = {ACM},
+  series = {POPL08},
+  pages = {3--15},
+  year = {2008},
+  doi = {10.1145/1328438.1328443},
+  url = {http://dx.doi.org/10.1145/1328438.1328443},
+  citedin = {docs/pll2-plan.md}
+}
+
+@inproceedings{BaltagBezhanishviliOzgunSmets2016,
+  author    = {Baltag, Alexandru and Bezhanishvili, Nick and {\"O}zg{\"u}n, Ayb{\"u}ke and Smets, Sonja},
+  title     = {Justified Belief and the Topology of Evidence},
+  booktitle = {Logic, Language, Information, and Computation (WoLLIC 2016)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {9803},
+  pages     = {83--103},
+  publisher = {Springer},
+  year      = {2016},
+  doi       = {10.1007/978-3-662-52921-8_6}
+}
+
+@article{BaltagBezhanishviliOzgunSmets2022,
+  author  = {Baltag, Alexandru and Bezhanishvili, Nick and {\"O}zg{\"u}n, Ayb{\"u}ke and Smets, Sonja},
+  title   = {Justified Belief, Knowledge, and the Topology of Evidence},
+  journal = {Synthese},
+  volume  = {200},
+  number  = {6},
+  year    = {2022},
+  note    = {Journal version of BaltagBezhanishviliOzgunSmets2016}
+}
+
+@misc{BaudartEtAl2026,
+  author = {Guillaume Baudart and Marc Lelarge and Tristan Stérin and Jules Viennot},
+  title = {Putnam 2025 Problems in Rocq using Opus 4.6 and Rocq-MCP},
+  year = {2026},
+  eprint = {2603.20405},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LG},
+  url = {https://arxiv.org/abs/2603.20405},
+  citedin = {docs/surveys/lean-infosphere-2026-07.md}
+}
+
+@article{BeazerMacnab1979,
+  author  = {Beazer, Rod and Macnab, Donald S.},
+  title   = {Modal Extensions of {H}eyting Algebras},
+  journal = {Colloquium Mathematicum},
+  volume  = {41},
+  number  = {1},
+  pages   = {1--12},
+  year    = {1979},
+  note    = {If $L$ is Boolean then $N(L) \cong L$: the classical collapse of
+             the lattice of belief modalities. Formal development: the collapse
+             (every nucleus on a Boolean algebra is closed, incomplete case
+             included) is machine-checked in Lean~4 in the present artefact
+             (\texttt{Belief/Collapse.lean}, \texttt{Belief/BooleanIso.lean})}
+}
+
+@incollection{Beck1969,
+  author    = {Beck, Jon},
+  title     = {Distributive Laws},
+  booktitle = {Seminar on Triples and Categorical Homology Theory},
+  series    = {Lecture Notes in Mathematics},
+  volume    = {80},
+  pages     = {119--140},
+  publisher = {Springer},
+  year      = {1969}
+}
+
+@misc{BeckerEtAl2026,
+  author = {Justus Becker and Anupam Das and Sonia Marin and Paaras Padhiar},
+  title = {The proof theory and semantics of second-order (intuitionistic) tense logic},
+  year = {2026},
+  eprint = {2602.06253},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/2602.06253},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@misc{BeliefArtefact,
+  author = {Fairtlough, Matthew},
+  title  = {lax-logic-in-lean: A {L}ean 4 Formalisation of Propositional Lax Logic and the Belief Semantics},
+  howpublished = {\url{https://github.com/fairflow/lax-logic-in-lean}},
+  year   = {2026},
+  doi    = {10.5281/zenodo.XXXXXXX},
+  note   = {PLACEHOLDER DOI -- mint via Zenodo release of the tagged artefact
+             commit and fill in; add \texttt{CITATION.cff}. Formal development:
+             Lean~4 + Mathlib; axiom audit per theorem recorded in
+             docs/pll-formalisation-ledger.md}
+}
+
+@article{BentonBiermanDePaiva1998,
+  author  = {Benton, P. N. and Bierman, G. M. and de Paiva, V. C. V.},
+  title   = {Computational Types from a Logical Perspective},
+  journal = {Journal of Functional Programming},
+  volume  = {8},
+  number  = {2},
+  pages   = {177--193},
+  year    = {1998}
+}
+
+@article{BezhanishviliBezhanishvili2017,
+  author = {Bezhanishvili, Guram and Bezhanishvili, Nick},
+  title = {Locally Finite Reducts of Heyting Algebras and Canonical Formulas},
+  journal = {Notre Dame Journal of Formal Logic},
+  publisher = {Duke University Press},
+  volume = {58},
+  number = {1},
+  pages = {21--45},
+  year = {2017},
+  doi = {10.1215/00294527-3691563},
+  url = {http://dx.doi.org/10.1215/00294527-3691563},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{BezhanishviliEtAlDiego2021,
+  author  = {Bezhanishvili, Guram and Bezhanishvili, Nick and Carai, Luca and Gabelaia, David and Ghilardi, Silvio and Jibladze, Mamuka},
+  title   = {Diego's Theorem for Nuclear Implicative Semilattices},
+  journal = {Indagationes Mathematicae},
+  volume  = {32},
+  year    = {2021},
+  eprint  = {2001.11060},
+  archiveprefix = {arXiv},
+  note    = {Nuclear implicative semilattices = algebraic semantics for the
+             disjunction-free fragment of Fairtlough--Mendler lax logic}
+}
+
+@article{BezhanishviliGabelaiaJibladze2013,
+  author  = {Bezhanishvili, Guram and Gabelaia, David and Jibladze, Mamuka},
+  title   = {Funayama's Theorem Revisited},
+  journal = {Algebra Universalis},
+  volume  = {70},
+  pages   = {271--286},
+  year    = {2013}
+}
+
+@article{BezhanishviliGhilardi2007,
+  author  = {Bezhanishvili, Guram and Ghilardi, Silvio},
+  title   = {An Algebraic Approach to Subframe Logics. {I}ntuitionistic Case},
+  journal = {Annals of Pure and Applied Logic},
+  volume  = {147},
+  number  = {1--2},
+  pages   = {84--100},
+  year    = {2007}
+}
+
+@misc{BezhanishviliMelzer2024,
+  author = {G. Bezhanishvili and S. Melzer},
+  title = {Algebraic Frames in Priestley duality},
+  year = {2024},
+  doi = {https://doi.org/10.1007/s00012-024-00876-2},
+  eprint = {2306.06745},
+  archiveprefix = {arXiv},
+  primaryclass = {math.GN},
+  url = {https://arxiv.org/abs/2306.06745},
+  citedin = {docs/assembly-tower-lit.md}
+}
+
+@misc{BezhanishviliMelzer2025,
+  author = {Bezhanishvili, Guram and Melzer, Sebastian David},
+  title  = {Priestley Perspective on Pointfree Topology},
+  year   = {2025},
+  eprint = {2511.01426},
+  archiveprefix = {arXiv},
+  note   = {UNVERIFIED: second author's full name taken from repo notes; recent
+             preprint, refereed status unknown}
+}
+
+@article{Bilkova2007,
+  author = {Bílková, Marta},
+  title = {Uniform Interpolation and Propositional Quantifiers in Modal Logics},
+  journal = {Studia Logica},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {85},
+  number = {1},
+  pages = {1--31},
+  year = {2007},
+  doi = {10.1007/s11225-007-9021-5},
+  url = {http://dx.doi.org/10.1007/s11225-007-9021-5},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@misc{Bilkova2022,
+  author = {Marta Bilkova},
+  title = {Uniform Interpolation in provability logics},
+  year = {2022},
+  eprint = {2211.02591},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/2211.02591},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@misc{BuismanGore2007,
+  author = {Linda Buisman and Rajeev Goré},
+  title = {A Cut-free Sequent Calculus for Bi-Intuitionistic Logic: Extended Version},
+  year = {2007},
+  eprint = {0704.1707},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/0704.1707},
+  citedin = {docs/lax-dual-colax-biint-handoff.md}
+}
+
+@article{Bull1969,
+  author = {Bull, R. A.},
+  title = {On modal logic with propositional quantifiers},
+  journal = {Journal of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {34},
+  number = {2},
+  pages = {257--263},
+  year = {1969},
+  doi = {10.2307/2271102},
+  url = {http://dx.doi.org/10.2307/2271102},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@inproceedings{BuzzardCommelinMassot2020,
+  author    = {Buzzard, Kevin and Commelin, Johan and Massot, Patrick},
+  title     = {Formalising Perfectoid Spaces},
+  booktitle = {Certified Programs and Proofs (CPP 2020)},
+  publisher = {ACM},
+  year      = {2020},
+  note      = {Formal development: Lean. Precedent for citing a Lean repository
+             as the artefact of a refereed paper (see docs/publication-routes.md)}
+}
+
+@inbook{CahenEtAl2014,
+  author = {Cahen, Paul-Jean and Fontana, Marco and Frisch, Sophie and Glaz, Sarah},
+  title = {Open Problems in Commutative Ring Theory},
+  booktitle = {Commutative Algebra},
+  publisher = {Springer New York},
+  pages = {353--375},
+  year = {2014},
+  doi = {10.1007/978-1-4939-0925-4_20},
+  url = {http://dx.doi.org/10.1007/978-1-4939-0925-4_20},
+  citedin = {docs/SUBMIT_TO_MATHLIB.md}
+}
+
+@misc{CaraiGhilardi2017,
+  author = {Luca Carai and Silvio Ghilardi},
+  title = {Existentially Closed Brouwerian Semilattices},
+  year = {2017},
+  doi = {https://doi.org/10.1017/jsl.2019.71},
+  eprint = {1702.08352},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/1702.08352},
+  citedin = {docs/surveys/nuclei-model-completions-monads.md}
+}
+
+@misc{CarneiroRiehl2025,
+  author = {Mario Carneiro and Emily Riehl},
+  title = {Formalizing colimits in Cat},
+  year = {2025},
+  eprint = {2503.20704},
+  archiveprefix = {arXiv},
+  primaryclass = {math.CT},
+  url = {https://arxiv.org/abs/2503.20704},
+  citedin = {docs/transport-problem-brief.md}
+}
+
+@article{CelaniMontangie2019,
+  author = {Celani, Sergio A. and Montangie, Daniela},
+  title = {Algebraic semantics of the $$\left\{ \rightarrow ,\square \right\} $$-fragment of Propositional Lax Logic},
+  journal = {Soft Computing},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {24},
+  number = {2},
+  pages = {813--823},
+  year = {2019},
+  doi = {10.1007/s00500-019-04536-9},
+  url = {http://dx.doi.org/10.1007/s00500-019-04536-9},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{Chargueraud2011,
+  author = {Charguéraud, Arthur},
+  title = {The Locally Nameless Representation},
+  journal = {Journal of Automated Reasoning},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {49},
+  number = {3},
+  pages = {363--408},
+  year = {2011},
+  doi = {10.1007/s10817-011-9225-2},
+  url = {http://dx.doi.org/10.1007/s10817-011-9225-2},
+  citedin = {docs/pll2-plan.md}
+}
+
+@misc{CohenCranceMahboubi2024,
+  author = {Cyril Cohen and Enzo Crance and Assia Mahboubi},
+  title = {Trocq: Proof Transfer for Free, With or Without Univalence},
+  year = {2024},
+  eprint = {2310.14022},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/2310.14022},
+  citedin = {docs/transport-problem-brief.md}
+}
+
+@inproceedings{CohenGrunfeldKirstMiquey2025,
+  author    = {Cohen, Liron and Grunfeld, Ariel and Kirst, Dominik and Miquey, {\'E}tienne},
+  title     = {Syntactic Effectful Realizability in Higher-Order Logic},
+  booktitle = {40th Annual ACM/IEEE Symposium on Logic in Computer Science (LICS 2025)},
+  year      = {2025},
+  eprint    = {2506.09458},
+  archiveprefix = {arXiv},
+  note      = {EffHOL: realizability translation parametrised by a monad;
+             every instance induces an evidenced frame, tripos and
+             realizability topos}
+}
+
+@misc{CommelinTopaz2023,
+  author = {Johan Commelin and Adam Topaz},
+  title = {Abstraction boundaries and spec driven development in pure mathematics},
+  year = {2023},
+  eprint = {2309.14870},
+  archiveprefix = {arXiv},
+  primaryclass = {math.HO},
+  url = {https://arxiv.org/abs/2309.14870},
+  citedin = {docs/publication-routes.md}
+}
+
+@book{Curry1950,
+  author    = {Curry, Haskell B.},
+  title     = {A Theory of Formal Deducibility},
+  series    = {Notre Dame Mathematical Lectures},
+  number    = {6},
+  publisher = {University of Notre Dame Press},
+  address   = {Notre Dame, Indiana},
+  year      = {1950},
+  note      = {Based on lectures delivered at Notre Dame in 1948; second edition 1957}
+}
+
+@article{Curry1952,
+  author  = {Curry, Haskell B.},
+  title   = {The Elimination Theorem When Modality Is Present},
+  journal = {The Journal of Symbolic Logic},
+  volume  = {17},
+  number  = {4},
+  pages   = {249--265},
+  year    = {1952},
+  note    = {Cut elimination in the presence of the possibility-like modality of
+             the 1948 lectures; the historical source of the lax modality}
+}
+
+@misc{Darniere2018,
+  author = {Darni{\`e}re, Luck},
+  title  = {On the Model-Completion of {H}eyting Algebras},
+  year   = {2018},
+  eprint = {1810.01704},
+  archiveprefix = {arXiv},
+  note   = {Exactly eight varieties of Heyting algebras have a model
+             completion; background for the (open) nuclear-HA question}
+}
+
+@misc{DarniereJunker2017,
+  author = {Luck Darnière and Markus Junker},
+  title = {Model-completion of varieties of co-Heyting algebras},
+  year = {2017},
+  eprint = {1001.1663},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/1001.1663},
+  citedin = {docs/surveys/nuclei-model-completions-monads.md}
+}
+
+@article{deGroote2002,
+  author  = {de Groote, Philippe},
+  title   = {On the Strong Normalisation of Intuitionistic Natural
+             Deduction with Permutation-Conversions},
+  journal = {Information and Computation},
+  volume  = {178},
+  number  = {2},
+  pages   = {441--464},
+  year    = {2002}
+}
+
+@inproceedings{DeGrootShillitoClouston2025,
+  author    = {de Groot, Jim and Shillito, Ian and Clouston, Ranald},
+  title     = {Semantical Analysis of Intuitionistic Modal Logics Between {CK} and {IK}},
+  booktitle = {40th Annual ACM/IEEE Symposium on Logic in Computer Science (LICS 2025)},
+  pages     = {169--182},
+  year      = {2025},
+  eprint    = {2408.00262},
+  archiveprefix = {arXiv},
+  note      = {Formal development: results formalised in Coq}
+}
+
+@inproceedings{DeMouraUllrich2021,
+  author    = {de Moura, Leonardo and Ullrich, Sebastian},
+  title     = {The {L}ean 4 Theorem Prover and Programming Language},
+  booktitle = {Automated Deduction -- CADE 28},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {12699},
+  pages     = {625--635},
+  publisher = {Springer},
+  year      = {2021},
+  note      = {Formal development: the proof assistant of the artefact}
+}
+
+@inproceedings{DoczkalSchwinghammer2009,
+  author    = {Doczkal, Christian and Schwinghammer, Jan},
+  title     = {Formalizing a Strong Normalization Proof for {M}oggi's
+               Computational Metalanguage: A Case Study in
+               {I}sabelle/{HOL}-Nominal},
+  booktitle = {Logical Frameworks and Meta-Languages: Theory and Practice
+               (LFMTP 2009)},
+  publisher = {ACM},
+  year      = {2009},
+  note      = {Formal development: the sole prior mechanisation of
+             $\top\top$-lifting, for the core calculus without sums;
+             maintained as Isabelle AFP entry
+             \texttt{Lam-ml-Normalization} (2010)}
+}
+
+@article{DowkerPapert1966,
+  author  = {Dowker, C. H. and Papert, Dona},
+  title   = {Quotient Frames and Subspaces},
+  journal = {Proceedings of the London Mathematical Society},
+  volume  = {16},
+  series  = {(3)},
+  pages   = {275--296},
+  year    = {1966}
+}
+
+@article{Dyckhoff1992,
+  author  = {Dyckhoff, Roy},
+  title   = {Contraction-free Sequent Calculi for Intuitionistic Logic},
+  journal = {The Journal of Symbolic Logic},
+  volume  = {57},
+  number  = {3},
+  pages   = {795--807},
+  year    = {1992},
+  note    = {G4ip, the template for terminating contraction-free calculi.
+             Formal development: implemented as Mathlib's \texttt{itauto}
+             (termination trusted, output kernel-checked); mechanised
+             termination for G4-style calculi appears in the Coq iSL line
+             (ShillitoVanDerGiessenGoreIemhoff2023)}
+}
+
+@inbook{Egly2002,
+  author = {Egly, Uwe},
+  title = {Embedding Lax Logic into Intuitionistic Logic},
+  booktitle = {Automated Deduction—CADE-18},
+  publisher = {Springer Berlin Heidelberg},
+  pages = {78--93},
+  year = {2002},
+  doi = {10.1007/3-540-45620-1_6},
+  url = {http://dx.doi.org/10.1007/3-540-45620-1_6},
+  citedin = {docs/pll2-plan.md}
+}
+
+@article{Erne2022,
+  author  = {Ern{\'e}, Marcel},
+  title   = {Nuclear Ranges in Implicative Semilattices},
+  journal = {Algebra Universalis},
+  volume  = {83},
+  number  = {2},
+  pages   = {article 18},
+  year    = {2022},
+  doi     = {10.1007/s00012-022-00768-3},
+  note    = {The decisive source on nuclei over NON-complete Heyting algebras:
+             the nuclei form a bounded meet-semilattice, and existence of joins
+             and implication of nuclei is completeness-gated (necessary and
+             sufficient conditions)}
+}
+
+@article{ErnePicadoPultr2022,
+  author  = {Ern{\'e}, Marcel and Picado, Jorge and Pultr, Ale{\v s}},
+  title   = {Adjoint Maps Between Implicative Semilattices and Continuity of Localic Maps},
+  journal = {Algebra Universalis},
+  volume  = {83},
+  number  = {2},
+  pages   = {article 19},
+  year    = {2022},
+  doi     = {10.1007/s00012-022-00767-4}
+}
+
+@article{Esakia1974,
+  author  = {Esakia, Leo L.},
+  title   = {Topological {K}ripke Models},
+  journal = {Doklady Akademii Nauk SSSR},
+  volume  = {214},
+  pages   = {298--301},
+  year    = {1974},
+  note    = {English translation: Soviet Mathematics Doklady 15 (1974)}
+}
+
+@book{Esakia2019,
+  author    = {Esakia, Leo},
+  title     = {Heyting Algebras: Duality Theory},
+  editor    = {Bezhanishvili, Guram and Holliday, Wesley H.},
+  series    = {Trends in Logic},
+  volume    = {50},
+  publisher = {Springer},
+  year      = {2019},
+  doi       = {10.1007/978-3-030-12096-2},
+  note      = {English translation (by A. Evseev) of the 1985 Russian monograph}
+}
+
+@article{Escardo2003,
+  author  = {Escard{\'o}, Mart{\'i}n H.},
+  title   = {Joins in the Frame of Nuclei},
+  journal = {Applied Categorical Structures},
+  volume  = {11},
+  number  = {2},
+  pages   = {117--124},
+  year    = {2003},
+  doi     = {10.1023/A:1023555514029},
+  note    = {Joins of nuclei as least fixed points of prenuclei via Pataraia's
+             theorem; choice-free}
+}
+
+@book{FaginHalpernMosesVardi1995,
+  author    = {Fagin, Ronald and Halpern, Joseph Y. and Moses, Yoram and Vardi, Moshe Y.},
+  title     = {Reasoning About Knowledge},
+  publisher = {MIT Press},
+  address   = {Cambridge, MA},
+  year      = {1995},
+  note      = {Standard reference for classical doxastic logic (KD45) and
+             logical omniscience}
+}
+
+@inproceedings{FairtloughMendler1994,
+  author    = {Fairtlough, Matt and Mendler, Michael},
+  title     = {An Intuitionistic Modal Logic with Applications to the Formal Verification of Hardware},
+  booktitle = {Computer Science Logic (CSL 1994)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {933},
+  publisher = {Springer},
+  year      = {1995},
+  doi       = {10.1007/BFb0022268}
+}
+
+@article{FairtloughMendler1997,
+  author  = {Fairtlough, Matt and Mendler, Michael},
+  title   = {Propositional Lax Logic},
+  journal = {Information and Computation},
+  volume  = {137},
+  number  = {1},
+  pages   = {1--33},
+  year    = {1997},
+  doi     = {10.1006/inco.1997.2627},
+  note    = {Formal development: the entire paper (calculi, equivalences, cut
+             elimination, constraint semantics, soundness, completeness,
+             decidability) is mechanised in Lean~4 in the present artefact
+             (\texttt{lax-logic-in-lean})}
+}
+
+@inproceedings{FairtloughMendler2002,
+  author    = {Fairtlough, Matt and Mendler, Michael},
+  title     = {On the Logical Content of Computational Type Theory: A Solution to {C}urry's Problem},
+  booktitle = {Types for Proofs and Programs (TYPES 2000)},
+  editor    = {Callaghan, Paul and Luo, Zhaohui and McKinna, James and Pollack, Robert},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {2277},
+  pages     = {63--78},
+  publisher = {Springer},
+  year      = {2002},
+  doi       = {10.1007/3-540-45842-5_5},
+  note      = {Formal development: the context-completeness theorem (Thm~6) and
+             the infinitude of the closed lax fragment are mechanised in Lean~4
+             in the present artefact (\texttt{PLL/Semantics/CtxCompleteness.lean},
+             \texttt{PLL/Semantics/LaxInfinite.lean})}
+}
+
+@techreport{FairtloughMendlerWalton1997,
+  author      = {Fairtlough, Matt and Mendler, Michael and Walton, Michael},
+  title       = {First-order Lax Logic as a Framework for Constraint Logic Programming},
+  institution = {University of Passau},
+  number      = {MIP-9714},
+  month       = jul,
+  year        = {1997}
+}
+
+@inproceedings{FereeVanDerGiessenVanGoolShillito2024,
+  author    = {F{\'e}r{\'e}e, Hugo and van der Giessen, Iris and van Gool, Sam and Shillito, Ian},
+  title     = {Mechanised Uniform Interpolation for Modal Logics {K}, {GL}, and {iSL}},
+  booktitle = {Automated Reasoning (IJCAR 2024)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {14740},
+  pages     = {43--61},
+  publisher = {Springer},
+  year      = {2024},
+  doi       = {10.1007/978-3-031-63501-4_3},
+  eprint    = {2402.10494},
+  archiveprefix = {arXiv},
+  note      = {Best Paper Award. Formal development: uniform interpolants
+             mechanised in Coq (\texttt{hferee/UIML}), with extracted
+             interpolant calculators; the reference point for the open
+             mechanised-UI question for PLL}
+}
+
+@article{FINE1970,
+  author = {FINE, KIT},
+  title = {Propositional quantifiers in modal logic<sup>1</sup>},
+  journal = {Theoria},
+  publisher = {Wiley},
+  volume = {36},
+  number = {3},
+  pages = {336--346},
+  year = {1970},
+  doi = {10.1111/j.1755-2567.1970.tb00432.x},
+  url = {http://dx.doi.org/10.1111/j.1755-2567.1970.tb00432.x},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@misc{FiorentiniFerrari2018,
+  author = {Camillo Fiorentini and Mauro Ferrari},
+  title = {Duality between unprovability and provability in forward proof-search for Intuitionistic Propositional Logic},
+  year = {2018},
+  doi = {https://doi.org/10.1145/3372299},
+  eprint = {1804.06689},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/1804.06689},
+  citedin = {docs/frj-fidelity.md, docs/frj-lax-handoff.md, docs/frj-lax-plan.md, docs/frjlax-fidelity.md, docs/frjw-complexity-comparison.md, docs/gbu-adoption-plan.md, docs/skill-proposal.md, docs/why-chain.md}
+}
+
+@article{FiorentiniFerrari2021,
+  author = {Fiorentini, Camillo and Ferrari, Mauro},
+  title = {A forward internal calculus for model generation in<i>S</i>4},
+  journal = {Journal of Logic and Computation},
+  publisher = {Oxford University Press (OUP)},
+  volume = {31},
+  number = {3},
+  pages = {771--796},
+  year = {2021},
+  doi = {10.1093/logcom/exab014},
+  url = {http://dx.doi.org/10.1093/logcom/exab014},
+  citedin = {docs/frj-fidelity.md}
+}
+
+@article{Fitting2005,
+  author  = {Fitting, Melvin},
+  title   = {The Logic of Proofs, Semantically},
+  journal = {Annals of Pure and Applied Logic},
+  volume  = {132},
+  number  = {1},
+  pages   = {1--25},
+  year    = {2005},
+  note    = {Evidence-function possible-world models; the monotone evidence
+             condition mirrored by the artefact's hereditary Evidence structure}
+}
+
+@misc{FormalizedFormalLogic,
+  author = {Saito, Shogo and Noguchi, Mashu},
+  title  = {Formalized Formal Logic: Foundation},
+  howpublished = {\url{https://github.com/FormalizedFormalLogic/Foundation}},
+  year   = {2026},
+  note   = {Formal development: Lean~4; FOL cut elimination, classical modal
+             K/GL/S5, provability logic. UNVERIFIED: full contributor list
+             (handles Palalansouk{\^i} and SnO2WMaN)}
+}
+
+@article{FRITZ2022,
+  author = {FRITZ, PETER},
+  title = {AXIOMATIZABILITY OF PROPOSITIONALLY QUANTIFIED MODAL LOGICS ON RELATIONAL FRAMES},
+  journal = {The Journal of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {89},
+  number = {2},
+  pages = {758--793},
+  year = {2022},
+  doi = {10.1017/jsl.2022.79},
+  url = {http://dx.doi.org/10.1017/jsl.2022.79},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@book{Fritz2024,
+  author = {Fritz, Peter},
+  title = {Propositional Quantifiers},
+  publisher = {Cambridge University Press},
+  year = {2024},
+  doi = {10.1017/9781009177740},
+  url = {http://dx.doi.org/10.1017/9781009177740},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@article{Gabbay1974,
+  author = {Gabbay, Dov M.},
+  title = {On 2nd order intuitionistic propositional calculus with full comprehension},
+  journal = {Archiv für Mathematische Logik und Grundlagenforschung},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {16},
+  number = {3-4},
+  pages = {177--186},
+  year = {1974},
+  doi = {10.1007/bf02015377},
+  url = {http://dx.doi.org/10.1007/BF02015377},
+  citedin = {docs/pll2-plan.md}
+}
+
+@misc{GangloffNunez2026,
+  author = {Silvère Gangloff and Alonso Nuñez},
+  title = {Residual stratification and the Cantor-Bendixson structures of dual algebraic coframes},
+  year = {2026},
+  eprint = {2605.04851},
+  archiveprefix = {arXiv},
+  primaryclass = {math.DS},
+  url = {https://arxiv.org/abs/2605.04851},
+  citedin = {docs/assembly-tower-lit.md}
+}
+
+@inproceedings{GargAbadi2008,
+  author    = {Garg, Deepak and Abadi, Mart{\'i}n},
+  title     = {A Modal Deconstruction of Access Control Logics},
+  booktitle = {Foundations of Software Science and Computational Structures (FoSSaCS 2008)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {4962},
+  publisher = {Springer},
+  year      = {2008},
+  doi       = {10.1007/978-3-540-78499-9_16}
+}
+
+@misc{GattingerLean4PDL,
+  author = {Gattinger, Malvin},
+  title  = {lean4-pdl: Towards Machine-Checked Interpolation for {PDL} in {L}ean 4},
+  howpublished = {\url{https://github.com/m4lvin/lean4-pdl}},
+  year   = {2026},
+  note   = {Formal development: Lean~4; the one live Lean interpolation
+             project, neighbour to the artefact's open PLL
+             uniform-interpolation task}
+}
+
+@article{Gentzen1935,
+  author  = {Gentzen, Gerhard},
+  title   = {Untersuchungen {\"u}ber das logische Schlie{\ss}en. {I}, {II}},
+  journal = {Mathematische Zeitschrift},
+  volume  = {39},
+  pages   = {176--210, 405--431},
+  year    = {1935},
+  note    = {English translation in M. E. Szabo (ed.), The Collected Papers of
+             Gerhard Gentzen, North-Holland, 1969. Decidability of
+             intuitionistic propositional logic from a terminating calculus,
+             thirty years before its Kripke completeness. Formal development:
+             cut elimination is mechanised in many systems, incl. Lean~4
+             (FormalizedFormalLogic/Foundation) and the present artefact's
+             cut-free sequent calculus for PLL (\texttt{PLL/Sequent/Sequent.lean})}
+}
+
+@article{Ghilardi1995,
+  author = {Ghilardi, Silvio},
+  title = {An algebraic theory of normal forms},
+  journal = {Annals of Pure and Applied Logic},
+  publisher = {Elsevier BV},
+  volume = {71},
+  number = {3},
+  pages = {189--245},
+  year = {1995},
+  doi = {10.1016/0168-0072(93)e0084-2},
+  url = {http://dx.doi.org/10.1016/0168-0072(93)E0084-2},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{GhilardiLenzi2022,
+  author = {Ghilardi, S. and Lenzi, G.},
+  title = {Unification in lax logic},
+  journal = {Journal of Algebraic Hyperstructures and Logical Algebras},
+  publisher = {CMV Verlag},
+  volume = {3},
+  number = {1},
+  pages = {61--75},
+  year = {2022},
+  doi = {10.52547/hatef.jahla.3.1.6},
+  url = {http://dx.doi.org/10.52547/HATEF.JAHLA.3.1.6},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{GhilardiZawadowski1995,
+  author = {Ghilardi, Silvio and Zawadowski, Marek},
+  title = {Undefinability of propositional quantifiers in the modal system S4},
+  journal = {Studia Logica},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {55},
+  number = {2},
+  pages = {259--271},
+  year = {1995},
+  doi = {10.1007/bf01061237},
+  url = {http://dx.doi.org/10.1007/BF01061237},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{GhilardiZawadowski1997,
+  author = {Ghilardi, Silvio and Zawadowski, Marek},
+  title = {Model completions and r-Heyting categories},
+  journal = {Annals of Pure and Applied Logic},
+  publisher = {Elsevier BV},
+  volume = {88},
+  number = {1},
+  pages = {27--46},
+  year = {1997},
+  doi = {10.1016/s0168-0072(97)00012-2},
+  url = {http://dx.doi.org/10.1016/S0168-0072(97)00012-2},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@book{GhilardiZawadowski2002,
+  author    = {Ghilardi, Silvio and Zawadowski, Marek},
+  title     = {Sheaves, Games, and Model Completions: A Categorical Approach to Nonclassical Propositional Logics},
+  series    = {Trends in Logic},
+  volume    = {14},
+  publisher = {Kluwer},
+  year      = {2002}
+}
+
+@book{GhilardiZawadowski2002a,
+  author = {Ghilardi, Silvio and Zawadowski, Marek},
+  title = {Sheaves, Games, and Model Completions},
+  journal = {Trends in Logic},
+  publisher = {Springer Netherlands},
+  year = {2002},
+  doi = {10.1007/978-94-015-9936-8},
+  url = {http://dx.doi.org/10.1007/978-94-015-9936-8},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@misc{GiessenIemhoff2023,
+  author = {Iris van der Giessen and Rosalie Iemhoff},
+  title = {Proof Theory for Intuitionistic Strong L\"ob Logic},
+  year = {2023},
+  eprint = {2011.10383},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/2011.10383},
+  citedin = {docs/commentary.md, docs/g4ill-gap-review.md}
+}
+
+@misc{GiessenJalaliKuznets2021,
+  author = {Iris van der Giessen and Raheleh Jalali and Roman Kuznets},
+  title = {Uniform interpolation via nested sequents and hypersequents},
+  year = {2021},
+  doi = {https://doi.org/10.1007/978-3-030-88853-4_21},
+  eprint = {2105.10930},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/2105.10930},
+  citedin = {docs/lax-dual-colax-biint-handoff.md, docs/second-order-pll-survey.md}
+}
+
+@misc{GiessenJalaliKuznets2026,
+  author = {Iris van der Giessen and Raheleh Jalali and Roman Kuznets},
+  title = {Interpolation in Proof Theory},
+  year = {2026},
+  eprint = {2602.16318},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/2602.16318},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@misc{GloeckleEtAl2026,
+  author = {Fabian Gloeckle and Ahmad Rammal and Charles Arnal and Remi Munos and Vivien Cabannes and Gabriel Synnaeve and Amaury Hayat},
+  title = {Automatic Textbook Formalization},
+  year = {2026},
+  eprint = {2604.03071},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.AI},
+  url = {https://arxiv.org/abs/2604.03071},
+  citedin = {docs/surveys/lean-infosphere-2026-07.md}
+}
+
+@inproceedings{GochtMcCreeshNordstrom2022,
+  author = {Gocht, Stephan and McCreesh, Ciaran and Nordström, Jakob},
+  title = {An Auditable Constraint Programming Solver},
+  journal = {LIPIcs, Volume 235, CP 2022},
+  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum für Informatik},
+  volume = {235},
+  pages = {25:1-25:18},
+  year = {2022},
+  doi = {10.4230/LIPICS.CP.2022.25},
+  url = {https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.CP.2022.25},
+  citedin = {docs/qll-clp-pruning-and-cut.md}
+}
+
+@article{Goldblatt1981,
+  author  = {Goldblatt, Robert I.},
+  title   = {Grothendieck Topology as Geometric Modality},
+  journal = {Zeitschrift f{\"u}r mathematische Logik und Grundlagen der Mathematik},
+  volume  = {27},
+  pages   = {495--529},
+  year    = {1981},
+  doi     = {10.1002/malq.19810273104}
+}
+
+@article{Goldblatt2010,
+  author = {Goldblatt, R.},
+  title = {Cover semantics for quantified lax logic},
+  journal = {Journal of Logic and Computation},
+  publisher = {Oxford University Press (OUP)},
+  volume = {21},
+  number = {6},
+  pages = {1035--1063},
+  year = {2010},
+  doi = {10.1093/logcom/exq029},
+  url = {http://dx.doi.org/10.1093/logcom/exq029},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@misc{Gratzer2026,
+  author = {Daniel Gratzer},
+  title = {Normalization for multimodal type theory},
+  year = {2026},
+  doi = {https://doi.org/10.46298/lmcs-22(1:27)2026},
+  eprint = {2301.11842},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/2301.11842},
+  citedin = {docs/surveys/categorical-modal-proof-theory.md}
+}
+
+@article{GratzerKavvosNuytsBirkedal2021,
+  author  = {Gratzer, Daniel and Kavvos, G. A. and Nuyts, Andreas and Birkedal, Lars},
+  title   = {Multimodal Dependent Type Theory},
+  journal = {Logical Methods in Computer Science},
+  volume  = {17},
+  number  = {3},
+  year    = {2021},
+  eprint  = {2011.15021},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{HagemeierKirst2022,
+  author    = {Hagemeier, Christian and Kirst, Dominik},
+  title     = {Constructive and Mechanised Meta-Theory of Intuitionistic Epistemic Logic},
+  booktitle = {Logical Foundations of Computer Science (LFCS 2022)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {13137},
+  publisher = {Springer},
+  year      = {2022},
+  doi       = {10.1007/978-3-030-93100-1_7},
+  note      = {Formal development: constructive completeness, semantic
+             cut-elimination and FMP for Artemov--Protopopescu's IEL, mechanised
+             in Coq (\texttt{uds-psl/intuitionistic-epistemic-logic}); journal
+             version in Journal of Logic and Computation 32(8), 2022. The
+             nearest existing mechanised-epistemic-logic artefact to the
+             present development}
+}
+
+@misc{HardingMcDonaldPeinado2024,
+  author = {John Harding and Joseph McDonald and Miguel Peinado},
+  title = {Monadic ortholattices: completions and duality},
+  year = {2024},
+  eprint = {2406.06917},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/2406.06917},
+  citedin = {docs/surveys/nuclei-model-completions-monads.md}
+}
+
+@misc{Haykazyan2019,
+  author = {Levon Haykazyan},
+  title = {More on a Curious Nucleus},
+  year = {2019},
+  eprint = {1807.08020},
+  archiveprefix = {arXiv},
+  primaryclass = {math.RA},
+  url = {https://arxiv.org/abs/1807.08020},
+  citedin = {docs/assembly-tower-lit.md}
+}
+
+@misc{HensonMontesi2026,
+  author = {Christopher Henson and Fabrizio Montesi},
+  title = {Computer Science as Infrastructure: the Spine of the Lean Computer Science Library (CSLib)},
+  year = {2026},
+  doi = {https://doi.org/10.4204/EPTCS.449.9},
+  eprint = {2602.15078},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/2602.15078},
+  citedin = {docs/pll2-plan.md}
+}
+
+@book{Hintikka1962,
+  author    = {Hintikka, Jaakko},
+  title     = {Knowledge and Belief: An Introduction to the Logic of the Two Notions},
+  publisher = {Cornell University Press},
+  address   = {Ithaca, NY},
+  year      = {1962}
+}
+
+@article{Howe2001,
+  author  = {Howe, Jacob M.},
+  title   = {Proof Search in Lax Logic},
+  journal = {Mathematical Structures in Computer Science},
+  volume  = {11},
+  number  = {4},
+  pages   = {573--588},
+  year    = {2001},
+  doi     = {10.1017/S0960129501003334}
+}
+
+@incollection{Hyland1982,
+  author    = {Hyland, J. Martin E.},
+  title     = {The Effective Topos},
+  booktitle = {The {L.E.J.} {B}rouwer Centenary Symposium},
+  editor    = {Troelstra, Anne S. and van Dalen, Dirk},
+  publisher = {North-Holland},
+  address   = {Amsterdam},
+  pages     = {165--216},
+  year      = {1982}
+}
+
+@article{HylandPlotkinPower2006,
+  author  = {Hyland, Martin and Plotkin, Gordon and Power, John},
+  title   = {Combining Effects: Sum and Tensor},
+  journal = {Theoretical Computer Science},
+  volume  = {357},
+  number  = {1--3},
+  pages   = {70--99},
+  year    = {2006},
+  doi     = {10.1016/j.tcs.2006.03.013}
+}
+
+@article{Iemhoff2018,
+  author = {Iemhoff, Rosalie},
+  title = {Uniform interpolation and sequent calculi in modal logic},
+  journal = {Archive for Mathematical Logic},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {58},
+  number = {1-2},
+  pages = {155--181},
+  year = {2018},
+  doi = {10.1007/s00153-018-0629-0},
+  url = {http://dx.doi.org/10.1007/s00153-018-0629-0},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{Iemhoff2019,
+  author = {Iemhoff, Rosalie},
+  title = {Uniform interpolation and the existence of sequent calculi},
+  journal = {Annals of Pure and Applied Logic},
+  publisher = {Elsevier BV},
+  volume = {170},
+  number = {11},
+  pages = {102711},
+  year = {2019},
+  doi = {10.1016/j.apal.2019.05.008},
+  url = {http://dx.doi.org/10.1016/j.apal.2019.05.008},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{Iemhoff2022,
+  author  = {Iemhoff, Rosalie},
+  title   = {The {G4i} Analogue of a {G3i} Sequent Calculus},
+  journal = {Studia Logica},
+  volume  = {110},
+  pages   = {1493--1506},
+  year    = {2022},
+  doi     = {10.1007/s11225-022-10008-3},
+  eprint  = {2011.11847},
+  archiveprefix = {arXiv},
+  note    = {The general G3i-to-G4i transfer theorem invoked by Iemhoff2024;
+             its modal case fails on the lax instance (machine-checked in the
+             present artefact)}
+}
+
+@incollection{Iemhoff2024,
+  author    = {Iemhoff, Rosalie},
+  title     = {Proof Theory for Lax Logic},
+  booktitle = {Dick de Jongh on Intuitionistic and Provability Logics},
+  editor    = {Bezhanishvili, Nick and Iemhoff, Rosalie and Yang, Fan},
+  series    = {Outstanding Contributions to Logic},
+  volume    = {28},
+  pages     = {203--229},
+  publisher = {Springer},
+  year      = {2024},
+  doi       = {10.1007/978-3-031-47921-2_8},
+  eprint    = {2209.08976},
+  archiveprefix = {arXiv},
+  note      = {Introduces the terminating calculus G4iLL and claims uniform
+             interpolation for PLL. Formal development: the present artefact
+             contains a machine-checked counterexample to the calculus's
+             completeness (and to cut/contraction admissibility) together with
+             a repaired calculus (\texttt{PLLG4Gap.lean}), communicated to the
+             author; the uniform-interpolation claim is therefore open as published}
+}
+
+@article{Isbell1972,
+  author  = {Isbell, John R.},
+  title   = {Atomless Parts of Spaces},
+  journal = {Mathematica Scandinavica},
+  volume  = {31},
+  pages   = {5--32},
+  year    = {1972}
+}
+
+@misc{JangEtAl2024,
+  author = {Junyoung Jang and Sophia Roshal and Frank Pfenning and Brigitte Pientka},
+  title = {Adjoint Natural Deduction (Extended Version)},
+  year = {2024},
+  eprint = {2402.01428},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/2402.01428},
+  citedin = {docs/surveys/nuclei-model-completions-monads.md}
+}
+
+@book{Johnstone1982,
+  author    = {Johnstone, Peter T.},
+  title     = {Stone Spaces},
+  series    = {Cambridge Studies in Advanced Mathematics},
+  volume    = {3},
+  publisher = {Cambridge University Press},
+  year      = {1982},
+  note      = {Chapter II.2: nuclei and the assembly; joins of nuclei are not
+             pointwise}
+}
+
+@article{Johnstone1990,
+  author  = {Johnstone, Peter T.},
+  title   = {Two Notes on Nuclei},
+  journal = {Order},
+  volume  = {7},
+  pages   = {205--210},
+  year    = {1990},
+  doi     = {10.1007/BF00383767}
+}
+
+@misc{JuEtAl2026,
+  author = {Haocheng Ju and Guoxiong Gao and Jiedong Jiang and Bin Wu and Zeming Sun and Shurui Liu and Leheng Chen and Yutong Wang and Yuefeng Wang and Zichen Wang and Wanyi He and Peihao Wu and Liang Xiao and Ruochuan Liu and Bryan Dai and Bin Dong},
+  title = {Automated Conjecture Resolution with Formal Verification},
+  year = {2026},
+  eprint = {2604.03789},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LG},
+  url = {https://arxiv.org/abs/2604.03789},
+  citedin = {docs/SUBMIT_TO_MATHLIB.md}
+}
+
+@article{KaminskiTiomkin1996,
+  author = {Kaminski, Michael and Tiomkin, Michael},
+  title = {The Expressive Power of Second-Order Propositional Modal Logic},
+  journal = {Notre Dame Journal of Formal Logic},
+  publisher = {Duke University Press},
+  volume = {37},
+  number = {1},
+  pages = {35--43},
+  year = {1996},
+  doi = {10.1305/ndjfl/1040067314},
+  url = {http://dx.doi.org/10.1305/ndjfl/1040067314},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{KavvosGratzer2023,
+  author  = {Kavvos, G. A. and Gratzer, Daniel},
+  title   = {Under Lock and Key: A Proof System for a Multimodal Logic},
+  journal = {The Bulletin of Symbolic Logic},
+  volume  = {29},
+  number  = {2},
+  pages   = {264--293},
+  year    = {2023},
+  eprint  = {2211.06217},
+  archiveprefix = {arXiv}
+}
+
+@book{Kechris1995,
+  author    = {Kechris, Alexander S.},
+  title     = {Classical Descriptive Set Theory},
+  series    = {Graduate Texts in Mathematics},
+  volume    = {156},
+  publisher = {Springer},
+  year      = {1995},
+  doi       = {10.1007/978-1-4612-4190-4},
+  note      = {Standard reference for the Kleene--Brouwer (Lusin--Sierpi{\'n}ski)
+             order. Formal development: well-foundedness of the KB order on an
+             inductively well-founded tree is mechanised, fully constructively
+             (empty axiom footprint), in the present artefact
+             (\texttt{Util/KleeneBrouwer.lean})}
+}
+
+@article{Kelly1980,
+  author = {Kelly, G.M.},
+  title = {A unified treatment of transfinite constructions for free algebras, free monoids, colimits, associated sheaves, and so on},
+  journal = {Bulletin of the Australian Mathematical Society},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {22},
+  number = {1},
+  pages = {1--83},
+  year = {1980},
+  doi = {10.1017/s0004972700006353},
+  url = {http://dx.doi.org/10.1017/S0004972700006353},
+  citedin = {docs/surveys/nuclei-model-completions-monads.md}
+}
+
+@article{Kihara2023,
+  author  = {Kihara, Takayuki},
+  title   = {Lawvere--Tierney Topologies for Computability Theorists},
+  journal = {Transactions of the American Mathematical Society, Series B},
+  volume  = {10},
+  year    = {2023},
+  eprint  = {2106.03061},
+  archiveprefix = {arXiv},
+  note    = {LT-topologies on the effective topos as generalised oracles;
+             solves open problems of Lee--van Oosten}
+}
+
+@article{Kleene1945,
+  author  = {Kleene, Stephen C.},
+  title   = {On the Interpretation of Intuitionistic Number Theory},
+  journal = {The Journal of Symbolic Logic},
+  volume  = {10},
+  number  = {4},
+  pages   = {109--124},
+  year    = {1945}
+}
+
+@article{Kobayashi1997,
+  author  = {Kobayashi, Satoshi},
+  title   = {Monad as Modality},
+  journal = {Theoretical Computer Science},
+  volume  = {175},
+  number  = {1},
+  pages   = {29--74},
+  year    = {1997}
+}
+
+@article{KowalskiMetcalfe2019,
+  author  = {Kowalski, Tomasz and Metcalfe, George},
+  title   = {Uniform Interpolation and Coherence},
+  journal = {Annals of Pure and Applied Logic},
+  volume  = {170},
+  number  = {7},
+  pages   = {825--841},
+  year    = {2019},
+  eprint  = {1803.09116},
+  archiveprefix = {arXiv},
+  note    = {Coherence fails for K, KT, K4, S4 -- the cautionary datum for the
+             model-completion question for nuclear Heyting algebras}
+}
+
+@misc{KowalskiMetcalfe2019a,
+  author = {Tomasz Kowalski and George Metcalfe},
+  title = {Coherence in Modal Logic},
+  year = {2019},
+  eprint = {1902.02540},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/1902.02540},
+  citedin = {docs/surveys/nuclei-model-completions-monads.md}
+}
+
+@article{Kremer1993,
+  author = {Kremer, Philip},
+  title = {Quantifying over propositions in relevance logic: nonaxiomatisability of primary interpretations of ∀<i>p</i>and ∃<i>p</i>},
+  journal = {Journal of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {58},
+  number = {1},
+  pages = {334--349},
+  year = {1993},
+  doi = {10.2307/2275341},
+  url = {http://dx.doi.org/10.2307/2275341},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{Kremer1997,
+  author = {Kremer, Philip},
+  title = {On the complexity of propositional quantification in intuitionistic logic},
+  journal = {Journal of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {62},
+  number = {2},
+  pages = {529--544},
+  year = {1997},
+  doi = {10.2307/2275545},
+  url = {http://dx.doi.org/10.2307/2275545},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@article{Kremer1997a,
+  author = {Kremer, Philip},
+  title = {Propositional Quantification in the Topological Semantics for S4},
+  journal = {Notre Dame Journal of Formal Logic},
+  publisher = {Duke University Press},
+  volume = {38},
+  number = {2},
+  pages = {295--313},
+  year = {1997},
+  doi = {10.1305/ndjfl/1039724892},
+  url = {http://dx.doi.org/10.1305/ndjfl/1039724892},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@article{KREMER2018,
+  author = {KREMER, PHILIP},
+  title = {COMPLETENESS OF SECOND-ORDER PROPOSITIONAL S4 AND H IN TOPOLOGICAL SEMANTICS},
+  journal = {The Review of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {11},
+  number = {3},
+  pages = {507--518},
+  year = {2018},
+  doi = {10.1017/s1755020318000229},
+  url = {http://dx.doi.org/10.1017/S1755020318000229},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@incollection{Kripke1965,
+  author    = {Kripke, Saul A.},
+  title     = {Semantical Analysis of Intuitionistic Logic {I}},
+  booktitle = {Formal Systems and Recursive Functions},
+  editor    = {Crossley, John N. and Dummett, Michael A. E.},
+  series    = {Studies in Logic and the Foundations of Mathematics},
+  publisher = {North-Holland},
+  address   = {Amsterdam},
+  pages     = {92--130},
+  year      = {1965},
+  note      = {Formal development: Kripke semantics for intuitionistic and
+             modal logics has multiple mechanisations; the F\&M constraint
+             refinement is mechanised in the present artefact
+             (\texttt{PLL/Semantics/Kripke.lean})}
+}
+
+@incollection{Krivine2009,
+  author    = {Krivine, Jean-Louis},
+  title     = {Realizability in Classical Logic},
+  booktitle = {Interactive Models of Computation and Program Behaviour},
+  series    = {Panoramas et Synth{\`e}ses},
+  volume    = {27},
+  publisher = {Soci{\'e}t{\'e} Math{\'e}matique de France},
+  year      = {2009},
+  note      = {The far-classical end of ``the evidence discipline determines
+             the logic'': control operators realise classical principles}
+}
+
+@article{LeeVanOosten2013,
+  author  = {Lee, Sori and van Oosten, Jaap},
+  title   = {Basic Subtoposes of the Effective Topos},
+  journal = {Annals of Pure and Applied Logic},
+  volume  = {164},
+  number  = {9},
+  pages   = {866--883},
+  year    = {2013},
+  eprint  = {1201.2571},
+  archiveprefix = {arXiv},
+  note    = {Classification of local operators (candidate lax modalities) on
+             the effective topos via sights}
+}
+
+@phdthesis{Lindley2005,
+  author = {Lindley, Sam},
+  title  = {Normalisation by Evaluation in the Compilation of Typed
+            Functional Programming Languages},
+  school = {University of Edinburgh},
+  year   = {2005},
+  note   = {Section 3.5: strong normalisation for $\lambda_{ml}$ with
+             unrestricted sums via frame stacks, the paper-form counterpart
+             of the sums case of \texttt{PLL/Normalisation/TopTop.lean}; the thesis also
+             proves confluence and decidable convertibility for
+             $\lambda_{ml}$, cf.\ \texttt{PLL/Normalisation/Confluence.lean}}
+}
+
+@inproceedings{LindleyStark2005,
+  author    = {Lindley, Sam and Stark, Ian},
+  title     = {Reducibility and $\top\top$-Lifting for Computation Types},
+  booktitle = {Typed Lambda Calculi and Applications (TLCA 2005)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {3461},
+  pages     = {262--277},
+  publisher = {Springer},
+  year      = {2005},
+  doi       = {10.1007/11417170_20},
+  note      = {Formal development: the $\top\top$-lifting strong-normalisation
+             argument is mechanised in Lean~4 in the present artefact
+             (\texttt{PLL/Normalisation/TopTop.lean}), apparently the first mechanised
+             $\top\top$-lifting with sums}
+}
+
+@incollection{Lipton1992,
+  author    = {Lipton, James},
+  title     = {Constructive {K}ripke Semantics and Realizability},
+  booktitle = {Logic from Computer Science},
+  editor    = {Moschovakis, Yiannis N.},
+  series    = {Mathematical Sciences Research Institute Publications},
+  volume    = {21},
+  publisher = {Springer},
+  year      = {1992},
+  note      = {UNVERIFIED: page range not confirmed; content known from
+             secondary citations only (Kripke nodes each carrying
+             realizability structure)}
+}
+
+@article{Lob1976,
+  author = {Löb, M. H.},
+  title = {Embedding first order predicate logic in fragments of intuitionistic logic},
+  journal = {Journal of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {41},
+  number = {4},
+  pages = {705--718},
+  year = {1976},
+  doi = {10.2307/2272390},
+  url = {http://dx.doi.org/10.2307/2272390},
+  citedin = {docs/pll2-plan.md}
+}
+
+@inproceedings{LuthGhani2002,
+  author = {Lüth, Christoph and Ghani, Neil},
+  title = {Composing monads using coproducts},
+  booktitle = {Proceedings of the seventh ACM SIGPLAN international conference on Functional programming},
+  publisher = {ACM},
+  series = {ICFP02},
+  pages = {133--144},
+  year = {2002},
+  doi = {10.1145/581478.581492},
+  url = {http://dx.doi.org/10.1145/581478.581492},
+  citedin = {docs/surveys/nuclei-model-completions-monads.md}
+}
+
+@phdthesis{Macnab1976,
+  author = {Macnab, Donald S.},
+  title  = {An Algebraic Study of Modal Operators on {H}eyting Algebras with Applications to Topology and Sheafification},
+  school = {University of Aberdeen},
+  year   = {1976},
+  note   = {UNVERIFIED: title from secondary records (Ern{\'e} 2022 reference
+             list); primary catalogue record not reached}
+}
+
+@article{Macnab1981,
+  author  = {Macnab, Donald S.},
+  title   = {Modal Operators on {H}eyting Algebras},
+  journal = {Algebra Universalis},
+  volume  = {12},
+  number  = {1},
+  pages   = {5--29},
+  year    = {1981},
+  doi     = {10.1007/BF02483860},
+  note    = {Nuclei (= interpretations of the lax modality) on possibly
+             non-complete Heyting algebras}
+}
+
+@misc{MarinPadhiarShillito2026,
+  author = {Marin, Sonia and Padhiar, Meghna and Shillito, Ian},
+  title  = {Intuitionistic Justification Logic, Semantically},
+  year   = {2026},
+  eprint = {2606.31884},
+  archiveprefix = {arXiv},
+  note   = {Intuitionistic-base modular models fusing an evidence function with
+             Kripke machinery; the right base logic for a justification-style
+             reading of the lax modality}
+}
+
+@inproceedings{MathlibCommunity2020,
+  author    = {{The mathlib Community}},
+  title     = {The {L}ean Mathematical Library},
+  booktitle = {Certified Programs and Proofs (CPP 2020)},
+  pages     = {367--381},
+  publisher = {ACM},
+  year      = {2020},
+  doi       = {10.1145/3372885.3373824},
+  note      = {Formal development: Mathlib, the library the artefact builds on;
+             includes \texttt{Order/Nucleus.lean} (nuclei on frames)}
+}
+
+@article{Mendler2000,
+  author  = {Mendler, Michael},
+  title   = {Characterising Combinational Timing Analyses in Intuitionistic Modal Logic},
+  journal = {Logic Journal of the IGPL},
+  volume  = {8},
+  number  = {6},
+  pages   = {821--852},
+  year    = {2000},
+  note    = {The timing-analysis perspective on the lax modality (sixth
+             perspective of FairtloughMendler1997)}
+}
+
+@article{Mendler2000a,
+  author = {Mendler, Michael},
+  title = {Timing Analysis of Combinational Circuits in Intuitionistic Propositional Logic},
+  journal = {Formal Methods in System Design},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {17},
+  number = {1},
+  pages = {5--37},
+  year = {2000},
+  doi = {10.1023/a:1008780817617},
+  url = {http://dx.doi.org/10.1023/A:1008780817617},
+  citedin = {docs/belief-applications-draft.md}
+}
+
+@article{MendlerScheele2011,
+  author  = {Mendler, Michael and Scheele, Stephan},
+  title   = {Cut-free {G}entzen Calculus for Multimodal {CK}},
+  journal = {Information and Computation},
+  volume  = {209},
+  number  = {12},
+  year    = {2011}
+}
+
+@misc{Metcalfe2025,
+  author = {George Metcalfe},
+  title = {Interpolation and Amalgamation},
+  year = {2025},
+  eprint = {2512.00924},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/2512.00924},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@misc{MgelbergSimpson2009,
+  author = {Rasmus Ejlers Møgelberg and Alex Simpson},
+  title = {Relational Parametricity for Computational Effects},
+  year = {2009},
+  doi = {https://doi.org/10.2168/LMCS-5(3:7)2009},
+  eprint = {0906.5488},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.PL},
+  url = {https://arxiv.org/abs/0906.5488},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@article{Moggi1991,
+  author  = {Moggi, Eugenio},
+  title   = {Notions of Computation and Monads},
+  journal = {Information and Computation},
+  volume  = {93},
+  number  = {1},
+  pages   = {55--92},
+  year    = {1991},
+  doi     = {10.1016/0890-5401(91)90052-4},
+  note    = {Formal development: the computational lambda-calculus is mechanised
+             as an intrinsically-typed term calculus in the present artefact
+             (\texttt{PLL/ND/Terms.lean})}
+}
+
+@misc{Nakata2026,
+  author = {Nakata, Satoshi},
+  title  = {A $j$-Translation with {K}ripke Forcing Relation},
+  year   = {2026},
+  eprint = {2602.23218},
+  archiveprefix = {arXiv},
+  note   = {Forcing parametrised by a nucleus, over stages that are themselves
+             nuclei ordered by refinement. UNVERIFIED: author first name
+             (paper read in repo literature pass; full author record not
+             re-confirmed)}
+}
+
+@inproceedings{Necula1997,
+  author = {Necula, George C.},
+  title = {Proof-carrying code},
+  booktitle = {Proceedings of the 24th ACM SIGPLAN-SIGACT symposium on Principles of programming languages - POPL ’97},
+  publisher = {ACM Press},
+  series = {POPL ’97},
+  pages = {106--119},
+  year = {1997},
+  doi = {10.1145/263699.263712},
+  url = {http://dx.doi.org/10.1145/263699.263712},
+  citedin = {docs/belief-applications-draft.md}
+}
+
+@article{Newman1942,
+  author  = {Newman, Maxwell H. A.},
+  title   = {On Theories with a Combinatorial Definition of ``Equivalence''},
+  journal = {Annals of Mathematics},
+  volume  = {43},
+  number  = {2},
+  pages   = {223--243},
+  year    = {1942},
+  note    = {Newman's lemma. Formal development: mechanised in Lean~4 in the
+             present artefact (\texttt{PLL/Normalisation/Confluence.lean}: confluence of the
+             lax term calculus from strong normalisation); also available in
+             Mathlib and in standard Coq/Isabelle rewriting libraries}
+}
+
+@article{NiefieldRosenthal1987,
+  author  = {Niefield, Susan B. and Rosenthal, Kimmo I.},
+  title   = {Spatial Sublocales and Essential Primes},
+  journal = {Topology and its Applications},
+  volume  = {26},
+  number  = {3},
+  pages   = {263--269},
+  year    = {1987}
+}
+
+@article{Nishimura1960,
+  author  = {Nishimura, Iwao},
+  title   = {On Formulas of One Variable in Intuitionistic Propositional Calculus},
+  journal = {The Journal of Symbolic Logic},
+  volume  = {25},
+  pages   = {327--331},
+  year    = {1960},
+  note    = {The Rieger--Nishimura lattice: the free Heyting algebra on one
+             generator is infinite}
+}
+
+@misc{OlkhovikovBadia2022,
+  author = {Grigory K. Olkhovikov and Guillermo Badia},
+  title = {Craig interpolation theorem fails in bi-intuitionistic predicate logic},
+  year = {2022},
+  doi = {https://doi.org/10.1017/S1755020322000296},
+  eprint = {2205.00245},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/2205.00245},
+  citedin = {docs/lax-dual-colax-biint-handoff.md}
+}
+
+@unpublished{Pataraia1997,
+  author = {Pataraia, Dito},
+  title  = {A Constructive Proof of {T}arski's Fixed-Point Theorem for Dcpos},
+  note   = {Presented at the 65th Peripatetic Seminar on Sheaves and Logic,
+             Aarhus, November 1997. Unpublished; standard citation via
+             Escardo2003},
+  year   = {1997}
+}
+
+@misc{PavlovicHughes2020,
+  author = {Pavlovic, Dusko and Hughes, Dominic J. D.},
+  title  = {The Nucleus of an Adjunction and the {S}treet Monad on Monads},
+  year   = {2020},
+  eprint = {2004.07353},
+  archiveprefix = {arXiv},
+  note   = {A nucleus is an idempotent strong monad on the poset of truth
+             values; the categorical face of the identification behind the
+             belief algebra}
+}
+
+@misc{PerezEtAl2017,
+  author = {Jaime Castro Pérez and Mauricio Medina Bárcenas and José Ríos Montes and Ángel Zaldívar},
+  title = {Boolean perspectives of idioms and the Boyle derivative},
+  year = {2017},
+  eprint = {1708.02619},
+  archiveprefix = {arXiv},
+  primaryclass = {math.RA},
+  url = {https://arxiv.org/abs/1708.02619},
+  citedin = {docs/assembly-tower-lit.md}
+}
+
+@article{Pfenning2000,
+  author = {Pfenning, Frank},
+  title = {Structural Cut Elimination},
+  journal = {Information and Computation},
+  publisher = {Elsevier BV},
+  volume = {157},
+  number = {1-2},
+  pages = {84--141},
+  year = {2000},
+  doi = {10.1006/inco.1999.2832},
+  url = {http://dx.doi.org/10.1006/inco.1999.2832},
+  citedin = {docs/pll2-plan.md}
+}
+
+@article{PfenningDavies2001,
+  author  = {Pfenning, Frank and Davies, Rowan},
+  title   = {A Judgmental Reconstruction of Modal Logic},
+  journal = {Mathematical Structures in Computer Science},
+  volume  = {11},
+  number  = {4},
+  pages   = {511--540},
+  year    = {2001},
+  doi     = {10.1017/S0960129501003322},
+  note    = {Decomposes the lax modality as possibility-following-necessity.
+             Formal development: Fitch-style/judgmental modal calculi have Agda
+             mechanisations, e.g. \texttt{nachivpn/k} (see ValliappanRuchTomeCortinas2022)}
+}
+
+@book{PicadoPultr2012,
+  author    = {Picado, Jorge and Pultr, Ale{\v s}},
+  title     = {Frames and Locales: Topology Without Points},
+  series    = {Frontiers in Mathematics},
+  publisher = {Birkh{\"a}user},
+  year      = {2012},
+  doi       = {10.1007/978-3-0348-0154-6}
+}
+
+@article{Pitts1992,
+  author  = {Pitts, Andrew M.},
+  title   = {On an Interpretation of Second Order Quantification in First Order Intuitionistic Propositional Logic},
+  journal = {The Journal of Symbolic Logic},
+  volume  = {57},
+  number  = {1},
+  pages   = {33--52},
+  year    = {1992},
+  note    = {The origin of proof-theoretic uniform interpolation, the method
+             behind the G4-style route attempted for PLL}
+}
+
+@article{Plewe2000,
+  author  = {Plewe, Till},
+  title   = {Higher Order Dissolutions and {B}oolean Coreflections of Locales},
+  journal = {Journal of Pure and Applied Algebra},
+  volume  = {154},
+  pages   = {273--293},
+  year    = {2000},
+  note    = {The assembly tower need not stabilise (the locale of rationals is
+             insoluble); soluble locales classified for $\alpha \le 4$}
+}
+
+@article{Plewe2002,
+  author  = {Plewe, Till},
+  title   = {Sublocale Lattices},
+  journal = {Journal of Pure and Applied Algebra},
+  volume  = {168},
+  number  = {2--3},
+  pages   = {309--326},
+  year    = {2002}
+}
+
+@article{Prawitz1968,
+  author = {Prawitz, Dag},
+  title = {Hauptsatz for higher order logic},
+  journal = {Journal of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {33},
+  number = {3},
+  pages = {452--457},
+  year = {1968},
+  doi = {10.2307/2270331},
+  url = {http://dx.doi.org/10.2307/2270331},
+  citedin = {docs/pll2-plan.md}
+}
+
+@incollection{Prawitz1971,
+  author    = {Prawitz, Dag},
+  title     = {Ideas and Results in Proof Theory},
+  booktitle = {Proceedings of the Second Scandinavian Logic Symposium},
+  series    = {Studies in Logic and the Foundations of Mathematics},
+  volume    = {63},
+  pages     = {235--307},
+  publisher = {North-Holland},
+  year      = {1971},
+  note      = {Permutative conversions; the strong-normalisation result
+             behind the translation proof of
+             \texttt{BentonBiermanDePaiva1998} for $\lambda_{ml}$}
+}
+
+@misc{PruiksmaCharginPfenningReed2018,
+  author = {Pruiksma, Klaas and Chargin, William and Pfenning, Frank and Reed, Jason},
+  title  = {Adjoint Logic},
+  year   = {2018},
+  howpublished = {Unpublished manuscript, Carnegie Mellon University},
+  url    = {https://www.cs.cmu.edu/~fp/papers/adjoint18.pdf},
+  note   = {The lax modality as a composite of adjoint mode shifts; the natural
+             setting for several lax modalities and their joins}
+}
+
+@misc{RamosEtAl2025,
+  author = {Arthur Ramos and Anjolina Oliveira and Ruy de Queiroz and Tiago de Veras},
+  title = {A Modular Lean 4 Framework for Confluence and Strong Normalization of Lambda Calculi with Products and Sums},
+  year = {2025},
+  eprint = {2512.09280},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/2512.09280},
+  citedin = {docs/pll2-plan.md}
+}
+
+@article{Rieger1949,
+  author  = {Rieger, Ladislav},
+  title   = {On the Lattice Theory of {B}rouwerian Propositional Logic},
+  journal = {Acta Facultatis Rerum Naturalium Universitatis Carolinae},
+  volume  = {189},
+  year    = {1949},
+  note    = {UNVERIFIED: canonical citation; primary source not reached}
+}
+
+@misc{RijkeShulmanSpitters2020,
+  author = {Egbert Rijke and Michael Shulman and Bas Spitters},
+  title = {Modalities in homotopy type theory},
+  year = {2020},
+  doi = {https://doi.org/10.23638/LMCS-16(1:2)2020},
+  eprint = {1706.07526},
+  archiveprefix = {arXiv},
+  primaryclass = {math.CT},
+  url = {https://arxiv.org/abs/1706.07526},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@misc{SantschiVooijs2026,
+  author = {Simon Santschi and Niels C. Vooijs},
+  title = {Interpolation above S4},
+  year = {2026},
+  eprint = {2604.22020},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/2604.22020},
+  citedin = {docs/surveys/categorical-modal-proof-theory.md}
+}
+
+@misc{Schmitt2025,
+  author = {Johannes Schmitt},
+  title = {Extremal descendant integrals on moduli spaces of curves: An inequality discovered and proved in collaboration with AI},
+  year = {2025},
+  eprint = {2512.14575},
+  archiveprefix = {arXiv},
+  primaryclass = {math.AG},
+  url = {https://arxiv.org/abs/2512.14575},
+  citedin = {docs/surveys/lean-infosphere-2026-07.md}
+}
+
+@article{SCHRIJVERSSTUCKEYWADLER2009,
+  author = {SCHRIJVERS, TOM and STUCKEY, PETER and WADLER, PHILIP},
+  title = {Monadic constraint programming},
+  journal = {Journal of Functional Programming},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {19},
+  number = {6},
+  pages = {663--697},
+  year = {2009},
+  doi = {10.1017/s0956796809990086},
+  url = {http://dx.doi.org/10.1017/S0956796809990086},
+  citedin = {docs/qll-clp-pruning-and-cut.md}
+}
+
+@inproceedings{ShillitoVanDerGiessenGoreIemhoff2023,
+  author    = {Shillito, Ian and van der Giessen, Iris and Gor{\'e}, Rajeev and Iemhoff, Rosalie},
+  title     = {A New Calculus for Intuitionistic Strong {L}{\"o}b Logic: Strong Termination and Cut-Elimination, Formalised},
+  booktitle = {Automated Reasoning with Analytic Tableaux and Related Methods (TABLEAUX 2023)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {14278},
+  publisher = {Springer},
+  year      = {2023},
+  doi       = {10.1007/978-3-031-43513-3_5},
+  eprint    = {2309.00486},
+  archiveprefix = {arXiv},
+  note      = {Formal development: all proofs formalised in Coq; the model for
+             verified terminating G4-style calculi that the artefact's repaired
+             PLL calculus joins}
+}
+
+@misc{Shulman2023,
+  author = {Michael Shulman},
+  title = {Semantics of multimodal adjoint type theory},
+  year = {2023},
+  doi = {https://doi.org/10.46298/entics.12300},
+  eprint = {2303.02572},
+  archiveprefix = {arXiv},
+  primaryclass = {math.CT},
+  url = {https://arxiv.org/abs/2303.02572},
+  citedin = {docs/surveys/categorical-modal-proof-theory.md}
+}
+
+@incollection{Simmons1978,
+  author    = {Simmons, Harold},
+  title     = {A Framework for Topology},
+  booktitle = {Logic Colloquium '77},
+  series    = {Studies in Logic and the Foundations of Mathematics},
+  volume    = {96},
+  pages     = {239--251},
+  publisher = {North-Holland},
+  year      = {1978}
+}
+
+@article{Simmons1980,
+  author  = {Simmons, Harold},
+  title   = {Spaces with {B}oolean Assemblies},
+  journal = {Colloquium Mathematicum},
+  volume  = {43},
+  number  = {1},
+  pages   = {23--39},
+  year    = {1980}
+}
+
+@incollection{Simmons1982,
+  author    = {Simmons, Harold},
+  title     = {An Algebraic Version of {C}antor--{B}endixson Analysis},
+  booktitle = {Categorical Aspects of Topology and Analysis},
+  series    = {Lecture Notes in Mathematics},
+  volume    = {915},
+  pages     = {310--323},
+  publisher = {Springer},
+  year      = {1982},
+  note      = {UNVERIFIED: attested by multiple secondary citations with these
+             exact pages; the primary record was not opened}
+}
+
+@incollection{Simmons2014,
+  author    = {Simmons, Harold},
+  title     = {Cantor--{B}endixson Properties of the Assembly of a Frame},
+  booktitle = {Leo Esakia on Duality in Modal and Intuitionistic Logics},
+  series    = {Outstanding Contributions to Logic},
+  volume    = {4},
+  pages     = {217--255},
+  publisher = {Springer},
+  year      = {2014},
+  doi       = {10.1007/978-94-017-8860-1_9}
+}
+
+@phdthesis{Simpson1994,
+  author = {Simpson, Alex K.},
+  title  = {The Proof Theory and Semantics of Intuitionistic Modal Logic},
+  school = {University of Edinburgh},
+  year   = {1994},
+  note   = {Birelational (intuitionistic-plus-modal accessibility) semantics,
+             the frame format shared by the F\&M constraint models}
+}
+
+@article{Skvortsov1995,
+  author = {Skvortsov, D.},
+  title = {On the predicate logics of finite Kripke frames},
+  journal = {Studia Logica},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {54},
+  number = {1},
+  pages = {79--88},
+  year = {1995},
+  doi = {10.1007/bf01058533},
+  url = {http://dx.doi.org/10.1007/BF01058533},
+  citedin = {docs/pll2-plan.md}
+}
+
+@article{Skvortsov1997,
+  author = {Skvortsov, D.},
+  title = {Non-axiomatizable second order intuitionistic propositional logic},
+  journal = {Annals of Pure and Applied Logic},
+  publisher = {Elsevier BV},
+  volume = {86},
+  number = {1},
+  pages = {33--46},
+  year = {1997},
+  doi = {10.1016/s0168-0072(96)00034-6},
+  url = {http://dx.doi.org/10.1016/S0168-0072(96)00034-6},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@article{Skvortsov2005,
+  author = {Skvortsov, Dmitrij},
+  title = {The superintuitionistic predicate logic of finite Kripke frames is not recursively axiomatizable},
+  journal = {Journal of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {70},
+  number = {2},
+  pages = {451--459},
+  year = {2005},
+  doi = {10.2178/jsl/1120224722},
+  url = {http://dx.doi.org/10.2178/jsl/1120224722},
+  citedin = {docs/pll2-plan.md}
+}
+
+@article{Sobolev1977,
+  author = {Sobolev, S. K.},
+  title = {The intuitionistic propositional calculus with quantifiers},
+  journal = {Mathematical Notes of the Academy of Sciences of the USSR},
+  publisher = {Springer Science and Business Media LLC},
+  volume = {22},
+  number = {1},
+  pages = {528--532},
+  year = {1977},
+  doi = {10.1007/bf01147694},
+  url = {http://dx.doi.org/10.1007/BF01147694},
+  citedin = {docs/pll2-plan.md}
+}
+
+@article{SrensenUrzyczyn2010,
+  author = {Sørensen, Morten H. and Urzyczyn, Paweł},
+  title = {A Syntactic Embedding of Predicate Logic into Second-Order Propositional Logic},
+  journal = {Notre Dame Journal of Formal Logic},
+  publisher = {Duke University Press},
+  volume = {51},
+  number = {4},
+  pages = {457--473},
+  year = {2010},
+  doi = {10.1215/00294527-2010-029},
+  url = {http://dx.doi.org/10.1215/00294527-2010-029},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@article{Stalnaker2006,
+  author  = {Stalnaker, Robert},
+  title   = {On Logics of Knowledge and Belief},
+  journal = {Philosophical Studies},
+  volume  = {128},
+  number  = {1},
+  pages   = {169--199},
+  year    = {2006}
+}
+
+@misc{StassenGratzerBirkedalMitten,
+  author = {Stassen, Philipp and Gratzer, Daniel and Birkedal, Lars},
+  title  = {mitten: A Flexible Multimodal Proof Assistant},
+  year   = {2022},
+  note   = {UNVERIFIED: venue details not confirmed this pass (believed TYPES
+             2022 post-proceedings, LIPIcs). Formal development: a proof
+             assistant implementing multimodal type theory}
+}
+
+@misc{TabatabaiIemhoffJalali2022,
+  author = {Amirhossein Akbar Tabatabai and Rosalie Iemhoff and Raheleh Jalali},
+  title = {Uniform Lyndon interpolation for intuitionistic monotone modal logic},
+  year = {2022},
+  eprint = {2208.04607},
+  archiveprefix = {arXiv},
+  primaryclass = {math.LO},
+  url = {https://arxiv.org/abs/2208.04607},
+  citedin = {docs/lax-dual-colax-biint-handoff.md}
+}
+
+@misc{TabatabaiJalali2024,
+  author = {Amirhossein Akbar Tabatabai and Raheleh Jalali},
+  title = {Universal Proof Theory: Semi-analytic Rules and Craig Interpolation},
+  year = {2024},
+  eprint = {1808.06256},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/1808.06256},
+  citedin = {docs/surveys/categorical-modal-proof-theory.md}
+}
+
+@article{TAKAHASHI1967,
+  author = {TAKAHASHI, Moto-o},
+  title = {A proof of cut-elimination theorem in simple type-theory},
+  journal = {Journal of the Mathematical Society of Japan},
+  publisher = {Mathematical Society of Japan (Project Euclid)},
+  volume = {19},
+  number = {4},
+  year = {1967},
+  doi = {10.2969/jmsj/01940399},
+  url = {http://dx.doi.org/10.2969/jmsj/01940399},
+  citedin = {docs/pll2-plan.md}
+}
+
+@misc{Terui2019,
+  author = {Kazushige Terui},
+  title = {MacNeille completion and Buchholz' Omega rule for parameter-free second order logics},
+  year = {2019},
+  eprint = {1804.11066},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LO},
+  url = {https://arxiv.org/abs/1804.11066},
+  citedin = {docs/pll2-plan.md}
+}
+
+@book{Troelstra1973,
+  editor    = {Troelstra, Anne S.},
+  title     = {Metamathematical Investigation of Intuitionistic Arithmetic and Analysis},
+  series    = {Lecture Notes in Mathematics},
+  volume    = {344},
+  publisher = {Springer},
+  year      = {1973},
+  doi       = {10.1007/BFb0066739}
+}
+
+@incollection{Troelstra1998,
+  author    = {Troelstra, Anne S.},
+  title     = {Realizability},
+  booktitle = {Handbook of Proof Theory},
+  editor    = {Buss, Samuel R.},
+  series    = {Studies in Logic and the Foundations of Mathematics},
+  volume    = {137},
+  pages     = {407--473},
+  publisher = {Elsevier},
+  year      = {1998}
+}
+
+@book{TroelstraVanDalen1988,
+  author    = {Troelstra, Anne S. and van Dalen, Dirk},
+  title     = {Constructivism in Mathematics: An Introduction},
+  series    = {Studies in Logic and the Foundations of Mathematics},
+  volume    = {121 and 123},
+  publisher = {North-Holland},
+  address   = {Amsterdam},
+  year      = {1988},
+  note      = {Two volumes; standard reference for BHK, Kripke semantics and
+             realisability over an intuitionistic base}
+}
+
+@misc{TsoukalasEtAl2026,
+  author = {George Tsoukalas and Anton Kovsharov and Sergey Shirobokov and Anja Surina and Moritz Firsching and Gergely Bérczi and Francisco J. R. Ruiz and Arun Suggala and Adam Zsolt Wagner and Eric Wieser and Lei Yu and Aja Huang and Miklós Z. Horváth and Andrew Ferraiuolo and Henryk Michalewski and Edward Lockhart and Codrut Grosu and Thomas Hubert and Matej Balog and Pushmeet Kohli and Swarat Chaudhuri},
+  title = {Advancing Mathematics Research with AI-Driven Formal Proof Search},
+  year = {2026},
+  eprint = {2605.22763},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.AI},
+  url = {https://arxiv.org/abs/2605.22763},
+  citedin = {docs/surveys/lean-infosphere-2026-07.md}
+}
+
+@inproceedings{Valliappan2026,
+  author    = {Valliappan, Nachiappan},
+  title     = {Lax Modal Lambda Calculi},
+  booktitle = {34th EACSL Annual Conference on Computer Science Logic (CSL 2026)},
+  series    = {LIPIcs},
+  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  year      = {2026},
+  doi       = {10.4230/LIPIcs.CSL.2026.46},
+  eprint    = {2512.10779},
+  archiveprefix = {arXiv},
+  note      = {Formal development: proof-relevant possible-world semantics and
+             normalisation for lax calculi, machine-checked in Agda; the closest
+             existing realiser-carrying Kripke model of lax logic}
+}
+
+@article{ValliappanRuchTomeCortinas2022,
+  author  = {Valliappan, Nachiappan and Ruch, Fabian and Tom{\'e} Corti{\~n}as, Carlos},
+  title   = {Normalization for {F}itch-Style Modal Calculi},
+  journal = {Proceedings of the ACM on Programming Languages},
+  volume  = {6},
+  number  = {ICFP},
+  pages   = {772--798},
+  year    = {2022},
+  doi     = {10.1145/3547649},
+  eprint  = {2207.12807},
+  archiveprefix = {arXiv},
+  note    = {Formal development: normalisation by evaluation for modal lambda
+             calculi mechanised in Agda (\texttt{nachivpn/k})}
+}
+
+@article{VanBenthemPacuit2011,
+  author  = {van Benthem, Johan and Pacuit, Eric},
+  title   = {Dynamic Logics of Evidence-Based Beliefs},
+  journal = {Studia Logica},
+  volume  = {99},
+  number  = {1--3},
+  pages   = {61--92},
+  year    = {2011}
+}
+
+@phdthesis{VanDerGiessen2022,
+  author = {van der Giessen, Iris},
+  title  = {Uniform Interpolation and Admissible Rules: Proof-Theoretic Investigations into (Intuitionistic) Modal Logics},
+  school = {Utrecht University},
+  year   = {2022},
+  note   = {Includes the failure of uniform interpolation for iK4 and iS4.
+             UNVERIFIED: exact subtitle punctuation}
+}
+
+@misc{VanDerGiessenShillito2026,
+  author = {van der Giessen, Iris and Shillito, Ian},
+  title  = {Uniform Interpolation with Constructive Diamond},
+  year   = {2026},
+  eprint = {2602.16880},
+  archiveprefix = {arXiv},
+  note   = {Formal development: uniform interpolation for CK and WK mechanised
+             in Rocq; the Pitts-style mechanised-UI programme extending through
+             the intuitionistic modal family, on whose natural path PLL lies}
+}
+
+@article{VanGoolMetcalfeTsinakis2017,
+  author  = {van Gool, Samuel J. and Metcalfe, George and Tsinakis, Constantine},
+  title   = {Uniform Interpolation and Compact Congruences},
+  journal = {Annals of Pure and Applied Logic},
+  volume  = {168},
+  number  = {10},
+  pages   = {1927--1948},
+  year    = {2017}
+}
+
+@book{VanOosten2008,
+  author    = {van Oosten, Jaap},
+  title     = {Realizability: An Introduction to its Categorical Side},
+  series    = {Studies in Logic and the Foundations of Mathematics},
+  volume    = {152},
+  publisher = {Elsevier},
+  address   = {Amsterdam},
+  year      = {2008}
+}
+
+@inbook{Visser1996,
+  author = {Visser, Albert},
+  title = {Uniform Interpolation and Layered Bisimulation},
+  booktitle = {Gödel ’96},
+  publisher = {Springer Berlin Heidelberg},
+  pages = {139--164},
+  year = {1996},
+  doi = {10.1007/978-3-662-21963-8_9},
+  url = {http://dx.doi.org/10.1007/978-3-662-21963-8_9},
+  citedin = {docs/second-order-pll-survey.md}
+}
+
+@phdthesis{Wilson1994,
+  author = {Wilson, J. Todd},
+  title  = {The Assembly Tower and Some Categorical and Algebraic Aspects of Frame Theory},
+  school = {Carnegie Mellon University},
+  year   = {1994},
+  note   = {UNVERIFIED: author first name expansion; thesis record reached via
+             secondary catalogue only (advisor D. Scott)}
+}
+
+@misc{Yamada2026,
+  author = {Yamada, Norihiro},
+  title  = {Effectful Toposes and Their {L}awvere--{T}ierney Topologies},
+  year   = {2026},
+  eprint = {2602.23086},
+  archiveprefix = {arXiv},
+  note   = {LT-topologies as computational oracles; the double-negation
+             subtopos is the CPS/classical-realizability collapse -- a
+             topos-theoretic instance of the classical-belief-degeneracy
+             thesis. UNVERIFIED: author first name (as for Nakata2026)}
+}
+
+@misc{Ye2026,
+  author = {Ye, Lingyuan},
+  title  = {Coexact Completion of Profinite {H}eyting Algebras and Uniform Interpolation},
+  year   = {2026},
+  eprint = {2604.08267},
+  archiveprefix = {arXiv}
+}
+
+@article{Zdanowski2009,
+  author = {Zdanowski, Konrad},
+  title = {On second order intuitionistic propositional logic without a universal quantifier},
+  journal = {The Journal of Symbolic Logic},
+  publisher = {Cambridge University Press (CUP)},
+  volume = {74},
+  number = {1},
+  pages = {157--167},
+  year = {2009},
+  doi = {10.2178/jsl/1231082306},
+  url = {http://dx.doi.org/10.2178/jsl/1231082306},
+  citedin = {docs/pll2-plan.md, docs/second-order-pll-survey.md}
+}
+
+@article{Zhao2023,
+  author  = {Zhao, Zhiguang},
+  title   = {Correspondence Theory for Modal {F}airtlough--{M}endler Semantics of Intuitionistic Modal Logic},
+  journal = {Studia Logica},
+  volume  = {111},
+  pages   = {1057--1082},
+  year    = {2023},
+  doi     = {10.1007/s11225-023-10064-3},
+  eprint  = {2210.02216},
+  archiveprefix = {arXiv}
+}
+
+@article{Zorn1935,
+  author  = {Zorn, Max},
+  title   = {A Remark on Method in Transfinite Algebra},
+  journal = {Bulletin of the American Mathematical Society},
+  volume  = {41},
+  number  = {10},
+  pages   = {667--670},
+  year    = {1935},
+  note    = {Cited as the maximality principle used by the classical F\&M
+             canonical model, and traded for the decision procedure in the
+             finitised construction of the present paper}
+}
+
+@article{ZwartMarsden2022,
+  author  = {Zwart, Maaike and Marsden, Dan},
+  title   = {No-Go Theorems for Distributive Laws},
+  journal = {Logical Methods in Computer Science},
+  volume  = {18},
+  number  = {1},
+  year    = {2022},
+  eprint  = {2003.12531},
+  archiveprefix = {arXiv}
+}
