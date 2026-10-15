@@ -66,7 +66,7 @@ theorem Holds.isPP {φ : Form} (d : Holds R P φ) : IsPP φ := by
   | top => exact .top
   | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
   | ex t _ _ ih => exact .ex (IsPP.of_openAt _ 0 t ih)
-  | fire _ _ _ _ _ => exact .pred _ _
+  | fire _ _ _ _ _ _ _ => exact .pred _ _
 
 /-- `T_P` is monotone. -/
 theorem Tp_mono {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p us → J p us) :
@@ -174,7 +174,8 @@ theorem LHM_iff_Tpow (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h �
       | ex t ht _ ih =>
           obtain ⟨n, hn⟩ := ih
           exact ⟨n, HTrue_exists.2 ⟨t, ht, hn⟩⟩
-      | @fire h ts hh hlen hts _ ih =>
+      | @fire h ts _ _ hh hlen hts _ hp hus ih =>
+          subst hp hus
           obtain ⟨n, hn⟩ := ih
           exact ⟨n + 1, (HTrue_pred (Tm.lcAtList_instAllList ts h.args hts
             (by rw [hlen]; exact (hP h hh).2))).2 (Or.inr ⟨h, hh, ts, hlen, hts, hn, rfl, rfl⟩)⟩

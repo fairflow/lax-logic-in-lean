@@ -361,8 +361,10 @@ inductive Holds (R : String → List Tm → Prop) (P : List Horn) : Form → Pro
   | top : Holds R P .top
   | and {A B : Form} : Holds R P A → Holds R P B → Holds R P (.and A B)
   | ex {A : Form} (t : Tm) : Tm.lcAt 0 t → Holds R P (A.openAt 0 t) → Holds R P (.exists_ A)
-  | fire {h : Horn} {ts : List Tm} : h ∈ P → ts.length = h.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      Holds R P (Form.instAll ts h.body) → Holds R P (.pred h.head (Tm.instAllList ts h.args))
+  -- the head instance is carried by equation fields, as in `Tp`, not computed in the index
+  | fire {h : Horn} {ts : List Tm} {p : String} {us : List Tm} : h ∈ P → ts.length = h.arity →
+      (∀ t ∈ ts, Tm.lcAt 0 t) → Holds R P (Form.instAll ts h.body) →
+      p = h.head → us = Tm.instAllList ts h.args → Holds R P (.pred p us)
 
 /-- The least Herbrand model `M_P`, as a Herbrand interpretation. -/
 def LHM (R : String → List Tm → Prop) (P : List Horn) : String → List Tm → Prop :=
@@ -385,9 +387,10 @@ theorem Holds.toHTrue (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h �
   | top => trivial
   | and _ _ ih₁ ih₂ => exact HTrue_and.2 ⟨ih₁, ih₂⟩
   | ex t ht _ ih => exact HTrue_exists.2 ⟨t, ht, ih⟩
-  | @fire h ts hh hlen hts hb _ =>
+  | @fire h ts _ _ hh hlen hts hb hp hus _ =>
+      subst hp hus
       exact (HTrue_pred (Tm.lcAtList_instAllList ts h.args hts
-        (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb)
+        (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb rfl rfl)
 
 /-- `Holds.of_HTrue`, by induction on a size bound. -/
 theorem Holds.of_HTrue_aux : ∀ (n : Nat) {φ : Form}, φ.size < n → IsPP φ → Form.lcAt 0 φ →
@@ -416,7 +419,8 @@ theorem LHM_lc (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h
     {p : String} {us : List Tm} (hl : LHM R P p us) : Tm.lcAtList 0 us := by
   cases hl with
   | base hr => exact hR _ _ hr
-  | @fire h ts hh hlen hts _ =>
+  | @fire h ts _ _ hh hlen hts _ _ hus =>
+      subst hus
       exact Tm.lcAtList_instAllList ts h.args hts (by rw [hlen]; exact (hP h hh).2)
 
 /-- The least Herbrand model is a model of the program. -/
@@ -433,7 +437,7 @@ theorem HTrue_LHM_form (hP : ∀ h ∈ P, h.WF) {h : Horn} (hh : h ∈ P) :
   show HTrue _ (Form.instAll ts (.pred h.head h.args))
   rw [Form.instAll_pred]
   exact (HTrue_pred (Tm.lcAtList_instAllList ts _ hts
-    (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb')
+    (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb' rfl rfl)
 
 /-- `T_P(M_P) = M_P`. -/
 theorem Tp_LHM (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
@@ -442,12 +446,12 @@ theorem Tp_LHM (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h
   · rintro (hr | ⟨h, hh, ts, hlen, hts, hb, rfl, rfl⟩)
     · exact .base hr
     · exact .fire hh hlen hts (Holds.of_HTrue (h.body_pp.instAll ts)
-        (Form.lcAt_instAll ts _ hts (by rw [hlen]; exact (hP h hh).1)) hb)
+        (Form.lcAt_instAll ts _ hts (by rw [hlen]; exact (hP h hh).1)) hb) rfl rfl
   · intro hl
     cases hl with
     | base hr => exact Or.inl hr
-    | @fire h ts hh hlen hts hb =>
-        exact Or.inr ⟨h, hh, ts, hlen, hts, Holds.toHTrue hR hP hb, rfl, rfl⟩
+    | @fire h ts _ _ hh hlen hts hb hp hus =>
+        exact Or.inr ⟨h, hh, ts, hlen, hts, Holds.toHTrue hR hP hb, hp, hus⟩
 
 /-- `M_P` is below every pre-fixpoint of `T_P`. -/
 theorem LHM_least (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
@@ -460,7 +464,8 @@ theorem LHM_least (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P
     | top => trivial
     | and _ _ ih₁ ih₂ => exact HTrue_and.2 ⟨ih₁, ih₂⟩
     | ex t ht _ ih => exact HTrue_exists.2 ⟨t, ht, ih⟩
-    | @fire h ts hh hlen hts _ ih =>
+    | @fire h ts _ _ hh hlen hts _ hp hus ih =>
+        subst hp hus
         exact (HTrue_pred (Tm.lcAtList_instAllList ts h.args hts
           (by rw [hlen]; exact (hP h hh).2))).2 (hI _ _ (Or.inr ⟨h, hh, ts, hlen, hts, ih, rfl, rfl⟩))
   exact (HTrue_pred (LHM_lc hR hP hl)).1 (key (φ := .pred p us) hl)
@@ -481,7 +486,8 @@ theorem Holds.prv (hm : ∀ h ∈ P, h.modal = false) {φ : Form} (d : Holds RNo
   | top => exact .topI
   | and _ _ ih₁ ih₂ => exact .andI ih₁ ih₂
   | ex t ht _ ih => exact .exI t ht ih
-  | @fire h ts hh hlen hts _ ih =>
+  | @fire h ts _ _ hh hlen hts _ hp hus ih =>
+      subst hp hus
       have hf : Prv (P.map Horn.form) (Form.foralls ts.length (.imp h.body h.headForm)) := by
         rw [hlen]; exact .var (List.mem_map.2 ⟨h, hh, rfl⟩)
       have hi := Prv.allEs ts hts hf

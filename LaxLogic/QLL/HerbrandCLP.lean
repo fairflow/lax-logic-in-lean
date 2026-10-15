@@ -104,7 +104,8 @@ theorem Holds.cproof (hRC : ∀ p us, R p us → isC p = true)
   | ex t ht _ ih =>
       obtain ⟨p, h, tp⟩ := ih
       exact ⟨.exI t p, .exI t ht h, tp⟩
-  | @fire h ts hh hlen hts _ ih =>
+  | @fire h ts _ _ hh hlen hts _ hp₀ hus ih =>
+      subst hp₀ hus
       obtain ⟨p, hp, tp⟩ := ih
       obtain ⟨c, hc, hh'⟩ := Program.mem_horn.1 hh
       obtain ⟨⟨g, hg⟩, _, rfl⟩ := List.mem_map.1 hh'
@@ -326,7 +327,7 @@ theorem canonI0_empty (p : String) (us : List Tm) : ¬ canonI0 isC q Θ p us := 
     have := h; unfold canonI0 at this; rw [Program.horn0_abs] at this; exact this
   cases h' with
   | base hr => exact hr
-  | fire hh _ _ _ => exact absurd hh (List.not_mem_nil)
+  | fire hh _ _ _ _ _ => exact absurd hh (List.not_mem_nil)
 
 /-- **Lemma 7.3**: the canonical interpretation is monotone along the frame. -/
 theorem canon_hered : ∀ {w v : HFrame.four.W} {p : String} {ts : List Tm},
