@@ -180,8 +180,9 @@ structure MState where
 
 /-- One SLD step: expand one leaf of one tree. -/
 inductive SLDStep (isC : String → Bool) (Θ : Program) (ok : Form → Prop) : MState → MState → Prop
-  | mk {c c' : Form} {p p' : PTree} (l r : List PTree) :
-      Expand isC Θ ok c p p' c' → SLDStep isC Θ ok ⟨c, l ++ p :: r⟩ ⟨c', l ++ p' :: r⟩
+  | mk {c c' : Form} {p p' : PTree} {F F' : List PTree} (l r : List PTree) :
+      Expand isC Θ ok c p p' c' → F = l ++ p :: r → F' = l ++ p' :: r →
+      SLDStep isC Θ ok ⟨c, F⟩ ⟨c', F'⟩
 
 /-- Runs. -/
 inductive SLDSteps (isC : String → Bool) (Θ : Program) (ok : Form → Prop) : MState → MState → Prop
@@ -231,7 +232,8 @@ theorem Expand.opens {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
 theorem SLDStep.goal_step {s s' : MState} (h : SLDStep isC Θ ok s s') :
     Step isC Θ ok s.goal s'.goal := by
   cases h with
-  | mk l r he =>
+  | mk l r he h₁ h₂ =>
+      subst h₁ h₂
       show Step isC Θ ok ⟨_, (l ++ _ :: r).flatMap PTree.opens⟩ ⟨_, (l ++ _ :: r).flatMap PTree.opens⟩
       simp only [List.flatMap_append, List.flatMap_cons]
       exact he.opens _ _
@@ -360,7 +362,7 @@ theorem Expand.store {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
 theorem SLDStep.inv {s s' : MState} (h : SLDStep isC Θ ok s s') :
     ∃ l r p p' c c', s = ⟨c, l ++ p :: r⟩ ∧ s' = ⟨c', l ++ p' :: r⟩ ∧ Expand isC Θ ok c p p' c' := by
   cases h with
-  | mk l r he => exact ⟨l, r, _, _, _, _, rfl, rfl, he⟩
+  | mk l r he h₁ h₂ => subst h₁ h₂; exact ⟨l, r, _, _, _, _, rfl, rfl, he⟩
 
 /-- A step from a singleton forest stays a singleton forest. -/
 theorem SLDStep.single {c : Form} {p : PTree} {s' : MState} (h : SLDStep isC Θ ok ⟨c, [p]⟩ s') :
@@ -656,7 +658,8 @@ theorem Expand.toA (q : Q) (hH : Θ.HeadsOK isC) {c c' : Form} {p p' : PTree}
 theorem SLDStep.toA (q : Q) (hH : Θ.HeadsOK isC) {s s' : MState} (h : SLDStep isC Θ ok s s') :
     SLDCStep (Θ.abs isC q) q (s.forest.map (PTree.toA isC)) (s'.forest.map (PTree.toA isC)) := by
   cases h with
-  | mk l r he =>
+  | mk l r he h₁ h₂ =>
+      subst h₁ h₂
       show SLDCStep _ _ ((l ++ _ :: r).map _) ((l ++ _ :: r).map _)
       simp only [List.map_append, List.map_cons]
       exact .mk _ _ (he.toA q hH)
@@ -789,7 +792,7 @@ theorem _root_.LaxLogic.QLL.Steps.lift {g g' : Goal} (h : Steps isC Θ ok g g') 
       subst hg
       obtain ⟨p₁, he, hp₁⟩ := Step.lift h₁
       obtain ⟨p', hrun, hp'⟩ := ih (c := g₁.c) (p := p₁) (by rw [hp₁])
-      exact ⟨p', .step (.mk [] [] he) hrun, hp'⟩
+      exact ⟨p', .step (.mk [] [] he rfl rfl) hrun, hp'⟩
 
 /-- Runs project: the other half of the correspondence with Table 2. -/
 theorem SLDSteps.goal {s s' : MState} (h : SLDSteps isC Θ ok s s') :
@@ -1060,7 +1063,7 @@ theorem SLDSteps.prv_c {s s' : MState} (h : SLDSteps isC Θ ok s s') : Prv [s'.c
 theorem SLDStep.noPrune {s s' : MState} (h : SLDStep isC Θ ok s s') :
     SLDStep isC Θ NoPrune s s' := by
   obtain ⟨l, r, p, p', c, c', rfl, rfl, he⟩ := h.inv
-  exact .mk l r he.noPrune
+  exact .mk l r he.noPrune rfl rfl
 
 theorem SLDSteps.noPrune {s s' : MState} (h : SLDSteps isC Θ ok s s') :
     SLDSteps isC Θ NoPrune s s' := by
@@ -1071,7 +1074,7 @@ theorem SLDSteps.noPrune {s s' : MState} (h : SLDSteps isC Θ ok s s') :
 theorem SLDStep.of_noPrune {s s' : MState} (h : SLDStep isC Θ NoPrune s s') (hc : ok s'.c) :
     SLDStep isC Θ ok s s' := by
   obtain ⟨l, r, p, p', c, c', rfl, rfl, he⟩ := h.inv
-  exact .mk l r (he.of_noPrune hc)
+  exact .mk l r (he.of_noPrune hc) rfl rfl
 
 /-- An unpruned run whose final store passes `ok` is a pruned run. -/
 theorem SLDSteps.of_noPrune {s s' : MState} (h : SLDSteps isC Θ NoPrune s s') (hup : OkUp ok)
