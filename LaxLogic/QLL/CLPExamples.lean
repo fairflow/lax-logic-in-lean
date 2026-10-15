@@ -118,12 +118,12 @@ def P (i : Nat) : Form := .pred s!"P{i}" []
 /-- The draft's six steps: Rule 5, 2a, 3, 5, 1, 1. -/
 theorem steps95 : Steps isC95 ex95 (fun _ => True)
     ⟨.top, [goal95]⟩ ⟨.and (.and .top (c 1)) (c 3), []⟩ :=
-  .step (Step.clause (l := []) (r := []) (cl := θ3) 2 [] rfl rfl rfl (by simp)) <|
-  .step (Step.orL (l := []) (r := [])) <|
-  .step (Step.and (l := []) (r := [])) <|
-  .step (Step.clause (l := []) (r := [c 3]) (cl := θ1) 0 [] rfl rfl rfl (by simp)) <|
-  .step (Step.cstr (l := []) (r := [c 3]) rfl trivial) <|
-  .step (Step.cstr (l := []) (r := []) rfl trivial) <|
+  .step (Step.clause (l := []) (r := []) (cl := θ3) 2 [] rfl rfl rfl (by simp) rfl rfl) <|
+  .step (Step.orL (l := []) (r := []) rfl rfl) <|
+  .step (Step.and (l := []) (r := []) rfl rfl) <|
+  .step (Step.clause (l := []) (r := [c 3]) (cl := θ1) 0 [] rfl rfl rfl (by simp) rfl rfl) <|
+  .step (Step.cstr (l := []) (r := [c 3]) rfl trivial rfl rfl) <|
+  .step (Step.cstr (l := []) (r := []) rfl trivial rfl rfl) <|
   .refl _
 
 /-- **Example 9.5**, through Corollary 9.8. -/

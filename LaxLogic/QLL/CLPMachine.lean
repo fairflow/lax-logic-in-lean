@@ -201,13 +201,13 @@ variable {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
 theorem Expand.opens {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c') :
     ∀ l r : List Form, Step isC Θ ok ⟨c, l ++ (p.opens ++ r)⟩ ⟨c', l ++ (p'.opens ++ r)⟩ := by
   induction h with
-  | top => intro l r; exact Step.top
-  | cstr hB hok => intro l r; exact Step.cstr hB hok
-  | and => intro l r; exact Step.and
-  | orL => intro l r; exact Step.orL
-  | orR => intro l r; exact Step.orR
-  | ex t ht => intro l r; exact Step.ex t ht
-  | clause w ts hc hm hlen hts => intro l r; exact Step.clause w ts hc hm hlen hts
+  | top => intro l r; exact Step.top rfl rfl
+  | cstr hB hok => intro l r; exact Step.cstr hB hok rfl rfl
+  | and => intro l r; exact Step.and rfl rfl
+  | orL => intro l r; exact Step.orL rfl rfl
+  | orR => intro l r; exact Step.orR rfl rfl
+  | ex t ht => intro l r; exact Step.ex t ht rfl rfl
+  | clause w ts hc hm hlen hts => intro l r; exact Step.clause w ts hc hm hlen hts rfl rfl
   | @andL c₁' p₁ p₁' q₁ _ ih =>
       intro l r
       show Step isC Θ ok ⟨c, l ++ ((p₁.opens ++ q₁.opens) ++ r)⟩
@@ -687,13 +687,14 @@ variable {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
 theorem _root_.LaxLogic.QLL.Step.base {g g' : Goal} (h : Step isC Θ ok g g') :
     ∃ l r S new, g.gs = l ++ S :: r ∧ g'.gs = l ++ (new ++ r) ∧ Base isC Θ ok g.c S new g'.c := by
   cases h with
-  | cstr hB hok => exact ⟨_, _, _, [], rfl, rfl, .cstr hB hok⟩
-  | top => exact ⟨_, _, _, [], rfl, rfl, .top⟩
-  | orL => exact ⟨_, _, _, [_], rfl, rfl, .orL⟩
-  | orR => exact ⟨_, _, _, [_], rfl, rfl, .orR⟩
-  | and => exact ⟨_, _, _, [_, _], rfl, rfl, .and⟩
-  | ex t ht => exact ⟨_, _, _, [_], rfl, rfl, .ex t ht⟩
-  | clause w ts hc hm hlen hts => exact ⟨_, _, _, [_], rfl, rfl, .clause w ts hc hm hlen hts⟩
+  | cstr hB hok h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [], rfl, rfl, .cstr hB hok⟩
+  | top h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [], rfl, rfl, .top⟩
+  | orL h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .orL⟩
+  | orR h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .orR⟩
+  | and h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_, _], rfl, rfl, .and⟩
+  | ex t ht h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .ex t ht⟩
+  | clause w ts hc hm hlen hts h₁ h₂ =>
+      subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .clause w ts hc hm hlen hts⟩
 
 /-- A rule shape applied at a given open leaf of a tree is an expansion of the tree. -/
 theorem PTree.lift : ∀ (p : PTree) (l₁ r₁ : List Form) {S : Form} {new : List Form} {c c' : Form},

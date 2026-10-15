@@ -31,24 +31,27 @@ structure Goal where
   c : Form
   gs : List Form
 
-/-- One step of Table 2, at any position. -/
+/-- One step of Table 2, at any position: the goal lists before and after,
+`gs = l ++ φ :: r` and `gs'`, are equation fields; the indices are variables. -/
 inductive Step (isC : String → Bool) (Θ : Program) (ok : Form → Prop) : Goal → Goal → Prop
-  | cstr {c : Form} {l r : List Form} {B : String} {ts : List Tm} :
+  | cstr {c : Form} {l r : List Form} {B : String} {ts : List Tm} {gs gs' : List Form} :
       isC B = true → ok (.and c (.pred B ts)) →
-      Step isC Θ ok ⟨c, l ++ .pred B ts :: r⟩ ⟨.and c (.pred B ts), l ++ r⟩
-  | top {c : Form} {l r : List Form} : Step isC Θ ok ⟨c, l ++ .top :: r⟩ ⟨c, l ++ r⟩
-  | orL {c : Form} {l r : List Form} {A B : Form} :
-      Step isC Θ ok ⟨c, l ++ .or A B :: r⟩ ⟨c, l ++ A :: r⟩
-  | orR {c : Form} {l r : List Form} {A B : Form} :
-      Step isC Θ ok ⟨c, l ++ .or A B :: r⟩ ⟨c, l ++ B :: r⟩
-  | and {c : Form} {l r : List Form} {A B : Form} :
-      Step isC Θ ok ⟨c, l ++ .and A B :: r⟩ ⟨c, l ++ A :: B :: r⟩
-  | ex {c : Form} {l r : List Form} {A : Form} (t : Tm) : Tm.lcAt 0 t →
-      Step isC Θ ok ⟨c, l ++ .exists_ A :: r⟩ ⟨c, l ++ A.openAt 0 t :: r⟩
-  | clause {c : Form} {l r : List Form} {cl : Clause} (w : Nat) (ts : List Tm) :
+      gs = l ++ .pred B ts :: r → gs' = l ++ r →
+      Step isC Θ ok ⟨c, gs⟩ ⟨.and c (.pred B ts), gs'⟩
+  | top {c : Form} {l r : List Form} {gs gs' : List Form} :
+      gs = l ++ .top :: r → gs' = l ++ r → Step isC Θ ok ⟨c, gs⟩ ⟨c, gs'⟩
+  | orL {c : Form} {l r : List Form} {A B : Form} {gs gs' : List Form} :
+      gs = l ++ .or A B :: r → gs' = l ++ A :: r → Step isC Θ ok ⟨c, gs⟩ ⟨c, gs'⟩
+  | orR {c : Form} {l r : List Form} {A B : Form} {gs gs' : List Form} :
+      gs = l ++ .or A B :: r → gs' = l ++ B :: r → Step isC Θ ok ⟨c, gs⟩ ⟨c, gs'⟩
+  | and {c : Form} {l r : List Form} {A B : Form} {gs gs' : List Form} :
+      gs = l ++ .and A B :: r → gs' = l ++ A :: B :: r → Step isC Θ ok ⟨c, gs⟩ ⟨c, gs'⟩
+  | ex {c : Form} {l r : List Form} {A : Form} {gs gs' : List Form} (t : Tm) : Tm.lcAt 0 t →
+      gs = l ++ .exists_ A :: r → gs' = l ++ A.openAt 0 t :: r → Step isC Θ ok ⟨c, gs⟩ ⟨c, gs'⟩
+  | clause {c : Form} {l r : List Form} {cl : Clause} {gs gs' : List Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = false → ts.length = cl.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      Step isC Θ ok ⟨c, l ++ .pred cl.head (Tm.instAllList ts (headVars cl.arity)) :: r⟩
-        ⟨c, l ++ Form.instAll ts cl.body :: r⟩
+      gs = l ++ .pred cl.head (Tm.instAllList ts (headVars cl.arity)) :: r →
+      gs' = l ++ Form.instAll ts cl.body :: r → Step isC Θ ok ⟨c, gs⟩ ⟨c, gs'⟩
 
 /-- Derivations (Definition 9.3): finite sequences of steps. -/
 inductive Steps (isC : String → Bool) (Θ : Program) (ok : Form → Prop) : Goal → Goal → Prop
@@ -172,27 +175,32 @@ theorem steps_forest {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
   | _, _, .step hs rest, hnil => by
       obtain ⟨ps', hF, hE⟩ := steps_forest rest hnil
       cases hs with
-      | @cstr c l r B ts hB _ =>
+      | @cstr c l r B ts _ _ hB _ h₁ h₂ =>
+          subst h₁ h₂
           obtain ⟨psl, psr, rfl, hl, hr⟩ := Forest.split_app l hF
           refine ⟨psl ++ .cstr B ts :: psr, Forest.append hl (.cons (.cstr hB) hr), ?_⟩
           refine hE.trans ((PEq.and_assoc _ _ _).trans (PEq.and (PEq.refl c) ?_))
           exact (totals_mid psl psr (.cstr B ts)).symm
-      | @top c l r =>
+      | @top c l r _ _ h₁ h₂ =>
+          subst h₁ h₂
           obtain ⟨psl, psr, rfl, hl, hr⟩ := Forest.split_app l hF
           refine ⟨psl ++ .top :: psr, Forest.append hl (.cons .top hr), ?_⟩
           refine hE.trans (PEq.and (PEq.refl c) ?_)
           exact ((totals_mid psl psr .top).trans (PEq.top_and _)).symm
-      | @orL c l r A B =>
+      | @orL c l r A B _ _ h₁ h₂ =>
+          subst h₁ h₂
           obtain ⟨psl, p, psr, rfl, hl, hx, hr⟩ := Forest.split l hF
           refine ⟨psl ++ .orL p :: psr, Forest.append hl (.cons (.orL hx) hr), ?_⟩
           rw [totals_congr psl psr (x := .orL p) (y := p) rfl]
           exact hE
-      | @orR c l r A B =>
+      | @orR c l r A B _ _ h₁ h₂ =>
+          subst h₁ h₂
           obtain ⟨psl, p, psr, rfl, hl, hx, hr⟩ := Forest.split l hF
           refine ⟨psl ++ .orR p :: psr, Forest.append hl (.cons (.orR hx) hr), ?_⟩
           rw [totals_congr psl psr (x := .orR p) (y := p) rfl]
           exact hE
-      | @and c l r A B =>
+      | @and c l r A B _ _ h₁ h₂ =>
+          subst h₁ h₂
           obtain ⟨psl, p, psr, rfl, hl, hx, hr⟩ := Forest.split l hF
           cases hr with
           | @cons _ q _ psr' hy hr' =>
@@ -202,12 +210,14 @@ theorem steps_forest {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
               refine (PEq.and (PEq.refl _) (totals_mid psl psr' q)).trans ?_
               refine (PEq.and_assoc _ _ _).symm.trans ?_
               exact (totals_mid psl psr' (.andI p q)).symm
-      | @ex c l r A t ht =>
+      | @ex c l r A _ _ t ht h₁ h₂ =>
+          subst h₁ h₂
           obtain ⟨psl, p, psr, rfl, hl, hx, hr⟩ := Forest.split l hF
           refine ⟨psl ++ .exI t p :: psr, Forest.append hl (.cons (.exI t ht hx) hr), ?_⟩
           rw [totals_congr psl psr (x := .exI t p) (y := p) rfl]
           exact hE
-      | @clause c l r cl w ts hc hm hlen hts =>
+      | @clause c l r cl _ _ w ts hc hm hlen hts h₁ h₂ =>
+          subst h₁ h₂
           obtain ⟨psl, p, psr, rfl, hl, hx, hr⟩ := Forest.split l hF
           refine ⟨psl ++ .clause w ts p :: psr,
             Forest.append hl (.cons (.clause w ts hc hm hlen hts hx rfl rfl) hr), ?_⟩
