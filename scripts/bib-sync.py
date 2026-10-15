@@ -34,7 +34,7 @@ ORDER = ["author", "editor", "title", "journal", "booktitle", "publisher", "seri
 
 def entries(s):
     out = []
-    for m in re.finditer(r'^@(\w+)\s*\{', s, re.M):
+    for m in re.finditer(r'^[ \t]*@(\w+)\s*\{', s, re.M):
         j, d = m.end(), 1
         while d and j < len(s):
             d += {'{': 1, '}': -1}.get(s[j], 0)
@@ -86,8 +86,12 @@ def fetch(url, accept=None):
     cmd = ["curl", "-sL", "-m", "20", url]
     if accept:
         cmd[1:1] = ["-H", "Accept: " + accept]
-    r = subprocess.run(cmd, capture_output=True, text=True)
-    return r.stdout if r.stdout.strip().startswith("@") else ""
+    for attempt in range(3):
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        if r.stdout.strip().startswith("@"):
+            return r.stdout
+        time.sleep(2 * (attempt + 1))
+    return ""
 
 
 def main():
@@ -103,7 +107,7 @@ def main():
     dry = "--dry-run" in args
 
     text = open(bib, encoding="utf-8").read() if os.path.exists(bib) else ""
-    header = text[:text.index("@")] if "@" in text else ""
+    header = text[:text.index("@")] if "@" in text else text
     have = entries(text)
     known = text + (open(exclude, encoding="utf-8").read() if exclude else "")
     have_doi = {x.lower() for x in re.findall(r'doi\s*=\s*\{([^}]*)\}', known, re.I)}
@@ -144,6 +148,8 @@ def main():
             failed.append(ident)
             continue
         f = fields(es[0])
+        if "doi" in f:
+            f["doi"] = re.sub(r'^https?://(dx\.)?doi\.org/', '', f["doi"])
         if norm(f.get("title", "")) in titles:
             skipped.append(ident)
             continue
