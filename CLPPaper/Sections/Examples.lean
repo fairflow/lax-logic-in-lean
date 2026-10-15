@@ -2,6 +2,7 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
@@ -41,17 +42,13 @@ Corollary 9.8 on Example 9.5: $`\Theta \vdash (\top \land c_1) \land c_3 \supset
 
 {stmt}`CLPExamples.cor95`
 
-{docstring CLPExamples.cor95 +allowMissing}
-
-{srcLink}`CLPExamples.cor95`
+{leanDecl CLPExamples.cor95}
 
 Theorem 9.7 on Example 9.5: the answer of the six steps is $`\dashv\vdash` the
 constraint extracted from an abstract proof of $`\bigcirc Q`, which comes out as
 {stmt}`CLPExamples.thm97_95`
 
-{docstring CLPExamples.thm97_95 +allowMissing}
-
-{srcLink}`CLPExamples.thm97_95`
+{leanDecl CLPExamples.thm97_95}
 
 # B. Difference constraints: Example 6.1
 
@@ -79,18 +76,14 @@ The kernel runs the engine on Example 6.1 and accepts its tree.
 
 {stmt}`CLPExamples.check61`
 
-{docstring CLPExamples.check61 +allowMissing}
-
-{srcLink}`CLPExamples.check61`
+{leanDecl CLPExamples.check61}
 
 The draft's answer $`z \ge 44`: a value `r` for `z` extends to a solution of the
 answer constraint iff $`44 \le r`.
 
 {stmt}`CLPExamples.ex61_answer`
 
-{docstring CLPExamples.ex61_answer +allowMissing}
-
-{srcLink}`CLPExamples.ex61_answer`
+{leanDecl CLPExamples.ex61_answer}
 
 The $`\bigcirc` pass extracts `(((⊤ ∧ u ≥ 5) ∧ (((⊤ ∧ u ≥ 9) ∧ (⊤ ∧ ⊤)) ∧ ⊤)) ∧ ⊤) ∧
 (⊤ ∧ (⊤ ∧ z ≥ u + 35))`, the draft's expression, and it is `⊣⊢` the total
@@ -98,17 +91,13 @@ constraint.
 
 {stmt}`CLPExamples.ext61`
 
-{docstring CLPExamples.ext61 +allowMissing}
-
-{srcLink}`CLPExamples.ext61`
+{leanDecl CLPExamples.ext61}
 
 Corollary 9.8 by the draft's route on Example 6.1.
 
 {stmt}`CLPExamples.cor61`
 
-{docstring CLPExamples.cor61 +allowMissing}
-
-{srcLink}`CLPExamples.cor61`
+{leanDecl CLPExamples.cor61}
 
 # B, continued: scheduling and adders
 

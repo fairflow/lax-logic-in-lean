@@ -2,6 +2,7 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
@@ -25,9 +26,7 @@ answer turns on the head.
 With a plain head, a body $`\bigcirc` implies the same clause with the $`\bigcirc` deleted:
 {stmt}`BodyCirc.body_circ_to_plain`
 
-{docstring BodyCirc.body_circ_to_plain +allowMissing}
-
-{srcLink}`BodyCirc.body_circ_to_plain`
+{leanDecl BodyCirc.body_circ_to_plain}
 
 REFUTED converse: $`(A \land B) \supset P` does not prove $`(A \land \bigcirc B) \supset P`.  Two worlds
 $`w_0 \le w_1`, every arrow modal, nothing fallible, `A` everywhere, `B` and `P`
@@ -40,18 +39,14 @@ two-level program whose least-model theorem is OPEN.
 
 {stmt}`BodyCirc.not_prv_plain_to_body_circ`
 
-{docstring BodyCirc.not_prv_plain_to_body_circ +allowMissing}
-
-{srcLink}`BodyCirc.not_prv_plain_to_body_circ`
+{leanDecl BodyCirc.not_prv_plain_to_body_circ}
 
 With a modal head the two forms are interderivable, because $`\bigcirc E` absorbs the
 body's $`\bigcirc`: $`(A \land B) \supset \bigcirc P \vdash (A \land \bigcirc B) \supset \bigcirc P`, and conversely.
 
 {stmt}`BodyCirc.clause4`
 
-{docstring BodyCirc.clause4 +allowMissing}
-
-{srcLink}`BodyCirc.clause4`
+{leanDecl BodyCirc.clause4}
 
 The same with the $`\bigcirc` under an existential, the shape a body actually has:
 $`\forall t. (\exists s. B s \land C s t) \supset \bigcirc P t \vdash \forall t. (\exists s. \bigcirc B s \land C s t) \supset \bigcirc P t`, and
@@ -60,9 +55,7 @@ adds nothing: it is `val`.
 
 {stmt}`BodyCirc.fo_ex_II_to_I`
 
-{docstring BodyCirc.fo_ex_II_to_I +allowMissing}
-
-{srcLink}`BodyCirc.fo_ex_II_to_I`
+{leanDecl BodyCirc.fo_ex_II_to_I}
 
 $`\bigcirc \bigcirc A \dashv\vdash \bigcirc A`: nesting one modality on itself is not a layering device.  But
 $`\bigcirc` under $`\supset` and $`\bot` does create structure — the variable-free fragment of
@@ -71,9 +64,7 @@ added — so layers are to be sought in negative positions, not in depth.
 
 {stmt}`BodyCirc.circ_circ_iff`
 
-{docstring BodyCirc.circ_circ_iff +allowMissing}
-
-{srcLink}`BodyCirc.circ_circ_iff`
+{leanDecl BodyCirc.circ_circ_iff}
 
 # `◯` over a conjunction: interderivable, not the same realisers
 
@@ -86,23 +77,17 @@ $`\mathit{dstr} ((c_1,z_1),(c_2,z_2)) = (c_1 \land c_2, (z_1,z_2))` and the dupl
 
 {stmt}`circ_and_split`
 
-{docstring circ_and_split +allowMissing}
-
-{srcLink}`circ_and_split`
+{leanDecl circ_and_split}
 
 {stmt}`circ_and_join`
 
-{docstring circ_and_join +allowMissing}
-
-{srcLink}`circ_and_join`
+{leanDecl circ_and_join}
 
 $`\mathit{dstr} \circ \mathit{dup}` is the identity up to $`\dashv\vdash`.
 
 {stmt}`dstr_dup`
 
-{docstring dstr_dup +allowMissing}
-
-{srcLink}`dstr_dup`
+{leanDecl dstr_dup}
 
 REFUTED: $`\mathit{dup} \circ \mathit{dstr}` is not; $`((\top,\star),(\bot,\star))` comes back with first
 component $`(\top \land \bot, \star)`.  A clause body cannot be regrouped this way without
@@ -110,9 +95,7 @@ changing what is extracted.
 
 {stmt}`not_dup_dstr`
 
-{docstring not_dup_dstr +allowMissing}
-
-{srcLink}`not_dup_dstr`
+{leanDecl not_dup_dstr}
 
 Fig. 3's $`\land \bigcirc` is `dstr`: the second subgoal's constraint never sees the
 first's witness.  A constraint relating two subgoals' witnesses can live only
@@ -121,9 +104,7 @@ now visible.
 
 {stmt}`AProof.ext_andC`
 
-{docstring AProof.ext_andC +allowMissing}
-
-{srcLink}`AProof.ext_andC`
+{leanDecl AProof.ext_andC}
 
 # The inclusion lemma
 
@@ -136,26 +117,20 @@ The table entries a derivation summons.
 
 {stmt}`AProof.entries`
 
-{docstring AProof.entries +allowMissing}
-
-{srcLink}`AProof.entries`
+{leanDecl AProof.entries}
 
 If every entry `a` summons is summoned by `a'`, then `a'`'s extracted
 constraint entails `a`'s, for every table.  Depends on `propext` only.
 
 {stmt}`AProof.ext_prv_of_entries_subset`
 
-{docstring AProof.ext_prv_of_entries_subset +allowMissing}
-
-{srcLink}`AProof.ext_prv_of_entries_subset`
+{leanDecl AProof.ext_prv_of_entries_subset}
 
 Equal entry sets give $`\dashv\vdash`.
 
 {stmt}`AProof.ext_peq_of_entries_eq`
 
-{docstring AProof.ext_peq_of_entries_eq +allowMissing}
-
-{srcLink}`AProof.ext_peq_of_entries_eq`
+{leanDecl AProof.ext_peq_of_entries_eq}
 
 This is what lets derivations be compared at the abstract level, before any
 constraint is looked at: prefer the derivation that summons fewer entries.
@@ -174,17 +149,13 @@ $`\forall x. (\exists y. x = f y \land S y) \supset P x` with $`\forall x. x = x
 
 {stmt}`HeadFlatten.flat_to_orig`
 
-{docstring HeadFlatten.flat_to_orig +allowMissing}
-
-{srcLink}`HeadFlatten.flat_to_orig`
+{leanDecl HeadFlatten.flat_to_orig}
 
 $`\forall y. S y \supset P(f y)` with $`\forall x y. x = y \supset P y \supset P x` proves the flattening.
 
 {stmt}`HeadFlatten.orig_to_flat`
 
-{docstring HeadFlatten.orig_to_flat +allowMissing}
-
-{srcLink}`HeadFlatten.orig_to_flat`
+{leanDecl HeadFlatten.orig_to_flat}
 
 The same with a $`\bigcirc P(f y)` head and the same plain substitutivity axiom:
 $`\bigcirc E` lifts it.  So the fact is native to the $`\bigcirc`-free fragment and unchanged
@@ -198,9 +169,7 @@ substitution.
 
 {stmt}`HeadFlatten.orig_to_flat_circ`
 
-{docstring HeadFlatten.orig_to_flat_circ +allowMissing}
-
-{srcLink}`HeadFlatten.orig_to_flat_circ`
+{leanDecl HeadFlatten.orig_to_flat_circ}
 
 # Decorating a disjunct
 
@@ -211,23 +180,17 @@ weakening.
 
 {stmt}`circ_or_circ_collapse`
 
-{docstring circ_or_circ_collapse +allowMissing}
-
-{srcLink}`circ_or_circ_collapse`
+{leanDecl circ_or_circ_collapse}
 
 $`\bigcirc (A \lor B) \vdash \bigcirc (A \lor \bigcirc B)`: under $`\bigcirc` the two goals are the same.
 
 {stmt}`circ_or_circ_expand`
 
-{docstring circ_or_circ_expand +allowMissing}
-
-{srcLink}`circ_or_circ_expand`
+{leanDecl circ_or_circ_expand}
 
 {stmt}`or_to_or_circ`
 
-{docstring or_to_or_circ +allowMissing}
-
-{srcLink}`or_to_or_circ`
+{leanDecl or_to_or_circ}
 
 REFUTED converse: $`P \lor \bigcirc B` does not prove $`P \lor B`; in the two-world model the
 lax branch is the only one open.  So a plain decorated goal accepts the
@@ -235,9 +198,7 @@ constraint-only route where the undecorated one does not.
 
 {stmt}`BodyCirc.not_prv_or_circ_to_or`
 
-{docstring BodyCirc.not_prv_or_circ_to_or +allowMissing}
-
-{srcLink}`BodyCirc.not_prv_or_circ_to_or`
+{leanDecl BodyCirc.not_prv_or_circ_to_or}
 
 Under extraction a disjunction is a sum and each branch's constraint sits
 inside its injection: the realiser of $`A \lor \bigcirc B` is $`|A| + (C \times |B|)`, one
@@ -250,17 +211,13 @@ injection.
 
 {stmt}`AProof.ext_orL`
 
-{docstring AProof.ext_orL +allowMissing}
-
-{srcLink}`AProof.ext_orL`
+{leanDecl AProof.ext_orL}
 
 A derivation whose summoned entries all have table value $`\top` extracts $`\top`.
 
 {stmt}`AProof.ext_top_of_pure`
 
-{docstring AProof.ext_top_of_pure +allowMissing}
-
-{srcLink}`AProof.ext_top_of_pure`
+{leanDecl AProof.ext_top_of_pure}
 
 A sound `once`: every other derivation's answer entails such a derivation's.
 Succeed on the free branch and no other branch can be more general — what
@@ -269,9 +226,7 @@ here from the type.
 
 {stmt}`AProof.once_of_pure`
 
-{docstring AProof.once_of_pure +allowMissing}
-
-{srcLink}`AProof.once_of_pure`
+{leanDecl AProof.once_of_pure}
 
 Kernel-run instance: $`Q(t) \subset R(t) \lor \exists s. B(s) \land t \ge s + 2` with `R`
 constraint-free.  The engine's first answer for `Q(z)` is $`\top` and its second
@@ -280,9 +235,7 @@ the $`\bigcirc` pass, and every other derivation's answer entails it.
 
 {stmt}`BodyCirc.extD_top`
 
-{docstring BodyCirc.extD_top +allowMissing}
-
-{srcLink}`BodyCirc.extD_top`
+{leanDecl BodyCirc.extD_top}
 
 # Placements not yet built
 

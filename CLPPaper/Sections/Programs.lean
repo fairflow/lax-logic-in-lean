@@ -2,6 +2,7 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
@@ -27,9 +28,7 @@ variables, and a flag for a modal head.
 
 {stmt}`Clause`
 
-{docstring Clause +allowMissing}
-
-{srcLink}`Clause`
+{leanDecl Clause}
 
 The draft's indices `ind(S)` choose one disjunct at every $`\lor`, and `sel S g`
 is `S` at index `g`; a clause is provably equivalent to its Horn clauses, one
@@ -39,25 +38,19 @@ $`g \in \mathit{ind} S` and $`\Gamma \vdash \mathit{sel} S g` give $`\Gamma \vda
 
 {stmt}`Prv.of_sel`
 
-{docstring Prv.of_sel +allowMissing}
-
-{srcLink}`Prv.of_sel`
+{leanDecl Prv.of_sel}
 
 $`\Gamma \vdash S` gives $`\Gamma \vdash \bigvee \mathit{sel} S g` over $`g \in \mathit{ind} S`.
 
 {stmt}`Prv.disj_sel`
 
-{docstring Prv.disj_sel +allowMissing}
-
-{srcLink}`Prv.disj_sel`
+{leanDecl Prv.disj_sel}
 
 A clause follows from its Horn clauses.
 
 {stmt}`Clause.prv_of_toHorn`
 
-{docstring Clause.prv_of_toHorn +allowMissing}
-
-{srcLink}`Clause.prv_of_toHorn`
+{leanDecl Clause.prv_of_toHorn}
 
 # The least Herbrand model
 
@@ -70,56 +63,42 @@ The least Herbrand model relative to built-ins.
 
 {stmt}`LHM`
 
-{docstring LHM +allowMissing}
-
-{srcLink}`LHM`
+{leanDecl LHM}
 
 `Tp(LHM) = LHM`.
 
 {stmt}`Tp_LHM`
 
-{docstring Tp_LHM +allowMissing}
-
-{srcLink}`Tp_LHM`
+{leanDecl Tp_LHM}
 
 $`\mathit{Tp}(I) \subseteq I` implies $`\mathit{LHM} \subseteq I`.
 
 {stmt}`LHM_least`
 
-{docstring LHM_least +allowMissing}
-
-{srcLink}`LHM_least`
+{leanDecl LHM_least}
 
 `LHM = ⋃ₙ Tpⁿ(∅)`.
 
 {stmt}`LHM_iff_Tpow`
 
-{docstring LHM_iff_Tpow +allowMissing}
-
-{srcLink}`LHM_iff_Tpow`
+{leanDecl LHM_iff_Tpow}
 
 `LHM = lfp Tp` in the sense of `OrderHom.lfp`; this is the one result that
 uses `Classical.choice`, through Mathlib's lattice.
 
 {stmt}`LHM_eq_lfp`
 
-{docstring LHM_eq_lfp +allowMissing}
-
-{srcLink}`LHM_eq_lfp`
+{leanDecl LHM_eq_lfp}
 
 $`\mathit{Tp}(I) \subseteq I` iff $`R \subseteq I` and $`I \models \Theta`.
 
 {stmt}`prefixpoint_iff_model`
 
-{docstring prefixpoint_iff_model +allowMissing}
-
-{srcLink}`prefixpoint_iff_model`
+{leanDecl prefixpoint_iff_model}
 
 {stmt}`LHM_iff_all_models`
 
-{docstring LHM_iff_all_models +allowMissing}
-
-{srcLink}`LHM_iff_all_models`
+{leanDecl LHM_iff_all_models}
 
 Lloyd's theorems for non-modal Horn programs and closed Σ-queries follow.
 
@@ -127,25 +106,19 @@ $`\Theta \vdash S` iff `S` is true in the least model.
 
 {stmt}`lloyd_prv_iff`
 
-{docstring lloyd_prv_iff +allowMissing}
-
-{srcLink}`lloyd_prv_iff`
+{leanDecl lloyd_prv_iff}
 
 $`\Theta \vdash S` iff $`\Theta \Vdash S`.
 
 {stmt}`lloyd_consequence_iff`
 
-{docstring lloyd_consequence_iff +allowMissing}
-
-{srcLink}`lloyd_consequence_iff`
+{leanDecl lloyd_consequence_iff}
 
 Van Emden and Kowalski: `M_P(p, ũ)` iff $`P \Vdash p(\tilde{u} )`.
 
 {stmt}`vanEmden_Kowalski`
 
-{docstring vanEmden_Kowalski +allowMissing}
-
-{srcLink}`vanEmden_Kowalski`
+{leanDecl vanEmden_Kowalski}
 
 Two designed cells mark the limits of the method.
 
@@ -154,18 +127,14 @@ intuitionistic.
 
 {stmt}`lem_not_prv`
 
-{docstring lem_not_prv +allowMissing}
-
-{srcLink}`lem_not_prv`
+{leanDecl lem_not_prv}
 
 A disjunction has no least Herbrand model, which is why bodies are split into
 Horn clauses first.
 
 {stmt}`or_no_least_model`
 
-{docstring or_no_least_model +allowMissing}
-
-{srcLink}`or_no_least_model`
+{leanDecl or_no_least_model}
 
 # Why two worlds
 
@@ -175,9 +144,7 @@ In a one-world Herbrand model, $`\bigcirc A` holds iff `A` does.
 
 {stmt}`HTrue_circ`
 
-{docstring HTrue_circ +allowMissing}
-
-{srcLink}`HTrue_circ`
+{leanDecl HTrue_circ}
 
 So a one-world model cannot tell "`S` holds" from "`S` holds up to a
 constraint", which is the distinction lax logic programming exists to make.
@@ -193,17 +160,13 @@ Theorem 7.5 at world 0: $`\Theta \vdash S` iff $`0 \models S`.
 
 {stmt}`thm_7_5_world0`
 
-{docstring thm_7_5_world0 +allowMissing}
-
-{srcLink}`thm_7_5_world0`
+{leanDecl thm_7_5_world0}
 
 Theorem 7.5 at world 1: $`\Theta \vdash \bigcirc _q S` iff $`1 \models S`.
 
 {stmt}`thm_7_5_world1`
 
-{docstring thm_7_5_world1 +allowMissing}
-
-{srcLink}`thm_7_5_world1`
+{leanDecl thm_7_5_world1}
 
 Solvability needs two more worlds, and they appear with the $`\bigcirc` pass: world 2
 carries the least model of the concrete program over the constraint

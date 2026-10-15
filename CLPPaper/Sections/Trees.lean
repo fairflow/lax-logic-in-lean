@@ -2,6 +2,7 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
@@ -37,9 +38,7 @@ Proof trees with constraint leaves.
 
 {stmt}`CProof`
 
-{docstring CProof +allowMissing}
-
-{srcLink}`CProof`
+{leanDecl CProof}
 
 `CTyped isC Θ S p`: the tree `p` proves the Σ-goal `S` from `Θ`, constraint
 atoms (`isC`) as leaves, clause applications instantiating a clause's bound
@@ -47,34 +46,26 @@ variables by the recorded terms.
 
 {stmt}`CTyped`
 
-{docstring CTyped +allowMissing}
-
-{srcLink}`CTyped`
+{leanDecl CTyped}
 
 Definition 8.1 splits the constraint leaves into the active ones, not under a
 clause application, and the latent ones, under one; `total` is all of them.
 
 {stmt}`CProof.total_equiv`
 
-{docstring CProof.total_equiv +allowMissing}
-
-{srcLink}`CProof.total_equiv`
+{leanDecl CProof.total_equiv}
 
 Answer soundness for trees: `CTyped Θ S p` gives $`\Theta \vdash \mathit{total}(p) \supset S`.
 
 {stmt}`CTyped.prv_total`
 
-{docstring CTyped.prv_total +allowMissing}
-
-{srcLink}`CTyped.prv_total`
+{leanDecl CTyped.prv_total}
 
 The checker is sound: `checkC Θ S p = true` gives `CTyped Θ S p`.
 
 {stmt}`checkC_sound`
 
-{docstring checkC_sound +allowMissing}
-
-{srcLink}`checkC_sound`
+{leanDecl checkC_sound}
 
 # Table 2
 
@@ -88,9 +79,7 @@ One step of Table 2, at any position of the goal list.
 
 {stmt}`Step`
 
-{docstring Step +allowMissing}
-
-{srcLink}`Step`
+{leanDecl Step}
 
 Theorem 9.4.  A run $`c \square \tilde{\varphi } \rightsquigarrow * c' \square \varepsilon` yields trees `p₁,…,pₙ` with `pᵢ`
 proving `φᵢ` and $`c' \dashv\vdash c \land \mathit{total}(p_1) \land … \land \mathit{total}(p_n)`.  The parameter `ok`
@@ -98,17 +87,13 @@ plays no part: pruning restricts the search and never the soundness.
 
 {stmt}`steps_forest`
 
-{docstring steps_forest +allowMissing}
-
-{srcLink}`steps_forest`
+{leanDecl steps_forest}
 
 Corollary 9.8.  $`c \square \tilde{\varphi } \rightsquigarrow * c' \square \varepsilon` gives $`\Theta \vdash c' \supset c \land \varphi _1 \land … \land \varphi _n`.
 
 {stmt}`steps_sound`
 
-{docstring steps_sound +allowMissing}
-
-{srcLink}`steps_sound`
+{leanDecl steps_sound}
 
 # World 2 without `◯`
 
@@ -121,7 +106,5 @@ Theorem 6.1 in tree form.
 
 {stmt}`world2_free`
 
-{docstring world2_free +allowMissing}
-
-{srcLink}`world2_free`
+{leanDecl world2_free}
 

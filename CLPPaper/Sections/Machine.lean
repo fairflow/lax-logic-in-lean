@@ -2,6 +2,7 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
@@ -48,26 +49,20 @@ no leaf is open.
 
 {stmt}`SLD.PTree`
 
-{docstring SLD.PTree +allowMissing}
-
-{srcLink}`SLD.PTree`
+{leanDecl SLD.PTree}
 
 SLD: one rule at one open leaf, store `c` to `c'`, with congruence rules
 through every node so the position is free.
 
 {stmt}`SLD.Expand`
 
-{docstring SLD.Expand +allowMissing}
-
-{srcLink}`SLD.Expand`
+{leanDecl SLD.Expand}
 
 SLD◯: the same rules on abstract partial trees, `cstr` gone, no store.
 
 {stmt}`SLD.ExpandA`
 
-{docstring SLD.ExpandA +allowMissing}
-
-{srcLink}`SLD.ExpandA`
+{leanDecl SLD.ExpandA}
 
 # The projection to Table 2, and lifting
 
@@ -75,43 +70,33 @@ Every SLD step is a Table 2 step on the projections.
 
 {stmt}`SLD.SLDStep.goal_step`
 
-{docstring SLD.SLDStep.goal_step +allowMissing}
-
-{srcLink}`SLD.SLDStep.goal_step`
+{leanDecl SLD.SLDStep.goal_step}
 
 A rule shape applied at a given open leaf of a tree — located by a split of
 `opens` — is an expansion of the tree.
 
 {stmt}`SLD.PTree.lift`
 
-{docstring SLD.PTree.lift +allowMissing}
-
-{srcLink}`SLD.PTree.lift`
+{leanDecl SLD.PTree.lift}
 
 Lifting: a Table 2 step from a tree's goal list is an expansion of that tree.
 
 {stmt}`Step.lift`
 
-{docstring Step.lift +allowMissing}
-
-{srcLink}`Step.lift`
+{leanDecl Step.lift}
 
 Runs lift: a Table 2 run from one goal is an SLD run on one tree.
 
 {stmt}`Steps.lift`
 
-{docstring Steps.lift +allowMissing}
-
-{srcLink}`Steps.lift`
+{leanDecl Steps.lift}
 
 Runs project.  With the previous node, Table 2 and the machine are the same
 relation on single goals, in both directions.
 
 {stmt}`SLD.SLDSteps.goal`
 
-{docstring SLD.SLDSteps.goal +allowMissing}
-
-{srcLink}`SLD.SLDSteps.goal`
+{leanDecl SLD.SLDSteps.goal}
 
 # Soundness, and Theorem 9.4 as an invariant
 
@@ -123,26 +108,20 @@ and $`c \dashv\vdash c_0 \land \mathit{total} q`.  Theorem 9.4 in machine form.
 
 {stmt}`SLD.SLDSteps.store`
 
-{docstring SLD.SLDSteps.store +allowMissing}
-
-{srcLink}`SLD.SLDSteps.store`
+{leanDecl SLD.SLDSteps.store}
 
 Soundness of SLD with respect to QLL: the finished tree proves $`\mathit{total} q \supset S`.
 
 {stmt}`SLD.SLDSteps.prv`
 
-{docstring SLD.SLDSteps.prv +allowMissing}
-
-{srcLink}`SLD.SLDSteps.prv`
+{leanDecl SLD.SLDSteps.prv}
 
 Soundness of SLD◯ with respect to QLL: a run from `[S]` that closes its tree
 gives an abstract proof, hence $`\Theta ^\sharp \vdash \bigcirc S`.
 
 {stmt}`SLD.SLDCSteps.prv`
 
-{docstring SLD.SLDCSteps.prv +allowMissing}
-
-{srcLink}`SLD.SLDCSteps.prv`
+{leanDecl SLD.SLDCSteps.prv}
 
 # The simulation under `toA`
 
@@ -151,17 +130,13 @@ becomes `top`, every other rule is itself.  Heads must not be constraints.
 
 {stmt}`SLD.Expand.toA`
 
-{docstring SLD.Expand.toA +allowMissing}
-
-{srcLink}`SLD.Expand.toA`
+{leanDecl SLD.Expand.toA}
 
 The simulation on runs.
 
 {stmt}`SLD.SLDSteps.toA`
 
-{docstring SLD.SLDSteps.toA +allowMissing}
-
-{srcLink}`SLD.SLDSteps.toA`
+{leanDecl SLD.SLDSteps.toA}
 
 The converse simulation holds only when `ok` accepts every store; under
 pruning it fails at `cstr`, and that failure is the exact content of pruning.
@@ -180,18 +155,14 @@ step is allowed and neither can be completed.
 
 {stmt}`SLD.ExpandAt`
 
-{docstring SLD.ExpandAt +allowMissing}
-
-{srcLink}`SLD.ExpandAt`
+{leanDecl SLD.ExpandAt}
 
 The switching lemma: without pruning, expansions at leaves $`i \ne j` have a
 common successor reached either way, with stores equal up to $`\dashv\vdash`.
 
 {stmt}`SLD.ExpandAt.diamond`
 
-{docstring SLD.ExpandAt.diamond +allowMissing}
-
-{srcLink}`SLD.ExpandAt.diamond`
+{leanDecl SLD.ExpandAt.diamond}
 
 Pruning is invisible to answers.  For `ok` closed under provable weakening —
 satisfiability is — and an acceptable initial store, the pruned runs are
@@ -201,9 +172,7 @@ acceptable store.
 
 {stmt}`SLD.SLDSteps.noPrune_iff`
 
-{docstring SLD.SLDSteps.noPrune_iff +allowMissing}
-
-{srcLink}`SLD.SLDSteps.noPrune_iff`
+{leanDecl SLD.SLDSteps.noPrune_iff}
 
 The implemented test `satOK` is not closed under weakening, because it
 accepts nonlinear stores it cannot decide; so strategy independence holds for

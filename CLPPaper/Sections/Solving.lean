@@ -2,6 +2,7 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
@@ -36,17 +37,13 @@ A checked witness satisfies every constraint.
 
 {stmt}`LinQ.checkWitness_sound`
 
-{docstring LinQ.checkWitness_sound +allowMissing}
-
-{srcLink}`LinQ.checkWitness_sound`
+{leanDecl LinQ.checkWitness_sound}
 
 A checked Farkas certificate shows the system unsatisfiable.
 
 {stmt}`LinQ.checkFarkas_unsat`
 
-{docstring LinQ.checkFarkas_unsat +allowMissing}
-
-{srcLink}`LinQ.checkFarkas_unsat`
+{leanDecl LinQ.checkFarkas_unsat}
 
 Fourier–Motzkin elimination, untrusted.  Each constraint becomes a row with
 its multiplier vector; while variables remain, the variable with the fewest
@@ -56,26 +53,20 @@ back-substitution builds a witness.
 
 {stmt}`LinQ.fm`
 
-{docstring LinQ.fm +allowMissing}
-
-{srcLink}`LinQ.fm`
+{leanDecl LinQ.fm}
 
 A verdict `sat w` that passes certification has `w` a solution.
 
 {stmt}`LinQ.certifyVerdict_sat`
 
-{docstring LinQ.certifyVerdict_sat +allowMissing}
-
-{srcLink}`LinQ.certifyVerdict_sat`
+{leanDecl LinQ.certifyVerdict_sat}
 
 A verdict `unsat λ̃` that passes certification has the system unsatisfiable.
 Any solver may produce the verdict, and none has to be trusted.
 
 {stmt}`LinQ.certifyVerdict_unsat`
 
-{docstring LinQ.certifyVerdict_unsat +allowMissing}
-
-{srcLink}`LinQ.certifyVerdict_unsat`
+{leanDecl LinQ.certifyVerdict_unsat}
 
 # Entailment, least values, projection
 
@@ -90,27 +81,21 @@ Certified entailment by refutation.
 
 {stmt}`Engine.entailsLe_sound`
 
-{docstring Engine.entailsLe_sound +allowMissing}
-
-{srcLink}`Engine.entailsLe_sound`
+{leanDecl Engine.entailsLe_sound}
 
 A checked lower-bound certificate gives $`z* \le \sigma (z)` for every solution `σ`;
 with a witness attaining `z*`, the least value is certified from both sides.
 
 {stmt}`Engine.lowerBoundCert_sound`
 
-{docstring Engine.lowerBoundCert_sound +allowMissing}
-
-{srcLink}`Engine.lowerBoundCert_sound`
+{leanDecl Engine.lowerBoundCert_sound}
 
 If `z` has a non-positive coefficient in every inequality, raising `z`
 preserves solutions, so the projection onto `z` is exactly $`z \ge z*`.
 
 {stmt}`Engine.upClosed_sound`
 
-{docstring Engine.upClosed_sound +allowMissing}
-
-{srcLink}`Engine.upClosed_sound`
+{leanDecl Engine.upClosed_sound}
 
 # The engine
 
@@ -124,17 +109,13 @@ The search, as a strategy over the rules of Table 2.
 
 {stmt}`Engine.solveK`
 
-{docstring Engine.solveK +allowMissing}
-
-{srcLink}`Engine.solveK`
+{leanDecl Engine.solveK}
 
 An answer whose tree checks satisfies $`\Theta \vdash \mathit{constraint} \supset G`.
 
 {stmt}`Engine.answer_sound`
 
-{docstring Engine.answer_sound +allowMissing}
-
-{srcLink}`Engine.answer_sound`
+{leanDecl Engine.answer_sound}
 
 # Wolfram as an untrusted oracle
 

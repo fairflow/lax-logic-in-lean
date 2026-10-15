@@ -60,6 +60,11 @@ def srcLink : RoleExpanderOf SrcLinkConfig
       | throwErrorAt arg "Expected a code literal with the declaration name"
     let identStx := mkIdentFrom arg name.getString.toName (canonical := true)
     let n ← realizeGlobalConstNoOverloadWithInfo identStx
+    srcLinkFor n
+  | _, _ => throwError "Expected exactly one code literal"
+where
+  /-- The link for a resolved name; also used by `{leanDecl}` (CLPPaper/Decl.lean). -/
+  srcLinkFor (n : Name) : TermElabM Term := do
     let env ← getEnv
     let modName : Name := match env.getModuleIdxFor? n with
       | Option.some i => env.header.moduleNames[i.toNat]!
@@ -70,7 +75,6 @@ def srcLink : RoleExpanderOf SrcLinkConfig
     let url := s!"{repo}/blob/{sha}/{path}#L{line}"
     `(Verso.Doc.Inline.other {Inline.srcLink with data := ToJson.toJson (($(quote path), $(quote line), $(quote url)) : SrcLoc)}
         #[Verso.Doc.Inline.code $(quote s!"{path}:{line}")])
-  | _, _ => throwError "Expected exactly one code literal"
 
 /-! ## The build stamp
 

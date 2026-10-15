@@ -2,6 +2,7 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
@@ -34,9 +35,7 @@ Natural deduction for QLL with cofinite quantifier rules.
 
 {stmt}`Prv`
 
-{docstring Prv +allowMissing}
-
-{srcLink}`Prv`
+{leanDecl Prv}
 
 # Models
 
@@ -52,26 +51,20 @@ Kripke models with fallible worlds and two modal relations.
 
 {stmt}`KModel`
 
-{docstring KModel +allowMissing}
-
-{srcLink}`KModel`
+{leanDecl KModel}
 
 Soundness: $`\Gamma \vdash A` implies $`\Gamma \Vdash A`.  Proved without choice.
 
 {stmt}`Prv.sound`
 
-{docstring Prv.sound +allowMissing}
-
-{srcLink}`Prv.sound`
+{leanDecl Prv.sound}
 
 Completeness on the fragment used here; the canonical model construction uses
 `Classical.choice`.
 
 {stmt}`prv_iff_consequence`
 
-{docstring prv_iff_consequence +allowMissing}
-
-{srcLink}`prv_iff_consequence`
+{leanDecl prv_iff_consequence}
 
 # The modal relation is a parameter
 
@@ -84,9 +77,7 @@ With $`R\_\exists = \mathit{Ri}`, the formula $`(\bigcirc A \supset \bigcirc B) 
 
 {stmt}`circ_imp_of_rm_eq_ri`
 
-{docstring circ_imp_of_rm_eq_ri +allowMissing}
-
-{srcLink}`circ_imp_of_rm_eq_ri`
+{leanDecl circ_imp_of_rm_eq_ri}
 
 QLL does not prove $`(\bigcirc P \supset \bigcirc Q) \supset \bigcirc (P \supset Q)`.  The countermodel has three worlds
 $`r \le s \le f`, `f` fallible, and the modal relation the identity together with
@@ -94,9 +85,7 @@ $`r \le s \le f`, `f` fallible, and the modal relation the identity together wit
 
 {stmt}`not_prv_circ_imp`
 
-{docstring not_prv_circ_imp +allowMissing}
-
-{srcLink}`not_prv_circ_imp`
+{leanDecl not_prv_circ_imp}
 
 The Herbrand frames used later therefore carry their own modal preorder `m ⊆
 le`, and the draft's choice `m = le` is made deliberately, on frames whose
