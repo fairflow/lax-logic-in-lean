@@ -501,10 +501,11 @@ inductive PTypedA (Θ : Program) (q : Q) : Form → ATree → Prop
   | orR {A B : Form} {p : ATree} : PTypedA Θ q B p → PTypedA Θ q (.or A B) (.orR p)
   | exC {A : Form} {p : ATree} (t : Tm) : Tm.lcAt 0 t →
       PTypedA Θ q (A.openAt 0 t) p → PTypedA Θ q (.exists_ A) (.exC t p)
-  | impC {c : Clause} {p : ATree} (w : Nat) (ts : List Tm) :
+  | impC {c : Clause} {p : ATree} {P : String} {us : List Tm} (w : Nat) (ts : List Tm) :
       Θ[w]? = some c → c.modal = true → c.q = q → ts.length = c.arity →
       (∀ t ∈ ts, Tm.lcAt 0 t) → PTypedA Θ q (Form.instAll ts c.body) p →
-      PTypedA Θ q (.pred c.head (Tm.instAllList ts (headVars c.arity))) (.impC w ts p)
+      P = c.head → us = Tm.instAllList ts (headVars c.arity) →
+      PTypedA Θ q (.pred P us) (.impC w ts p)
 
 section
 variable {Θ : Program} {q : Q}
@@ -517,7 +518,8 @@ theorem ExpandA.typed {p p' : ATree} (h : ExpandA Θ q p p') :
   | orL => intro S hp; cases hp; exact .orL (.hole _)
   | orR => intro S hp; cases hp; exact .orR (.hole _)
   | ex t ht => intro S hp; cases hp; exact .exC t ht (.hole _)
-  | clause w ts hc hm hq hlen hts => intro S hp; cases hp; exact .impC w ts hc hm hq hlen hts (.hole _)
+  | clause w ts hc hm hq hlen hts =>
+      intro S hp; cases hp; exact .impC w ts hc hm hq hlen hts (.hole _) rfl rfl
   | andL _ ih => intro S hp; cases hp with | andC h₁ h₂ => exact .andC (ih h₁) h₂
   | andR _ ih => intro S hp; cases hp with | andC h₁ h₂ => exact .andC h₁ (ih h₂)
   | inOrL _ ih => intro S hp; cases hp with | orL h₁ => exact .orL (ih h₁)
@@ -525,7 +527,8 @@ theorem ExpandA.typed {p p' : ATree} (h : ExpandA Θ q p p') :
   | inEx _ ih => intro S hp; cases hp with | exC _ ht h₁ => exact .exC _ ht (ih h₁)
   | inImp _ ih =>
       intro S hp
-      cases hp with | impC _ _ hc hm hq hlen hts h₁ => exact .impC _ _ hc hm hq hlen hts (ih h₁)
+      cases hp with
+      | impC _ _ hc hm hq hlen hts h₁ hP hus => exact .impC _ _ hc hm hq hlen hts (ih h₁) hP hus
 
 /-- A closed, typed abstract tree is an `AProof` of its goal. -/
 theorem ATree.close_typed {S : Form} {a : ATree} (ha : PTypedA Θ q S a) :
@@ -564,13 +567,13 @@ theorem ATree.close_typed {S : Form} {a : ATree} (ha : PTypedA Θ q S a) :
       | some b₁ =>
         simp only [ATree.close, hp₁, Option.some.injEq] at h
         subst h; exact .exC t ht (ih hp₁)
-  | @impC _ p₁ w ts hc hm hq hlen hts _ ih =>
+  | @impC _ p₁ _ _ w ts hc hm hq hlen hts _ hP hus ih =>
       intro b h
       cases hp₁ : p₁.close with
       | none => simp [ATree.close, hp₁] at h
       | some b₁ =>
         simp only [ATree.close, hp₁, Option.some.injEq] at h
-        subst h; exact .impC w ts hc hm hq hlen hts (ih hp₁) rfl rfl
+        subst h; exact .impC w ts hc hm hq hlen hts (ih hp₁) hP hus
 
 /-- Unpacking a step. -/
 theorem SLDCStep.inv {F F' : List ATree} (h : SLDCStep Θ q F F') :
