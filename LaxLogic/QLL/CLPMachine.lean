@@ -563,7 +563,7 @@ theorem ATree.close_typed {S : Form} {a : ATree} (ha : PTypedA Θ q S a) :
       | none => simp [ATree.close, hp₁] at h
       | some b₁ =>
         simp only [ATree.close, hp₁, Option.some.injEq] at h
-        subst h; exact .impC w ts hc hm hq hlen hts (ih hp₁)
+        subst h; exact .impC w ts hc hm hq hlen hts (ih hp₁) rfl rfl
 
 /-- Unpacking a step. -/
 theorem SLDCStep.inv {F F' : List ATree} (h : SLDCStep Θ q F F') :
