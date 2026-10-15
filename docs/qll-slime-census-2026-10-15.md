@@ -99,3 +99,59 @@ None of this makes anything unsound; it bears on how the families can be
 case-analysed and on whether a statement was bent to fit.  The deslime
 below replaces each computed index by a fresh variable and an equation
 field, behaviour-preserving, one family per commit.
+
+## After desliming
+
+*Same branch, commits `fcbd0e6` (`Prv`) to `36c281c` (`ExpandAt`), one
+commit per family.*
+
+Every computed index was replaced by a fresh variable and an equation
+field, behaviour-preserving: each new equation is discharged by `rfl` at
+the constructions, and taken apart by `subst` (or passed on unchanged) in
+the case analyses.  No proof needed anything else.
+
+| family | before | after | commit | lines changed |
+|---|---|---|---|---|
+| `Prv` | 1 / 17 | 0 / 17 | `fcbd0e6` | 9 files, +30 -26 |
+| `PrvC` | 1 / 17 | 0 / 17 | `67de18a` | 1 file, +5 -4 |
+| `Holds` | 1 / 5 | 0 / 5 | `a5e402d` | 4 files, +28 -19 |
+| `CTyped` | 1 / 7 | 0 / 7 | `e5cb52c` | 5 files, +19 -12 |
+| `Step` | 7 / 7 | 0 / 7 | `4d6dd46` | 3 files, +53 -42 |
+| `ATyped` | 1 / 6 | 0 / 6 | `74193dc` | 2 files, +10 -6 |
+| `SLD.PTyped` | 1 / 8 | 0 / 8 | `11565ca` | 1 file, +10 -7 |
+| `SLD.Expand` | 2 / 13 | 0 / 13 | `999f188` | 1 file, +26 -21 |
+| `SLD.SLDStep` | 1 / 1 | 0 / 1 | `ef37e65` | 1 file, +11 -8 |
+| `SLD.PTypedA` | 1 / 7 | 0 / 7 | `91dbf43` | 1 file, +9 -6 |
+| `SLD.ExpandA` | 2 / 12 | 0 / 12 | `c70388e` | 1 file, +10 -8 |
+| `SLD.SLDCStep` | 1 / 1 | 0 / 1 | `ac2eb6a` | 1 file, +4 -3 |
+| `SLD.Base` | 2 / 7 | 0 / 7 | `967f287` | 1 file, +10 -9 |
+| `SLD.ExpandAt` | 3 / 13 | 0 / 13 (tool: 7, the literal `0`) | `36c281c` | 1 file, +35 -32 |
+
+**0 slimed constructors in 23 indexed families** (the tool's literal-`0`
+report on `ExpandAt` aside).  Net diff against `2518be0` over
+`LaxLogic/`: 16 files, +244 -187 lines.  Every module of `LaxLogic/QLL`
+that built before builds (54 of 55, including `ProvFresh`, `Saturate`,
+the test modules and `CLPBench`; `CLPWolfram` needs the Wolfram bridge
+and was not built before either), as does `LaxLogic.Util.TurnstileTests`; every `#guard_msgs`-pinned axiom set
+is unchanged (the build checks them), no pin line was edited, and no
+`sorry` was introduced.  `#print axioms` of all 112 declarations the CLP
+paper prints is identical before and after.
+
+The equation fields follow the shape already used by `Derives.allE`:
+
+* the instance of a `∀` is `B = A.openAt 0 t`;
+* an instantiated clause head `.pred c.head (Tm.instAllList ts …)` is
+  `.pred P us` with `P = c.head` and `us = Tm.instAllList ts …`, the same
+  two equations as the immediate consequence operator `Tp`, so the head
+  stays a constructor and a case analysis on a non-atomic goal still
+  rules the clause case out by itself;
+* a goal or forest at a position, `l ++ φ :: r`, is a variable with
+  `gs = l ++ φ :: r`;
+* the position `p.opens.length + i` of `ExpandAt.andR` is a variable `j`
+  with `j = p.opens.length + i`.
+
+What this shows about fidelity: no theorem statement changed (the 14
+family definitions changed only by the equation fields), and no proof
+needed more than `rfl` or `subst`.  So no statement had been bent to fit
+the slime: the computed indices were only ever used where a `subst` on
+the equation recovers them.
