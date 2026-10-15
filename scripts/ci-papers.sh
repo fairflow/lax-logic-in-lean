@@ -15,11 +15,27 @@
 #   <site>/lax-paper/single/   LaxPaper, one page
 #   <site>/curry-paper/        CurryPaper (and /single/)
 #   <site>/tools/*.html        the self-contained HTML explorers from docs/
+#   <site>/drafts/             the Belief draft (PDF and landing page)
+#
+#   scripts/ci-papers.sh <site-dir> [part...]
+#
+# With no parts, everything above is built.  Parts select a subset, each
+# replacing only its own directory: clp-paper, lax-paper, curry-paper (a Verso
+# build of that paper alone; Lake builds just the library modules it imports),
+# and extras (tools/ and drafts/, copies and pandoc only, no Lean).  The
+# per-paper workflow (.github/workflows/paper-pages.yml) uses this to
+# republish one paper on top of the last deployed site.
 #
 # HTML only.  The PDFs need a TeX installation (scripts/verso-tex-pdf.sh) and
 # stay local: scripts/clp-paper.sh.
 set -euo pipefail
 site=$1
+shift
+parts=${*:-clp-paper lax-paper curry-paper extras}
+want() { case " $parts " in *" $1 "*) return 0;; *) return 1;; esac; }
+for p in $parts; do
+  case $p in clp-paper|lax-paper|curry-paper|extras) ;; *) echo "ci-papers: unknown part $p"; exit 2;; esac
+done
 cd "$(dirname "$0")/.."
 test -f "$site/index.html" || { echo "ci-papers: $site has no index.html (build the Blueprint first)"; exit 1; }
 
@@ -38,9 +54,10 @@ build() {  # lib main slug
   echo "ci-papers: $site/$slug/index.html"
 }
 
-build CLPPaper CLPPaperMain.lean clp-paper
-build LaxPaper LaxPaperMain.lean lax-paper
-build CurryPaper CurryPaperMain.lean curry-paper
+want clp-paper && build CLPPaper CLPPaperMain.lean clp-paper
+want lax-paper && build LaxPaper LaxPaperMain.lean lax-paper
+want curry-paper && build CurryPaper CurryPaperMain.lean curry-paper
+want extras || exit 0
 
 # The explorers are tracked, self-contained pages (no local references), so they
 # are copied as they are.  The list is explicit: a page is published only by
