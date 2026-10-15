@@ -248,10 +248,11 @@ inductive PTyped (isC : String → Bool) (Θ : Program) : Form → PTree → Pro
   | orR {A B : Form} {p : PTree} : PTyped isC Θ B p → PTyped isC Θ (.or A B) (.orR p)
   | exI {A : Form} {p : PTree} (t : Tm) : Tm.lcAt 0 t →
       PTyped isC Θ (A.openAt 0 t) p → PTyped isC Θ (.exists_ A) (.exI t p)
-  | clause {c : Clause} {p : PTree} (w : Nat) (ts : List Tm) : Θ[w]? = some c →
-      c.modal = false → ts.length = c.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
+  | clause {c : Clause} {p : PTree} {P : String} {us : List Tm} (w : Nat) (ts : List Tm) :
+      Θ[w]? = some c → c.modal = false → ts.length = c.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
       PTyped isC Θ (Form.instAll ts c.body) p →
-      PTyped isC Θ (.pred c.head (Tm.instAllList ts (headVars c.arity))) (.clause w ts p)
+      P = c.head → us = Tm.instAllList ts (headVars c.arity) →
+      PTyped isC Θ (.pred P us) (.clause w ts p)
 
 theorem Expand.typed {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c') :
     ∀ {S : Form}, PTyped isC Θ S p → PTyped isC Θ S p' := by
@@ -262,7 +263,8 @@ theorem Expand.typed {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
   | orL => intro S hp; cases hp; exact .orL (.hole _)
   | orR => intro S hp; cases hp; exact .orR (.hole _)
   | ex t ht => intro S hp; cases hp; exact .exI t ht (.hole _)
-  | clause w ts hc hm hlen hts => intro S hp; cases hp; exact .clause w ts hc hm hlen hts (.hole _)
+  | clause w ts hc hm hlen hts =>
+      intro S hp; cases hp; exact .clause w ts hc hm hlen hts (.hole _) rfl rfl
   | andL _ ih => intro S hp; cases hp with | andI h₁ h₂ => exact .andI (ih h₁) h₂
   | andR _ ih => intro S hp; cases hp with | andI h₁ h₂ => exact .andI h₁ (ih h₂)
   | inOrL _ ih => intro S hp; cases hp with | orL h₁ => exact .orL (ih h₁)
@@ -270,7 +272,8 @@ theorem Expand.typed {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
   | inEx _ ih => intro S hp; cases hp with | exI _ ht h₁ => exact .exI _ ht (ih h₁)
   | inClause _ ih =>
       intro S hp
-      cases hp with | clause _ _ hc hm hlen hts h₁ => exact .clause _ _ hc hm hlen hts (ih h₁)
+      cases hp with
+      | clause _ _ hc hm hlen hts h₁ hP hus => exact .clause _ _ hc hm hlen hts (ih h₁) hP hus
 
 /-- A closed, typed tree is a `CProof` of its goal. -/
 theorem PTree.close_typed {S : Form} {p : PTree} (hp : PTyped isC Θ S p) :
@@ -310,13 +313,13 @@ theorem PTree.close_typed {S : Form} {p : PTree} (hp : PTyped isC Θ S p) :
       | some q₁ =>
         simp only [PTree.close, hp₁, Option.some.injEq] at h
         subst h; exact .exI t ht (ih hp₁)
-  | @clause _ p₁ w ts hc hm hlen hts _ ih =>
+  | @clause _ p₁ _ _ w ts hc hm hlen hts _ hP hus ih =>
       intro q h
       cases hp₁ : p₁.close with
       | none => simp [PTree.close, hp₁] at h
       | some q₁ =>
         simp only [PTree.close, hp₁, Option.some.injEq] at h
-        subst h; exact .clause w ts hc hm hlen hts (ih hp₁) rfl rfl
+        subst h; exact .clause w ts hc hm hlen hts (ih hp₁) hP hus
 
 /-! ### Theorem 9.4 as a step invariant: the store is `c₀ ∧ store` -/
 
