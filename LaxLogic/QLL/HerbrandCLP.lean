@@ -524,10 +524,10 @@ theorem p66_with_lax (q : Q) :
   have hB : Prv (.pred "A" [.fvar a] :: [p66Refined, .forall_ (.circ q (.pred "B" [.bvar 0]))])
       (.circ q (.pred "B" [.fvar a])) :=
     .allE (.fvar a) trivial
-      (.var (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl)))))))
+      (.var (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl))))))) rfl
   have hR : Prv (.pred "A" [.fvar a] :: [p66Refined, .forall_ (.circ q (.pred "B" [.bvar 0]))])
       (.imp (.and (.pred "A" [.fvar a]) (.pred "B" [.fvar a])) (.pred "P" [.fvar a])) :=
-    .allE (.fvar a) trivial (.var (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl)))))
+    .allE (.fvar a) trivial (.var (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl))))) rfl
   exact .circE hB (.circI (.impE hR.weaken_cons
     (.andI (.var (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl))))) .hd)))
 

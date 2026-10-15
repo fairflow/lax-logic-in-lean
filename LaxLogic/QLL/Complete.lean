@@ -628,7 +628,7 @@ theorem fal_exists (hG : Good R T) {A : Form} {t : Tm} (ht : Tm.lcAt 0 t)
 theorem all_mem (hG : Good R T) {A : Form} {t : Tm} (ht : Tm.lcAt 0 t)
     (hav : Avoids R (A.openAt 0 t)) (h : Form.forall_ A ∈ T.val) :
     A.openAt 0 t ∈ T.val :=
-  hG.ded_closed hav ((SetPrv.of_mem h).map (fun _ p => .allE t ht p))
+  hG.ded_closed hav ((SetPrv.of_mem h).map (fun _ p => .allE t ht p rfl))
 
 end Good
 

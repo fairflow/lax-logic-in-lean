@@ -129,7 +129,7 @@ theorem Prv.allEs : ∀ (ts : List Tm) {Γ : List Form} {A : Form}, (∀ t ∈ t
     Prv Γ (Form.foralls ts.length A) → Prv Γ (Form.instAll ts A)
   | [],      _, _, _,   h => h
   | t :: ts, _, A, hts, h => by
-      have h' := Prv.allE t (hts t (List.mem_cons.2 (Or.inl rfl))) h
+      have h' := Prv.allE t (hts t (List.mem_cons.2 (Or.inl rfl))) h rfl
       rw [Form.openAt_foralls, Nat.zero_add] at h'
       exact Prv.allEs ts (fun u hu => hts u (List.mem_cons.2 (Or.inr hu))) h'
 

@@ -189,7 +189,7 @@ theorem fo_I_to_II (q : Q) : Prv [clI q] (clII q) := by
   have hcl : Prv [Form.and (.pred "A" [.fvar "w"]) (.pred "B" [.fvar "w"]), clI q]
       (.imp (.and (.pred "A" [.fvar "w"]) (.circ q (.pred "B" [.fvar "w"])))
         (.circ q (.pred "P" [.fvar "w"]))) :=
-    Prv.allE (.fvar "w") trivial (Prv.var (List.Mem.tail _ (List.Mem.head _)))
+    Prv.allE (.fvar "w") trivial (Prv.var (List.Mem.tail _ (List.Mem.head _))) rfl
   have hab : Prv [Form.and (.pred "A" [.fvar "w"]) (.pred "B" [.fvar "w"]), clI q]
       (.and (.pred "A" [.fvar "w"]) (.pred "B" [.fvar "w"])) :=
     Prv.var (List.Mem.head _)
@@ -216,7 +216,7 @@ theorem fo_II_to_I (q : Q) : Prv [clII q] (clI q) := by
       Form.and (.pred "A" [.fvar "w"]) (.circ q (.pred "B" [.fvar "w"])), clII q]
       (.imp (.and (.pred "A" [.fvar "w"]) (.pred "B" [.fvar "w"]))
         (.circ q (.pred "P" [.fvar "w"]))) :=
-    Prv.allE (.fvar "w") trivial (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+    Prv.allE (.fvar "w") trivial (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) rfl
   exact Prv.impE hcl (Prv.andI (Prv.andE₁ h2) hB)
 
 /-! ## The same with `◯` under an existential — the shape a clause body actually has -/
@@ -248,7 +248,7 @@ theorem fo_ex_I_to_II (q : Q) : Prv [clEI q] (clEII q) := by
       (.imp (.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])))
         (.circ q (.pred "P" [.fvar "w"]))) :=
     Prv.allE (.fvar "w") trivial
-      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) rfl
   have hex : Prv [Form.and (.pred "B" [.fvar "u"]) (.pred "C" [.fvar "u", .fvar "w"]),
       Form.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .fvar "w"])), clEI q]
       (.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"]))) :=
@@ -288,7 +288,7 @@ theorem fo_ex_II_to_I (q : Q) : Prv [clEII q] (clEI q) := by
       (.imp (.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .fvar "w"])))
         (.circ q (.pred "P" [.fvar "w"]))) :=
     Prv.allE (.fvar "w") trivial
-      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))) rfl
   have hex : Prv [Form.pred "B" [.fvar "u"],
       Form.and (.circ q (.pred "B" [.fvar "u"])) (.pred "C" [.fvar "u", .fvar "w"]),
       Form.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])),

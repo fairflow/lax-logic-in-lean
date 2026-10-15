@@ -83,7 +83,7 @@ theorem Derives.erase : ∀ {p : Pf} {Γ : Ctx} {A : Form},
       refine Prv.allI_of_fresh ?_ ha.2.2 (ih (Pf.lcI_openI p 0 (.fvar a) trivial h))
       exact fun hc => ha.1 (Ctx.ctxFv_sub_fvI _ a hc)
   | @allE _ _ _ B t _ hB ih =>
-      intro h; subst hB; exact .allE t h.1 (ih h.2)
+      intro h; subst hB; exact .allE t h.1 (ih h.2) rfl
   | exI t _ ih => intro h; exact .exI t h.1 (ih h.2)
   | @exE _ _ p A K a z ha hK _ _ _ ih₀ ih₁ =>
       intro h
@@ -155,7 +155,7 @@ theorem PrvC.toPrv {Γ : List Form} {A : Form} (h : PrvC Γ A) : Prv Γ A := by
   | circI _ ih => exact .circI ih
   | circE _ _ ih₁ ih₂ => exact .circE ih₁ ih₂
   | allI L _ ih => exact .allI L ih
-  | allE t ht _ ih => exact .allE t ht ih
+  | allE t ht _ ih => exact .allE t ht ih rfl
   | exI t ht _ ih => exact .exI t ht ih
   | exE L _ _ ih₀ ih₁ => exact .exE L ih₀ ih₁
 
