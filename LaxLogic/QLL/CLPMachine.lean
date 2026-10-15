@@ -484,7 +484,8 @@ inductive ExpandA (Θ : Program) (q : Q) : ATree → ATree → Prop
 
 /-- One SLD◯ step on a forest. -/
 inductive SLDCStep (Θ : Program) (q : Q) : List ATree → List ATree → Prop
-  | mk {p p' : ATree} (l r : List ATree) : ExpandA Θ q p p' → SLDCStep Θ q (l ++ p :: r) (l ++ p' :: r)
+  | mk {p p' : ATree} {F F' : List ATree} (l r : List ATree) : ExpandA Θ q p p' →
+      F = l ++ p :: r → F' = l ++ p' :: r → SLDCStep Θ q F F'
 
 /-- Runs. -/
 inductive SLDCSteps (Θ : Program) (q : Q) : List ATree → List ATree → Prop
@@ -580,7 +581,7 @@ theorem ATree.close_typed {S : Form} {a : ATree} (ha : PTypedA Θ q S a) :
 theorem SLDCStep.inv {F F' : List ATree} (h : SLDCStep Θ q F F') :
     ∃ l r p p', F = l ++ p :: r ∧ F' = l ++ p' :: r ∧ ExpandA Θ q p p' := by
   cases h with
-  | mk l r he => exact ⟨l, r, _, _, rfl, rfl, he⟩
+  | mk l r he h₁ h₂ => exact ⟨l, r, _, _, h₁, h₂, he⟩
 
 /-- A step from a singleton forest stays a singleton forest. -/
 theorem SLDCStep.single {a : ATree} {F' : List ATree} (h : SLDCStep Θ q [a] F') :
@@ -667,7 +668,7 @@ theorem SLDStep.toA (q : Q) (hH : Θ.HeadsOK isC) {s s' : MState} (h : SLDStep i
       subst h₁ h₂
       show SLDCStep _ _ ((l ++ _ :: r).map _) ((l ++ _ :: r).map _)
       simp only [List.map_append, List.map_cons]
-      exact .mk _ _ (he.toA q hH)
+      exact .mk _ _ (he.toA q hH) rfl rfl
 
 theorem SLDSteps.toA (q : Q) (hH : Θ.HeadsOK isC) {s s' : MState} (h : SLDSteps isC Θ ok s s') :
     SLDCSteps (Θ.abs isC q) q (s.forest.map (PTree.toA isC)) (s'.forest.map (PTree.toA isC)) := by
