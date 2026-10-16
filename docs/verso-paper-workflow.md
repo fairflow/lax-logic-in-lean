@@ -67,7 +67,8 @@ The blueprint genre is reserved for the repo's live blueprint.
   elaborates it against the environment and fails the build if it is wrong.
 * Markup rules that bit: every section needs lead prose after its `#doc`
   line; bare `[…]` is link syntax (backtick it); `{ref}` needs a declared
-  tag; there are no pipe tables (use a code block or the `table` directive);
+  tag; there are no pipe tables (use the `wtable` directive of §3c, or Verso's
+  `table`);
   math is `` $`…` `` inline and `` $$`…` `` displayed (KaTeX in HTML, native
   in TeX); code is verbatim.
 
@@ -81,16 +82,22 @@ type as display mathematics, at build time, from the compiled environment:
   (one per line, `\Longrightarrow`), instance arguments vanish;
 * the object language goes through a notation table: `Prv Γ A` is
   `Γ ⊢ A`, `¬ Prv` is `⊬`, `PEq` is `⊣⊢`, `Form.and/or/imp/circ/forall_/exists_`
-  are `∧ ∨ ⊃ ◯_q ∀x. ∃x.` with de Bruijn binders named `x, y, z, …` by depth,
-  `Form.pred "geq" [a,b]` is `a ≥ b`, `Tm.fn "add"` is `+`, a list context is a
-  comma sequence and `Θ.forms` is `Θ`;
+  are `∧ ∨ ↠ ◯_q ∀x. ∃x.` (↠ since v0.6, the library's notation) with de
+  Bruijn binders named `x, y, z, …` by depth, a nested object-level `∧`/`∨`
+  bracketed on both sides, `Form.pred "geq" [a,b]` is `a ≥ b`, `Tm.fn "add"`
+  is `+`, a predicate or argument list that is a variable is printed as
+  `p(us)`, a list context is a comma sequence and `Θ.forms` is `Θ`; goals and
+  machine states are `c □ φ₁, …, φₙ`, `Consequence`/`HTrue` are `⊨`, forcing is
+  `M, s ⊨ A`, a bundled map `⇑f x` is `f(x)`;
 * everything else has a generic reading (`∧ ∨ ↔ = ≠ ∈ ∃ λ`, numerals, lists,
   pairs, `b = true` as `b`, applications as `\mathit{f}(a, b)` with implicit
   arguments dropped) and, last, Lean's own printer in typewriter;
 * a declaration whose type is not a proposition prints nothing;
 * rows longer than about 78 visible characters are broken at binary
   connectives, shallowest parenthesis depth first, continuation rows
-  indented (neither KaTeX nor TeX breaks display mathematics by itself).
+  indented (neither KaTeX nor TeX breaks display mathematics by itself); a
+  long statement without premises is broken the same way, and a quantifier
+  below the root stays on one line.
 
 The same declaration always gives the same mathematics and it cannot drift
 from the code; nothing in the output is edited by hand.  For another object
@@ -98,6 +105,32 @@ language, extend the table (`form`, `tm`, `ctx`, and the `generic` cases).
 The prose around a result is the author's; formulas in it are written as
 Verso math.  `scripts/lean-to-math.py` exists only as an authoring aid that
 converts Unicode formulas in *source* prose to math; it is not a build step.
+
+## 3a. Layout devices (CLP paper, v0.6)
+
+The v0.5 PDF had 87 overfull lines, mostly Lean signatures in boxes and
+tables set as code.  v0.6 adds, all document-local:
+
+* `{leanDecl}` (`CLPPaper/Decl.lean`) prints the signature in an fvextra
+  `Verbatim` at `\footnotesize` that breaks long lines, with a thin rule on
+  the left and the source link flush right below it, never separated from it
+  by a page break; a signature of at most 12 lines is not split across pages
+  (`samepage`, which needs `bgcolorboxoverlap=0pt`: by default fvextra puts
+  a `\vspace{-0.25pt}` after every line, and TeX may break the page at that
+  glue whatever the line penalties say).  The docstring is printed only with
+  `+doc`.  In HTML the same block is a `lean-decl` div with wrapping `pre`.
+* `:::wtable (widths := "0.3 0.7") +header` (`CLPPaper/Layout.lean`) takes a
+  list of rows, each a list of cells, and sets a real table: TeX `tabular`
+  with `p{}` columns at the given fractions of `\linewidth` (text wraps inside
+  a cell), HTML `<table>` with a `colgroup`.
+* `{texSetup}` (`CLPPaper/Layout.lean`) emits raw TeX once: chapters do not
+  start new pages, compact chapter and section headings, a table of contents
+  to chapter depth, tight lists, `\emergencystretch`.  HTML is unaffected.
+* `scripts/verso-tex-pdf.sh` appends `$VERSO_TEX_EXTRA` to the preamble;
+  `scripts/clp-paper.sh` sets it to `\let\cleardoublepage\clearpage` (no blank
+  recto pages).  Other papers are unaffected unless they set it.
+
+Result: 41 pages, 0 overfull lines (v0.5: 54 pages, 87).
 
 ## 3b. Version and build stamp
 
