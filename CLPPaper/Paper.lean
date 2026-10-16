@@ -13,6 +13,7 @@ import CLPPaper.Sections.Modality
 import CLPPaper.Sections.Pruning
 import CLPPaper.Sections.Status
 import CLPPaper.Src
+import CLPPaper.Layout
 
 open Verso.Genre
 open Verso.Genre.Manual
@@ -22,20 +23,21 @@ open CLPPaper
 
 {buildStamp}`CLPPaper/VERSION`
 
-A Lean 4 mechanisation of
+{texSetup}
 
-> M. Fairtlough, M. Mendler and M. Walton.
-> *First-order Lax Logic as a framework for Constraint Logic Programming.*
-> Draft of 10 September 1997.
+This document is a mechanisation in Lean 4 of the draft
 
-together with what the mechanisation added: a certified constraint solver, an
-operational semantics in one format for both passes of the method, and a
-study of where the lax modality may be placed in a program and what each
-placement buys.  Every claim is machine-checked with pinned axioms, or labelled
-otherwise; each result is followed by the Lean declaration that carries it,
-printed from the compiled library, so its statement is read off the compiler,
-not asserted here.  Numbered results refer
-to the draft.
+> M. Fairtlough, M. Mendler and M. Walton, _First-order Lax Logic as a framework for Constraint Logic Programming_, draft of 10 September 1997,
+
+together with what the mechanisation added to it: a constraint solver whose
+verdicts are certified, one operational semantics for both passes of the
+draft's method, and a study of where the lax modality may be placed in a
+program and what each placement buys.
+
+Every result is machine-checked, or labelled as refuted or open.  Each is
+stated in words, then as a displayed formula generated from the Lean
+statement, then as the Lean declaration that carries it, printed from the
+compiled library.  Numbered results are the draft's.
 
 {include 0 CLPPaper.Sections.Introduction}
 {include 0 CLPPaper.Sections.CLP}
@@ -49,4 +51,3 @@ to the draft.
 {include 0 CLPPaper.Sections.Modality}
 {include 0 CLPPaper.Sections.Pruning}
 {include 0 CLPPaper.Sections.Status}
-
