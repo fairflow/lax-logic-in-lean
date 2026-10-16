@@ -70,7 +70,7 @@ def compactType (ty : Expr) (skip : Nat := 0) : MetaM (Array Format × Format) :
 
 /-- `head binders : body`, broken by Lean's formatter at `width` columns,
 continuation lines indented by four (print has no horizontal scroll). -/
-def width : Nat := 90
+def width : Nat := 88
 
 def joinSig (head : String) (bs : Array Format) (body : Format) (indent : Nat := 0)
     (suffix := "") : String :=
@@ -116,18 +116,45 @@ def compactDecl (n : Name) : MetaM String := do
     let (bs, body) ← compactType ci.type
     pure (joinSig short bs body)
 
+/-- The opening of the signature's TeX environment: an fvextra `Verbatim`
+that breaks long lines (at spaces, and anywhere if it must), at footnote size,
+with a thin rule on the left in the colour of Verso's docstring boxes.  A
+short signature (`samepage`) is never split across pages.  `bgcolorboxoverlap=0pt`
+is needed for that: by default fvextra puts a `\vspace{-0.25pt}` after every
+line, and a page may break at that glue whatever the line penalties say. -/
+def verbatimOpen (samepage : Bool) : String :=
+  "\\begin{Verbatim}[fontsize=\\footnotesize,breaklines=true,breakanywhere=true," ++
+  "breaksymbolleft={},breakindent=1.5em,frame=leftline,framerule=0.6pt,framesep=5pt," ++
+  (if samepage then "samepage=true," else "") ++ "bgcolorboxoverlap=0pt," ++
+  "rulecolor=\\color{bordercolor},xleftmargin=2pt]\n"
+
 block_extension Block.leanDecl where
   traverse _ _ _ := pure none
   toTeX := some <| fun _ goB _ _ content => do
-    let parts ← content.mapM goB
-    let sep : Array Verso.Output.TeX := parts.foldl (init := #[]) fun acc p => acc.push p |>.push (.raw "\\par ")
-    pure <| .seq #[.raw "\\par\\begingroup\\small ", .seq sep, .raw "\\endgroup\\par "]
+    -- the signature as a breakable fvextra Verbatim at footnote size, with a
+    -- rule on the left; docstring paragraphs and the source link below it, small
+    let mut parts : Array Verso.Output.TeX := #[]
+    for b in content, i in [0:content.size] do
+      match b with
+      | .code s =>
+        let short := (s.splitOn "\n").length ≤ 12
+        parts := parts.push (.raw (verbatimOpen short ++ s ++ "\n\\end{Verbatim}\n"))
+      | b =>
+        -- the last block is the source link: set flush right, close under the code,
+        -- and never separated from it by a page break
+        let pre := if i + 1 == content.size then "\\nopagebreak{\\footnotesize\\raggedleft "
+          else "{\\footnotesize\\noindent "
+        parts := parts.push (.seq #[.raw pre, ← goB b, .raw "\\par}"])
+    -- `\@endparpenalty` 10000: no page break straight after the Verbatim
+    pure <| .seq #[.raw ("\\par\\smallskip\\begingroup\\setlength{\\parskip}{1pt}" ++
+        "\\csname @endparpenalty\\endcsname=10000 "), .seq parts,
+      .raw "\\endgroup\\par\\medskip "]
   toHtml := some <| fun _ goB _ _ content => do
     pure {{ <div class="lean-decl">{{← content.mapM goB}}</div> }}
   extraCss := [r#"
-.lean-decl { border-left: 3px solid #c8d3e0; padding: 0.1em 0 0.1em 0.8em; margin: 0.6em 0 1em 0; }
-.lean-decl pre { font-size: 85%; margin: 0.2em 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-.lean-decl p { margin: 0.25em 0; font-size: 92%; }
+.lean-decl { border-left: 3px solid #c8d3e0; padding: 0.1em 0 0.1em 0.8em; margin: 0.4em 0 1.2em 0; color: #333; }
+.lean-decl pre { font-size: 78%; margin: 0.2em 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.lean-decl p { margin: 0.2em 0; font-size: 82%; }
 @media print {
   .lean-decl { break-inside: avoid; border-left-color: #999; }
   .lean-decl pre { font-size: 75%; }
@@ -139,15 +166,19 @@ block_extension Block.leanDecl where
 
 structure LeanDeclConfig where
   name : Ident × Name
+  /-- show the declaration's docstring under the signature (off by default:
+  the paper says in prose what the result is) -/
+  doc : Bool := false
 
 instance : FromArgs LeanDeclConfig DocElabM :=
-  ⟨LeanDeclConfig.mk <$> .positional `name .documentableName⟩
+  ⟨LeanDeclConfig.mk <$> .positional `name .documentableName <*> .flag `doc false⟩
 
 @[block_command]
 def leanDecl : BlockCommandOf LeanDeclConfig
-  | ⟨(x, name)⟩ => do
+  | ⟨(x, name), showDoc⟩ => do
     let text ← (compactDecl name : MetaM String)
-    let docs ← match ← findDocString? (← getEnv) name with
+    let found ← findDocString? (← getEnv) name
+    let docs ← match (if showDoc then found else Option.none) with
       | Option.none => pure #[]
       | Option.some d =>
         let Option.some ast := MD4Lean.parse d | throwErrorAt x "Failed to parse docstring as Markdown"
