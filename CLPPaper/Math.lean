@@ -135,7 +135,8 @@ def breakPoints (s : String) : List (Nat × Nat) := Id.run do
   let cs := s.toList.toArray
   let mut depth := 0
   let mut out : List (Nat × Nat) := []
-  let conns := [" \\iff ", " \\Longrightarrow ", " \\land ", " \\lor ", " \\vdash ", " \\dashv\\vdash "]
+  let conns := [" \\iff ", " \\Longrightarrow ", " \\land ", " \\lor ", " \\vdash ", " \\dashv\\vdash ",
+    " \\twoheadrightarrow "]
   for i in [0:cs.size] do
     let c := cs[i]!
     if c == '(' || c == '[' then depth := depth + 1
@@ -151,12 +152,15 @@ partial def breakRow (s : String) (width : Nat := 78) : List String :=
   let pts := breakPoints s
   if pts.isEmpty then [s] else
   -- the shallowest depth available, then the rightmost point that keeps the first row within width
+  -- (a point at the shallowest depth if one fits, else one level deeper)
   let minDepth := pts.foldl (fun m p => min m p.2) 1000
+  let fitsAt (d : Nat) := pts.filter fun (i, k) =>
+    k == d && visLen (String.ofList (s.toList.take i)) ≤ width
   let candidates := pts.filter (·.2 ≤ minDepth + 1)
-  let fits := candidates.filter fun (i, _) => visLen (String.ofList (s.toList.take i)) ≤ width
-  let pick := match fits.reverse.head? with
-    | Option.some p => p
-    | Option.none => candidates.head!
+  let pick := match (fitsAt minDepth).reverse.head?, (fitsAt (minDepth + 1)).reverse.head? with
+    | Option.some p, _ => p
+    | Option.none, Option.some p => p
+    | Option.none, Option.none => candidates.head!
   let head := String.ofList (s.toList.take pick.1)
   let tail := String.ofList (s.toList.drop pick.1) |>.trimAscii.copy
   if head.trimAscii.isEmpty then [s] else
@@ -166,10 +170,12 @@ partial def breakRow (s : String) (width : Nat := 78) : List String :=
 def rows (lines : List String) : String :=
   "\\begin{aligned}" ++ " \\\\ ".intercalate (lines.map ("&" ++ ·)) ++ "\\end{aligned}"
 
-/-- Precedences: 0 statement · 1 ⊃/⇒ · 2 ∨ · 3 ∧ · 4 prefix (◯, ¬) · 5 relations · 9 atoms. -/
+/-- Precedences: 0 statement · 1 ↠/⇒ · 2 ∨ · 3 ∧ · 4 prefix (◯, ¬) · 5 relations · 9 atoms. -/
 structure St where
   bound : List String := []      -- names for de Bruijn binders of the object language
   depth : Nat := 0
+  /-- below the root: a quantified formula here is printed on one line -/
+  nested : Bool := false
 
 def boundNames : Array String := #["x", "y", "z", "u", "v", "w", "s", "t"]
 
@@ -178,14 +184,20 @@ partial def tm (st : St) : Expr → MetaM String
   | e => do
     let e := e.consumeMData
     match e.getAppFnArgs with
-    | (``LaxLogic.QLL.Tm.fvar, #[s]) => pure <| (strLit? s).map ident |>.getD "?"
+    | (``LaxLogic.QLL.Tm.fvar, #[s]) => match strLit? s with
+      | Option.some n => pure (ident n)
+      | Option.none => generic st 9 s
     | (``LaxLogic.QLL.Tm.bvar, #[n]) =>
       pure <| match natLit? n with
         | Option.some k => st.bound.getD k s!"b_{k}"
         | Option.none => "b"
-    | (``LaxLogic.QLL.Tm.fn, #[f, ts]) =>
+    | (``LaxLogic.QLL.Tm.fn, #[f0, ts]) =>
+      -- a name or argument list that is a variable is printed as one: `f(ts)`
+      match strLit? f0, listLit? ts with
+      | Option.some _, Option.some _ => pure ()
+      | _, _ => return s!"{← generic st 9 f0}({← generic st 0 ts})"
       let args := (listLit? ts).getD []
-      let f := (strLit? f).getD "f"
+      let f := (strLit? f0).getD "f"
       match f, args with
       | "add", [a, b] => return s!"{← tm st a} + {← tm st b}"
       | "sub", [a, b] => return s!"{← tm st a} - {← tm st b}"
@@ -201,9 +213,11 @@ partial def form (st : St) (p : Nat) : Expr → MetaM String
     match e.getAppFnArgs with
     | (``LaxLogic.QLL.Form.top, _) => pure "\\top"
     | (``LaxLogic.QLL.Form.bot, _) => pure "\\bot"
-    | (``LaxLogic.QLL.Form.and, #[a, b]) => return wrap 3 s!"{← form st 3 a} \\land {← form st 4 b}"
-    | (``LaxLogic.QLL.Form.or, #[a, b]) => return wrap 2 s!"{← form st 2 a} \\lor {← form st 3 b}"
-    | (``LaxLogic.QLL.Form.imp, #[a, b]) => return wrap 1 s!"{← form st 2 a} \\supset {← form st 1 b}"
+    -- object-level ∧ and ∨: a nested conjunction or disjunction is bracketed on
+    -- either side, so the printed formula is the formula, not one up to ⊣⊢
+    | (``LaxLogic.QLL.Form.and, #[a, b]) => return wrap 3 s!"{← form st 4 a} \\land {← form st 4 b}"
+    | (``LaxLogic.QLL.Form.or, #[a, b]) => return wrap 2 s!"{← form st 3 a} \\lor {← form st 3 b}"
+    | (``LaxLogic.QLL.Form.imp, #[a, b]) => return wrap 1 s!"{← form st 2 a} \\twoheadrightarrow {← form st 1 b}"
     | (``LaxLogic.QLL.Form.circ, #[q, a]) =>
       let q ← match q.consumeMData.getAppFnArgs with
         | (``LaxLogic.QLL.Q.ex, _) => pure "\\exists"
@@ -216,9 +230,13 @@ partial def form (st : St) (p : Nat) : Expr → MetaM String
     | (``LaxLogic.QLL.Form.exists_, #[a]) =>
       let x := boundNames.getD st.depth s!"x_{st.depth}"
       return wrap 0 s!"\\exists {x}.\\, {← form {st with bound := x :: st.bound, depth := st.depth + 1} 0 a}"
-    | (``LaxLogic.QLL.Form.pred, #[P, ts]) =>
+    | (``LaxLogic.QLL.Form.pred, #[P0, ts]) =>
+      -- a predicate name or argument list that is a variable is printed as one: `p(us)`
+      match strLit? P0, listLit? ts with
+      | Option.some _, Option.some _ => pure ()
+      | _, _ => return s!"{← generic st 9 P0}({← generic st 0 ts})"
       let args := (listLit? ts).getD []
-      let P := (strLit? P).getD "P"
+      let P := (strLit? P0).getD "P"
       match P, args with
       | "geq", [a, b] => return wrap 5 s!"{← tm st a} \\ge {← tm st b}"
       | "leq", [a, b] => return wrap 5 s!"{← tm st a} \\le {← tm st b}"
@@ -243,7 +261,8 @@ partial def ctx (st : St) (e : Expr) : MetaM String := do
   | _ => generic st 9 e
 
 /-- Propositions and everything else. -/
-partial def generic (st : St) (p : Nat) (e : Expr) : MetaM String := do
+partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
+  let st := {st0 with nested := true}
   let e := e.consumeMData
   let wrap (q : Nat) (s : String) := if q < p then paren s else s
   match e with
@@ -257,7 +276,7 @@ partial def generic (st : St) (p : Nat) (e : Expr) : MetaM String := do
     if !b.hasLooseBVars && !(← isProp d) && !(← isProp e) then
       let wrap (q : Nat) (s : String) := if q < p then paren s else s
       return wrap 1 ((← generic st 2 d) ++ " \\to " ++ (← generic st 1 (b.lowerLooseBVars 1 1)))
-    else quant st p e
+    else quant st0 p e
   | .lam .. =>
     lambdaTelescope e fun xs b => do
       let names ← xs.mapM fun x => do pure (ident (← x.fvarId!.getDecl).userName.toString)
@@ -270,13 +289,18 @@ partial def generic (st : St) (p : Nat) (e : Expr) : MetaM String := do
     match q.consumeMData.getAppFnArgs with
     | (``LaxLogic.QLL.Prv, #[Γ, a]) => return wrap 0 s!"{← ctx st Γ} \\nvdash {← form st 1 a}"
     | _ => return wrap 4 s!"\\lnot {← generic st 4 q}"
-  | (``And, #[a, b]) => return wrap 3 s!"{← generic st 3 a} \\land {← generic st 4 b}"
-  | (``Or, #[a, b]) => return wrap 2 s!"{← generic st 2 a} \\lor {← generic st 3 b}"
+  -- propositions: right-associated, as Lean reads them
+  | (``And, #[a, b]) => return wrap 3 s!"{← generic st 4 a} \\land {← generic st 3 b}"
+  | (``Or, #[a, b]) => return wrap 2 s!"{← generic st 3 a} \\lor {← generic st 2 b}"
   | (``Iff, #[a, b]) => return wrap 1 s!"{← generic st 2 a} \\iff {← generic st 2 b}"
   | (``Eq, #[_, a, b]) =>
     if b.consumeMData.isConstOf ``Bool.true then generic st p a
     else return wrap 5 s!"{← generic st 6 a} = {← generic st 6 b}"
   | (``Ne, #[_, a, b]) => return wrap 5 s!"{← generic st 6 a} \\ne {← generic st 6 b}"
+  | (``LE.le, #[_, _, a, b]) => return wrap 5 s!"{← generic st 6 a} \\le {← generic st 6 b}"
+  | (``LT.lt, #[_, _, a, b]) => return wrap 5 s!"{← generic st 6 a} < {← generic st 6 b}"
+  | (``GE.ge, #[_, _, a, b]) => return wrap 5 s!"{← generic st 6 a} \\ge {← generic st 6 b}"
+  | (``GT.gt, #[_, _, a, b]) => return wrap 5 s!"{← generic st 6 a} > {← generic st 6 b}"
   | (``Membership.mem, #[_, _, _, coll, x]) => return wrap 5 s!"{← generic st 6 x} \\in {← generic st 6 coll}"
   | (``Exists, #[_, f]) =>
     lambdaTelescope f fun xs b => do
@@ -292,10 +316,37 @@ partial def generic (st : St) (p : Nat) (e : Expr) : MetaM String := do
   | (``HAdd.hAdd, #[_, _, _, _, a, b]) => return wrap 6 s!"{← generic st 6 a} + {← generic st 6 b}"
   | (``HSub.hSub, #[_, _, _, _, a, b]) => return wrap 6 s!"{← generic st 6 a} - {← generic st 7 b}"
   | (``HAppend.hAppend, #[_, _, _, _, a, b]) => return wrap 6 ((← generic st 6 a) ++ " \\mathbin{+\\!\\!+} " ++ (← generic st 7 b))
-  | (``List.cons, #[_, a, l]) => return wrap 6 s!"{← generic st 7 a} :: {← generic st 6 l}"
+  | (``List.cons, #[_, a, l]) =>
+    -- a list literal `[a, b]` is printed as one; only an open tail gets `::`
+    if let some fs := listLit? e then
+      return "[" ++ ", ".intercalate (← fs.mapM (generic st 0)) ++ "]"
+    return wrap 6 s!"{← generic st 7 a} :: {← generic st 6 l}"
+  -- a goal or machine state `c □ φ₁, …, φₙ` (the draft's notation), `ε` when empty
+  | (``LaxLogic.QLL.Goal.mk, #[c, gs]) | (``LaxLogic.QLL.SLD.MState.mk, #[c, gs]) =>
+    let rhs ← match listLit? gs with
+      | Option.some [] => pure "\\varepsilon"
+      | Option.some fs => pure (",\\ ".intercalate (← fs.mapM (generic st 1)))
+      | Option.none => generic st 6 gs
+    return wrap 5 ((← generic st 6 c) ++ " \\mathrel{\\square} " ++ rhs)
   | (``List.nil, _) => pure "[\\,]"
   | (``Prod, #[a, b]) => return wrap 5 ((← generic st 6 a) ++ " \\times " ++ (← generic st 6 b))
-  | (``LaxLogic.QLL.Consequence, #[Γ, a]) => return wrap 0 ((← ctx st Γ) ++ " \\Vdash " ++ (← form st 1 a))
+  | (``LaxLogic.QLL.Consequence, #[Γ, a]) => return wrap 0 ((← ctx st Γ) ++ " \\models " ++ (← form st 1 a))
+  -- truth in a Herbrand interpretation: `I ⊨ A`
+  | (``LaxLogic.QLL.HTrue, #[i, a]) => return wrap 0 ((← generic st 9 i) ++ " \\models " ++ (← form st 1 a))
+  -- forcing `M, s ⊨ A`; the assignment is shown as a subscript unless it is the
+  -- Herbrand one (names denote themselves, no index bound)
+  | (``LaxLogic.QLL.KModel.force, #[m, a, s, ρ, β]) =>
+    let dflt := ρ.consumeMData.isConstOf ``LaxLogic.QLL.Tm.fvar &&
+      (listLit? β).map List.isEmpty == Option.some true
+    let sub ← if dflt then pure "" else
+      pure ("_{" ++ (← generic st 0 ρ) ++ ",\\," ++ (← generic st 0 β) ++ "}")
+    return wrap 0 ((← generic st 9 m) ++ ",\\ " ++ (← generic st 9 s) ++ " \\models" ++ sub ++ " " ++
+      (← form st 1 a))
+  -- a bundled map applied to an argument (Mathlib's `⇑f x`): `f(x)`
+  | (``DFunLike.coe, #[_, _, _, _, f, x]) => return s!"{← generic st 9 f}({← generic st 0 x})"
+  -- the order of a Herbrand frame: `w ≤_F v`
+  | (``LaxLogic.QLL.HFrame.le, #[fr, w, v]) =>
+    return wrap 5 ((← generic st 6 w) ++ " \\le_{" ++ (← generic st 9 fr) ++ "} " ++ (← generic st 6 v))
   | (``Prod.mk, #[_, _, a, b]) => return s!"({← generic st 0 a}, {← generic st 0 b})"
   | (``Prod.fst, #[_, _, a]) => return s!"\\pi_1 {← generic st 9 a}"
   | (``Prod.snd, #[_, _, a]) => return s!"\\pi_2 {← generic st 9 a}"
@@ -335,8 +386,9 @@ partial def generic (st : St) (p : Nat) (e : Expr) : MetaM String := do
 
 /-- `∀`-binders: variables are quantified (grouped by type), propositions become
 premises, instance arguments vanish. -/
-partial def quant (st : St) (p : Nat) (e : Expr) : MetaM String :=
+partial def quant (st0 : St) (p : Nat) (e : Expr) : MetaM String :=
   forallTelescope e fun xs body => do
+    let st := {st0 with nested := true}
     let mut vars : Array (String × String) := #[]   -- (name, type)
     let mut prems : Array String := #[]
     for x in xs do
@@ -351,7 +403,7 @@ partial def quant (st : St) (p : Nat) (e : Expr) : MetaM String :=
     let binder := if vars.isEmpty then "" else
       "\\forall\\, " ++ ",\\ ".intercalate (vars.toList.map (·.1)) ++ ".\\; "
     let concl ← generic st 0 body
-    if p > 0 then
+    if p > 0 || st0.nested then
       if prems.isEmpty then return paren (binder ++ concl)
       else return paren (binder ++ " \\Longrightarrow ".intercalate (prems.toList ++ [concl]))
     else
@@ -368,7 +420,11 @@ end
 def stmtOf (n : Name) : MetaM (Option String) := do
   let some ci := (← getEnv).find? n | throwError "unknown constant {n}"
   unless ← isProp ci.type do return none
-  return some (← generic {} 0 ci.type)
+  let s ← generic {} 0 ci.type
+  -- a statement with no binders or premises is one row; break it if it is long
+  if visLen s > 78 && !s.startsWith "\\begin{aligned}" then
+    return some (rows (breakRow s))
+  return some s
 
 structure StmtConfig where
   ok : Unit := ()
