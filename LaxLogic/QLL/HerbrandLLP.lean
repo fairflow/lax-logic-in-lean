@@ -238,7 +238,7 @@ def I01 (I₀ I₁ : String → List Tm → Prop) : Bool → String → List Tm 
   | true  => I₁
 
 /-- The two-world interpretation is monotone when `I₀ ⊆ I₁`. -/
-theorem I01_hered {I₀ I₁ : String → List Tm → Prop} (h01 : ∀ p us, I₀ p us → I₁ p us) :
+theorem I01_hered {I₀ I₁ : String → List Tm → Prop} (h01 : ∀ p ts, I₀ p ts → I₁ p ts) :
     ∀ {w v : HFrame.two.W} {p : String} {ts : List Tm},
       HFrame.two.le w v → I01 I₀ I₁ w p ts → I01 I₀ I₁ v p ts := fun {w v _ _} hwv hI => by
   rcases hwv with rfl | rfl
@@ -250,7 +250,7 @@ theorem I01_hered {I₀ I₁ : String → List Tm → Prop} (h01 : ∀ p us, I�
     · exact hI
 
 /-- Two worlds `0 ≤ 1`, all arrows modal, nothing fallible. -/
-abbrev herbrand2 (I₀ I₁ : String → List Tm → Prop) (h01 : ∀ p us, I₀ p us → I₁ p us) : KModel :=
+abbrev herbrand2 (I₀ I₁ : String → List Tm → Prop) (h01 : ∀ p ts, I₀ p ts → I₁ p ts) : KModel :=
   HFrame.two.model (I01 I₀ I₁) (I01_hered h01)
 
 /-- World 0: the least Herbrand model of `Π⁰`. -/
@@ -260,7 +260,7 @@ abbrev llpI0 (Θ : Program) : String → List Tm → Prop := LHM RNone Θ.horn0
 abbrev llpI1 (Θ : Program) : String → List Tm → Prop := LHM RNone Θ.horn
 
 /-- `M(Π⁰) ⊆ M(Π¹)`. -/
-theorem llpI0_le (Θ : Program) : ∀ p us, llpI0 Θ p us → llpI1 Θ p us :=
+theorem llpI0_le (Θ : Program) : ∀ p ts, llpI0 Θ p ts → llpI1 Θ p ts :=
   fun _ _ h => Holds.mono (fun _ hh => Program.horn0_sub hh) h
 
 /-- The LLP Herbrand model: §7's canonical frame on the worlds `{0, 1}`. -/

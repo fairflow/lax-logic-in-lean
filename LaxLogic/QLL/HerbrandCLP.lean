@@ -91,8 +91,8 @@ theorem CTyped.of_sel {S : Form} (hS : IsSigma S) {g : Idx} (hg : g ∈ ind S) {
 
 /-- What holds in the least model of `Θ` over `R` has a proof tree whose total
 constraint is true in `R`. -/
-theorem Holds.cproof (hRC : ∀ p us, R p us → isC p = true)
-    (hRlc : ∀ p us, R p us → Tm.lcAtList 0 us) (hm : ∀ c ∈ Θ, c.modal = false)
+theorem Holds.cproof (hRC : ∀ P ts, R P ts → isC P = true)
+    (hRlc : ∀ P ts, R P ts → Tm.lcAtList 0 ts) (hm : ∀ c ∈ Θ, c.modal = false)
     {φ : Form} (d : Holds R Θ.horn φ) : ∃ p : CProof, CTyped isC Θ φ p ∧ HTrue R p.total := by
   induction d with
   | base hr => exact ⟨.cstr _ _, .cstr (hRC _ _ hr), (HTrue_pred (hRlc _ _ hr)).2 hr⟩
@@ -157,8 +157,8 @@ theorem CTyped.HTrue_of_total (hWF : ∀ c ∈ Θ, c.WF)
 
 /-- Completeness at world 2: truth in the least model over `R` gives a proof tree whose
 total constraint is true in `R`. -/
-theorem CTyped.of_HTrue (hRC : ∀ p us, R p us → isC p = true)
-    (hRlc : ∀ p us, R p us → Tm.lcAtList 0 us) (hm : ∀ c ∈ Θ, c.modal = false)
+theorem CTyped.of_HTrue (hRC : ∀ P ts, R P ts → isC P = true)
+    (hRlc : ∀ P ts, R P ts → Tm.lcAtList 0 ts) (hm : ∀ c ∈ Θ, c.modal = false)
     {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S) (h : HTrue (LHM R Θ.horn) S) :
     ∃ p : CProof, CTyped isC Θ S p ∧ HTrue R p.total := by
   obtain ⟨g, hg, hsel⟩ := ((herbrand1 _).force_iff_sel hS () Tm.fvar []).1 h
@@ -169,8 +169,8 @@ theorem CTyped.of_HTrue (hRC : ∀ p us, R p us → isC p = true)
 
 /-- **World 2, `◯`-free**: truth in the least model of the concrete program over
 `R` is the existence of a proof tree whose total constraint is true in `R`. -/
-theorem world2_free (hRC : ∀ p us, R p us → isC p = true)
-    (hRlc : ∀ p us, R p us → Tm.lcAtList 0 us) (hWF : ∀ c ∈ Θ, c.WF)
+theorem world2_free (hRC : ∀ P ts, R P ts → isC P = true)
+    (hRlc : ∀ P ts, R P ts → Tm.lcAtList 0 ts) (hWF : ∀ c ∈ Θ, c.WF)
     (hm : ∀ c ∈ Θ, c.modal = false) {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S) :
     HTrue (LHM R Θ.horn) S ↔ ∃ p : CProof, CTyped isC Θ S p ∧ HTrue R p.total :=
   ⟨CTyped.of_HTrue hRC hRlc hm hS hc, fun ⟨_, hp, tp⟩ => hp.HTrue_of_total hWF hc tp⟩
@@ -218,8 +218,8 @@ variable {isC : String → Bool} {Θ : Program} {R : String → List Tm → Prop
 /-- **Theorem 7.5, `i = 2`, on the atoms of world 2**: a closed pure query is
 true in the least model of `Θ` over `R` iff some abstract proof of `◯S` against
 `Θ♯` has an extracted constraint true in `R`. -/
-theorem world2_abs (q : Q) (hH : Θ.HeadsOK isC) (hRC : ∀ p us, R p us → isC p = true)
-    (hRlc : ∀ p us, R p us → Tm.lcAtList 0 us) (hWF : ∀ c ∈ Θ, c.WF)
+theorem world2_abs (q : Q) (hH : Θ.HeadsOK isC) (hRC : ∀ P ts, R P ts → isC P = true)
+    (hRlc : ∀ P ts, R P ts → Tm.lcAtList 0 ts) (hWF : ∀ c ∈ Θ, c.WF)
     (hm : ∀ c ∈ Θ, c.modal = false) {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S)
     (hpure : S.pureB isC = true) :
     (∃ a : AProof, ATyped (Θ.abs isC q) q S a ∧ HTrue R (a.ext (Θ.table isC)).1) ↔
@@ -292,10 +292,10 @@ def I4 (I₀ I₁ I₂ : String → List Tm → Prop) : W4 → String → List T
   | .w3 => fun _ _ => True
 
 /-- The four-world interpretation is monotone when `I₀ ⊆ I₁` and `I₀ ⊆ I₂`. -/
-theorem I4_hered {I₀ I₁ I₂ : String → List Tm → Prop} (h01 : ∀ p us, I₀ p us → I₁ p us)
-    (h02 : ∀ p us, I₀ p us → I₂ p us) :
-    ∀ {w v : HFrame.four.W} {p : String} {ts : List Tm},
-      HFrame.four.le w v → I4 I₀ I₁ I₂ w p ts → I4 I₀ I₁ I₂ v p ts := by
+theorem I4_hered {I₀ I₁ I₂ : String → List Tm → Prop} (h01 : ∀ P ts, I₀ P ts → I₁ P ts)
+    (h02 : ∀ P ts, I₀ P ts → I₂ P ts) :
+    ∀ {w v : HFrame.four.W} {P : String} {ts : List Tm},
+      HFrame.four.le w v → I4 I₀ I₁ I₂ w P ts → I4 I₀ I₁ I₂ v P ts := by
   intro w v p ts h hI
   cases w <;> cases v <;>
     first | exact hI | exact h01 _ _ hI | exact h02 _ _ hI | trivial
@@ -322,18 +322,18 @@ abbrev canonI1 : String → List Tm → Prop := LHM RNone (Θ.abs isC q).horn
 abbrev canonI2 : String → List Tm → Prop := LHM R Θ.horn
 
 /-- World 0 of the canonical model has no atoms. -/
-theorem canonI0_empty (p : String) (us : List Tm) : ¬ canonI0 isC q Θ p us := by
+theorem canonI0_empty (P : String) (ts : List Tm) : ¬ canonI0 isC q Θ P ts := by
   intro h
-  have h' : Holds RNone [] (.pred p us) := by
+  have h' : Holds RNone [] (.pred P ts) := by
     have := h; unfold canonI0 at this; rw [Program.horn0_abs] at this; exact this
   cases h' with
   | base hr => exact hr
   | fire hh _ _ _ _ _ => exact absurd hh (List.not_mem_nil)
 
 /-- **Lemma 7.3**: the canonical interpretation is monotone along the frame. -/
-theorem canon_hered : ∀ {w v : HFrame.four.W} {p : String} {ts : List Tm},
-    HFrame.four.le w v → I4 (canonI0 isC q Θ) (canonI1 isC q Θ) (canonI2 Θ R) w p ts →
-      I4 (canonI0 isC q Θ) (canonI1 isC q Θ) (canonI2 Θ R) v p ts :=
+theorem canon_hered : ∀ {w v : HFrame.four.W} {P : String} {ts : List Tm},
+    HFrame.four.le w v → I4 (canonI0 isC q Θ) (canonI1 isC q Θ) (canonI2 Θ R) w P ts →
+      I4 (canonI0 isC q Θ) (canonI1 isC q Θ) (canonI2 Θ R) v P ts :=
   I4_hered (llpI0_le (Program.abs isC q Θ)) (fun p us h => absurd h (canonI0_empty isC q Θ p us))
 
 /-- The canonical Herbrand constraint model `M(Θ♯ : θ)` (Lemma 7.3: the
@@ -455,8 +455,8 @@ theorem thm_7_5_canon1 (hWF : ∀ c ∈ Θ, c.WF) {S : Form} (hS : IsSigma S) (h
 
 /-- **Theorem 7.5, `i = 2`**: a closed pure query is forced at world 2 iff some
 abstract proof of `◯S` against `Θ♯` has an extracted constraint true in `R`. -/
-theorem thm_7_5_canon2 (hH : Θ.HeadsOK isC) (hRC : ∀ p us, R p us → isC p = true)
-    (hRlc : ∀ p us, R p us → Tm.lcAtList 0 us) (hWF : ∀ c ∈ Θ, c.WF)
+theorem thm_7_5_canon2 (hH : Θ.HeadsOK isC) (hRC : ∀ P ts, R P ts → isC P = true)
+    (hRlc : ∀ P ts, R P ts → Tm.lcAtList 0 ts) (hWF : ∀ c ∈ Θ, c.WF)
     (hm : ∀ c ∈ Θ, c.modal = false) {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S)
     (hpure : S.pureB isC = true) :
     (∃ a : AProof, ATyped (Θ.abs isC q) q S a ∧ HTrue R (a.ext (Θ.table isC)).1) ↔
