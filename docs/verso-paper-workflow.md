@@ -79,7 +79,7 @@ type as display mathematics, at build time, from the compiled environment:
 
 * `∀`-binders become quantifiers without type annotations
   (`\forall\, q,\ A,\ B.`; Matthew, 2026-09-14), hypotheses become premises
-  (one per line, `\Longrightarrow`), instance arguments vanish;
+  (`\Longrightarrow`), instance arguments vanish;
 * the object language goes through a notation table: `Prv Γ A` is
   `Γ ⊢ A`, `¬ Prv` is `⊬`, `PEq` is `⊣⊢`, `Form.and/or/imp/circ/forall_/exists_`
   are `∧ ∨ ↠ ◯_q ∀x. ∃x.` (↠ since v0.6, the library's notation) with de
@@ -93,11 +93,14 @@ type as display mathematics, at build time, from the compiled environment:
   pairs, `b = true` as `b`, applications as `\mathit{f}(a, b)` with implicit
   arguments dropped) and, last, Lean's own printer in typewriter;
 * a declaration whose type is not a proposition prints nothing;
-* rows longer than about 78 visible characters are broken at binary
-  connectives, shallowest parenthesis depth first, continuation rows
-  indented (neither KaTeX nor TeX breaks display mathematics by itself); a
-  long statement without premises is broken the same way, and a quantifier
-  below the root stays on one line.
+* a statement is set on one row when it fits `rowMeasure`, 95 estimated
+  characters (a long arrow counts three; the estimate runs high, so this is
+  about nine tenths of the line); otherwise the premises are filled into rows
+  after the quantifier prefix, and a piece still too long is broken at the
+  shallowest parenthesis depth, at `⟺`/`⟹` before the other connectives;
+  continuation rows are indented (neither KaTeX nor TeX breaks display
+  mathematics by itself).  A quantifier below the root stays on one line.
+  (v0.7; v0.6 set one premise per row, Matthew asked for compact displays.)
 
 The same declaration always gives the same mathematics and it cannot drift
 from the code; nothing in the output is edited by hand.  For another object
@@ -111,7 +114,16 @@ converts Unicode formulas in *source* prose to math; it is not a build step.
 The v0.5 PDF had 87 overfull lines, mostly Lean signatures in boxes and
 tables set as code.  v0.6 adds, all document-local:
 
-* `{leanDecl}` (`CLPPaper/Decl.lean`) prints the signature in an fvextra
+* `{leanDecl}` (`CLPPaper/Decl.lean`) fills the signature to 88 columns
+  (v0.7): the statement is cut at its top-level `→ ↔ ∨ ∧` and at the
+  binders of a long `∀`/`∃`, and a line breaks only before a binder or piece
+  that does not fit; a piece keeps Lean's notation, and its brackets are
+  exactly those Lean prints in the whole statement.  A structure's own
+  fields follow `where` in binder form, `(arity : ℕ) (body : Form) …`;
+  constructors of at most 40 characters stand two to a line in aligned
+  columns (a symbol the monospaced font has is set in it, not in the
+  proportional fallback font: `\leanSymbolfont`, defined by `{texSetup}`).
+  It prints in an fvextra
   `Verbatim` at `\footnotesize` that breaks long lines, with a thin rule on
   the left and the source link flush right below it, never separated from it
   by a page break; a signature of at most 12 lines is not split across pages
@@ -130,7 +142,8 @@ tables set as code.  v0.6 adds, all document-local:
   `scripts/clp-paper.sh` sets it to `\let\cleardoublepage\clearpage` (no blank
   recto pages).  Other papers are unaffected unless they set it.
 
-Result: 41 pages, 0 overfull lines (v0.5: 54 pages, 87).
+Result: 41 pages, 0 overfull lines (v0.5: 54 pages, 87).  v0.7, with the
+compact displays: 34 pages, 0 overfull lines.
 
 ## 3b. Version and build stamp
 
