@@ -25,6 +25,14 @@ unifier inverts natively, so height-indexed families are not slimed. Everything 
 head symbol that does the computing — including a schematic function
 applied to an argument (`Δs i`), which is equally uninvertible.
 
+An index is judged by its weak head normal form, because that is what the
+unifier works with (2026-10-17, tested in `Meta/SlimeTests.lean`): a
+definition that unfolds to a constructor (`mkCl s := ⟨s, 0⟩`) is inert, and
+a numeral (`OfNat.ofNat ℕ 0 _`) is a literal. A term still stuck on a
+variable after unfolding — a projection `c.head`, a definition wrapping
+one, a recursion on a variable — is slime, and is reported under its head
+as written.
+
 Premises are NOT examined. Computation in a premise (`LaxND (φ :: Γ) ψ`)
 is harmless and normal; only the return type matters.
 
@@ -37,6 +45,13 @@ open Lean Elab Command Meta
 
 namespace Audit
 
+/-- The head of a term as written, for the report. -/
+private def writtenHead (e : Expr) : Option Name :=
+  match e.getAppFn with
+  | .const c _ => some c
+  | .proj s _ _ => some s
+  | _ => none
+
 /-- `none` = inert; `some h` = computed, with `h` the offending head. -/
 private partial def slimeIn (e : Expr) : MetaM (Option Name) := do
   -- `Nat` offsets are the standard exception: `n + 1` is definitionally
@@ -44,6 +59,13 @@ private partial def slimeIn (e : Expr) : MetaM (Option Name) := do
   -- family is NOT slimed. Classify the base instead.
   if let some (base, k) ← isOffset? e then
     if k > 0 then return ← slimeIn base
+  -- Judge what the unifier sees: the weak head normal form.  `whnf` is
+  -- idempotent, so the recursive call takes the branch below.
+  let w ← whnf e
+  if w != e then
+    match ← slimeIn w with
+    | none => return none
+    | some h => return some ((writtenHead e).getD h)
   match e with
   | .mdata _ b => slimeIn b
   | .fvar _ | .bvar _ | .sort _ | .lit _ | .mvar _ => return none

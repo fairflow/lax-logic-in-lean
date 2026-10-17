@@ -132,3 +132,8 @@ nothing but `Lean`, so they can be copied into any Lean project unchanged
 plus `pdflatex` and `pdftotext` on the path. To use this skill outside
 `lax-logic-in-lean`, copy those four and adjust the paths in
 `reference/tools.md`.
+
+The skill's own `tools/` folder holds symbolic links to the three Lean
+tools and to `Meta/SlimeTests.lean` (2026-10-17), so the skill carries
+its tools without a second copy that could drift. Copy with `cp -L` to
+take the files rather than the links.
