@@ -25,19 +25,18 @@ open CLPPaper
 
 {texSetup}
 
-This document is a mechanisation in Lean 4 of the draft
-
-> M. Fairtlough, M. Mendler and M. Walton, _First-order Lax Logic as a framework for Constraint Logic Programming_, draft of 10 September 1997,
-
-together with what the mechanisation added to it: a constraint solver whose
-verdicts are certified, one operational semantics for both passes of the
-draft's method, and a study of where the lax modality may be placed in a
-program and what each placement buys.
+This document is a mechanisation in Lean 4 of a 1997 report of Fairtlough,
+Mendler and Walton on first-order lax logic as a framework for constraint
+logic programming (the reference is in Section 1), together with what the
+mechanisation added to it: a constraint solver whose verdicts are certified,
+one operational semantics for both passes of the report's method, and a study
+of where the lax modality may be placed in a program and what each placement
+buys.
 
 Every result is machine-checked, or labelled as refuted or open.  Each is
 stated in words, then as a displayed formula generated from the Lean
 statement, then as the Lean declaration that carries it, printed from the
-compiled library.  Numbered results are the draft's.
+compiled library.  Numbered results are those of the 1997 report.
 
 {include 0 CLPPaper.Sections.Introduction}
 {include 0 CLPPaper.Sections.CLP}

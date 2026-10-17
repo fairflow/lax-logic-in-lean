@@ -15,18 +15,22 @@ open LaxLogic.QLL.Form (openAt openWith)
 
 This section fixes the logic in which everything is stated: intuitionistic
 first-order logic with two lax modalities (QLL), its natural deduction
-calculus, its Kripke models, and soundness and completeness.  The draft takes
-the logic from Fairtlough and Mendler; the rules below are those of Fig. 5 of
-Fairtlough, Mendler and Cheng (TPHOLs 2001), stated on formula contexts.  The
-section ends with a warning about the modal relation of a model, which matters
-for the Herbrand models of Section 4.
+calculus, its Kripke models, and soundness and completeness.  It mechanises
+the logic that the 1997 report takes from Fairtlough and Mendler.  The report
+presents it as a Gentzen system (its Fig. 1, not built here); the rules below
+are the natural deduction rules of Fig. 5 of Fairtlough, Mendler and Cheng
+(TPHOLs 2001), stated on formula contexts.  Every later result is a statement
+about provability in this calculus or about forcing in these models, and
+soundness is what lets a later section refute a provability claim with a
+countermodel.  The section ends with a warning about the modal relation of a
+model, which matters for the Herbrand models of Section 4.
 
 # Syntax and proofs
 
 Formulas are built from $`\top`, $`\bot` and atoms $`P(t_1, \ldots, t_n)` by
 $`\land`, $`\lor`, $`\twoheadrightarrow`, $`\forall`, $`\exists` and two
 modalities $`\bigcirc_q A`, one for each $`q \in \{\forall, \exists\}`.  The
-draft's single modality $`\bigcirc` is $`\bigcirc_\exists`; every proof below
+1997 report's single modality $`\bigcirc` is $`\bigcirc_\exists`; every proof below
 is stated for a general $`q`.  Terms and formulas are locally nameless: bound
 variables are de Bruijn indices, free ones are names, and $`A[t/0]` replaces
 the outermost bound variable of $`\forall A` or $`\exists A` by the term $`t`.
@@ -117,5 +121,5 @@ identity together with $`s \mathrel{R_\exists} f`.
 {leanDecl not_prv_circ_imp}
 
 The Herbrand frames used later therefore carry their own modal preorder
-$`m \subseteq R_i`.  Where the draft takes $`m = R_i`, it does so on a frame
+$`m \subseteq R_i`.  Where the 1997 report takes $`m = R_i`, it does so on a frame
 whose fallible world keeps $`\bigcirc` from collapsing (Section 6).

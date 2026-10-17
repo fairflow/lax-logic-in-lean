@@ -13,8 +13,11 @@ open LaxLogic.QLL.BodyCirc LaxLogic.QLL.HeadFlatten
 
 #doc (Manual) "What the modality buys: placements and realisers" =>
 
-This section is not in the draft.  The draft places $`\bigcirc` in one
-position, the clause head.  Here the other positions are examined: in a clause
+This section is new; the 1997 report has no counterpart.  The report places
+$`\bigcirc` in one position, the clause head, and a framework built on a
+modality invites the question whether its other positions mean anything, and
+whether they add to what programs can say or only repeat it.  Here the other
+positions are examined: in a clause
 body, over a conjunction, on one disjunct of a goal, and with constructors in
 the head.  The finding is that the right notion for these questions is not
 provability but the _realiser_, the value that extraction (Section 6) assigns:
@@ -130,7 +133,7 @@ this way without changing what is extracted.
 *Fig. 3's $`\land\bigcirc` is $`\mathit{dstr}`:* the second subgoal's
 constraint never sees the first subgoal's witness.  A constraint relating two
 subgoals' witnesses can therefore live only in the table entry of the
-enclosing clause.  This is a design property of the draft, made visible here.
+enclosing clause.  This is a design property of the 1997 report, made visible here.
 
 {stmt}`AProof.ext_andC`
 

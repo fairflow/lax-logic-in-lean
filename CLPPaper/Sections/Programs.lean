@@ -13,12 +13,16 @@ open LaxLogic.QLL.Form (openAt instAll)
 
 #doc (Manual) "Lax logic programs and their least models" =>
 
-This section defines the programs of the draft (its Definition 5.1), splits a
-clause with a disjunctive body into Horn clauses by the draft's indices
-(its §6.2), proves Lloyd's least-model theory for the Horn programs that
-result, and builds the two-world model of the draft's §7 that separates
-“$`S` holds” from “$`S` holds up to a constraint” (Theorem 7.5 at worlds 0
-and 1).
+This section mechanises Definition 5.1, the indices of §6.2 and the two-world
+model of §7 of the 1997 report; the least-model theory between them is
+Lloyd's, proved here for the Horn programs that result.  It answers two
+questions that come before any constraint is solved.  What does a program
+mean?  Its least Herbrand model; that needs Horn clauses, so a clause with a
+disjunctive body is first split by the report's indices.  And can that
+meaning tell “$`S` holds” from “$`S` holds up to a constraint”?  Not in one
+world, where $`\bigcirc` collapses; the report's two-world model can
+(Theorem 7.5 at worlds 0 and 1).  The section ends with the program of the
+example that runs through Sections 4 to 7.
 
 # Clauses
 
@@ -39,7 +43,7 @@ $`q`).
 
 {leanDecl Clause}
 
-The draft's indices $`\mathit{ind}(S)` choose one disjunct at every
+The 1997 report's indices $`\mathit{ind}(S)` choose one disjunct at every
 $`\lor` of $`S`, and $`\mathit{sel}(S, g)` is $`S` with every disjunction
 replaced by the side that $`g` chooses.  A clause is provably equivalent to
 the Horn clauses obtained by replacing its body by $`\mathit{sel}(S, g)`, one
@@ -205,3 +209,29 @@ Solvability needs two more worlds, and they appear with the $`\bigcirc` pass
 constraint relations, and above it a fallible world 3, through which
 $`\bigcirc` imposes nothing at world 2.  Without world 3, forcing the
 abstract clauses at world 0 would demand that every constraint be solvable.
+
+# The running example
+
+Example 9.5 of the 1997 report is followed through this section and the next
+three.  Four predicate symbols are constraints, $`c_1, \ldots, c_4` (the
+classifier $`\mathit{isC}_{95}` says so), and the program $`\mathit{ex}_{95}`
+has three clauses $`\theta_1, \theta_2, \theta_3` of arity zero.  As formulas
+({srcLink}`CLPExamples.run95_program`):
+
+{stmt}`CLPExamples.run95_program`
+
+The query is $`Q`.  The body of $`\theta_3` is a disjunction, so $`\theta_3`
+has two indices, and splitting it gives one Horn clause per disjunct
+($`\mathit{toHorn}` splits a clause and $`\mathit{form}` reads a Horn clause as
+a formula; {srcLink}`CLPExamples.run95_horn`):
+
+{stmt}`CLPExamples.run95_horn`
+
+The engine of Section 8 finds two answers for $`Q`, $`c_1 \land c_3` and
+$`c_2 \land c_4`, one for each disjunct
+({srcLink}`CLPExamples.all95`).  The next three sections compute the first of
+them in each of the ways the theory provides: Section 5 by Table 2, recorded
+as a proof tree; Section 6 by the $`\bigcirc` pass; Section 7 by both
+machines.  In the trees, $`\mathit{clause}_w` applies the clause at
+position $`w` of the program, counting from $`0`, so $`\theta_3` is applied by
+$`\mathit{clause}_2`.

@@ -14,8 +14,11 @@ open LaxLogic.QLL.CLPExamples
 
 #doc (Manual) "Examples" =>
 
-This section works the examples: the draft's Example 9.5 and Example 6.1, its
-Example 2.1 (the CLP(R) mortgage program), and programs added here.  They are
+This section works the examples of the 1997 report, Examples 9.5, 6.1 and 2.1
+(the last is the CLP(R) mortgage program), and adds new ones.  The theorems of
+the earlier sections hold for every program; the examples show them at work
+on particular programs, and exercise the engine and the certified solver of
+Section 8 at sizes where trusting an unchecked answer would matter.  They are
 grouped by constraint domain and by the technique that solves them, and each
 is given in enough detail that its numbers can be recomputed by hand.
 
@@ -49,18 +52,14 @@ is given in enough detail that its numbers can be recomputed by hand.
 
 # A. Uninterpreted constraints: Example 9.5
 
-The program has arity zero:
-
-$$`\theta_0 = c_1 \twoheadrightarrow P_1, \qquad \theta_1 = c_2 \twoheadrightarrow P_2, \qquad \theta_2 = (P_1 \land c_3) \lor (P_2 \land c_4) \twoheadrightarrow Q,`
-
-with $`c_1, \ldots, c_4` constraint atoms, and the query is $`Q`.  The draft's
-six steps, as a run of Table 2:
-
-$$`\begin{array}{ll} \top \mathrel{\square} Q & \\ \rightsquigarrow\; \top \mathrel{\square} (P_1 \land c_3) \lor (P_2 \land c_4) & \text{Rule 5, } \theta_2 \\ \rightsquigarrow\; \top \mathrel{\square} P_1 \land c_3 & \text{Rule 2} \\ \rightsquigarrow\; \top \mathrel{\square} P_1, c_3 & \text{Rule 3} \\ \rightsquigarrow\; \top \mathrel{\square} c_1, c_3 & \text{Rule 5, } \theta_0 \\ \rightsquigarrow\; \top \land c_1 \mathrel{\square} c_3 & \text{Rule 1} \\ \rightsquigarrow\; (\top \land c_1) \land c_3 \mathrel{\square} \varepsilon & \text{Rule 1} \end{array}`
+This is the running example of Sections 4 to 7: its program is displayed in
+Section 4.4, its Table 2 run and proof tree in Section 5.3, its abstraction
+and extracted constraint in Section 6.3, and its runs in SLD and SLD◯ in
+Section 7.6.  Two results complete it.
 
 *Corollary 9.8 on Example 9.5.*  The answer of the six steps implies the
 query: $`\Theta \vdash (\top \land c_1) \land c_3 \twoheadrightarrow \top \land (Q \land \top)`
-(in Lean the query is `goal95` and $`c_i` is `c i`).
+(in the display the query $`Q` is $`\mathit{goal}_{95}` and $`c_i` is $`c(i)`).
 
 {stmt}`CLPExamples.cor95`
 
@@ -107,7 +106,7 @@ its only constraint, so the answer is upward closed in $`z`.
 
 {leanDecl CLPExamples.check61}
 
-*The draft's answer $`z \ge 44`.*  A value $`r` for $`z` extends to a solution
+*The 1997 report's answer $`z \ge 44`.*  A value $`r` for $`z` extends to a solution
 of the answer constraint if and only if $`44 \le r`.
 
 {stmt}`CLPExamples.ex61_answer`
@@ -118,14 +117,14 @@ of the answer constraint if and only if $`44 \le r`.
 
 $$`(((\top \land u \ge 5) \land (((\top \land u \ge 9) \land (\top \land \top)) \land \top)) \land \top) \land (\top \land (\top \land z \ge u + 35)),`
 
-which is the draft's expression, and this is $`\dashv\vdash` the total
+which is the 1997 report's expression, and this is $`\dashv\vdash` the total
 constraint.
 
 {stmt}`CLPExamples.ext61`
 
 {leanDecl CLPExamples.ext61}
 
-*Corollary 9.8 by the draft's route, on Example 6.1.*
+*Corollary 9.8 by the 1997 report's route, on Example 6.1.*
 
 {stmt}`CLPExamples.cor61`
 
@@ -154,7 +153,7 @@ the write-up `docs/qll-clp-writeup.md`.
 
 # C. General coefficients: the mortgage program
 
-Example 2.1 of the draft, over $`\mathbb{Q}`:
+Example 2.1 of the 1997 report, over $`\mathbb{Q}`:
 
 $$`\mathit{mortgage}(P, D, I, M, B) \leftarrow D \le 1 \land B + M = P \cdot (I + 1),`
 
@@ -174,7 +173,7 @@ $`P \cdot r^{D} = M \cdot (1 + r + \cdots + r^{D-1})`.
   denominator, $`119999.9037\ldots`.
 * For $`D = 5` the certified coefficients are
   $`M = (10510100501/51010050100) \cdot P` at $`I = 1/100` and
-  $`M = (161051/610510) \cdot P` at $`I = 1/10`.  The draft's printed figure
+  $`M = (161051/610510) \cdot P` at $`I = 1/10`.  The 1997 report's printed figure
   $`0.263797522` belongs to the second rate, and its $`P = 120000` is the first
   answer rounded.
 

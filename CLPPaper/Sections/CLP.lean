@@ -12,9 +12,14 @@ open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Constraint logic programming" =>
 
-This section recalls the conventional account of CLP and says where each of
-its parts reappears in this document.  It has no results of its own; a reader
-who knows the survey of Jaffar and Maher can use it as an index to the rest.
+This section is new; the 1997 report has no counterpart.  It recalls the
+conventional account of CLP and says where each of its parts reappears in
+this document.  The lax reading reformulates a scheme that is well
+understood, and can be judged only against it: each construction of the later
+sections takes over the role of some part of the conventional account, and
+the table below says which, and which parts have no counterpart.  The section
+has no results of its own; a reader who knows the survey of Jaffar and Maher
+can use it as an index to the rest.
 
 # The scheme
 
@@ -45,7 +50,7 @@ $`P, T \models c \to G`, then finitely many answers together cover $`c`
 needed.  _Answer projection_, which eliminates the local variables so that
 only the query's remain, is a separate step: quantifier elimination over the
 domain (Jaffar, Maher, Stuckey and Yap, New Generation Computing 11, 1993).
-The draft's Table 2 follows Argenius and Voronkov (LNAI 1050, 1996).
+Table 2 of the 1997 report follows Argenius and Voronkov (LNAI 1050, 1996).
 
 # The correspondence
 

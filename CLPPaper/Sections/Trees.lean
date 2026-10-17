@@ -14,12 +14,50 @@ open LaxLogic.QLL.Form (openAt instAll)
 
 #doc (Manual) "Proof trees and Table 2" =>
 
-This section is the first pass of the draft, before $`\bigcirc` enters:
-constraint logic programs with built-in constraint atoms, their proof trees
-with the draft's split of constraint leaves into active and latent ones
-(Definition 8.1), the goal reduction of Table 2, and the soundness theorems
-that connect them (Theorem 9.4 and Corollary 9.8).  It ends with the
-completeness of proof trees for the least model over the constraint relations.
+This section mechanises the first pass of the 1997 report, before
+$`\bigcirc` enters: proof trees for programs with built-in constraint atoms,
+the report's split of their constraint leaves into active and latent ones
+(Definition 8.1), the goal reduction of its Table 2, and the soundness
+theorems that connect them (Theorem 9.4 and Corollary 9.8).  It ends with the
+completeness of proof trees for the least model over the constraint
+relations.  The answer of a CLP computation is a constraint, and what must be
+proved about it is soundness: the answer implies the query.  Table 2 computes
+answers but keeps no record of why each one is an answer.  A proof tree is
+that record, and with it soundness becomes a property of an object that can
+be checked, so that neither the search nor the solver has to be trusted.
+
+This section and the next two use four relations on two programs, the
+concrete program $`\Theta` and its abstraction $`\Theta^\sharp`
+(Section 6).  A _static_ relation types a finished tree; a _dynamic_ one takes
+a computation one step.
+
+:::wtable (widths := "0.22 0.36 0.42") +header
+*
+  * Program
+  * Static
+  * Dynamic
+*
+  * concrete, $`\Theta`
+  * $`\mathsf{CTyped}` (Section 5.1, the 1997 report's proof trees)
+  * $`\mathsf{Step}`, Table 2 (Section 5.2, the report's); $`\mathsf{Expand}`, SLD (Section 7, new)
+*
+  * abstract, $`\Theta^\sharp`
+  * $`\mathsf{ATyped}` (Section 6.1, the report's Fig. 3)
+  * $`\mathsf{ExpandA}`, SLD◯ (Section 7, new)
+:::
+
+The four are one rule set, read statically and dynamically, on the concrete
+and on the abstract program.  The local rules of $`\mathsf{Expand}` are the
+rules of $`\mathsf{CTyped}` one for one ($`\mathit{top}`, $`\mathit{cstr}`,
+$`\mathit{and}`, $`\mathit{orL}`, $`\mathit{orR}`, $`\mathit{ex}` and
+$`\mathit{clause}`), each applied at an open leaf of a partial tree instead of
+at the root of a finished one, and congruence rules carry a step down to the
+leaf it applies at.  $`\mathsf{ExpandA}` stands to $`\mathsf{ATyped}` in the
+same way.  Table 2 is the dynamic reading with the tree discarded: a Table 2
+state keeps only the store and the list of open leaves, and Section 7.2
+proves that Table 2 and SLD are the same relation on single goals.  The 1997
+report's results are stated for Table 2 and for proof trees, and are proved
+here in that form; Section 7 says what keeping the tree during a run adds.
 
 Throughout, $`\Theta` is a program and $`\mathit{isC}` says which predicate
 symbols are constraints.
@@ -35,6 +73,13 @@ checks them, and only the checker's soundness is trusted.
 {stmt}`CProof`
 
 {leanDecl CProof}
+
+In displays a tree is written with the names of its rules: $`{\top}\mathrm{I}`,
+a constraint leaf as its atom $`B(\tilde{t})`,
+$`{\land}\mathrm{I}(p,\, q)`, $`{\lor}\mathrm{I}_1(p)`,
+$`{\lor}\mathrm{I}_2(p)`, $`{\exists}\mathrm{I}_t(p)`, and
+$`\mathit{clause}_w^{\tilde{t}}(p)`, with the superscript omitted when the
+instance $`\tilde{t}` is empty.
 
 $`\mathsf{CTyped}(\mathit{isC}, \Theta, S, p)` says that the tree $`p` proves
 the Σ-goal $`S` from $`\Theta`.  A constraint atom is a leaf.  The clause rule
@@ -140,6 +185,36 @@ gives $`\Theta \vdash c' \twoheadrightarrow c \land \varphi_1 \land \cdots \land
 {stmt}`steps_sound`
 
 {leanDecl steps_sound}
+
+# The running example in Table 2
+
+The 1997 report runs Example 9.5 (Section 4.4) in six steps of Table 2:
+Rule 5 with $`\theta_3`, Rule 2, Rule 3, Rule 5 with $`\theta_1`, and Rule 1
+twice.  Each row below is a state and each arrow one step of
+$`\mathsf{Step}`, with the consistency test $`\mathit{NoPrune}` that accepts
+every store ({srcLink}`CLPExamples.run95_table2`):
+
+{stmt}`CLPExamples.run95_table2`
+
+The answer is the final store, $`(\top \land c_1) \land c_3`, and by
+Corollary 9.8 it implies the query (`cor95`, Section 9.1).  The engine of
+Section 8, run by the kernel on the query $`Q`, returns the proof tree
+$`\mathit{proof}_{95}` ({srcLink}`CLPExamples.run95_tree`):
+
+{stmt}`CLPExamples.run95_tree`
+
+Read from the root: $`\theta_3` is applied, the left disjunct of its body is
+chosen, and of the two conjuncts $`P_1` is proved by $`\theta_1` from the
+constraint leaf $`c_1`, while $`c_3` is itself a constraint leaf.  These are
+the six steps of the run, one node each.  The total constraint is the
+conjunction of the two leaves ({srcLink}`CLPExamples.total95`):
+
+{stmt}`CLPExamples.total95`
+
+Theorem 9.4 relates this total to the answer: the answer of a run is, up to
+$`\dashv\vdash`, its initial store conjoined with the totals of some proof
+trees of its goals.  Section 7.6 shows that for this run the tree is the one
+above, built by the run itself.
 
 # Completeness at world 2, without the modality
 

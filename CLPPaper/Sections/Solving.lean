@@ -13,7 +13,11 @@ open LaxLogic.QLL.LinQ LaxLogic.QLL.Engine
 
 #doc (Manual) "Solving constraints with certificates" =>
 
-This section is not in the draft.  It says how an answer constraint over the
+This section is new; the 1997 report has no counterpart.  Sections 5 to 7
+leave the constraint atoms uninterpreted: an answer is a formula, and whether
+it can be satisfied is not their concern.  A program is run for its answers,
+so that question has to be settled, and settled without enlarging what must
+be trusted.  This section says how an answer constraint over the
 rationals is solved, and why nothing that solves it has to be trusted: every
 verdict carries a certificate (an assignment, Farkas multipliers, or a least
 value with both) which is checked by a function proved sound.  It also

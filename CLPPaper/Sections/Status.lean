@@ -12,10 +12,11 @@ open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Status, simplification, and what is not built" =>
 
-This section records the axioms the printed results use, the check that the
-inductive definitions carry no computed indices, why the extracted constraints
-come out unsimplified and how they could be simplified, what is not built, and
-the references.
+This section concerns the mechanisation itself and has no counterpart in the
+1997 report.  It records the axioms the printed results use, the check that
+the inductive definitions carry no computed indices, why the extracted
+constraints come out unsimplified and how they could be simplified, what is
+not built, and the references.
 
 # Axioms
 
@@ -107,7 +108,7 @@ regrouping: the grouping is information.
 
 The following are not built, and nothing in the library asserts them:
 
-* the Gentzen system of the draft's Fig. 1;
+* the Gentzen system of the 1997 report's Fig. 1;
 * Definition 6.5's refined clauses as formulas (they are used through their
   instances);
 * constraints beyond linear arithmetic, in particular a Herbrand equality

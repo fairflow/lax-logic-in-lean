@@ -12,10 +12,13 @@ open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Pruning and Prolog's cut" =>
 
-This section is not in the draft and has no results of its own.  It asks
-whether there is a published correlation between constraint pruning in CLP and
-Prolog's cut, says what it is, and relates it to the switching lemma and the
-pruning theorem of Section 7.
+This section is new; the 1997 report has no counterpart, and the section has
+no results of its own.  Pruning by a consistency test is the one place where
+the machine of Section 7 discards part of the search, which raises the
+question of how it compares with Prolog's cut, the best-known pruning
+operator.  The section asks whether there is a published correlation between
+constraint pruning in CLP and Prolog's cut, says what it is, and relates it to
+the switching lemma and the pruning theorem of Section 7.
 
 # What is published
 
