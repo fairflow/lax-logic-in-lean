@@ -62,6 +62,8 @@ The blueprint genre is reserved for the repo's live blueprint.
   HTML and in the PDF (`\oldhref`, the unmodified `\href` Verso's template
   keeps).  Included *and* linked, then: the statement is printed by
   `{docstring}`, the proof is one click away.  Push before the link is used.
+  In the PDF the path may break after each `/`, so a link in running text
+  never makes an overfull line (v0.8).
 * Alternative when you want a checked statement without the docstring:
   a ```` ```signature ```` block containing `theorem Name (x : A) : T`; Verso
   elaborates it against the environment and fails the build if it is wrong.
@@ -92,6 +94,17 @@ type as display mathematics, at build time, from the compiled environment:
 * everything else has a generic reading (`∧ ∨ ↔ = ≠ ∈ ∃ λ`, numerals, lists,
   pairs, `b = true` as `b`, applications as `\mathit{f}(a, b)` with implicit
   arguments dropped) and, last, Lean's own printer in typewriter;
+* proof trees, partial proof trees and abstract proof trees are written with
+  the names of their rules (v0.8): an open leaf `hole S` is `⟨S⟩`,
+  `andI p q` is `∧I(p, q)`, `orL p` is `∨I₁(p)`, a constraint leaf is its
+  atom, `clause w ts p` is `clause_w^{ts}(p)` (no superscript for `[]`), and
+  `val`, `andC`, `orL`, `exC`, `impC` are `val`, `∧◯`, `∨◯₁`, `∃◯_t`, `↠◯_w`;
+* a conjunction of steps of `Step`, `SLD.SLDStep` or `SLD.SLDCStep` with the
+  same parameters, each step starting where the previous one ends, is printed
+  as a run: a first row with the relation and its parameters, then one state
+  per row after `⇝` (Table 2) or `⟶` (the machines) (v0.8);
+* constants of `LaxLogic.QLL.CLPExamples` are read as variables: `θ3` is
+  `θ₃`, `ex95` is `ex₉₅` (v0.8);
 * a declaration whose type is not a proposition prints nothing;
 * a statement is set on one row when it fits `rowMeasure`, 95 estimated
   characters (a long arrow counts three; the estimate runs high, so this is
@@ -106,7 +119,11 @@ The same declaration always gives the same mathematics and it cannot drift
 from the code; nothing in the output is edited by hand.  For another object
 language, extend the table (`form`, `tm`, `ctx`, and the `generic` cases).
 The prose around a result is the author's; formulas in it are written as
-Verso math.  `scripts/lean-to-math.py` exists only as an authoring aid that
+Verso math.  A worked example obeys the same rule: every concrete state, tree
+and constraint the text shows is the `{stmt}` of a kernel-checked library
+statement, followed in the prose by its `{srcLink}` rather than its
+`{leanDecl}`, since the statement is the display (v0.8: the running example,
+`run95_*` in `LaxLogic/QLL/CLPExamples.lean`).  `scripts/lean-to-math.py` exists only as an authoring aid that
 converts Unicode formulas in *source* prose to math; it is not a build step.
 
 ## 3a. Layout devices (CLP paper, v0.6)
@@ -143,7 +160,8 @@ tables set as code.  v0.6 adds, all document-local:
   recto pages).  Other papers are unaffected unless they set it.
 
 Result: 41 pages, 0 overfull lines (v0.5: 54 pages, 87).  v0.7, with the
-compact displays: 34 pages, 0 overfull lines.
+compact displays: 34 pages, 0 overfull lines.  v0.8, with the running
+example and the sections' opening paragraphs: 38 pages, 0 overfull lines.
 
 ## 3b. Version and build stamp
 
