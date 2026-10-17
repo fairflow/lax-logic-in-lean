@@ -228,6 +228,39 @@ structure St where
 
 def boundNames : Array String := #["x", "y", "z", "u", "v", "w", "s", "t"]
 
+/-- One-step relations whose runs are printed as chains, with their arrows:
+Table 2's `⇝`, and `⟶` for the two machines of Section 7. -/
+def stepArrows : List (Name × String) :=
+  [(``LaxLogic.QLL.Step, "\\rightsquigarrow"),
+   (``LaxLogic.QLL.SLD.SLDStep, "\\longrightarrow"),
+   (``LaxLogic.QLL.SLD.SLDCStep, "\\longrightarrow")]
+
+/-- The conjuncts of a right-nested conjunction. -/
+partial def conjuncts (e : Expr) : List Expr :=
+  match e.consumeMData.getAppFnArgs with
+  | (``And, #[a, b]) => a :: conjuncts b
+  | _ => [e.consumeMData]
+
+/-- A run: `R ps s₀ s₁ ∧ R ps s₁ s₂ ∧ ⋯`, every conjunct the same step relation
+with the same parameters, each conjunct's target the next one's source.
+Returns the relation, its parameters and the states `s₀, s₁, …`. -/
+def run? (e : Expr) : Option (Name × Array Expr × List Expr) := Id.run do
+  let cs := conjuncts e
+  if cs.length < 2 then return none
+  let parts := cs.map fun c => c.getAppFnArgs
+  let (f, args0) := parts.head!
+  unless stepArrows.any (·.1 == f) && args0.size ≥ 2 do return none
+  let n := args0.size
+  let ps := args0.extract 0 (n - 2)
+  let mut states : List Expr := [args0[n - 2]!]
+  let mut prev := args0[n - 2]!
+  for (g, args) in parts do
+    unless g == f && args.size == n && args.extract 0 (n - 2) == ps && args[n - 2]! == prev do
+      return none
+    prev := args[n - 1]!
+    states := states ++ [prev]
+  return some (f, ps, states)
+
 mutual
 partial def tm (st : St) : Expr → MetaM String
   | e => do
@@ -338,8 +371,20 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
     match q.consumeMData.getAppFnArgs with
     | (``LaxLogic.QLL.Prv, #[Γ, a]) => return wrap 0 s!"{← ctx st Γ} \\nvdash {← form st 1 a}"
     | _ => return wrap 4 s!"\\lnot {← generic st 4 q}"
-  -- propositions: right-associated, as Lean reads them
-  | (``And, #[a, b]) => return wrap 3 s!"{← generic st 4 a} \\land {← generic st 3 b}"
+  -- propositions: right-associated, as Lean reads them; a run of a step
+  -- relation (a conjunction of steps, each from the previous target) is a chain
+  -- under the relation's name: one state per row, each after the arrow
+  | (``And, #[a, b]) =>
+    if let some (f, ps, s0 :: ss) := run? e then
+      let arrow := ((stepArrows.find? (·.1 == f)).map (·.2)).getD "\\longrightarrow"
+      let ps ← explicitArgs (mkConst f (conjuncts e).head!.getAppFn.constLevels!) ps
+      let head := "\\mathsf{" ++ esc (lastName f) ++ "}(" ++
+        ", ".intercalate (← ps.toList.mapM (generic st 0)) ++ ")\\colon"
+      let mut out := #[head, "\\quad " ++ (← generic st 0 s0)]
+      for s in ss do
+        out := out.push ("\\quad " ++ arrow ++ "\\; " ++ (← generic st 0 s))
+      return rows out.toList
+    return wrap 3 s!"{← generic st 4 a} \\land {← generic st 3 b}"
   | (``Or, #[a, b]) => return wrap 2 s!"{← generic st 3 a} \\lor {← generic st 2 b}"
   | (``Iff, #[a, b]) => return wrap 1 s!"{← generic st 2 a} \\iff {← generic st 2 b}"
   | (``Eq, #[_, a, b]) =>
@@ -370,7 +415,7 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
     if let some fs := listLit? e then
       return "[" ++ ", ".intercalate (← fs.mapM (generic st 0)) ++ "]"
     return wrap 6 s!"{← generic st 7 a} :: {← generic st 6 l}"
-  -- a goal or machine state `c □ φ₁, …, φₙ` (the draft's notation), `ε` when empty
+  -- a goal or machine state `c □ φ₁, …, φₙ` (the 1997 report's notation), `ε` when empty
   | (``LaxLogic.QLL.Goal.mk, #[c, gs]) | (``LaxLogic.QLL.SLD.MState.mk, #[c, gs]) =>
     let rhs ← match listLit? gs with
       | Option.some [] => pure "\\varepsilon"
@@ -396,6 +441,36 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   -- the order of a Herbrand frame: `w ≤_F v`
   | (``LaxLogic.QLL.HFrame.le, #[fr, w, v]) =>
     return wrap 5 ((← generic st 6 w) ++ " \\le_{" ++ (← generic st 9 fr) ++ "} " ++ (← generic st 6 v))
+  -- proof trees, partial proof trees and abstract proof trees, in the notation
+  -- of their rules: an open leaf is `⟨S⟩`, a constraint leaf is its atom
+  | (``LaxLogic.QLL.SLD.PTree.hole, #[S]) | (``LaxLogic.QLL.SLD.ATree.hole, #[S]) =>
+    return "\\langle " ++ (← form st 0 S) ++ " \\rangle"
+  | (``LaxLogic.QLL.CProof.top, #[]) | (``LaxLogic.QLL.SLD.PTree.top, #[]) => pure "{\\top}\\mathrm{I}"
+  | (``LaxLogic.QLL.CProof.cstr, #[b, ts]) | (``LaxLogic.QLL.SLD.PTree.cstr, #[b, ts]) =>
+    form st p (mkApp2 (mkConst ``LaxLogic.QLL.Form.pred) b ts)
+  | (``LaxLogic.QLL.CProof.andI, #[l, r]) | (``LaxLogic.QLL.SLD.PTree.andI, #[l, r]) =>
+    return "{\\land}\\mathrm{I}(" ++ (← generic st 0 l) ++ ",\\, " ++ (← generic st 0 r) ++ ")"
+  | (``LaxLogic.QLL.CProof.orL, #[l]) | (``LaxLogic.QLL.SLD.PTree.orL, #[l]) =>
+    return "{\\lor}\\mathrm{I}_1(" ++ (← generic st 0 l) ++ ")"
+  | (``LaxLogic.QLL.CProof.orR, #[l]) | (``LaxLogic.QLL.SLD.PTree.orR, #[l]) =>
+    return "{\\lor}\\mathrm{I}_2(" ++ (← generic st 0 l) ++ ")"
+  | (``LaxLogic.QLL.CProof.exI, #[t, l]) | (``LaxLogic.QLL.SLD.PTree.exI, #[t, l]) =>
+    return "{\\exists}\\mathrm{I}_{" ++ (← tm st t) ++ "}(" ++ (← generic st 0 l) ++ ")"
+  | (``LaxLogic.QLL.CProof.clause, #[w, ts, l]) | (``LaxLogic.QLL.SLD.PTree.clause, #[w, ts, l]) =>
+    return "\\mathit{clause}_{" ++ (← generic st 0 w) ++ "}" ++ (← clauseInst st ts) ++
+      "(" ++ (← generic st 0 l) ++ ")"
+  | (``LaxLogic.QLL.AProof.val, #[]) | (``LaxLogic.QLL.SLD.ATree.val, #[]) => pure "\\mathit{val}"
+  | (``LaxLogic.QLL.AProof.andC, #[l, r]) | (``LaxLogic.QLL.SLD.ATree.andC, #[l, r]) =>
+    return "{\\land}{\\bigcirc}(" ++ (← generic st 0 l) ++ ",\\, " ++ (← generic st 0 r) ++ ")"
+  | (``LaxLogic.QLL.AProof.orL, #[l]) | (``LaxLogic.QLL.SLD.ATree.orL, #[l]) =>
+    return "{\\lor}{\\bigcirc}_1(" ++ (← generic st 0 l) ++ ")"
+  | (``LaxLogic.QLL.AProof.orR, #[l]) | (``LaxLogic.QLL.SLD.ATree.orR, #[l]) =>
+    return "{\\lor}{\\bigcirc}_2(" ++ (← generic st 0 l) ++ ")"
+  | (``LaxLogic.QLL.AProof.exC, #[t, l]) | (``LaxLogic.QLL.SLD.ATree.exC, #[t, l]) =>
+    return "{\\exists}{\\bigcirc}_{" ++ (← tm st t) ++ "}(" ++ (← generic st 0 l) ++ ")"
+  | (``LaxLogic.QLL.AProof.impC, #[w, ts, l]) | (``LaxLogic.QLL.SLD.ATree.impC, #[w, ts, l]) =>
+    return "{\\twoheadrightarrow}{\\bigcirc}_{" ++ (← generic st 0 w) ++ "}" ++ (← clauseInst st ts) ++
+      "(" ++ (← generic st 0 l) ++ ")"
   | (``Prod.mk, #[_, _, a, b]) => return s!"({← generic st 0 a}, {← generic st 0 b})"
   | (``Prod.fst, #[_, _, a]) => return s!"\\pi_1 {← generic st 9 a}"
   | (``Prod.snd, #[_, _, a]) => return s!"\\pi_2 {← generic st 9 a}"
@@ -429,9 +504,19 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
       let isType := match (← getEnv).find? f with
         | Option.some (.inductInfo _) => true
         | _ => false
-      let head := (if isType then "\\mathsf{" else "\\mathit{") ++ esc (lastName f) ++ "}"
+      -- the names of the worked examples are read as variables: `θ3` is θ₃, `ex95` is ex₉₅
+      let head := if (`LaxLogic.QLL.CLPExamples).isPrefixOf f then ident (lastName f)
+        else (if isType then "\\mathsf{" else "\\mathit{") ++ esc (lastName f) ++ "}"
       if args.isEmpty then pure head
       else return head ++ "(" ++ ", ".intercalate (← args.toList.mapM (generic st 0)) ++ ")"
+
+/-- The instance of a clause node: nothing when it has no terms, else the
+terms as a superscript. -/
+partial def clauseInst (st : St) (ts : Expr) : MetaM String := do
+  match listLit? ts with
+  | Option.some [] => pure ""
+  | Option.some xs => return "^{" ++ ", ".intercalate (← xs.mapM (tm st)) ++ "}"
+  | Option.none => return "^{" ++ (← generic st 0 ts) ++ "}"
 
 /-- `∀`-binders: variables are quantified (grouped by type), propositions become
 premises, instance arguments vanish. -/

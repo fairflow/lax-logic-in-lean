@@ -28,8 +28,12 @@ inline_extension Inline.srcLink where
     match FromJson.fromJson? (α := SrcLoc) data with
     | .error e => do reportError s!"srcLink: bad data: {e}"; pure .empty
     | .ok (path, line, url) =>
-      pure <| .seq #[.raw "{\\small ", .raw "\\oldhref{", .raw url, .raw "}{\\texttt{",
-        .text s!"{path}:{line}", .raw "}}}"]
+      -- the path may break after each `/` (a link in running text, v0.8)
+      let comps := path.splitOn "/"
+      let pathTeX : Array Verso.Output.TeX := comps.tail.foldl
+        (fun acc s => acc ++ #[.raw "/\\allowbreak{}", .text s]) #[.text comps.head!]
+      pure <| .seq (#[.raw "{\\small ", .raw "\\oldhref{", .raw url, .raw "}{\\texttt{"] ++
+        pathTeX ++ #[.text s!":{line}", .raw "}}}"])
   toHtml := some <| fun _ _ data _ => do
     match FromJson.fromJson? (α := SrcLoc) data with
     | .error e => do reportError s!"srcLink: bad data: {e}"; pure .empty
