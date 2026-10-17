@@ -106,11 +106,20 @@ def natLit? (e : Expr) : Option Nat :=
 
 /-! ### Line breaking
 
-Neither KaTeX nor TeX breaks display mathematics on its own.  A rendered row
-whose visible length exceeds `width` is broken, greedily, at binary
-connectives, preferring shallow parenthesis depth; continuation rows are
-indented.  Lengths are estimated on the TeX source: a control word counts
-one, braces and thin spaces none. -/
+Neither KaTeX nor TeX breaks display mathematics on its own.  A statement is
+set on one row when it fits the measure (`width`); otherwise its premises are
+filled into rows, the quantifier prefix on the first, and a piece still too
+long is broken, greedily, at binary connectives: shallow parenthesis depth
+first, and at that depth `⟺` and `⟹` before the others (v0.7, Matthew
+2026-10-16: compact displays).  Continuation rows are indented.  Lengths are
+estimated on the TeX source: a control word counts one (a long arrow three,
+a quad two), braces and thin spaces none. -/
+
+/-- The measure of a display row, in the estimated characters of `visLen`.
+The estimate runs high (an italic word is narrower than its letter count),
+so 95 fills about nine tenths of the A4 text width at 10pt; v0.6 used 78,
+which left rows two-thirds full. -/
+def rowMeasure : Nat := 95
 
 /-- Estimated visible length of a TeX fragment. -/
 def visLen (s : String) : Nat := Id.run do
@@ -120,8 +129,12 @@ def visLen (s : String) : Nat := Id.run do
     match cs with
     | '\\' :: c :: rest =>
       if c.isAlpha then
+        let word := String.ofList (c :: rest.takeWhile Char.isAlpha)
         let rest := rest.dropWhile Char.isAlpha
-        n := n + 1; cs := rest
+        let w := if word == "Longrightarrow" || word == "iff" || word == "Longleftrightarrow" then 3
+          else if word == "quad" || word == "twoheadrightarrow" then 2
+          else if word == "qquad" then 4 else 1
+        n := n + w; cs := rest
       else
         cs := rest   -- \, \; \{ etc.: spacing or an escaped symbol
         if c == '{' || c == '}' then n := n + 1
@@ -130,37 +143,40 @@ def visLen (s : String) : Nat := Id.run do
     | [] => pure ()
   return n
 
-/-- Break positions: (index, depth) just before a top-level connective. -/
-def breakPoints (s : String) : List (Nat × Nat) := Id.run do
+/-- Break positions: (index, depth, rank) just before a connective; rank 0
+for the meta-level `⟺` and `⟹`, 1 for the others. -/
+def breakPoints (s : String) : List (Nat × Nat × Nat) := Id.run do
   let cs := s.toList.toArray
   let mut depth := 0
-  let mut out : List (Nat × Nat) := []
-  let conns := [" \\iff ", " \\Longrightarrow ", " \\land ", " \\lor ", " \\vdash ", " \\dashv\\vdash ",
-    " \\twoheadrightarrow "]
+  let mut out : List (Nat × Nat × Nat) := []
+  let major := [" \\iff ", " \\Longrightarrow "]
+  let minor := [" \\land ", " \\lor ", " \\vdash ", " \\dashv\\vdash ", " \\twoheadrightarrow ", " = "]
   for i in [0:cs.size] do
     let c := cs[i]!
     if c == '(' || c == '[' then depth := depth + 1
     else if c == ')' || c == ']' then depth := depth - 1
     else if c == ' ' then
       let rest := String.ofList (cs.toList.drop i)
-      if conns.any (rest.startsWith ·) then out := (i, depth) :: out
+      if major.any (rest.startsWith ·) then out := (i, depth, 0) :: out
+      else if minor.any (rest.startsWith ·) then out := (i, depth, 1) :: out
   return out.reverse
 
 /-- Break `s` into rows of visible length about `width`. -/
-partial def breakRow (s : String) (width : Nat := 78) : List String :=
+partial def breakRow (s : String) (width : Nat := rowMeasure) : List String :=
   if visLen s ≤ width then [s] else
   let pts := breakPoints s
   if pts.isEmpty then [s] else
-  -- the shallowest depth available, then the rightmost point that keeps the first row within width
-  -- (a point at the shallowest depth if one fits, else one level deeper)
-  let minDepth := pts.foldl (fun m p => min m p.2) 1000
-  let fitsAt (d : Nat) := pts.filter fun (i, k) =>
-    k == d && visLen (String.ofList (s.toList.take i)) ≤ width
-  let candidates := pts.filter (·.2 ≤ minDepth + 1)
-  let pick := match (fitsAt minDepth).reverse.head?, (fitsAt (minDepth + 1)).reverse.head? with
-    | Option.some p, _ => p
-    | Option.none, Option.some p => p
-    | Option.none, Option.none => candidates.head!
+  -- the rightmost point that keeps the first row within width, searched at the
+  -- shallowest depth (`⟺`/`⟹` first, then the other connectives), then one
+  -- level deeper
+  let minDepth := pts.foldl (fun m p => min m p.2.1) 1000
+  let fitsAt (d r : Nat) := pts.filter fun (i, k, r') =>
+    k == d && r' == r && visLen (String.ofList (s.toList.take i)) ≤ width
+  let candidates := pts.filter (·.2.1 ≤ minDepth + 1)
+  let order := [(minDepth, 0), (minDepth, 1), (minDepth + 1, 0), (minDepth + 1, 1)]
+  let pick := match order.findSome? (fun (d, r) => (fitsAt d r).reverse.head?) with
+    | Option.some p => p
+    | Option.none => candidates.head!
   let head := String.ofList (s.toList.take pick.1)
   let tail := String.ofList (s.toList.drop pick.1) |>.trimAscii.copy
   if head.trimAscii.isEmpty then [s] else
@@ -169,6 +185,39 @@ partial def breakRow (s : String) (width : Nat := 78) : List String :=
 /-- Rows for `aligned`. -/
 def rows (lines : List String) : String :=
   "\\begin{aligned}" ++ " \\\\ ".intercalate (lines.map ("&" ++ ·)) ++ "\\end{aligned}"
+
+/-- `first` followed by `items`, on one row if that fits `width`; otherwise
+filled: each row takes as many items as fit, the first row starts with
+`first` (the quantifier prefix, never broken), later rows are indented, and
+an item too long for a row of its own is broken by `breakRow`. -/
+def fillRows (first : String) (items : List String) (width : Nat := rowMeasure) : String := Id.run do
+  let one := first ++ " ".intercalate items
+  if visLen one ≤ width then return one
+  let mut acc : Array String := #[]
+  let mut cur := first
+  let mut fresh := true          -- `cur` holds only the prefix of its row
+  for it in items do
+    let cand := if fresh then cur ++ it else cur ++ " " ++ it
+    if visLen cand ≤ width then
+      cur := cand
+    else if fresh then
+      -- the first item does not fit after the prefix: it starts the next row
+      -- if it fits there, else it is broken
+      if !first.isEmpty && visLen ("\\quad " ++ it) ≤ width then
+        acc := acc.push first.trimAsciiEnd.copy
+        cur := "\\quad " ++ it
+      else
+        let rs := breakRow cand width
+        acc := acc ++ rs.dropLast.toArray
+        cur := rs.getLast!
+    else
+      acc := acc.push cur
+      let rs := breakRow ("\\quad " ++ it) width
+      acc := acc ++ rs.dropLast.toArray
+      cur := rs.getLast!
+    fresh := false
+  acc := acc.push cur
+  return rows acc.toList
 
 /-- Precedences: 0 statement · 1 ↠/⇒ · 2 ∨ · 3 ∧ · 4 prefix (◯, ¬) · 5 relations · 9 atoms. -/
 structure St where
@@ -396,23 +445,23 @@ partial def quant (st0 : St) (p : Nat) (e : Expr) : MetaM String :=
       if d.binderInfo.isInstImplicit then continue
       let ty := d.type
       if ← isProp ty then
-        prems := prems.push (← generic st 1 ty)
+        -- bracketed if it is itself a `⟺` or `⟹`
+        prems := prems.push (← generic st 2 ty)
       else
         vars := vars.push (ident d.userName.toString, ← generic st 9 ty)
     -- binders without type annotations (Matthew, 2026-09-14): `∀ q, A, B.`
     let binder := if vars.isEmpty then "" else
       "\\forall\\, " ++ ",\\ ".intercalate (vars.toList.map (·.1)) ++ ".\\; "
-    let concl ← generic st 0 body
+    -- after premises, a `⟺` conclusion is bracketed: `A ⟹ (B ⟺ C)`
+    let isIff := body.consumeMData.isAppOfArity ``Iff 2
+    let concl ← generic st (if prems.isEmpty || !isIff then 0 else 2) body
     if p > 0 || st0.nested then
       if prems.isEmpty then return paren (binder ++ concl)
       else return paren (binder ++ " \\Longrightarrow ".intercalate (prems.toList ++ [concl]))
     else
-      -- statement layout: binders, one premise per line, the conclusion; long rows broken
-      let lines := (if binder.isEmpty then [] else [binder]) ++
-        (prems.toList.flatMap fun h => (breakRow h).map ("\\quad " ++ ·) |>.modifyLast (· ++ " \\;\\Longrightarrow")) ++
-        ((breakRow concl).map ("\\qquad " ++ ·))
-      if prems.isEmpty && visLen (binder ++ concl) ≤ 78 then return binder ++ concl
-      return rows lines
+      -- statement layout: one row if it fits; else the premises filled into
+      -- rows after the quantifier prefix, then the conclusion
+      return fillRows binder ((prems.toList.map (· ++ " \\Longrightarrow")) ++ [concl])
 end
 
 
@@ -422,7 +471,7 @@ def stmtOf (n : Name) : MetaM (Option String) := do
   unless ← isProp ci.type do return none
   let s ← generic {} 0 ci.type
   -- a statement with no binders or premises is one row; break it if it is long
-  if visLen s > 78 && !s.startsWith "\\begin{aligned}" then
+  if visLen s > rowMeasure && !s.startsWith "\\begin{aligned}" then
     return some (rows (breakRow s))
   return some s
 
