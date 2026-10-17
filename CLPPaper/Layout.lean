@@ -149,7 +149,13 @@ def texSetupText : String :=
   "\\setbeforesecskip{-2.2ex plus -0.6ex minus -0.2ex}" ++
   "\\setaftersecskip{1.0ex plus 0.2ex}" ++
   "\\setlength{\\parskip}{0.25\\baselineskip plus 1pt}" ++
-  "\\tightlists\\emergencystretch=2em\n"
+  "\\tightlists\\emergencystretch=2em\n" ++
+  -- in a Lean signature (`{leanDecl}`), a symbol the monospaced font has is
+  -- set in it, so that columns align; the fallback font (`\symbolfont` of
+  -- `verso-tex-pdf.sh`) only for the others, and for ◯ (U+25EF, 9711), whose
+  -- monospaced form is a small circle
+  "\\def\\leanSymbolfont#1{\\ifnum`#1=9711 {\\versoSymbolFont #1}\\else" ++
+  "\\iffontchar\\font`#1 #1\\else{\\versoSymbolFont #1}\\fi\\fi}\n"
 
 block_extension Block.texSetup where
   traverse _ _ _ := pure none
