@@ -240,6 +240,10 @@ The table measures the cost; what is gained is what each check establishes.
 * The compiled checks cost between 3.3 and 4.9 times SWI-Prolog's run here,
   and they would cost the same for an answer from any producer that supplies a
   proof tree and the certificates; Section 8.5 treats Wolfram in this way.
+  The comparison sets a checked answer against an unchecked one: SWI-Prolog
+  does not check its answers at all.  The checkers are a first implementation,
+  with no optimisation, and already stay within a small constant factor of
+  SWI-Prolog's whole run, growing at the same rate.
 * Kernel checking is the expensive layer, about a thousand times SWI-Prolog's
   run, and it is the layer at which an answer becomes a theorem.
 * The large factor in (a) is the search, not the checking: this engine solves
