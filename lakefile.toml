@@ -206,6 +206,14 @@ root = "Main"
 name = "Tools"
 globs = ["tools.Bank", "tools.Cert", "tools.Pin", "tools.Search", "tools.Derive", "tools.Engines", "tools.Terminate", "tools.Diff", "tools.Hard", "tools.Verdict", "tools.Construct", "tools.BankRho", "tools.Cover", "tools.RCells"]
 
+# clpcompare: the CLP paper's comparison with SWI-Prolog's clpq (Section 12):
+# the mortgage program, search, arithmetic and checkers compiled to native code.
+# Run the built binary .lake/build/bin/clpcompare under gtimeout, never `lake exe`
+# (scripts/clp-compare/run.py).
+[[lean_exe]]
+name = "clpcompare"
+root = "tools.ClpCompare"
+
 # frjterm: is the CAP-FREE CLOSURE outcome reachable at all?  (2026-08-21)
 # rhocover: the catalogue-wide PLL cover sweep (item 2, 2026-08-24).
 [[lean_exe]]
