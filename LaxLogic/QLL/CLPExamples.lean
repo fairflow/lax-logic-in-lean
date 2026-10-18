@@ -86,6 +86,53 @@ theorem ex61_answer (r : ℚ) : (∃ σ, σ "z" = r ∧ CSat σ proof61.total) �
     refine ⟨raise (asg w61) "z" r, by simp [raise], CSat.of_holds cons61 ?_⟩
     exact upClosed_sound up61 (by rw [at61]; exact hr) (checkWitness_sound wit61)
 
+/-! ### Example 6.1 as the CLP paper displays it
+
+The program, the engine's proof tree, its total constraint, and the constraint
+extracted by the `◯` pass, each checked by the kernel, so that the paper's
+Section 9 shows nothing computed by hand.  `_v0` is the engine's fresh
+variable for the existential of `θ₂`. -/
+
+-- equality of trees, decided by the kernel in the checks below and in those of
+-- the running example
+deriving instance DecidableEq for CProof
+deriving instance DecidableEq for AProof
+deriving instance DecidableEq for SLD.PTree
+deriving instance DecidableEq for SLD.ATree
+deriving instance DecidableEq for Goal
+
+/-- The program as formulas. -/
+theorem run61_program : ex61.forms =
+    [.forall_ (.imp (.pred "geq" [.bvar 0, .fn "5" []]) (.pred "A1" [.bvar 0])),
+     .forall_ (.imp (.pred "geq" [.bvar 0, .fn "9" []]) (.pred "A2" [.bvar 0])),
+     .forall_ (.imp (.exists_ (.and (.pred "A1" [.bvar 0]) (.and (.pred "A2" [.bvar 0])
+        (.pred "geq" [.bvar 1, .fn "add" [.bvar 0, .fn "35" []]]))))
+        (.pred "B" [.bvar 0]))] := by
+  decide +kernel
+
+/-- The engine's proof tree for `B(z)`. -/
+theorem run61_tree : proof61 =
+    .clause 2 [.fvar "z"] (.exI (.fvar "_v0")
+      (.andI (.clause 0 [.fvar "_v0"] (.cstr "geq" [.fvar "_v0", .fn "5" []]))
+        (.andI (.clause 1 [.fvar "_v0"] (.cstr "geq" [.fvar "_v0", .fn "9" []]))
+          (.cstr "geq" [.fvar "z", .fn "add" [.fvar "_v0", .fn "35" []]])))) := by
+  decide +kernel
+
+/-- Its total constraint: the three constraint leaves. -/
+theorem run61_total : proof61.total =
+    .and (.pred "geq" [.fvar "_v0", .fn "5" []])
+      (.and (.pred "geq" [.fvar "_v0", .fn "9" []])
+        (.pred "geq" [.fvar "z", .fn "add" [.fvar "_v0", .fn "35" []]])) := by
+  decide +kernel
+
+/-- The constraint extracted from the abstract image of the tree (`ext61` proves
+it `⊣⊢` the total constraint). -/
+theorem run61_ext : (proof61.toA.ext (ex61.table isLinC)).1 =
+    .and (.and (.and (.and .top (.pred "geq" [.fvar "_v0", .fn "5" []]))
+        (.and (.and (.and .top (.pred "geq" [.fvar "_v0", .fn "9" []])) (.and .top .top)) .top)) .top)
+      (.and .top (.and .top (.pred "geq" [.fvar "z", .fn "add" [.fvar "_v0", .fn "35" []]]))) := by
+  decide +kernel
+
 /-! ## Example 9.5 -/
 
 def isC95 (B : String) : Bool := B == "c1" || B == "c2" || B == "c3" || B == "c4"
@@ -174,13 +221,6 @@ The CLP paper follows Example 9.5 through its Sections 4–7: the program, its
 Table 2 run, the same run as SLD partial trees, the abstract program `Θ♯`, its
 SLD◯ run, and the constraint extracted at the end.  Every program, state, tree
 and constraint the paper shows for it is in a statement below, checked here. -/
-
--- equality of trees, decided by the kernel in the checks below
-deriving instance DecidableEq for CProof
-deriving instance DecidableEq for AProof
-deriving instance DecidableEq for SLD.PTree
-deriving instance DecidableEq for SLD.ATree
-deriving instance DecidableEq for Goal
 
 /-- The program, as formulas: `c₁ ⊃ P₁`, `c₂ ⊃ P₂`, `(P₁ ∧ c₃) ∨ (P₂ ∧ c₄) ⊃ Q`. -/
 theorem run95_program : ex95.forms =
@@ -405,6 +445,18 @@ def mortgage : Program :=
 
 /-- info: 'LaxLogic.QLL.CLPExamples.ex61_answer' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms ex61_answer
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run61_program' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run61_program
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run61_tree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run61_tree
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run61_total' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run61_total
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run61_ext' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run61_ext
 
 /-- info: 'LaxLogic.QLL.CLPExamples.check95' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms check95
