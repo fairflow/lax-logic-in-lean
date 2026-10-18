@@ -64,6 +64,18 @@ The blueprint genre is reserved for the repo's live blueprint.
   `{docstring}`, the proof is one click away.  Push before the link is used.
   In the PDF the path may break after each `/`, so a link in running text
   never makes an overfull line (v0.8).
+* Citations (v0.9, `CLPPaper/Cite.lean`): `{cite}\`Key\`` is textual,
+  “Jaffar and Lassez (1987)”; `{pcite}\`Key1 Key2\`` parenthetical,
+  “(Jaffar and Lassez 1987; Lloyd 1987)”; the block command `{references}`
+  lists every key cited in the modules its module imports, sorted by author
+  and year, formatted from the BibTeX fields, DOIs linked.  Entries are read
+  from the master bibliography `docs/references.bib` at build time, so the
+  paper cannot drift from it: a key missing from the master file stops the
+  build, and nothing uncited is listed.  Add a missing work to the master
+  file with `scripts/bib-sync.py docs/references.bib --add DOI --citedin
+  FILE`, or by hand with a `citedin` field; never with guessed data.
+  Verso's own `Bibliography` was not used: it has no book or report type
+  and sets references as marginal notes.
 * Alternative when you want a checked statement without the docstring:
   a ```` ```signature ```` block containing `theorem Name (x : A) : T`; Verso
   elaborates it against the environment and fails the build if it is wrong.

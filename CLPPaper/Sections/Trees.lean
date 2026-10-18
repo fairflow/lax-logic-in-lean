@@ -161,7 +161,7 @@ which subgoals are selected.
 The parameter $`\mathit{ok}` is the consistency test: pruning by it restricts
 the search.  In Lean the goal lists before and after a step are carried as
 equations $`\mathit{gs} = \tilde{\varphi} \mathbin{+\!\!+} [\varphi] \mathbin{+\!\!+} \tilde{\psi}`
-rather than computed in the indices (Section 12).
+rather than computed in the indices (Section 13).
 
 {stmt}`Step`
 

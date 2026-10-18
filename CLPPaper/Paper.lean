@@ -11,7 +11,9 @@ import CLPPaper.Sections.Solving
 import CLPPaper.Sections.Examples
 import CLPPaper.Sections.Modality
 import CLPPaper.Sections.Pruning
+import CLPPaper.Sections.Compare
 import CLPPaper.Sections.Status
+import CLPPaper.Sections.References
 import CLPPaper.Src
 import CLPPaper.Layout
 
@@ -49,4 +51,6 @@ compiled library.  Numbered results are those of the 1997 report.
 {include 0 CLPPaper.Sections.Examples}
 {include 0 CLPPaper.Sections.Modality}
 {include 0 CLPPaper.Sections.Pruning}
+{include 0 CLPPaper.Sections.Compare}
 {include 0 CLPPaper.Sections.Status}
+{include 0 CLPPaper.Sections.References}

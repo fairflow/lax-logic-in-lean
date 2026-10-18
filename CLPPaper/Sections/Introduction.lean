@@ -2,11 +2,12 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
 import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Introduction" =>
@@ -22,14 +23,16 @@ The document mechanises the report
 > M. Fairtlough, M. Mendler and M. Walton, _First-order Lax Logic as a framework for Constraint Logic Programming_, draft of 10 September 1997.
 
 It is cited from here on as the 1997 report, and its numbered results keep
-their numbers: Theorem 9.4 below is Theorem 9.4 of the report.
+their numbers: Theorem 9.4 below is Theorem 9.4 of the report.  The draft is
+the version mechanised; the references list the University of Passau
+technical report of the same title {pcite}`FairtloughMendlerWalton1997`.
 
-Constraint logic programming (CLP), in the scheme of Jaffar and Lassez,
+Constraint logic programming (CLP), in the scheme of {cite}`JaffarLassez1987`,
 replaces unification by constraint solving over a domain: a clause body may
 contain constraints, resolution collects them into a store, and an answer is a
 constraint rather than a substitution.  The 1997 report observes that the
 separation between the logical part of a program and its constraints is what
-the lax modality $`\bigcirc` of Fairtlough and Mendler expresses.  A clause
+the lax modality $`\bigcirc` of {cite}`FairtloughMendler1997` expresses.  A clause
 
 $$`\forall \tilde{x}.\; S \twoheadrightarrow \bigcirc P(\tilde{x})`
 
@@ -94,11 +97,12 @@ constraints (Section 9).
 
 Sections are in dependence order.  Section 2 sets the conventional account of
 CLP beside the constructions of this document, so that a reader who knows the
-survey of Jaffar and Maher can place each construction before meeting it.
-Sections 3 to 6 mechanise the 1997 report; Sections 2, 7, 8, 10 and 11 are
-new; Section 9 works the report's examples and new ones; Section 12 records
-what is and is not built.  Each section opens by saying which of these it is,
-and which problem it solves.
+survey of {cite}`JaffarMaher1994` can place each construction before meeting
+it.  Sections 3 to 6 mechanise the 1997 report; Sections 2, 7, 8, 10, 11 and
+12 are new; Section 9 works the report's examples and new ones; Section 12
+compares the engine with SWI-Prolog on a standard CLP program; Section 13
+records what is and is not built; Section 14 lists the references.  Each
+section opens by saying which of these it is, and which problem it solves.
 
 One example runs through Sections 4 to 7: Example 9.5 of the 1997 report,
 three clauses with four constraint atoms.  Section 4 gives the program,
@@ -121,8 +125,10 @@ does not have are named, not numbered.  Each result is given three times:
   the implicit arguments omitted (they are the free letters of the statement)
   and a link to the line of the source at the commit that was built.
 
-*Status.*  PROVED means that the declaration is checked by the Lean kernel and
-contains no `sorry`; the axioms each one uses are listed in Section 12.
+*Status.*  The proofs are written in Lean 4 {pcite}`DeMouraUllrich2021` with
+Mathlib {pcite}`MathlibCommunity2020`.  PROVED means that the declaration is
+checked by the Lean kernel and contains no `sorry`; the axioms each one uses
+are listed in Section 13.
 REFUTED means that a kernel-checked countermodel of the statement as written
 exists; the refuting declaration is printed.  OPEN means neither: the
 statement is fixed and nothing asserts it.  Every displayed result in this

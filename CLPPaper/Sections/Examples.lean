@@ -2,13 +2,14 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
 import CLPPaper.Decl
 import CLPPaper.Math
 import CLPPaper.Layout
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
 open LaxLogic.QLL.CLPExamples
 
@@ -76,29 +77,37 @@ the answer of the six steps.
 
 # B. Difference constraints: Example 6.1
 
-The program is
+The program has three clauses, at positions $`0`, $`1` and $`2`
+({srcLink}`CLPExamples.run61_program`):
 
-$$`\theta_0 = \forall s.\, s \ge 5 \twoheadrightarrow A_1(s), \qquad \theta_1 = \forall s.\, s \ge 9 \twoheadrightarrow A_2(s),`
+{stmt}`CLPExamples.run61_program`
 
-$$`\theta_2 = \forall t.\, \bigl(\exists s.\, A_1(s) \land A_2(s) \land t \ge s + 35\bigr) \twoheadrightarrow B(t),`
+and the query is $`B(z)`.  The engine resolves with clause $`2` at $`z`,
+opens the existential at a fresh variable $`v_0`, splits the conjunction, and
+resolves $`A_1(v_0)` and $`A_2(v_0)` with clauses $`0` and $`1`.  Its proof
+tree ({srcLink}`CLPExamples.run61_tree`) is
 
-and the query is $`B(z)`.  The engine resolves with $`\theta_2` at
-$`t := z`, opens the existential at a fresh variable $`u`, splits the
-conjunction, and resolves $`A_1(u)` and $`A_2(u)` with $`\theta_0` and
-$`\theta_1`, moving three constraints into the store:
+{stmt}`CLPExamples.run61_tree`
 
-$$`[0]\;\; -u + 5 \le 0 \qquad\quad [1]\;\; -u + 9 \le 0 \qquad\quad [2]\;\; u - z + 35 \le 0`
+and its total constraint ({srcLink}`CLPExamples.run61_total`) is the
+conjunction of the three constraint leaves:
 
-_Elimination._  $`z` occurs only in $`[2]`, negatively, and $`u` occurs only
-negatively in $`[0]` and $`[1]`; nothing new is created and no contradiction
-arises.  _Back-substitution._  $`u` has lower bounds $`5` and $`9`, so
-$`u = 9`; $`z` has lower bound $`u + 35 = 44`.  The witness is
-$`(z, u) = (44, 9)`.  _Least value._  Longest paths give $`u = 9` through
-$`[1]` and $`z = 44` through $`[2]`.  The critical path $`[2], [1]` gives
-multipliers $`(0, 1, 1)`, and with multiplier $`1` on $`z - 44 < 0` the
-combination $`(-u + 9) + (u - z + 35) + (z - 44) = 0`, which uses a strict
-constraint, is a contradiction.  _Projection._  $`z` has coefficient $`-1` in
-its only constraint, so the answer is upward closed in $`z`.
+{stmt}`CLPExamples.run61_total`
+
+The solver reads the three constraints as $`-v_0 + 5 \le 0`,
+$`-v_0 + 9 \le 0` and $`v_0 - z + 35 \le 0`, in this order.
+_Elimination._  $`z` occurs only in the third, negatively, and $`v_0` occurs
+only negatively in the first two; nothing new is created and no contradiction
+arises.  _Back-substitution._  $`v_0` has lower bounds $`5` and $`9`, so
+$`v_0 = 9`; $`z` has lower bound $`v_0 + 35 = 44`.  The witness is
+$`(z, v_0) = (44, 9)`.  _Least value._  Longest paths give $`v_0 = 9` through
+the second constraint and $`z = 44` through the third.  This critical path
+gives the multipliers $`(0, 1, 1)`, and with multiplier $`1` on $`z - 44 < 0`
+the combination $`(-v_0 + 9) + (v_0 - z + 35) + (z - 44) = 0`, which uses a
+strict constraint, is a contradiction.  _Projection._  $`z` has coefficient
+$`-1` in its only constraint, so the answer is upward closed in $`z`.  The
+witness and the multipliers are the library's `w61` and `mult61`, checked
+below.
 
 *The kernel runs the engine on Example 6.1 and accepts its tree.*
 
@@ -114,8 +123,9 @@ of the answer constraint if and only if $`44 \le r`.
 {leanDecl CLPExamples.ex61_answer}
 
 *The $`\bigcirc` pass on Example 6.1.*  It extracts
+({srcLink}`CLPExamples.run61_ext`)
 
-$$`(((\top \land u \ge 5) \land (((\top \land u \ge 9) \land (\top \land \top)) \land \top)) \land \top) \land (\top \land (\top \land z \ge u + 35)),`
+{stmt}`CLPExamples.run61_ext`
 
 which is the 1997 report's expression, and this is $`\dashv\vdash` the total
 constraint.
@@ -176,6 +186,9 @@ $`P \cdot r^{D} = M \cdot (1 + r + \cdots + r^{D-1})`.
   $`M = (161051/610510) \cdot P` at $`I = 1/10`.  The 1997 report's printed figure
   $`0.263797522` belongs to the second rate, and its $`P = 120000` is the first
   answer rounded.
+
+Section 12 runs the query of the second item, at durations from $`15` to
+$`1920`, in this engine and in SWI-Prolog, and compares the times.
 
 # D. Wolfram
 

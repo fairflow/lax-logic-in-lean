@@ -2,12 +2,13 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
 import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
 open LaxLogic.QLL.Form (openAt instAll)
 
@@ -15,7 +16,7 @@ open LaxLogic.QLL.Form (openAt instAll)
 
 This section mechanises Definition 5.1, the indices of §6.2 and the two-world
 model of §7 of the 1997 report; the least-model theory between them is
-Lloyd's, proved here for the Horn programs that result.  It answers two
+that of {cite}`Lloyd1987`, proved here for the Horn programs that result.  It answers two
 questions that come before any constraint is solved.  What does a program
 mean?  Its least Herbrand model; that needs Horn clauses, so a clause with a
 disjunctive body is first split by the report's indices.  And can that
@@ -107,7 +108,8 @@ contains it.
 
 {leanDecl LHM_iff_Tpow}
 
-*It is the least fixpoint* in the sense of Mathlib's `OrderHom.lfp`.  This is
+*It is the least fixpoint* in the sense of `OrderHom.lfp` from Mathlib
+{pcite}`MathlibCommunity2020`.  This is
 the one result of the section that uses `Classical.choice`, through Mathlib's
 complete lattices.
 
@@ -144,7 +146,8 @@ is true in the least model.
 
 {leanDecl lloyd_consequence_iff}
 
-*Van Emden and Kowalski.*  A closed atom is in the least model if and only if
+*Van Emden and Kowalski* {pcite}`VanEmdenKowalski1976`.  A closed atom is in
+the least model if and only if
 it is a consequence of the program.
 
 {stmt}`vanEmden_Kowalski`

@@ -221,7 +221,7 @@ tree gives an abstract proof, hence $`\Theta^\sharp \vdash \bigcirc S`.
 {leanDecl SLD.SLDCSteps.prv}
 
 These three results use `Classical.choice`, through a lemma about list
-lengths that could be avoided (Section 12).
+lengths that could be avoided (Section 13).
 
 # The simulation under abstraction
 

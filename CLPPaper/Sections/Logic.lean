@@ -2,12 +2,13 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
 import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
 open LaxLogic.QLL.Form (openAt openWith)
 
@@ -16,10 +17,10 @@ open LaxLogic.QLL.Form (openAt openWith)
 This section fixes the logic in which everything is stated: intuitionistic
 first-order logic with two lax modalities (QLL), its natural deduction
 calculus, its Kripke models, and soundness and completeness.  It mechanises
-the logic that the 1997 report takes from Fairtlough and Mendler.  The report
+the logic that the 1997 report takes from {cite}`FairtloughMendler1997`.  The report
 presents it as a Gentzen system (its Fig. 1, not built here); the rules below
-are the natural deduction rules of Fig. 5 of Fairtlough, Mendler and Cheng
-(TPHOLs 2001), stated on formula contexts.  Every later result is a statement
+are the natural deduction rules of Fig. 5 of {cite}`FairtloughMendlerCheng2001`,
+stated on formula contexts.  Every later result is a statement
 about provability in this calculus or about forcing in these models, and
 soundness is what lets a later section refute a provability claim with a
 countermodel.  The section ends with a warning about the modal relation of a
@@ -52,7 +53,7 @@ $$`\dfrac{\Gamma \vdash A[t/0]}{\Gamma \vdash \exists A}\;(\exists I) \qquad\qqu
 where in $`(\forall E)` and $`(\exists I)` the term $`t` is closed.  In the
 Lean definition the conclusion of $`(\forall E)` is a variable $`B` with the
 equation $`B = A[t/0]` as a further premise, so that every index of the
-inductive family is a variable (the green-slime check of Section 12).
+inductive family is a variable (the check of computed indices in Section 13).
 
 {stmt}`Prv`
 

@@ -15,13 +15,13 @@ open LaxLogic.QLL LaxLogic.QLL.SLD
 This section concerns the mechanisation itself and has no counterpart in the
 1997 report.  It records the axioms the printed results use, the check that
 the inductive definitions carry no computed indices, why the extracted
-constraints come out unsimplified and how they could be simplified, what is
-not built, and the references.
+constraints come out unsimplified and how they could be simplified, and what
+is not built.
 
 # Axioms
 
-Of the 112 declarations printed in this document, 14 use no axiom at all (most
-of them are definitions), 34 use `propext` only, and 43 use `propext` and
+Of the 113 declarations printed in this document, 14 use no axiom at all (most
+of them are definitions), 34 use `propext` only, and 44 use `propext` and
 `Quot.sound`.  The remaining 21 also use `Classical.choice`:
 
 * through Mathlib's rationals: the arithmetic certificates and the engine
@@ -41,8 +41,9 @@ of its main results with `#guard_msgs`, so a change in them fails the build.
 
 # Inductive definitions without computed indices
 
-An index of an inductive family that is computed by a function (green slime,
-in McBride's term) cannot be inverted by the unifier, so case analysis on the
+An index of an inductive family that is computed by a function (“green
+slime”, in the slang of dependently typed programming) cannot be inverted by
+the unifier, so case analysis on the
 family either fails or survives only by substituting into whatever stands
 opposite, and statements tend to bend to fit.  Every indexed family of the
 library was checked with the command `#slime`.  Fourteen of the 23 carried
@@ -52,7 +53,7 @@ $`\tilde{\varphi} \mathbin{+\!\!+} [\varphi] \mathbin{+\!\!+} \tilde{\psi}` in
 every rule of Table 2 and in the machine's steps, and a leaf position computed
 by addition.  Each computed index was replaced by a variable and an equation
 premise, with the proofs changed only by `rfl` at constructions and `subst` in
-case analyses; no theorem statement changed, and the axioms of all 112 printed
+case analyses; no theorem statement changed, and the axioms of the printed
 declarations are the same before and after.  The census is recorded in the
 repository as `docs/qll-slime-census-2026-10-15.md`.
 
@@ -119,42 +120,3 @@ The following are not built, and nothing in the library asserts them:
 * the placements of Section 10 that are stated with designed cells only;
 * the simplifications above.
 
-# References
-
-* Jaffar and Lassez, _Constraint logic programming_, POPL 1987.
-* Jaffar and Maher, _Constraint logic programming: a survey_, J. Logic
-  Programming 19/20 (1994) 503–581.
-* Jaffar, Maher, Marriott and Stuckey, _The semantics of constraint logic
-  programs_, J. Logic Programming 37 (1998) 1–46.
-* Jaffar, Maher, Stuckey and Yap, _Projecting CLP(R) constraints_, New
-  Generation Computing 11 (1993) 449–469.
-* Argenius and Voronkov, _Semantics of constraint logic programs with bounded
-  quantifiers_, LNAI 1050 (1996).
-* Lloyd, _Foundations of Logic Programming_, 2nd ed., 1987.
-* Van Emden and Kowalski, _The semantics of predicate logic as a programming
-  language_, J. ACM 23 (1976).
-* Fairtlough and Mendler, _Propositional lax logic_, Information and
-  Computation 137 (1997).
-* Fairtlough, Mendler and Cheng, _Abstraction and refinement in higher order
-  logic_, TPHOLs 2001, LNCS 2152.
-* Moggi, _Notions of computation and monads_, Information and Computation 93
-  (1991).
-* Maher, _Logic semantics for a class of committed-choice programs_, ICLP 1987.
-* Saraswat, _Concurrent Constraint Programming_, MIT Press 1993.
-* Haridi and Janson, _Kernel Andorra Prolog and its computation model_, ICLP
-  1990.
-* Franzén, _Logical aspects of the Andorra Kernel Language_, SICS R91:12
-  (1991).
-* Naish, _Pruning in logic programming_, TR 95/16, Melbourne (1995).
-* Andrews, _The witness properties and the semantics of the Prolog cut_, TPLP
-  3(1) (2003).
-* Piróg and Staton, _Backtracking with cut via a distributive law and
-  left-zero monoids_, JFP 27 (2017).
-* Van Hentenryck, _Constraint Satisfaction in Logic Programming_, MIT Press
-  1989.
-* Frühwirth, _Theory and practice of Constraint Handling Rules_, J. Logic
-  Programming 37 (1998).
-* Schrijvers, Stuckey and Wadler, _Monadic constraint programming_, JFP 19
-  (2009).
-* Gocht, McCreesh and Nordström, _An auditable constraint programming solver_,
-  CP 2022.

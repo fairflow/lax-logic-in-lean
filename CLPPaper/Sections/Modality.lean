@@ -2,12 +2,13 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
 import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
 open LaxLogic.QLL.BodyCirc LaxLogic.QLL.HeadFlatten
 
@@ -276,7 +277,7 @@ branch's constraint travels with the injection.
 *A sound “once”.*  Every other derivation's answer entails such a derivation's
 answer.  Succeed on the free branch, and no other branch can be more general:
 what Prolog's cut does by fiat, and the quiet guards of the Andorra Kernel
-Language do by entailment, is obtained here from the type.
+Language {pcite}`Franzen1991` do by entailment, is obtained here from the type.
 
 {stmt}`AProof.once_of_pure`
 

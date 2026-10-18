@@ -267,7 +267,11 @@ partial def tm (st : St) : Expr → MetaM String
     let e := e.consumeMData
     match e.getAppFnArgs with
     | (``LaxLogic.QLL.Tm.fvar, #[s]) => match strLit? s with
-      | Option.some n => pure (ident n)
+      | Option.some n =>
+        -- the engine's fresh variables `_v0`, `_v1`, … are `v₀`, `v₁`, …
+        if n.startsWith "_v" && (n.drop 2).all Char.isDigit && n.length > 2 then
+          pure ("v_{" ++ (n.drop 2).toString ++ "}")
+        else pure (ident n)
       | Option.none => generic st 9 s
     | (``LaxLogic.QLL.Tm.bvar, #[n]) =>
       pure <| match natLit? n with

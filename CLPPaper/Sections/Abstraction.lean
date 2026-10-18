@@ -2,12 +2,13 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
 import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
 open LaxLogic.QLL.Form (openAt instAll strip)
 
@@ -28,8 +29,8 @@ constraint off that proof.  Theorem 9.7 checks that nothing is lost: the
 composite computes the conventional answer constraint of Section 5.  The
 canonical model shows why the passes must be two: no argument at the abstract
 level can see whether a constraint is solvable.  This is the
-abstraction-and-refinement method of Fairtlough, Mendler and Cheng
-(TPHOLs 2001), applied to CLP.
+abstraction-and-refinement method of {cite}`FairtloughMendlerCheng2001`,
+applied to CLP.
 
 Throughout, $`\Theta` is a program, $`\mathit{isC}` says which predicates are
 constraints, and $`q` is the polarity of the modality used for the abstract
@@ -90,7 +91,8 @@ $`\Theta^\sharp \vdash \bigcirc_q S^\sharp`.
 
 # Extraction
 
-Constraints are formulas.  The writer monad is $`\mathit{WM}\,\alpha = C \times \alpha`
+Constraints are formulas.  The writer monad, a monad in the sense of
+{cite}`Moggi1991`, is $`\mathit{WM}\,\alpha = C \times \alpha`
 with
 
 $$`\mathit{val}\; a = (\top, a), \qquad \mathit{bind}\;(c, a)\; f = (c \land \pi_1(f\,a),\; \pi_2(f\,a)),`
@@ -178,7 +180,7 @@ of Section 5.3 ({srcLink}`CLPExamples.run95_agree`):
 {stmt}`CLPExamples.run95_agree`
 
 So the two passes agree on this run.  The $`\top` units are the residue of the
-writer monad discussed in Section 12.
+writer monad discussed in Section 13.
 
 # Refinement
 

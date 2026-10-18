@@ -2,12 +2,13 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
 import CLPPaper.Math
 import CLPPaper.Layout
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Pruning and Prolog's cut" =>
@@ -24,26 +25,31 @@ the switching lemma and the pruning theorem of Section 7.
 
 The link runs through committed choice with constraint guards.
 
-* Maher's logical semantics for the ALPS class (ICLP 1987) governs commitment
-  by constraint entailment.
-* Saraswat's concurrent constraint programming makes _ask_ (block until the
-  store entails the guard) and _tell_ its primitives.
-* The Andorra Kernel Language (Haridi and Janson, ICLP 1990) has a conditional
+* The logical semantics of the ALPS class {pcite}`Maher1987` governs
+  commitment by constraint entailment.
+* Concurrent constraint programming {pcite}`Saraswat1993` makes _ask_ (block
+  until the store entails the guard) and _tell_ its primitives.
+* The Andorra Kernel Language {pcite}`HaridiJanson1990` has a conditional
   choice, which is Prolog's if-then-else guarded by entailment; a committed
-  choice; and a nondeterminate choice that waits.  Franzén's logical account
-  restricts pruning to _quiet_ guards, entailed by the store rather than merely
-  consistent with it, because quiet pruning is insensitive to execution order.
-* Naish's survey of pruning operators (1995) records that they are typically
-  not declarative and cost completeness or soundness.  Andrews (TPLP 2003)
-  shows that Prolog with negation as failure and cut lacks the witness
-  properties, and gives a restriction that keeps cut's first-solution behaviour
-  with them.  Piróg and Staton (JFP 2017) show that cut makes backtracking the
-  monad of free left-zero monoids.
+  choice; and a nondeterminate choice that waits.  Its logical account
+  {pcite}`Franzen1991` restricts pruning to _quiet_ guards, entailed by the
+  store rather than merely consistent with it, because quiet pruning is
+  insensitive to execution order.
+* A survey of pruning operators {pcite}`Naish1995` records that they are
+  typically not declarative and cost completeness or soundness.
+  {cite}`Andrews2003` shows that Prolog with negation as failure and cut lacks
+  the witness properties, and gives a restriction that keeps cut's
+  first-solution behaviour with them.  {cite}`PirogStaton2017` show that cut
+  makes backtracking the monad of free left-zero monoids.
 
-On the CLP side, failure pruning is Jaffar and Maher's $`\rightarrow_s`;
-branch and bound (Van Hentenryck 1989) prunes by bounds and is sound for
-optimal answers only; and Gocht, McCreesh and Nordström (CP 2022) log every
-pruning step of a constraint solver as a checkable cutting-planes proof.
+On the CLP side, failure pruning is the transition $`\rightarrow_s` of
+{cite}`JaffarMaher1994`; branch and bound {pcite}`VanHentenryck1989` prunes by
+bounds and is sound for optimal answers only; Constraint Handling Rules
+{pcite}`Fruhwirth1998` are committed-choice guarded rules that simplify the
+store; monadic constraint programming {pcite}`SCHRIJVERSSTUCKEYWADLER2009`
+treats search strategies and pruning as composable transformers of a search
+tree; and {cite}`GochtMcCreeshNordstrom2022` log every pruning step of a
+constraint solver as a checkable cutting-planes proof.
 
 # How it lines up
 
@@ -101,7 +107,7 @@ acceptable store.
 Three directions would build on this, each to start with a statement and
 designed cells: a certified pruning log (unsatisfiable, dominated, or not
 selected under a quiet commit, each with its certificate); quiet commit in lax
-logic programs, with answer soundness as the first target; and Piróg and
-Staton's cut added to the extraction monad, with the failure of selection
+logic programs, with answer soundness as the first target; and the cut of
+{cite}`PirogStaton2017` added to the extraction monad, with the failure of selection
 independence as a designed countermodel, which would be a formal version,
 inside the lax framework, of “cut is non-logical”.

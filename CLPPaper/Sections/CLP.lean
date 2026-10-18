@@ -2,12 +2,13 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
 import CLPPaper.Math
 import CLPPaper.Layout
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
 
 #doc (Manual) "Constraint logic programming" =>
@@ -18,16 +19,16 @@ this document.  The lax reading reformulates a scheme that is well
 understood, and can be judged only against it: each construction of the later
 sections takes over the role of some part of the conventional account, and
 the table below says which, and which parts have no counterpart.  The section
-has no results of its own; a reader who knows the survey of Jaffar and Maher
-can use it as an index to the rest.
+has no results of its own; a reader who knows the survey of
+{cite}`JaffarMaher1994` can use it as an index to the rest.
 
 # The scheme
 
-The CLP scheme (Jaffar and Lassez, POPL 1987) parametrises logic programming
+The CLP scheme {pcite}`JaffarLassez1987` parametrises logic programming
 by a _constraint domain_, a structure together with a language of constraints
 over it, and by a _solver_ for those constraints.  The standard operational
-account is the transition system of Jaffar and Maher's survey (J. Logic
-Programming 19/20, 1994, §5).  A state is a triple $`\langle A, C, S\rangle` of
+account is the transition system of the survey {pcite}`JaffarMaher1994`, §5.
+A state is a triple $`\langle A, C, S\rangle` of
 goals $`A`, active constraints $`C` and passive constraints $`S`.  There are
 four transitions:
 
@@ -41,7 +42,8 @@ The consistency test may be incomplete: it must accept every satisfiable store
 and may accept some unsatisfiable ones.  A successful derivation ends with no
 goals, and its store is the _answer constraint_.
 
-The survey's Theorem 6.1 relates this to the logical semantics.  The success
+The survey's Theorem 6.1 relates this to the logical semantics, which
+{cite}`JaffarEtAl1998` develop in full.  The success
 set coincides with the least model over the domain (item 1).  An answer
 constraint $`c` of a goal $`G` satisfies $`P, T \models c \to G`, where $`T` is
 the theory of the constraint domain (item 2, soundness).  If
@@ -49,8 +51,8 @@ $`P, T \models c \to G`, then finitely many answers together cover $`c`
 (item 4); unlike plain logic programming, a disjunction of answers may be
 needed.  _Answer projection_, which eliminates the local variables so that
 only the query's remain, is a separate step: quantifier elimination over the
-domain (Jaffar, Maher, Stuckey and Yap, New Generation Computing 11, 1993).
-Table 2 of the 1997 report follows Argenius and Voronkov (LNAI 1050, 1996).
+domain {pcite}`JaffarEtAl1993`.  Table 2 of the 1997 report follows
+{cite}`ArgeniusVoronkov1996`.
 
 # The correspondence
 
