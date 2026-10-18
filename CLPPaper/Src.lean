@@ -28,8 +28,12 @@ inline_extension Inline.srcLink where
     match FromJson.fromJson? (α := SrcLoc) data with
     | .error e => do reportError s!"srcLink: bad data: {e}"; pure .empty
     | .ok (path, line, url) =>
-      pure <| .seq #[.raw "{\\small ", .raw "\\oldhref{", .raw url, .raw "}{\\texttt{",
-        .text s!"{path}:{line}", .raw "}}}"]
+      -- the path may break after each `/` (a link in running text, v0.8)
+      let comps := path.splitOn "/"
+      let pathTeX : Array Verso.Output.TeX := comps.tail.foldl
+        (fun acc s => acc ++ #[.raw "/\\allowbreak{}", .text s]) #[.text comps.head!]
+      pure <| .seq (#[.raw "{\\small ", .raw "\\oldhref{", .raw url, .raw "}{\\texttt{"] ++
+        pathTeX ++ #[.text s!":{line}", .raw "}}}"])
   toHtml := some <| fun _ _ data _ => do
     match FromJson.fromJson? (α := SrcLoc) data with
     | .error e => do reportError s!"srcLink: bad data: {e}"; pure .empty
@@ -60,6 +64,11 @@ def srcLink : RoleExpanderOf SrcLinkConfig
       | throwErrorAt arg "Expected a code literal with the declaration name"
     let identStx := mkIdentFrom arg name.getString.toName (canonical := true)
     let n ← realizeGlobalConstNoOverloadWithInfo identStx
+    srcLinkFor n
+  | _, _ => throwError "Expected exactly one code literal"
+where
+  /-- The link for a resolved name; also used by `{leanDecl}` (CLPPaper/Decl.lean). -/
+  srcLinkFor (n : Name) : TermElabM Term := do
     let env ← getEnv
     let modName : Name := match env.getModuleIdxFor? n with
       | Option.some i => env.header.moduleNames[i.toNat]!
@@ -70,7 +79,6 @@ def srcLink : RoleExpanderOf SrcLinkConfig
     let url := s!"{repo}/blob/{sha}/{path}#L{line}"
     `(Verso.Doc.Inline.other {Inline.srcLink with data := ToJson.toJson (($(quote path), $(quote line), $(quote url)) : SrcLoc)}
         #[Verso.Doc.Inline.code $(quote s!"{path}:{line}")])
-  | _, _ => throwError "Expected exactly one code literal"
 
 /-! ## The build stamp
 

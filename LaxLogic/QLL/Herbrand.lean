@@ -25,8 +25,8 @@ with `◯` stripped: the draft's `Π¹`.
 
 For a closed Horn program `P` (`Horn.WF`) and a closed Σ-formula `S`:
 
-    Tp R P (LHM R P) p us ↔ LHM R P p us              -- a fixpoint of T_P
-    (∀ p us, Tp R P I p us → I p us) → LHM R P ≤ I    -- the least pre-fixpoint
+    Tp R P (LHM R P) p ts ↔ LHM R P p ts              -- a fixpoint of T_P
+    (∀ p ts, Tp R P I p ts → I p ts) → LHM R P ≤ I    -- the least pre-fixpoint
     HTrue (LHM R P) h.form   (h ∈ P)                  -- a model of P
 
 and, when `P` has no modal heads and `R` is empty,
@@ -129,7 +129,7 @@ theorem Prv.allEs : ∀ (ts : List Tm) {Γ : List Form} {A : Form}, (∀ t ∈ t
     Prv Γ (Form.foralls ts.length A) → Prv Γ (Form.instAll ts A)
   | [],      _, _, _,   h => h
   | t :: ts, _, A, hts, h => by
-      have h' := Prv.allE t (hts t (List.mem_cons.2 (Or.inl rfl))) h
+      have h' := Prv.allE t (hts t (List.mem_cons.2 (Or.inl rfl))) h rfl
       rw [Form.openAt_foralls, Nat.zero_add] at h'
       exact Prv.allEs ts (fun u hu => hts u (List.mem_cons.2 (Or.inr hu))) h'
 
@@ -232,9 +232,9 @@ theorem herbrand1_evTm (I : String → List Tm → Prop) (t : Tm) (h : Tm.lcAt 0
   HFrame.evTm_lc HFrame.one (fun _ => I) (fun _ h => h) [] t h
 
 /-- The list form of `herbrand1_evTm`. -/
-theorem herbrand1_evTms (I : String → List Tm → Prop) (us : List Tm) (h : Tm.lcAtList 0 us) :
-    (herbrand1 I).evTms Tm.fvar [] us = us :=
-  HFrame.evTms_lc HFrame.one (fun _ => I) (fun _ h => h) [] us h
+theorem herbrand1_evTms (I : String → List Tm → Prop) (ts : List Tm) (h : Tm.lcAtList 0 ts) :
+    (herbrand1 I).evTms Tm.fvar [] ts = ts :=
+  HFrame.evTms_lc HFrame.one (fun _ => I) (fun _ h => h) [] ts h
 
 /-! ## Truth in a Herbrand interpretation, connective by connective -/
 
@@ -242,10 +242,10 @@ section
 variable {I : String → List Tm → Prop}
 
 /-- A closed atom is true exactly when it is in the interpretation. -/
-theorem HTrue_pred {p : String} {us : List Tm} (h : Tm.lcAtList 0 us) :
-    HTrue I (.pred p us) ↔ I p us := by
-  show False ∨ I p ((herbrand1 I).evTms Tm.fvar [] us) ↔ I p us
-  rw [herbrand1_evTms I us h]
+theorem HTrue_pred {p : String} {ts : List Tm} (h : Tm.lcAtList 0 ts) :
+    HTrue I (.pred p ts) ↔ I p ts := by
+  show False ∨ I p ((herbrand1 I).evTms Tm.fvar [] ts) ↔ I p ts
+  rw [herbrand1_evTms I ts h]
   exact ⟨fun h => h.resolve_left id, Or.inr⟩
 
 /-- Truth of a conjunction. -/
@@ -361,8 +361,10 @@ inductive Holds (R : String → List Tm → Prop) (P : List Horn) : Form → Pro
   | top : Holds R P .top
   | and {A B : Form} : Holds R P A → Holds R P B → Holds R P (.and A B)
   | ex {A : Form} (t : Tm) : Tm.lcAt 0 t → Holds R P (A.openAt 0 t) → Holds R P (.exists_ A)
-  | fire {h : Horn} {ts : List Tm} : h ∈ P → ts.length = h.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      Holds R P (Form.instAll ts h.body) → Holds R P (.pred h.head (Tm.instAllList ts h.args))
+  -- the head instance is carried by equation fields, as in `Tp`, not computed in the index
+  | fire {h : Horn} {ts : List Tm} {p : String} {us : List Tm} : h ∈ P → ts.length = h.arity →
+      (∀ t ∈ ts, Tm.lcAt 0 t) → Holds R P (Form.instAll ts h.body) →
+      p = h.head → us = Tm.instAllList ts h.args → Holds R P (.pred p us)
 
 /-- The least Herbrand model `M_P`, as a Herbrand interpretation. -/
 def LHM (R : String → List Tm → Prop) (P : List Horn) : String → List Tm → Prop :=
@@ -378,16 +380,17 @@ section
 variable {R : String → List Tm → Prop} {P : List Horn}
 
 /-- What holds is true in the least Herbrand model. -/
-theorem Holds.toHTrue (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
+theorem Holds.toHTrue (hR : ∀ p ts, R p ts → Tm.lcAtList 0 ts) (hP : ∀ h ∈ P, h.WF)
     {φ : Form} (d : Holds R P φ) : HTrue (LHM R P) φ := by
   induction d with
   | base hr => exact (HTrue_pred (hR _ _ hr)).2 (.base hr)
   | top => trivial
   | and _ _ ih₁ ih₂ => exact HTrue_and.2 ⟨ih₁, ih₂⟩
   | ex t ht _ ih => exact HTrue_exists.2 ⟨t, ht, ih⟩
-  | @fire h ts hh hlen hts hb _ =>
+  | @fire h ts _ _ hh hlen hts hb hp hus _ =>
+      subst hp hus
       exact (HTrue_pred (Tm.lcAtList_instAllList ts h.args hts
-        (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb)
+        (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb rfl rfl)
 
 /-- `Holds.of_HTrue`, by induction on a size bound. -/
 theorem Holds.of_HTrue_aux : ∀ (n : Nat) {φ : Form}, φ.size < n → IsPP φ → Form.lcAt 0 φ →
@@ -412,11 +415,12 @@ theorem Holds.of_HTrue {φ : Form} (hφ : IsPP φ) (hc : Form.lcAt 0 φ)
   Holds.of_HTrue_aux _ (Nat.lt_succ_self _) hφ hc h
 
 /-- Atoms of the least model have closed arguments. -/
-theorem LHM_lc (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
-    {p : String} {us : List Tm} (hl : LHM R P p us) : Tm.lcAtList 0 us := by
+theorem LHM_lc (hR : ∀ p ts, R p ts → Tm.lcAtList 0 ts) (hP : ∀ h ∈ P, h.WF)
+    {p : String} {ts : List Tm} (hl : LHM R P p ts) : Tm.lcAtList 0 ts := by
   cases hl with
   | base hr => exact hR _ _ hr
-  | @fire h ts hh hlen hts _ =>
+  | @fire h ts _ _ hh hlen hts _ _ hus =>
+      subst hus
       exact Tm.lcAtList_instAllList ts h.args hts (by rw [hlen]; exact (hP h hh).2)
 
 /-- The least Herbrand model is a model of the program. -/
@@ -433,26 +437,26 @@ theorem HTrue_LHM_form (hP : ∀ h ∈ P, h.WF) {h : Horn} (hh : h ∈ P) :
   show HTrue _ (Form.instAll ts (.pred h.head h.args))
   rw [Form.instAll_pred]
   exact (HTrue_pred (Tm.lcAtList_instAllList ts _ hts
-    (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb')
+    (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb' rfl rfl)
 
 /-- `T_P(M_P) = M_P`. -/
-theorem Tp_LHM (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
-    (p : String) (us : List Tm) : Tp R P (LHM R P) p us ↔ LHM R P p us := by
+theorem Tp_LHM (hR : ∀ p ts, R p ts → Tm.lcAtList 0 ts) (hP : ∀ h ∈ P, h.WF)
+    (p : String) (ts : List Tm) : Tp R P (LHM R P) p ts ↔ LHM R P p ts := by
   constructor
   · rintro (hr | ⟨h, hh, ts, hlen, hts, hb, rfl, rfl⟩)
     · exact .base hr
     · exact .fire hh hlen hts (Holds.of_HTrue (h.body_pp.instAll ts)
-        (Form.lcAt_instAll ts _ hts (by rw [hlen]; exact (hP h hh).1)) hb)
+        (Form.lcAt_instAll ts _ hts (by rw [hlen]; exact (hP h hh).1)) hb) rfl rfl
   · intro hl
     cases hl with
     | base hr => exact Or.inl hr
-    | @fire h ts hh hlen hts hb =>
-        exact Or.inr ⟨h, hh, ts, hlen, hts, Holds.toHTrue hR hP hb, rfl, rfl⟩
+    | @fire h ts _ _ hh hlen hts hb hp hus =>
+        exact Or.inr ⟨h, hh, ts, hlen, hts, Holds.toHTrue hR hP hb, hp, hus⟩
 
 /-- `M_P` is below every pre-fixpoint of `T_P`. -/
-theorem LHM_least (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
-    {I : String → List Tm → Prop} (hI : ∀ p us, Tp R P I p us → I p us)
-    (p : String) (us : List Tm) (hl : LHM R P p us) : I p us := by
+theorem LHM_least (hR : ∀ p ts, R p ts → Tm.lcAtList 0 ts) (hP : ∀ h ∈ P, h.WF)
+    {I : String → List Tm → Prop} (hI : ∀ p ts, Tp R P I p ts → I p ts)
+    (p : String) (ts : List Tm) (hl : LHM R P p ts) : I p ts := by
   have key : ∀ {φ : Form}, Holds R P φ → HTrue I φ := by
     intro φ d
     induction d with
@@ -460,10 +464,11 @@ theorem LHM_least (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P
     | top => trivial
     | and _ _ ih₁ ih₂ => exact HTrue_and.2 ⟨ih₁, ih₂⟩
     | ex t ht _ ih => exact HTrue_exists.2 ⟨t, ht, ih⟩
-    | @fire h ts hh hlen hts _ ih =>
+    | @fire h ts _ _ hh hlen hts _ hp hus ih =>
+        subst hp hus
         exact (HTrue_pred (Tm.lcAtList_instAllList ts h.args hts
           (by rw [hlen]; exact (hP h hh).2))).2 (hI _ _ (Or.inr ⟨h, hh, ts, hlen, hts, ih, rfl, rfl⟩))
-  exact (HTrue_pred (LHM_lc hR hP hl)).1 (key (φ := .pred p us) hl)
+  exact (HTrue_pred (LHM_lc hR hP hl)).1 (key (φ := .pred p ts) hl)
 
 end
 
@@ -481,7 +486,8 @@ theorem Holds.prv (hm : ∀ h ∈ P, h.modal = false) {φ : Form} (d : Holds RNo
   | top => exact .topI
   | and _ _ ih₁ ih₂ => exact .andI ih₁ ih₂
   | ex t ht _ ih => exact .exI t ht ih
-  | @fire h ts hh hlen hts _ ih =>
+  | @fire h ts _ _ hh hlen hts _ hp hus ih =>
+      subst hp hus
       have hf : Prv (P.map Horn.form) (Form.foralls ts.length (.imp h.body h.headForm)) := by
         rw [hlen]; exact .var (List.mem_map.2 ⟨h, hh, rfl⟩)
       have hi := Prv.allEs ts hts hf
@@ -529,10 +535,10 @@ theorem lloyd_consequence_iff (hP : ∀ h ∈ P, h.WF) (hm : ∀ h ∈ P, h.moda
 /-- van Emden and Kowalski: the least Herbrand model is the set of atoms that
 follow from the program. -/
 theorem vanEmden_Kowalski (hP : ∀ h ∈ P, h.WF) (hm : ∀ h ∈ P, h.modal = false)
-    {p : String} {us : List Tm} (hus : Tm.lcAtList 0 us) :
-    LHM RNone P p us ↔ Consequence (P.map Horn.form) (.pred p us) := by
-  rw [lloyd_consequence_iff hP hm (.pred p us) hus, lloyd_prv_iff hP hm (.pred p us) hus,
-    HTrue_pred hus]
+    {p : String} {ts : List Tm} (hts : Tm.lcAtList 0 ts) :
+    LHM RNone P p ts ↔ Consequence (P.map Horn.form) (.pred p ts) := by
+  rw [lloyd_consequence_iff hP hm (.pred p ts) hts, lloyd_prv_iff hP hm (.pred p ts) hts,
+    HTrue_pred hts]
 
 end
 
@@ -588,7 +594,7 @@ theorem lem_not_prv : ¬ Prv [] (.or (.pred "P" []) (.imp (.pred "P" []) .bot)) 
 theorem or_no_least_model : ¬ ∃ I : String → List Tm → Prop,
     HTrue I (.or (.pred "P" []) (.pred "Q" [])) ∧
     ∀ J : String → List Tm → Prop, HTrue J (.or (.pred "P" []) (.pred "Q" [])) →
-      ∀ p us, I p us → J p us := by
+      ∀ p ts, I p ts → J p ts := by
   rintro ⟨I, hI, hmin⟩
   have hP := hmin (fun p _ => p = "P") (Or.inl ((HTrue_pred Tm.lcAtList_nil).2 rfl))
   have hQ := hmin (fun p _ => p = "Q") (Or.inr ((HTrue_pred Tm.lcAtList_nil).2 rfl))

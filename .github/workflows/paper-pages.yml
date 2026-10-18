@@ -1,0 +1,153 @@
+# One paper, republished on its own (Matthew, 2026-10-15): reformatting a
+# paper should not cost a rebuild of the Blueprint and every other paper.
+#
+# A repository has ONE Pages site and every deploy replaces all of it, so this
+# run starts from the site as last deployed (the `github-pages` artifact of the
+# latest successful deploy from main, by this workflow or by pages.yml),
+# replaces the chosen part's directory, and deploys the result.  Lake builds
+# only the modules the paper imports; the Lean build cache comes from main.
+#
+# Like pages.yml, deploying is MANUAL: "Run workflow" in the Actions tab, or
+#   gh workflow run paper-pages.yml --repo fairflow/lax-logic-in-lean --ref main -f part=clp-paper
+# A pull request that touches a paper's sources builds that paper here, without
+# deploying, instead of the full Pages build.
+name: Paper Pages
+
+on:
+  pull_request:
+    paths:
+      - 'CLPPaper/**'
+      - 'CLPPaperMain.lean'
+      - 'LaxPaper/**'
+      - 'LaxPaperMain.lean'
+      - 'CurryPaper/**'
+      - 'CurryPaperMain.lean'
+      - 'scripts/ci-papers.sh'
+      - '.github/workflows/paper-pages.yml'
+  workflow_dispatch:
+    inputs:
+      part:
+        description: 'What to republish'
+        required: true
+        type: choice
+        options: [clp-paper, lax-paper, curry-paper, extras]
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.repository }}-paper-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build one paper
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Which parts
+        id: parts
+        env:
+          INPUT: ${{ inputs.part }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            git fetch -q --depth=1 origin "$BASE" "$HEAD"
+            files=$(git diff --name-only "$BASE" "$HEAD")
+            parts=""
+            echo "$files" | grep -q -E '^CLPPaper' && parts="$parts clp-paper"
+            echo "$files" | grep -q -E '^LaxPaper' && parts="$parts lax-paper"
+            echo "$files" | grep -q -E '^CurryPaper' && parts="$parts curry-paper"
+            [ -n "$parts" ] || parts="clp-paper"   # workflow or script change: one paper as a check
+          else
+            parts="$INPUT"
+          fi
+          echo "parts=$parts" >> "$GITHUB_OUTPUT"
+          echo "parts:$parts"
+      - name: Install elan
+        if: steps.parts.outputs.parts != 'extras'
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      # Restore only, from main's caches (the full Pages run saves them); this
+      # workflow adds nothing to the repository's 10 GB quota.
+      - name: Restore Lake package cache
+        if: steps.parts.outputs.parts != 'extras'
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            .lake/packages
+          key: ${{ runner.os }}-lake-packages-v1-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
+          restore-keys: |
+            ${{ runner.os }}-lake-packages-v1-
+      - name: Restore Lean build cache
+        if: steps.parts.outputs.parts != 'extras'
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            .lake/build/lib
+            .lake/build/ir
+          key: ${{ runner.os }}-lean-build-v1-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml', '**/*.lean') }}
+          restore-keys: |
+            ${{ runner.os }}-lean-build-v1-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-
+            ${{ runner.os }}-lean-build-v1-
+      - name: Fetch mathlib cache
+        if: steps.parts.outputs.parts != 'extras'
+        run: lake exe cache get || true
+      - name: Install pandoc
+        if: contains(steps.parts.outputs.parts, 'extras')
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+      # The site as last deployed.  Pull requests build into an empty site and
+      # deploy nothing.
+      - name: Fetch the deployed site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p _out/site/html-multi
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            echo '<!-- placeholder -->' > _out/site/html-multi/index.html
+            exit 0
+          fi
+          run=""
+          for wf in pages.yml paper-pages.yml; do
+            gh run list --repo "$GITHUB_REPOSITORY" --workflow "$wf" --branch main \
+              --status success --limit 5 --json databaseId,createdAt,event \
+              -q '.[] | select(.event != "pull_request") | "\(.createdAt) \(.databaseId)"'
+          done | sort -r > runs.txt
+          cat runs.txt
+          while read -r _ id; do
+            if gh run download "$id" --repo "$GITHUB_REPOSITORY" -n github-pages -D prev 2>/dev/null; then
+              run=$id; break
+            fi
+          done < runs.txt
+          test -n "$run" || { echo "no deployed site artifact is still kept: run the full Pages workflow once"; exit 1; }
+          echo "base: run $run"
+          tar -xf prev/artifact.tar -C _out/site/html-multi
+          test -f _out/site/html-multi/index.html
+      - name: Build
+        run: ./scripts/ci-papers.sh _out/site/html-multi ${{ steps.parts.outputs.parts }}
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _out/site/html-multi
+          retention-days: 90
+
+  deploy:
+    name: Deploy Pages
+    concurrency:
+      group: github-pages-deploy
+      cancel-in-progress: false
+    if: github.event_name != 'pull_request'
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -83,7 +83,7 @@ theorem Derives.erase : ∀ {p : Pf} {Γ : Ctx} {A : Form},
       refine Prv.allI_of_fresh ?_ ha.2.2 (ih (Pf.lcI_openI p 0 (.fvar a) trivial h))
       exact fun hc => ha.1 (Ctx.ctxFv_sub_fvI _ a hc)
   | @allE _ _ _ B t _ hB ih =>
-      intro h; subst hB; exact .allE t h.1 (ih h.2)
+      intro h; subst hB; exact .allE t h.1 (ih h.2) rfl
   | exI t _ ih => intro h; exact .exI t h.1 (ih h.2)
   | @exE _ _ p A K a z ha hK _ _ _ ih₀ ih₁ =>
       intro h
@@ -133,7 +133,8 @@ inductive PrvC : List Form → Form → Prop where
   | circE {Γ q A B} : PrvC Γ (.circ q A) → PrvC (A :: Γ) (.circ q B) → PrvC Γ (.circ q B)
   | allI  {Γ A} (L : List String) :
       (∀ a, a ∉ L → PrvC Γ (A.openWith a)) → PrvC Γ (.forall_ A)
-  | allE  {Γ A} (t : Tm) : Tm.lcAt 0 t → PrvC Γ (.forall_ A) → PrvC Γ (A.openAt 0 t)
+  -- the instance is an equation field, as in `Prv.allE` and `Derives.allE`
+  | allE  {Γ A B} (t : Tm) : Tm.lcAt 0 t → PrvC Γ (.forall_ A) → B = A.openAt 0 t → PrvC Γ B
   | exI   {Γ A} (t : Tm) : Tm.lcAt 0 t → PrvC Γ (A.openAt 0 t) → PrvC Γ (.exists_ A)
   | exE   {Γ A K} (L : List String) :
       PrvC Γ (.exists_ A) → (∀ a, a ∉ L → PrvC (A.openWith a :: Γ) K) → PrvC Γ K
@@ -155,7 +156,7 @@ theorem PrvC.toPrv {Γ : List Form} {A : Form} (h : PrvC Γ A) : Prv Γ A := by
   | circI _ ih => exact .circI ih
   | circE _ _ ih₁ ih₂ => exact .circE ih₁ ih₂
   | allI L _ ih => exact .allI L ih
-  | allE t ht _ ih => exact .allE t ht ih
+  | allE t ht _ hB ih => exact .allE t ht ih hB
   | exI t ht _ ih => exact .exI t ht ih
   | exE L _ _ ih₀ ih₁ => exact .exE L ih₀ ih₁
 
@@ -261,10 +262,10 @@ theorem PrvC.toDerives {Γ : List Form} {A : Form} (h : PrvC Γ A) :
         Pf.lcI_closeI a p 0 hi, ⟨?_⟩⟩
       refine Derives.allI a ⟨hnot.1.2, Pf.notMem_fvI_closeI a p 0, hnot.2⟩ ?_
       rw [Pf.openIWith, Pf.openI_closeI a p 0 hi]; exact d
-  | @allE Γ A t ht _ ih =>
+  | @allE Γ A B t ht _ hB ih =>
       intro Δ hΔ
       obtain ⟨p, hp, hi, ⟨d⟩⟩ := ih Δ hΔ
-      exact ⟨.inst t p, hp, ⟨ht, hi⟩, ⟨.allE t d rfl⟩⟩
+      exact ⟨.inst t p, hp, ⟨ht, hi⟩, ⟨.allE t d hB⟩⟩
   | @exI Γ A t ht _ ih =>
       intro Δ hΔ
       obtain ⟨p, hp, hi, ⟨d⟩⟩ := ih Δ hΔ

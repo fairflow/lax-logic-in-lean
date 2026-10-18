@@ -50,7 +50,7 @@ theorem Holds.mono {R : String → List Tm → Prop} {P P' : List Horn} (hPP : �
   | top => exact .top
   | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
   | ex t ht _ ih => exact .ex t ht ih
-  | fire hh hlen hts _ ih => exact .fire (hPP _ hh) hlen hts ih
+  | fire hh hlen hts _ hp hus ih => exact .fire (hPP _ hh) hlen hts ih hp hus
 
 /-! ## Forcing in a Herbrand frame -/
 
@@ -238,7 +238,7 @@ def I01 (I₀ I₁ : String → List Tm → Prop) : Bool → String → List Tm 
   | true  => I₁
 
 /-- The two-world interpretation is monotone when `I₀ ⊆ I₁`. -/
-theorem I01_hered {I₀ I₁ : String → List Tm → Prop} (h01 : ∀ p us, I₀ p us → I₁ p us) :
+theorem I01_hered {I₀ I₁ : String → List Tm → Prop} (h01 : ∀ p ts, I₀ p ts → I₁ p ts) :
     ∀ {w v : HFrame.two.W} {p : String} {ts : List Tm},
       HFrame.two.le w v → I01 I₀ I₁ w p ts → I01 I₀ I₁ v p ts := fun {w v _ _} hwv hI => by
   rcases hwv with rfl | rfl
@@ -250,7 +250,7 @@ theorem I01_hered {I₀ I₁ : String → List Tm → Prop} (h01 : ∀ p us, I�
     · exact hI
 
 /-- Two worlds `0 ≤ 1`, all arrows modal, nothing fallible. -/
-abbrev herbrand2 (I₀ I₁ : String → List Tm → Prop) (h01 : ∀ p us, I₀ p us → I₁ p us) : KModel :=
+abbrev herbrand2 (I₀ I₁ : String → List Tm → Prop) (h01 : ∀ p ts, I₀ p ts → I₁ p ts) : KModel :=
   HFrame.two.model (I01 I₀ I₁) (I01_hered h01)
 
 /-- World 0: the least Herbrand model of `Π⁰`. -/
@@ -260,7 +260,7 @@ abbrev llpI0 (Θ : Program) : String → List Tm → Prop := LHM RNone Θ.horn0
 abbrev llpI1 (Θ : Program) : String → List Tm → Prop := LHM RNone Θ.horn
 
 /-- `M(Π⁰) ⊆ M(Π¹)`. -/
-theorem llpI0_le (Θ : Program) : ∀ p us, llpI0 Θ p us → llpI1 Θ p us :=
+theorem llpI0_le (Θ : Program) : ∀ p ts, llpI0 Θ p ts → llpI1 Θ p ts :=
   fun _ _ h => Holds.mono (fun _ hh => Program.horn0_sub hh) h
 
 /-- The LLP Herbrand model: §7's canonical frame on the worlds `{0, 1}`. -/
@@ -324,7 +324,7 @@ theorem llpModel_clause (hΘ : ∀ c ∈ Θ, c.WF) {c : Clause} (hc : c ∈ Θ) 
         (Holds.of_HTrue (R := RNone) (P := Θ.horn0) hpp hlc hbg)
     · exact Holds.of_HTrue (R := RNone) (P := Θ.horn) hpp hlc hbg
   have hfire1 : llpI1 Θ c.head (Tm.instAllList ts (headVars c.arity)) :=
-    Holds.fire (Program.mem_horn.2 ⟨c, hc, hh⟩) hlen hts hbody1
+    Holds.fire (Program.mem_horn.2 ⟨c, hc, hh⟩) hlen hts hbody1 rfl rfl
   unfold Clause.headForm
   cases hm : c.modal
   · show (llpModel Θ).force (Form.instAll ts (.pred c.head (headVars c.arity))) v' Tm.fvar []
@@ -332,7 +332,7 @@ theorem llpModel_clause (hΘ : ∀ c ∈ Θ, c.WF) {c : Clause} (hc : c ∈ Θ) 
     refine (llpModel_sigma (.pred _ _) v').2 ((HTrue_pred hargs).2 ?_)
     cases v'
     · have hh0 := Program.mem_horn0_of hc hm hh
-      exact Holds.fire hh0 hlen hts (Holds.of_HTrue (R := RNone) (P := Θ.horn0) hpp hlc hbg)
+      exact Holds.fire hh0 hlen hts (Holds.of_HTrue (R := RNone) (P := Θ.horn0) hpp hlc hbg) rfl rfl
     · exact hfire1
   · show (llpModel Θ).force
       (Form.instAll ts (.circ c.q (.pred c.head (headVars c.arity)))) v' Tm.fvar []
@@ -364,7 +364,8 @@ theorem Holds.prv_circ {q : Q} (hq : Θ.OnlyQ q) {φ : Form} (d : Holds RNone Θ
       · exact List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl)))
       · exact List.mem_cons.2 (Or.inl rfl)
   | ex t ht _ ih => exact .circE ih (.circI (.exI t ht (.var (List.mem_cons.2 (Or.inl rfl)))))
-  | @fire h ts hh hlen hts _ ih =>
+  | @fire h ts _ _ hh hlen hts _ hp hus ih =>
+      subst hp hus
       have hf : Prv Θ.forms (Form.foralls ts.length (.imp h.body h.headForm)) := by
         rw [hlen]; exact Program.prv_horn hh
       have hi := Prv.allEs ts hts hf

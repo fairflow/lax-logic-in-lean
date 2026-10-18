@@ -2,6 +2,7 @@
 """Keep a master bibliography in step with the documents that cite things.
 
     scripts/bib-sync.py BIB [--repo DIR] [--ref REF] [--exclude OTHER.bib] [--dry-run]
+    scripts/bib-sync.py BIB --add ID [--add ID ...] --citedin FILE [--dry-run]
 
 Scans the Markdown files (and the Verso paper sources) committed at REF
 (default origin/main) in the git repository DIR (default .) for DOIs and arXiv
@@ -12,6 +13,10 @@ author-year key (surnames of up to three authors, else FirstEtAl) and a
 duplicates an existing entry is skipped.  Entries already in BIB are never
 touched, so hand corrections and notes survive; the file stays sorted by key,
 with its header comment kept.
+
+With --add, no files are scanned: each ID (a DOI, or an arXiv identifier
+NNNN.NNNNN) is added as above, with `citedin` set to FILE (2026-10-17, for
+the CLP paper's references).
 
 Written 2026-10-15 for docs/references.bib (public) and, with --exclude
 pointing at the public list, for the private repository's
@@ -115,10 +120,19 @@ def main():
     titles = {norm(fields(e).get("title", "")) for e in entries(known)}
     keys = {key_of(e) for e in entries(known)}
 
-    files = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "--name-only", ref],
-                           capture_output=True, text=True, check=True).stdout.split()
+    adds = [args[i + 1] for i, a in enumerate(args) if a == "--add"]
+    files = [] if adds else subprocess.run(
+        ["git", "-C", repo, "ls-tree", "-r", "--name-only", ref],
+        capture_output=True, text=True, check=True).stdout.split()
     files = [f for f in files if f.endswith(".md") or f.startswith(SOURCES)]
     dois, arx = {}, {}
+    for x in adds:
+        src = {opt("--citedin", "?")}
+        if re.fullmatch(r'\d{4}\.\d{4,5}', x):
+            if x not in have_arx:
+                arx[x] = src
+        elif clean_doi(x).lower() not in have_doi:
+            dois[clean_doi(x)] = src
     for f in files:
         t = subprocess.run(["git", "-C", repo, "show", ref + ":" + f],
                            capture_output=True, text=True).stdout

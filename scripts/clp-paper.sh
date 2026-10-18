@@ -22,7 +22,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 PORT=${PORT:-8096}
 if [ "${1:-}" != "--serve-only" ]; then
-  scripts/verso-paper.sh CLPPaper CLPPaperMain.lean docs/clp-paper docs/clp-paper.pdf
+  # no blank recto pages in print (the rest of the layout is CLPPaper/Layout.lean)
+  VERSO_TEX_EXTRA='\let\cleardoublepage\clearpage' \
+    scripts/verso-paper.sh CLPPaper CLPPaperMain.lean docs/clp-paper docs/clp-paper.pdf
 fi
 case "${1:-}" in
   --open)

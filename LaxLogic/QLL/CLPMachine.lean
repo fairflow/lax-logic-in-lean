@@ -154,12 +154,12 @@ inductive Expand (isC : String → Bool) (Θ : Program) (ok : Form → Prop) :
       Expand isC Θ ok c (.hole (.and A B)) (.andI (.hole A) (.hole B)) c
   | orL {c : Form} {A B : Form} : Expand isC Θ ok c (.hole (.or A B)) (.orL (.hole A)) c
   | orR {c : Form} {A B : Form} : Expand isC Θ ok c (.hole (.or A B)) (.orR (.hole B)) c
-  | ex {c : Form} {A : Form} (t : Tm) : Tm.lcAt 0 t →
-      Expand isC Θ ok c (.hole (.exists_ A)) (.exI t (.hole (A.openAt 0 t))) c
-  | clause {c : Form} {cl : Clause} (w : Nat) (ts : List Tm) :
+  | ex {c : Form} {A B : Form} (t : Tm) : Tm.lcAt 0 t → B = A.openAt 0 t →
+      Expand isC Θ ok c (.hole (.exists_ A)) (.exI t (.hole B)) c
+  | clause {c : Form} {cl : Clause} {P : String} {us : List Tm} {B : Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = false → ts.length = cl.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      Expand isC Θ ok c (.hole (.pred cl.head (Tm.instAllList ts (headVars cl.arity))))
-        (.clause w ts (.hole (Form.instAll ts cl.body))) c
+      P = cl.head → us = Tm.instAllList ts (headVars cl.arity) → B = Form.instAll ts cl.body →
+      Expand isC Θ ok c (.hole (.pred P us)) (.clause w ts (.hole B)) c
   | andL {c c' : Form} {p p' q : PTree} :
       Expand isC Θ ok c p p' c' → Expand isC Θ ok c (.andI p q) (.andI p' q) c'
   | andR {c c' : Form} {p q q' : PTree} :
@@ -180,8 +180,9 @@ structure MState where
 
 /-- One SLD step: expand one leaf of one tree. -/
 inductive SLDStep (isC : String → Bool) (Θ : Program) (ok : Form → Prop) : MState → MState → Prop
-  | mk {c c' : Form} {p p' : PTree} (l r : List PTree) :
-      Expand isC Θ ok c p p' c' → SLDStep isC Θ ok ⟨c, l ++ p :: r⟩ ⟨c', l ++ p' :: r⟩
+  | mk {c c' : Form} {p p' : PTree} {F F' : List PTree} (l r : List PTree) :
+      Expand isC Θ ok c p p' c' → F = l ++ p :: r → F' = l ++ p' :: r →
+      SLDStep isC Θ ok ⟨c, F⟩ ⟨c', F'⟩
 
 /-- Runs. -/
 inductive SLDSteps (isC : String → Bool) (Θ : Program) (ok : Form → Prop) : MState → MState → Prop
@@ -201,13 +202,14 @@ variable {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
 theorem Expand.opens {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c') :
     ∀ l r : List Form, Step isC Θ ok ⟨c, l ++ (p.opens ++ r)⟩ ⟨c', l ++ (p'.opens ++ r)⟩ := by
   induction h with
-  | top => intro l r; exact Step.top
-  | cstr hB hok => intro l r; exact Step.cstr hB hok
-  | and => intro l r; exact Step.and
-  | orL => intro l r; exact Step.orL
-  | orR => intro l r; exact Step.orR
-  | ex t ht => intro l r; exact Step.ex t ht
-  | clause w ts hc hm hlen hts => intro l r; exact Step.clause w ts hc hm hlen hts
+  | top => intro l r; exact Step.top rfl rfl
+  | cstr hB hok => intro l r; exact Step.cstr hB hok rfl rfl
+  | and => intro l r; exact Step.and rfl rfl
+  | orL => intro l r; exact Step.orL rfl rfl
+  | orR => intro l r; exact Step.orR rfl rfl
+  | ex t ht hB => subst hB; intro l r; exact Step.ex t ht rfl rfl
+  | clause w ts hc hm hlen hts hP hus hB =>
+      subst hP hus hB; intro l r; exact Step.clause w ts hc hm hlen hts rfl rfl
   | @andL c₁' p₁ p₁' q₁ _ ih =>
       intro l r
       show Step isC Θ ok ⟨c, l ++ ((p₁.opens ++ q₁.opens) ++ r)⟩
@@ -230,7 +232,8 @@ theorem Expand.opens {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
 theorem SLDStep.goal_step {s s' : MState} (h : SLDStep isC Θ ok s s') :
     Step isC Θ ok s.goal s'.goal := by
   cases h with
-  | mk l r he =>
+  | mk l r he h₁ h₂ =>
+      subst h₁ h₂
       show Step isC Θ ok ⟨_, (l ++ _ :: r).flatMap PTree.opens⟩ ⟨_, (l ++ _ :: r).flatMap PTree.opens⟩
       simp only [List.flatMap_append, List.flatMap_cons]
       exact he.opens _ _
@@ -248,10 +251,11 @@ inductive PTyped (isC : String → Bool) (Θ : Program) : Form → PTree → Pro
   | orR {A B : Form} {p : PTree} : PTyped isC Θ B p → PTyped isC Θ (.or A B) (.orR p)
   | exI {A : Form} {p : PTree} (t : Tm) : Tm.lcAt 0 t →
       PTyped isC Θ (A.openAt 0 t) p → PTyped isC Θ (.exists_ A) (.exI t p)
-  | clause {c : Clause} {p : PTree} (w : Nat) (ts : List Tm) : Θ[w]? = some c →
-      c.modal = false → ts.length = c.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
+  | clause {c : Clause} {p : PTree} {P : String} {us : List Tm} (w : Nat) (ts : List Tm) :
+      Θ[w]? = some c → c.modal = false → ts.length = c.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
       PTyped isC Θ (Form.instAll ts c.body) p →
-      PTyped isC Θ (.pred c.head (Tm.instAllList ts (headVars c.arity))) (.clause w ts p)
+      P = c.head → us = Tm.instAllList ts (headVars c.arity) →
+      PTyped isC Θ (.pred P us) (.clause w ts p)
 
 theorem Expand.typed {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c') :
     ∀ {S : Form}, PTyped isC Θ S p → PTyped isC Θ S p' := by
@@ -261,8 +265,10 @@ theorem Expand.typed {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
   | and => intro S hp; cases hp; exact .andI (.hole _) (.hole _)
   | orL => intro S hp; cases hp; exact .orL (.hole _)
   | orR => intro S hp; cases hp; exact .orR (.hole _)
-  | ex t ht => intro S hp; cases hp; exact .exI t ht (.hole _)
-  | clause w ts hc hm hlen hts => intro S hp; cases hp; exact .clause w ts hc hm hlen hts (.hole _)
+  | ex t ht hB => subst hB; intro S hp; cases hp; exact .exI t ht (.hole _)
+  | clause w ts hc hm hlen hts hP hus hB =>
+      subst hP hus hB
+      intro S hp; cases hp; exact .clause w ts hc hm hlen hts (.hole _) rfl rfl
   | andL _ ih => intro S hp; cases hp with | andI h₁ h₂ => exact .andI (ih h₁) h₂
   | andR _ ih => intro S hp; cases hp with | andI h₁ h₂ => exact .andI h₁ (ih h₂)
   | inOrL _ ih => intro S hp; cases hp with | orL h₁ => exact .orL (ih h₁)
@@ -270,7 +276,8 @@ theorem Expand.typed {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
   | inEx _ ih => intro S hp; cases hp with | exI _ ht h₁ => exact .exI _ ht (ih h₁)
   | inClause _ ih =>
       intro S hp
-      cases hp with | clause _ _ hc hm hlen hts h₁ => exact .clause _ _ hc hm hlen hts (ih h₁)
+      cases hp with
+      | clause _ _ hc hm hlen hts h₁ hP hus => exact .clause _ _ hc hm hlen hts (ih h₁) hP hus
 
 /-- A closed, typed tree is a `CProof` of its goal. -/
 theorem PTree.close_typed {S : Form} {p : PTree} (hp : PTyped isC Θ S p) :
@@ -310,13 +317,13 @@ theorem PTree.close_typed {S : Form} {p : PTree} (hp : PTyped isC Θ S p) :
       | some q₁ =>
         simp only [PTree.close, hp₁, Option.some.injEq] at h
         subst h; exact .exI t ht (ih hp₁)
-  | @clause _ p₁ w ts hc hm hlen hts _ ih =>
+  | @clause _ p₁ _ _ w ts hc hm hlen hts _ hP hus ih =>
       intro q h
       cases hp₁ : p₁.close with
       | none => simp [PTree.close, hp₁] at h
       | some q₁ =>
         simp only [PTree.close, hp₁, Option.some.injEq] at h
-        subst h; exact .clause w ts hc hm hlen hts (ih hp₁)
+        subst h; exact .clause w ts hc hm hlen hts (ih hp₁) hP hus
 
 /-! ### Theorem 9.4 as a step invariant: the store is `c₀ ∧ store` -/
 
@@ -355,7 +362,7 @@ theorem Expand.store {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p' c
 theorem SLDStep.inv {s s' : MState} (h : SLDStep isC Θ ok s s') :
     ∃ l r p p' c c', s = ⟨c, l ++ p :: r⟩ ∧ s' = ⟨c', l ++ p' :: r⟩ ∧ Expand isC Θ ok c p p' c' := by
   cases h with
-  | mk l r he => exact ⟨l, r, _, _, _, _, rfl, rfl, he⟩
+  | mk l r he h₁ h₂ => subst h₁ h₂; exact ⟨l, r, _, _, _, _, rfl, rfl, he⟩
 
 /-- A step from a singleton forest stays a singleton forest. -/
 theorem SLDStep.single {c : Form} {p : PTree} {s' : MState} (h : SLDStep isC Θ ok ⟨c, [p]⟩ s') :
@@ -460,13 +467,13 @@ inductive ExpandA (Θ : Program) (q : Q) : ATree → ATree → Prop
   | and {A B : Form} : ExpandA Θ q (.hole (.and A B)) (.andC (.hole A) (.hole B))
   | orL {A B : Form} : ExpandA Θ q (.hole (.or A B)) (.orL (.hole A))
   | orR {A B : Form} : ExpandA Θ q (.hole (.or A B)) (.orR (.hole B))
-  | ex {A : Form} (t : Tm) : Tm.lcAt 0 t →
-      ExpandA Θ q (.hole (.exists_ A)) (.exC t (.hole (A.openAt 0 t)))
-  | clause {cl : Clause} (w : Nat) (ts : List Tm) :
+  | ex {A B : Form} (t : Tm) : Tm.lcAt 0 t → B = A.openAt 0 t →
+      ExpandA Θ q (.hole (.exists_ A)) (.exC t (.hole B))
+  | clause {cl : Clause} {P : String} {us : List Tm} {B : Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = true → cl.q = q → ts.length = cl.arity →
       (∀ t ∈ ts, Tm.lcAt 0 t) →
-      ExpandA Θ q (.hole (.pred cl.head (Tm.instAllList ts (headVars cl.arity))))
-        (.impC w ts (.hole (Form.instAll ts cl.body)))
+      P = cl.head → us = Tm.instAllList ts (headVars cl.arity) → B = Form.instAll ts cl.body →
+      ExpandA Θ q (.hole (.pred P us)) (.impC w ts (.hole B))
   | andL {p p' r : ATree} : ExpandA Θ q p p' → ExpandA Θ q (.andC p r) (.andC p' r)
   | andR {p r r' : ATree} : ExpandA Θ q r r' → ExpandA Θ q (.andC p r) (.andC p r')
   | inOrL {p p' : ATree} : ExpandA Θ q p p' → ExpandA Θ q (.orL p) (.orL p')
@@ -477,7 +484,8 @@ inductive ExpandA (Θ : Program) (q : Q) : ATree → ATree → Prop
 
 /-- One SLD◯ step on a forest. -/
 inductive SLDCStep (Θ : Program) (q : Q) : List ATree → List ATree → Prop
-  | mk {p p' : ATree} (l r : List ATree) : ExpandA Θ q p p' → SLDCStep Θ q (l ++ p :: r) (l ++ p' :: r)
+  | mk {p p' : ATree} {F F' : List ATree} (l r : List ATree) : ExpandA Θ q p p' →
+      F = l ++ p :: r → F' = l ++ p' :: r → SLDCStep Θ q F F'
 
 /-- Runs. -/
 inductive SLDCSteps (Θ : Program) (q : Q) : List ATree → List ATree → Prop
@@ -494,10 +502,11 @@ inductive PTypedA (Θ : Program) (q : Q) : Form → ATree → Prop
   | orR {A B : Form} {p : ATree} : PTypedA Θ q B p → PTypedA Θ q (.or A B) (.orR p)
   | exC {A : Form} {p : ATree} (t : Tm) : Tm.lcAt 0 t →
       PTypedA Θ q (A.openAt 0 t) p → PTypedA Θ q (.exists_ A) (.exC t p)
-  | impC {c : Clause} {p : ATree} (w : Nat) (ts : List Tm) :
+  | impC {c : Clause} {p : ATree} {P : String} {us : List Tm} (w : Nat) (ts : List Tm) :
       Θ[w]? = some c → c.modal = true → c.q = q → ts.length = c.arity →
       (∀ t ∈ ts, Tm.lcAt 0 t) → PTypedA Θ q (Form.instAll ts c.body) p →
-      PTypedA Θ q (.pred c.head (Tm.instAllList ts (headVars c.arity))) (.impC w ts p)
+      P = c.head → us = Tm.instAllList ts (headVars c.arity) →
+      PTypedA Θ q (.pred P us) (.impC w ts p)
 
 section
 variable {Θ : Program} {q : Q}
@@ -509,8 +518,10 @@ theorem ExpandA.typed {p p' : ATree} (h : ExpandA Θ q p p') :
   | and => intro S hp; cases hp; exact .andC (.hole _) (.hole _)
   | orL => intro S hp; cases hp; exact .orL (.hole _)
   | orR => intro S hp; cases hp; exact .orR (.hole _)
-  | ex t ht => intro S hp; cases hp; exact .exC t ht (.hole _)
-  | clause w ts hc hm hq hlen hts => intro S hp; cases hp; exact .impC w ts hc hm hq hlen hts (.hole _)
+  | ex t ht hB => subst hB; intro S hp; cases hp; exact .exC t ht (.hole _)
+  | clause w ts hc hm hq hlen hts hP hus hB =>
+      subst hP hus hB
+      intro S hp; cases hp; exact .impC w ts hc hm hq hlen hts (.hole _) rfl rfl
   | andL _ ih => intro S hp; cases hp with | andC h₁ h₂ => exact .andC (ih h₁) h₂
   | andR _ ih => intro S hp; cases hp with | andC h₁ h₂ => exact .andC h₁ (ih h₂)
   | inOrL _ ih => intro S hp; cases hp with | orL h₁ => exact .orL (ih h₁)
@@ -518,7 +529,8 @@ theorem ExpandA.typed {p p' : ATree} (h : ExpandA Θ q p p') :
   | inEx _ ih => intro S hp; cases hp with | exC _ ht h₁ => exact .exC _ ht (ih h₁)
   | inImp _ ih =>
       intro S hp
-      cases hp with | impC _ _ hc hm hq hlen hts h₁ => exact .impC _ _ hc hm hq hlen hts (ih h₁)
+      cases hp with
+      | impC _ _ hc hm hq hlen hts h₁ hP hus => exact .impC _ _ hc hm hq hlen hts (ih h₁) hP hus
 
 /-- A closed, typed abstract tree is an `AProof` of its goal. -/
 theorem ATree.close_typed {S : Form} {a : ATree} (ha : PTypedA Θ q S a) :
@@ -557,19 +569,19 @@ theorem ATree.close_typed {S : Form} {a : ATree} (ha : PTypedA Θ q S a) :
       | some b₁ =>
         simp only [ATree.close, hp₁, Option.some.injEq] at h
         subst h; exact .exC t ht (ih hp₁)
-  | @impC _ p₁ w ts hc hm hq hlen hts _ ih =>
+  | @impC _ p₁ _ _ w ts hc hm hq hlen hts _ hP hus ih =>
       intro b h
       cases hp₁ : p₁.close with
       | none => simp [ATree.close, hp₁] at h
       | some b₁ =>
         simp only [ATree.close, hp₁, Option.some.injEq] at h
-        subst h; exact .impC w ts hc hm hq hlen hts (ih hp₁)
+        subst h; exact .impC w ts hc hm hq hlen hts (ih hp₁) hP hus
 
 /-- Unpacking a step. -/
 theorem SLDCStep.inv {F F' : List ATree} (h : SLDCStep Θ q F F') :
     ∃ l r p p', F = l ++ p :: r ∧ F' = l ++ p' :: r ∧ ExpandA Θ q p p' := by
   cases h with
-  | mk l r he => exact ⟨l, r, _, _, rfl, rfl, he⟩
+  | mk l r he h₁ h₂ => exact ⟨l, r, _, _, h₁, h₂, he⟩
 
 /-- A step from a singleton forest stays a singleton forest. -/
 theorem SLDCStep.single {a : ATree} {F' : List ATree} (h : SLDCStep Θ q [a] F') :
@@ -630,14 +642,17 @@ theorem Expand.toA (q : Q) (hH : Θ.HeadsOK isC) {c c' : Form} {p p' : PTree}
   | and => exact .and
   | orL => exact .orL
   | orR => exact .orR
-  | ex t ht =>
+  | ex t ht hB =>
+      subst hB
       show ExpandA _ _ (.hole (.exists_ (Form.strip isC _))) (.exC t (.hole ((Form.openAt 0 t _).strip isC)))
-      rw [Form.strip_openAt]; exact .ex t ht
-  | @clause cl w ts hc hm hlen hts =>
+      rw [Form.strip_openAt]; exact .ex t ht rfl
+  | @clause cl _ _ _ w ts hc hm hlen hts hP hus hB =>
+      subst hP hus hB
       show ExpandA _ _ (.hole ((Form.pred cl.head _).strip isC))
         (.impC w ts (.hole ((Form.instAll ts cl.body).strip isC)))
       rw [Form.strip_pred_of _ (hH cl (List.mem_of_getElem? hc)), Form.strip_instAll]
       exact .clause (cl := cl.abs isC q) w ts (Program.abs_getElem? hc) rfl rfl hlen hts
+        rfl rfl rfl
   | andL _ ih => exact .andL ih
   | andR _ ih => exact .andR ih
   | inOrL _ ih => exact .inOrL ih
@@ -649,10 +664,11 @@ theorem Expand.toA (q : Q) (hH : Θ.HeadsOK isC) {c c' : Form} {p p' : PTree}
 theorem SLDStep.toA (q : Q) (hH : Θ.HeadsOK isC) {s s' : MState} (h : SLDStep isC Θ ok s s') :
     SLDCStep (Θ.abs isC q) q (s.forest.map (PTree.toA isC)) (s'.forest.map (PTree.toA isC)) := by
   cases h with
-  | mk l r he =>
+  | mk l r he h₁ h₂ =>
+      subst h₁ h₂
       show SLDCStep _ _ ((l ++ _ :: r).map _) ((l ++ _ :: r).map _)
       simp only [List.map_append, List.map_cons]
-      exact .mk _ _ (he.toA q hH)
+      exact .mk _ _ (he.toA q hH) rfl rfl
 
 theorem SLDSteps.toA (q : Q) (hH : Θ.HeadsOK isC) {s s' : MState} (h : SLDSteps isC Θ ok s s') :
     SLDCSteps (Θ.abs isC q) q (s.forest.map (PTree.toA isC)) (s'.forest.map (PTree.toA isC)) := by
@@ -674,11 +690,12 @@ inductive Base (isC : String → Bool) (Θ : Program) (ok : Form → Prop) :
   | and {c A B : Form} : Base isC Θ ok c (.and A B) [A, B] c
   | orL {c A B : Form} : Base isC Θ ok c (.or A B) [A] c
   | orR {c A B : Form} : Base isC Θ ok c (.or A B) [B] c
-  | ex {c A : Form} (t : Tm) : Tm.lcAt 0 t → Base isC Θ ok c (.exists_ A) [A.openAt 0 t] c
-  | clause {c : Form} {cl : Clause} (w : Nat) (ts : List Tm) :
+  | ex {c A B : Form} (t : Tm) : Tm.lcAt 0 t → B = A.openAt 0 t →
+      Base isC Θ ok c (.exists_ A) [B] c
+  | clause {c : Form} {cl : Clause} {P : String} {us : List Tm} {B : Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = false → ts.length = cl.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      Base isC Θ ok c (.pred cl.head (Tm.instAllList ts (headVars cl.arity)))
-        [Form.instAll ts cl.body] c
+      P = cl.head → us = Tm.instAllList ts (headVars cl.arity) → B = Form.instAll ts cl.body →
+      Base isC Θ ok c (.pred P us) [B] c
 
 section
 variable {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
@@ -687,13 +704,14 @@ variable {isC : String → Bool} {Θ : Program} {ok : Form → Prop}
 theorem _root_.LaxLogic.QLL.Step.base {g g' : Goal} (h : Step isC Θ ok g g') :
     ∃ l r S new, g.gs = l ++ S :: r ∧ g'.gs = l ++ (new ++ r) ∧ Base isC Θ ok g.c S new g'.c := by
   cases h with
-  | cstr hB hok => exact ⟨_, _, _, [], rfl, rfl, .cstr hB hok⟩
-  | top => exact ⟨_, _, _, [], rfl, rfl, .top⟩
-  | orL => exact ⟨_, _, _, [_], rfl, rfl, .orL⟩
-  | orR => exact ⟨_, _, _, [_], rfl, rfl, .orR⟩
-  | and => exact ⟨_, _, _, [_, _], rfl, rfl, .and⟩
-  | ex t ht => exact ⟨_, _, _, [_], rfl, rfl, .ex t ht⟩
-  | clause w ts hc hm hlen hts => exact ⟨_, _, _, [_], rfl, rfl, .clause w ts hc hm hlen hts⟩
+  | cstr hB hok h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [], rfl, rfl, .cstr hB hok⟩
+  | top h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [], rfl, rfl, .top⟩
+  | orL h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .orL⟩
+  | orR h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .orR⟩
+  | and h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_, _], rfl, rfl, .and⟩
+  | ex t ht h₁ h₂ => subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .ex t ht rfl⟩
+  | clause w ts hc hm hlen hts h₁ h₂ =>
+      subst h₁ h₂; exact ⟨_, _, _, [_], rfl, rfl, .clause w ts hc hm hlen hts rfl rfl rfl⟩
 
 /-- A rule shape applied at a given open leaf of a tree is an expansion of the tree. -/
 theorem PTree.lift : ∀ (p : PTree) (l₁ r₁ : List Form) {S : Form} {new : List Form} {c c' : Form},
@@ -716,9 +734,9 @@ theorem PTree.lift : ∀ (p : PTree) (l₁ r₁ : List Form) {S : Form} {new : L
           | and => exact ⟨.andI (.hole _) (.hole _), .and, rfl⟩
           | orL => exact ⟨.orL (.hole _), .orL, rfl⟩
           | orR => exact ⟨.orR (.hole _), .orR, rfl⟩
-          | ex t ht => exact ⟨.exI t (.hole _), .ex t ht, rfl⟩
-          | clause w ts hc hm hlen hts =>
-              exact ⟨.clause w ts (.hole _), .clause w ts hc hm hlen hts, rfl⟩
+          | ex t ht hB => exact ⟨.exI t (.hole _), .ex t ht hB, rfl⟩
+          | clause w ts hc hm hlen hts hP hus hB =>
+              exact ⟨.clause w ts (.hole _), .clause w ts hc hm hlen hts hP hus hB, rfl⟩
   | .top, l₁, _, _, _, _, _, h, _ => by
       cases l₁ with
       | nil => exact nomatch h
@@ -781,7 +799,7 @@ theorem _root_.LaxLogic.QLL.Steps.lift {g g' : Goal} (h : Steps isC Θ ok g g') 
       subst hg
       obtain ⟨p₁, he, hp₁⟩ := Step.lift h₁
       obtain ⟨p', hrun, hp'⟩ := ih (c := g₁.c) (p := p₁) (by rw [hp₁])
-      exact ⟨p', .step (.mk [] [] he) hrun, hp'⟩
+      exact ⟨p', .step (.mk [] [] he rfl rfl) hrun, hp'⟩
 
 /-- Runs project: the other half of the correspondence with Table 2. -/
 theorem SLDSteps.goal {s s' : MState} (h : SLDSteps isC Θ ok s s') :
@@ -815,17 +833,17 @@ inductive ExpandAt (isC : String → Bool) (Θ : Program) (ok : Form → Prop) :
       ExpandAt isC Θ ok 0 c (.hole (.and A B)) (.andI (.hole A) (.hole B)) c
   | orL {c : Form} {A B : Form} : ExpandAt isC Θ ok 0 c (.hole (.or A B)) (.orL (.hole A)) c
   | orR {c : Form} {A B : Form} : ExpandAt isC Θ ok 0 c (.hole (.or A B)) (.orR (.hole B)) c
-  | ex {c : Form} {A : Form} (t : Tm) : Tm.lcAt 0 t →
-      ExpandAt isC Θ ok 0 c (.hole (.exists_ A)) (.exI t (.hole (A.openAt 0 t))) c
-  | clause {c : Form} {cl : Clause} (w : Nat) (ts : List Tm) :
+  | ex {c : Form} {A B : Form} (t : Tm) : Tm.lcAt 0 t → B = A.openAt 0 t →
+      ExpandAt isC Θ ok 0 c (.hole (.exists_ A)) (.exI t (.hole B)) c
+  | clause {c : Form} {cl : Clause} {P : String} {us : List Tm} {B : Form} (w : Nat) (ts : List Tm) :
       Θ[w]? = some cl → cl.modal = false → ts.length = cl.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
-      ExpandAt isC Θ ok 0 c (.hole (.pred cl.head (Tm.instAllList ts (headVars cl.arity))))
-        (.clause w ts (.hole (Form.instAll ts cl.body))) c
+      P = cl.head → us = Tm.instAllList ts (headVars cl.arity) → B = Form.instAll ts cl.body →
+      ExpandAt isC Θ ok 0 c (.hole (.pred P us)) (.clause w ts (.hole B)) c
   | andL {i : Nat} {c c' : Form} {p p' q : PTree} :
       ExpandAt isC Θ ok i c p p' c' → ExpandAt isC Θ ok i c (.andI p q) (.andI p' q) c'
-  | andR {i : Nat} {c c' : Form} {p q q' : PTree} :
-      ExpandAt isC Θ ok i c q q' c' →
-      ExpandAt isC Θ ok (p.opens.length + i) c (.andI p q) (.andI p q') c'
+  | andR {i j : Nat} {c c' : Form} {p q q' : PTree} :
+      ExpandAt isC Θ ok i c q q' c' → j = p.opens.length + i →
+      ExpandAt isC Θ ok j c (.andI p q) (.andI p q') c'
   | inOrL {i : Nat} {c c' : Form} {p p' : PTree} :
       ExpandAt isC Θ ok i c p p' c' → ExpandAt isC Θ ok i c (.orL p) (.orL p') c'
   | inOrR {i : Nat} {c c' : Form} {p p' : PTree} :
@@ -843,10 +861,10 @@ theorem ExpandAt.toExpand {i : Nat} {c c' : Form} {p p' : PTree}
   | and => exact .and
   | orL => exact .orL
   | orR => exact .orR
-  | ex t ht => exact .ex t ht
-  | clause w ts hc hm hlen hts => exact .clause w ts hc hm hlen hts
+  | ex t ht hB => exact .ex t ht hB
+  | clause w ts hc hm hlen hts hP hus hB => exact .clause w ts hc hm hlen hts hP hus hB
   | andL _ ih => exact .andL ih
-  | andR _ ih => exact .andR ih
+  | andR _ _ ih => exact .andR ih
   | inOrL _ ih => exact .inOrL ih
   | inOrR _ ih => exact .inOrR ih
   | inEx _ ih => exact .inEx ih
@@ -860,10 +878,10 @@ theorem Expand.exists_at {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p 
   | and => exact ⟨0, .and⟩
   | orL => exact ⟨0, .orL⟩
   | orR => exact ⟨0, .orR⟩
-  | ex t ht => exact ⟨0, .ex t ht⟩
-  | clause w ts hc hm hlen hts => exact ⟨0, .clause w ts hc hm hlen hts⟩
+  | ex t ht hB => exact ⟨0, .ex t ht hB⟩
+  | clause w ts hc hm hlen hts hP hus hB => exact ⟨0, .clause w ts hc hm hlen hts hP hus hB⟩
   | andL _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .andL hi⟩
-  | andR _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨_, .andR hi⟩
+  | andR _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨_, .andR hi rfl⟩
   | inOrL _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .inOrL hi⟩
   | inOrR _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .inOrR hi⟩
   | inEx _ ih => obtain ⟨i, hi⟩ := ih; exact ⟨i, .inEx hi⟩
@@ -882,16 +900,17 @@ theorem ExpandAt.delta {i : Nat} {c c' : Form} {p p' : PTree}
   | and => exact Or.inl ⟨rfl, fun _ => .and⟩
   | orL => exact Or.inl ⟨rfl, fun _ => .orL⟩
   | orR => exact Or.inl ⟨rfl, fun _ => .orR⟩
-  | ex t ht => exact Or.inl ⟨rfl, fun _ => .ex t ht⟩
-  | clause w ts hc hm hlen hts => exact Or.inl ⟨rfl, fun _ => .clause w ts hc hm hlen hts⟩
+  | ex t ht hB => exact Or.inl ⟨rfl, fun _ => .ex t ht hB⟩
+  | clause w ts hc hm hlen hts hP hus hB =>
+      exact Or.inl ⟨rfl, fun _ => .clause w ts hc hm hlen hts hP hus hB⟩
   | andL _ ih =>
       rcases ih with ⟨rfl, hd⟩ | ⟨B, ts, rfl, hd⟩
       · exact Or.inl ⟨rfl, fun d => .andL (hd d)⟩
       · exact Or.inr ⟨B, ts, rfl, fun d => .andL (hd d)⟩
-  | andR _ ih =>
+  | andR _ hj ih =>
       rcases ih with ⟨rfl, hd⟩ | ⟨B, ts, rfl, hd⟩
-      · exact Or.inl ⟨rfl, fun d => .andR (hd d)⟩
-      · exact Or.inr ⟨B, ts, rfl, fun d => .andR (hd d)⟩
+      · exact Or.inl ⟨rfl, fun d => .andR (hd d) hj⟩
+      · exact Or.inr ⟨B, ts, rfl, fun d => .andR (hd d) hj⟩
   | inOrL _ ih =>
       rcases ih with ⟨rfl, hd⟩ | ⟨B, ts, rfl, hd⟩
       · exact Or.inl ⟨rfl, fun d => .inOrL (hd d)⟩
@@ -941,26 +960,29 @@ theorem ExpandAt.diamond {i j : Nat} {c c₁ c₂ : Form} {p p₁ p₂ : PTree}
       | andL h₂' =>
           obtain ⟨p₃, c₃, c₃', i', j', e₁, e₂, hpe⟩ := ih h₂' hij
           exact ⟨.andI p₃ q, c₃, c₃', i', j', .andL e₁, .andL e₂, hpe⟩
-      | andR h₂' =>
+      | andR h₂' hj₂ =>
+          subst hj₂
           rcases h₁'.delta with ⟨rfl, d₁⟩ | ⟨B₁, ts₁, rfl, d₁⟩ <;>
             rcases h₂'.delta with ⟨rfl, d₂⟩ | ⟨B₂, ts₂, rfl, d₂⟩
-          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _), .andL (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _), .andL (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _), .andL (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _), .andL (d₁ _), PEq.swap_leaves _ _ _⟩
-  | @andR i c c₁ p q q₁ h₁' ih =>
+          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _) rfl, .andL (d₁ _), PEq.refl _⟩
+          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _) rfl, .andL (d₁ _), PEq.refl _⟩
+          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _) rfl, .andL (d₁ _), PEq.refl _⟩
+          · exact ⟨.andI p₁ _, _, _, _, _, .andR (d₂ _) rfl, .andL (d₁ _), PEq.swap_leaves _ _ _⟩
+  | @andR i k c c₁ p q q₁ h₁' hk ih =>
+      subst hk
       cases h₂ with
       | andL h₂' =>
           rcases h₁'.delta with ⟨rfl, d₁⟩ | ⟨B₁, ts₁, rfl, d₁⟩ <;>
             rcases h₂'.delta with ⟨rfl, d₂⟩ | ⟨B₂, ts₂, rfl, d₂⟩
-          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _), PEq.refl _⟩
-          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _), PEq.swap_leaves _ _ _⟩
-      | andR h₂' =>
+          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _) rfl, PEq.refl _⟩
+          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _) rfl, PEq.refl _⟩
+          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _) rfl, PEq.refl _⟩
+          · exact ⟨.andI _ q₁, _, _, _, _, .andL (d₂ _), .andR (d₁ _) rfl, PEq.swap_leaves _ _ _⟩
+      | andR h₂' hj₂ =>
+          subst hj₂
           obtain ⟨p₃, c₃, c₃', i', j', e₁, e₂, hpe⟩ :=
             ih h₂' (fun hh => hij (congrArg (p.opens.length + ·) hh))
-          exact ⟨.andI p p₃, c₃, c₃', _, _, .andR e₁, .andR e₂, hpe⟩
+          exact ⟨.andI p p₃, c₃, c₃', _, _, .andR e₁ rfl, .andR e₂ rfl, hpe⟩
   | inOrL h₁' ih =>
       cases h₂ with
       | inOrL h₂' =>
@@ -995,8 +1017,8 @@ theorem Expand.noPrune {c c' : Form} {p p' : PTree} (h : Expand isC Θ ok c p p'
   | and => exact .and
   | orL => exact .orL
   | orR => exact .orR
-  | ex t ht => exact .ex t ht
-  | clause w ts hc hm hlen hts => exact .clause w ts hc hm hlen hts
+  | ex t ht hB => exact .ex t ht hB
+  | clause w ts hc hm hlen hts hP hus hB => exact .clause w ts hc hm hlen hts hP hus hB
   | andL _ ih => exact .andL ih
   | andR _ ih => exact .andR ih
   | inOrL _ ih => exact .inOrL ih
@@ -1012,8 +1034,8 @@ theorem Expand.of_noPrune {c c' : Form} {p p' : PTree} (h : Expand isC Θ NoPrun
   | and => exact fun _ => .and
   | orL => exact fun _ => .orL
   | orR => exact fun _ => .orR
-  | ex t ht => exact fun _ => .ex t ht
-  | clause w ts hc hm hlen hts => exact fun _ => .clause w ts hc hm hlen hts
+  | ex t ht hB => exact fun _ => .ex t ht hB
+  | clause w ts hc hm hlen hts hP hus hB => exact fun _ => .clause w ts hc hm hlen hts hP hus hB
   | andL _ ih => exact fun hc => .andL (ih hc)
   | andR _ ih => exact fun hc => .andR (ih hc)
   | inOrL _ ih => exact fun hc => .inOrL (ih hc)
@@ -1051,7 +1073,7 @@ theorem SLDSteps.prv_c {s s' : MState} (h : SLDSteps isC Θ ok s s') : Prv [s'.c
 theorem SLDStep.noPrune {s s' : MState} (h : SLDStep isC Θ ok s s') :
     SLDStep isC Θ NoPrune s s' := by
   obtain ⟨l, r, p, p', c, c', rfl, rfl, he⟩ := h.inv
-  exact .mk l r he.noPrune
+  exact .mk l r he.noPrune rfl rfl
 
 theorem SLDSteps.noPrune {s s' : MState} (h : SLDSteps isC Θ ok s s') :
     SLDSteps isC Θ NoPrune s s' := by
@@ -1062,7 +1084,7 @@ theorem SLDSteps.noPrune {s s' : MState} (h : SLDSteps isC Θ ok s s') :
 theorem SLDStep.of_noPrune {s s' : MState} (h : SLDStep isC Θ NoPrune s s') (hc : ok s'.c) :
     SLDStep isC Θ ok s s' := by
   obtain ⟨l, r, p, p', c, c', rfl, rfl, he⟩ := h.inv
-  exact .mk l r (he.of_noPrune hc)
+  exact .mk l r (he.of_noPrune hc) rfl rfl
 
 /-- An unpruned run whose final store passes `ok` is a pruned run. -/
 theorem SLDSteps.of_noPrune {s s' : MState} (h : SLDSteps isC Θ NoPrune s s') (hup : OkUp ok)

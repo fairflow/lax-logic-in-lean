@@ -33,6 +33,15 @@ on:
       - '!**/*.md'
       - 'README.md'
       - 'docs/status-ledger.md'
+      # The papers are outside defaultTargets, so this build never compiles
+      # them; paper-pages.yml builds a paper whose sources change (2026-10-15).
+      - '!CLPPaper/**'
+      - '!CLPPaperMain.lean'
+      - '!LaxPaper/**'
+      - '!LaxPaperMain.lean'
+      - '!CurryPaper/**'
+      - '!CurryPaperMain.lean'
+      - '!.github/workflows/paper-pages.yml'
   workflow_dispatch:
   # The weekly full check (Matthew, 2026-10-14): the LJF◯ chain and the
   # lean-certify regression test, which pull requests build only when they

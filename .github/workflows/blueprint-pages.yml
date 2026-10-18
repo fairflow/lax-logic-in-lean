@@ -95,6 +95,9 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: _out/site/html-multi
+          # Kept, not the default single day: paper-pages.yml republishes one
+          # paper on top of the last deployed site, which it fetches from here.
+          retention-days: 90
 
   deploy:
     name: Deploy Pages

@@ -61,9 +61,10 @@ theorem Prv.renameI (a b : String) {Γ : List Form} {A : Form} (h : Prv Γ A) :
   | impE _ _ ih₁ ih₂ => exact .impE ih₁ ih₂
   | circI _ ih => exact .circI ih
   | circE _ _ ih₁ ih₂ => exact .circE ih₁ ih₂
-  | allE t ht _ ih =>
+  | allE t ht _ hB ih =>
+      subst hB
       rw [Form.renameI_openAt]
-      exact .allE _ (Tm.lcAt_renameI a b 0 t ht) ih
+      exact .allE _ (Tm.lcAt_renameI a b 0 t ht) ih rfl
   | exI t ht _ ih =>
       refine .exI (Tm.renameI a b t) (Tm.lcAt_renameI a b 0 t ht) ?_
       rw [← Form.renameI_openAt]

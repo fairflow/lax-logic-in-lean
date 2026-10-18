@@ -156,10 +156,12 @@ inductive ATyped (Θ : Program) (q : Q) : Form → AProof → Prop
   | orR {A B : Form} {p : AProof} : ATyped Θ q B p → ATyped Θ q (.or A B) (.orR p)
   | exC {A : Form} {p : AProof} (t : Tm) : Tm.lcAt 0 t → ATyped Θ q (A.openAt 0 t) p →
       ATyped Θ q (.exists_ A) (.exC t p)
-  | impC {c : Clause} {p : AProof} (w : Nat) (ts : List Tm) :
+  -- the instantiated head is carried by equation fields, not computed in the index
+  | impC {c : Clause} {p : AProof} {P : String} {us : List Tm} (w : Nat) (ts : List Tm) :
       Θ[w]? = some c → c.modal = true → c.q = q → ts.length = c.arity →
       (∀ t ∈ ts, Tm.lcAt 0 t) → ATyped Θ q (Form.instAll ts c.body) p →
-      ATyped Θ q (.pred c.head (Tm.instAllList ts (headVars c.arity))) (.impC w ts p)
+      P = c.head → us = Tm.instAllList ts (headVars c.arity) →
+      ATyped Θ q (.pred P us) (.impC w ts p)
 
 /-- Abstract proofs are proofs. -/
 theorem ATyped.prv {Θ : Program} {q : Q} {S : Form} {a : AProof} (h : ATyped Θ q S a) :
@@ -172,7 +174,8 @@ theorem ATyped.prv {Θ : Program} {q : Q} {S : Form} {a : AProof} (h : ATyped Θ
   | orL _ ih => exact .circE ih (.circI (.orI₁ .hd))
   | orR _ ih => exact .circE ih (.circI (.orI₂ .hd))
   | exC t ht _ ih => exact .circE ih (.circI (.exI t ht .hd))
-  | @impC c p w ts hc hm hq hlen hts _ ih =>
+  | @impC c p _ _ w ts hc hm hq hlen hts _ hP hus ih =>
+      subst hP hus
       have hmem : c ∈ Θ := List.mem_of_getElem? hc
       have hlen' : ts.length = c.arity := hlen
       have hf : Prv Θ.forms (Form.foralls ts.length (.imp c.body c.headForm)) := by
@@ -210,11 +213,12 @@ theorem CTyped.toA (q : Q) (hH : Θ.HeadsOK isC) {S : Form} {p : CProof} (h : CT
   | orL _ ih => exact .orL ih
   | orR _ ih => exact .orR ih
   | exI t ht _ ih => exact .exC t ht (by rw [← Form.strip_openAt]; exact ih)
-  | @clause c p w ts hc hm hlen hts _ ih =>
+  | @clause c p _ _ w ts hc hm hlen hts _ hP hus ih =>
+      subst hP hus
       rw [Form.strip_pred_of _ (hH c (List.mem_of_getElem? hc))]
       exact .impC (c := c.abs isC q) w ts (Program.abs_getElem? hc) rfl rfl hlen hts
         (by show ATyped _ q (Form.instAll ts (c.body.strip isC)) p.toA
-            rw [← Form.strip_instAll]; exact ih)
+            rw [← Form.strip_instAll]; exact ih) rfl rfl
 
 /-- **Theorem 6.3**: `Θ ⊢ S` gives `Θ♯₂ ⊢ ◯S♯`. -/
 theorem CTyped.prv_abs (q : Q) (hH : Θ.HeadsOK isC) {S : Form} {p : CProof}
@@ -320,7 +324,8 @@ theorem CTyped.ctable_wit (hH : Θ.HeadsOK isC) {S : Form} {p : CProof} (h : CTy
   | orL _ ih => exact ih
   | orR _ ih => exact ih
   | exI t _ _ ih => exact ih
-  | @clause c p w ts hc _ _ _ _ _ =>
+  | @clause c p _ _ w ts hc _ _ _ _ hP hus _ =>
+      subst hP hus
       show (if isC c.head = true then _ else _) = Form.top
       rw [if_neg (by rw [hH c (List.mem_of_getElem? hc)]; decide)]
 
@@ -341,7 +346,8 @@ theorem CTyped.ext_toA (hH : Θ.HeadsOK isC) {S : Form} {p : CProof} (h : CTyped
       exact ⟨by show Wit.inr _ = Wit.inr _; rw [ih.1], (PEq.and_top _).trans ih.2⟩
   | exI t _ _ ih =>
       exact ⟨by show Wit.pack t _ = Wit.pack t _; rw [ih.1], (PEq.and_top _).trans ih.2⟩
-  | @clause c p w ts hc _ _ _ hp ih =>
+  | @clause c p _ _ w ts hc _ _ _ hp hP hus ih =>
+      subst hP hus
       refine ⟨rfl, ?_⟩
       have e : Θ.table isC w ts (p.toA.ext (Θ.table isC)).2 = p.active := by
         rw [ih.1]; unfold Program.table; rw [hc]; exact hp.ctable_wit hH
@@ -481,7 +487,8 @@ theorem ATyped.refine {Δ : List Form} {Θa : Program} {T : Nat → List Tm → 
   | exC t ht _ ih =>
       exact ⟨⟨ht, ih.1⟩, .impI (.impE ih.2.1.weaken_cons (.andE₁ .hd)),
         .impI (.exI t ht (.impE ih.2.2.weaken_cons .hd))⟩
-  | @impC c p w ts hc hm _ hlen hts _ ih =>
+  | @impC c p _ _ w ts hc hm _ hlen hts _ hP hus ih =>
+      subst hP hus
       refine ⟨trivial, ?_, .impI .hd⟩
       have hr := hR w c ts _ hc hm hlen hts ih.1
       exact .impI (.impE hr.weaken_cons (.andI (.andE₂ .hd) (.impE ih.2.1.weaken_cons (.andE₁ .hd))))

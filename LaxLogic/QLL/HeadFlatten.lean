@@ -59,11 +59,11 @@ theorem flat_to_orig : Prv [flat, eqRefl] orig := by
   have hfl : Prv [Form.pred "S" [.fvar "w"], flat, eqRefl]
       (.imp (.exists_ (.and (.pred "eq" [.fn "f" [.fvar "w"], .fn "f" [.bvar 0]])
         (.pred "S" [.bvar 0]))) (.pred "P" [.fn "f" [.fvar "w"]])) :=
-    Prv.allE (.fn "f" [.fvar "w"]) lc_fw (Prv.var (List.Mem.tail _ (List.Mem.head _)))
+    Prv.allE (.fn "f" [.fvar "w"]) lc_fw (Prv.var (List.Mem.tail _ (List.Mem.head _))) rfl
   have hrefl : Prv [Form.pred "S" [.fvar "w"], flat, eqRefl]
       (.pred "eq" [.fn "f" [.fvar "w"], .fn "f" [.fvar "w"]]) :=
     Prv.allE (.fn "f" [.fvar "w"]) lc_fw
-      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) rfl
   have hS : Prv [Form.pred "S" [.fvar "w"], flat, eqRefl] (.pred "S" [.fvar "w"]) :=
     Prv.var (List.Mem.head _)
   exact Prv.impE hfl (Prv.exI (.fvar "w") trivial (Prv.andI hrefl hS))
@@ -87,20 +87,20 @@ theorem orig_to_flat : Prv [orig, eqSubst] flat := by
       orig, eqSubst]
       (.imp (.pred "S" [.fvar "u"]) (.pred "P" [.fn "f" [.fvar "u"]])) :=
     Prv.allE (.fvar "u") trivial
-      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) rfl
   have hsub1 : Prv [Form.and (.pred "eq" [.fvar "w", .fn "f" [.fvar "u"]]) (.pred "S" [.fvar "u"]),
       Form.exists_ (.and (.pred "eq" [.fvar "w", .fn "f" [.bvar 0]]) (.pred "S" [.bvar 0])),
       orig, eqSubst]
       (.forall_ (.imp (.pred "eq" [.fvar "w", .bvar 0])
         (.imp (.pred "P" [.bvar 0]) (.pred "P" [.fvar "w"])))) :=
     Prv.allE (.fvar "w") trivial
-      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))) rfl
   have hsub : Prv [Form.and (.pred "eq" [.fvar "w", .fn "f" [.fvar "u"]]) (.pred "S" [.fvar "u"]),
       Form.exists_ (.and (.pred "eq" [.fvar "w", .fn "f" [.bvar 0]]) (.pred "S" [.bvar 0])),
       orig, eqSubst]
       (.imp (.pred "eq" [.fvar "w", .fn "f" [.fvar "u"]])
         (.imp (.pred "P" [.fn "f" [.fvar "u"]]) (.pred "P" [.fvar "w"]))) :=
-    Prv.allE (.fn "f" [.fvar "u"]) lc_fu hsub1
+    Prv.allE (.fn "f" [.fvar "u"]) lc_fu hsub1 rfl
   exact Prv.impE (Prv.impE hsub (Prv.andE₁ h)) (Prv.impE horig (Prv.andE₂ h))
 
 /-! ## The same with a modal head, and the same two axioms -/
@@ -122,11 +122,11 @@ theorem flat_to_orig_circ (q : Q) : Prv [flatC q, eqRefl] (origC q) := by
   have hfl : Prv [Form.pred "S" [.fvar "w"], flatC q, eqRefl]
       (.imp (.exists_ (.and (.pred "eq" [.fn "f" [.fvar "w"], .fn "f" [.bvar 0]])
         (.pred "S" [.bvar 0]))) (.circ q (.pred "P" [.fn "f" [.fvar "w"]]))) :=
-    Prv.allE (.fn "f" [.fvar "w"]) lc_fw (Prv.var (List.Mem.tail _ (List.Mem.head _)))
+    Prv.allE (.fn "f" [.fvar "w"]) lc_fw (Prv.var (List.Mem.tail _ (List.Mem.head _))) rfl
   have hrefl : Prv [Form.pred "S" [.fvar "w"], flatC q, eqRefl]
       (.pred "eq" [.fn "f" [.fvar "w"], .fn "f" [.fvar "w"]]) :=
     Prv.allE (.fn "f" [.fvar "w"]) lc_fw
-      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) rfl
   have hS : Prv [Form.pred "S" [.fvar "w"], flatC q, eqRefl] (.pred "S" [.fvar "w"]) :=
     Prv.var (List.Mem.head _)
   exact Prv.impE hfl (Prv.exI (.fvar "w") trivial (Prv.andI hrefl hS))
@@ -150,20 +150,20 @@ theorem orig_to_flat_circ (q : Q) : Prv [origC q, eqSubst] (flatC q) := by
       origC q, eqSubst]
       (.imp (.pred "S" [.fvar "u"]) (.circ q (.pred "P" [.fn "f" [.fvar "u"]]))) :=
     Prv.allE (.fvar "u") trivial
-      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) rfl
   have hsub1 : Prv [Form.and (.pred "eq" [.fvar "w", .fn "f" [.fvar "u"]]) (.pred "S" [.fvar "u"]),
       Form.exists_ (.and (.pred "eq" [.fvar "w", .fn "f" [.bvar 0]]) (.pred "S" [.bvar 0])),
       origC q, eqSubst]
       (.forall_ (.imp (.pred "eq" [.fvar "w", .bvar 0])
         (.imp (.pred "P" [.bvar 0]) (.pred "P" [.fvar "w"])))) :=
     Prv.allE (.fvar "w") trivial
-      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))) rfl
   have hsub : Prv [Form.and (.pred "eq" [.fvar "w", .fn "f" [.fvar "u"]]) (.pred "S" [.fvar "u"]),
       Form.exists_ (.and (.pred "eq" [.fvar "w", .fn "f" [.bvar 0]]) (.pred "S" [.bvar 0])),
       origC q, eqSubst]
       (.imp (.pred "eq" [.fvar "w", .fn "f" [.fvar "u"]])
         (.imp (.pred "P" [.fn "f" [.fvar "u"]]) (.pred "P" [.fvar "w"]))) :=
-    Prv.allE (.fn "f" [.fvar "u"]) lc_fu hsub1
+    Prv.allE (.fn "f" [.fvar "u"]) lc_fu hsub1 rfl
   have hPf : Prv [Form.and (.pred "eq" [.fvar "w", .fn "f" [.fvar "u"]]) (.pred "S" [.fvar "u"]),
       Form.exists_ (.and (.pred "eq" [.fvar "w", .fn "f" [.bvar 0]]) (.pred "S" [.bvar 0])),
       origC q, eqSubst]

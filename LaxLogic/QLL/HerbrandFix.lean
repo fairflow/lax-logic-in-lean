@@ -18,7 +18,7 @@ namespace LaxLogic.QLL
 /-! ## Truth of Σ-formulas grows with the interpretation -/
 
 /-- `HTrue_mono`, under an environment of bound values. -/
-theorem HTrue_mono_aux {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p us → J p us)
+theorem HTrue_mono_aux {I J : String → List Tm → Prop} (hIJ : ∀ p ts, I p ts → J p ts)
     {S : Form} (hS : IsSigma S) :
     ∀ β : List Tm, (herbrand1 I).force S () Tm.fvar β → (herbrand1 J).force S () Tm.fvar β := by
   induction hS with
@@ -34,7 +34,7 @@ theorem HTrue_mono_aux {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p 
   | ex _ ih => intro β h; obtain ⟨d, hd, h⟩ := h; exact ⟨d, hd, ih (d :: β) h⟩
 
 /-- Σ-formulas are monotone in the interpretation. -/
-theorem HTrue_mono {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p us → J p us)
+theorem HTrue_mono {I J : String → List Tm → Prop} (hIJ : ∀ p ts, I p ts → J p ts)
     {S : Form} (hS : IsSigma S) (h : HTrue I S) : HTrue J S :=
   HTrue_mono_aux hIJ hS [] h
 
@@ -66,11 +66,11 @@ theorem Holds.isPP {φ : Form} (d : Holds R P φ) : IsPP φ := by
   | top => exact .top
   | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
   | ex t _ _ ih => exact .ex (IsPP.of_openAt _ 0 t ih)
-  | fire _ _ _ _ _ => exact .pred _ _
+  | fire _ _ _ _ _ _ _ => exact .pred _ _
 
 /-- `T_P` is monotone. -/
-theorem Tp_mono {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p us → J p us) :
-    ∀ p us, Tp R P I p us → Tp R P J p us := by
+theorem Tp_mono {I J : String → List Tm → Prop} (hIJ : ∀ p ts, I p ts → J p ts) :
+    ∀ p ts, Tp R P I p ts → Tp R P J p ts := by
   rintro p us (hr | ⟨h, hh, ts, hlen, hts, hb, hp, hus⟩)
   · exact Or.inl hr
   · exact Or.inr ⟨h, hh, ts, hlen, hts,
@@ -98,8 +98,8 @@ theorem HTrue_form_iff {I : String → List Tm → Prop} {h : Horn} (hW : h.WF) 
 /-- van Emden and Kowalski's theorem (§7): the pre-fixpoints of `T_P` are the
 Herbrand models of `P` (here: those containing `R`). -/
 theorem prefixpoint_iff_model (hP : ∀ h ∈ P, h.WF) {I : String → List Tm → Prop} :
-    (∀ p us, Tp R P I p us → I p us) ↔
-      (∀ p us, R p us → I p us) ∧ ∀ h ∈ P, HTrue I h.form := by
+    (∀ p ts, Tp R P I p ts → I p ts) ↔
+      (∀ p ts, R p ts → I p ts) ∧ ∀ h ∈ P, HTrue I h.form := by
   constructor
   · intro hI
     refine ⟨fun p us hr => hI p us (Or.inl hr), fun h hh => (HTrue_form_iff (hP h hh)).2 ?_⟩
@@ -121,13 +121,13 @@ theorem model_intersection (hP : ∀ h ∈ P, h.WF) {α : Type} (J : α → Stri
 
 /-- The least Herbrand model is the intersection of all Herbrand models (§5:
 their `D₂(P)` is the relation of `∩M(A)`). -/
-theorem LHM_iff_all_models (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
-    (p : String) (us : List Tm) :
-    LHM R P p us ↔ ∀ I : String → List Tm → Prop, (∀ p us, R p us → I p us) →
-      (∀ h ∈ P, HTrue I h.form) → I p us := by
+theorem LHM_iff_all_models (hR : ∀ p ts, R p ts → Tm.lcAtList 0 ts) (hP : ∀ h ∈ P, h.WF)
+    (p : String) (ts : List Tm) :
+    LHM R P p ts ↔ ∀ I : String → List Tm → Prop, (∀ p ts, R p ts → I p ts) →
+      (∀ h ∈ P, HTrue I h.form) → I p ts := by
   constructor
   · intro hl I hRI hM
-    exact LHM_least hR hP ((prefixpoint_iff_model hP).2 ⟨hRI, hM⟩) p us hl
+    exact LHM_least hR hP ((prefixpoint_iff_model hP).2 ⟨hRI, hM⟩) p ts hl
   · intro hall
     exact hall (LHM R P) (fun _ _ hr => .base hr) (fun _ hh => HTrue_LHM_form hP hh)
 
@@ -139,25 +139,25 @@ def Tpow (R : String → List Tm → Prop) (P : List Horn) : Nat → String → 
   | n + 1 => Tp R P (Tpow R P n)
 
 /-- `T_Pⁿ(∅) ⊆ T_Pⁿ⁺¹(∅)`. -/
-theorem Tpow_succ_mono : ∀ (n : Nat) p us, Tpow R P n p us → Tpow R P (n + 1) p us
+theorem Tpow_succ_mono : ∀ (n : Nat) p ts, Tpow R P n p ts → Tpow R P (n + 1) p ts
   | 0,     _, _,  h => (h : False).elim
   | n + 1, p, us, h => Tp_mono (Tpow_succ_mono n) p us h
 
 /-- The iterates `T_Pⁿ(∅)` increase with `n`. -/
-theorem Tpow_mono {m n : Nat} (hmn : m ≤ n) : ∀ p us, Tpow R P m p us → Tpow R P n p us := by
+theorem Tpow_mono {m n : Nat} (hmn : m ≤ n) : ∀ p ts, Tpow R P m p ts → Tpow R P n p ts := by
   induction hmn with
   | refl => exact fun _ _ h => h
   | step _ ih => exact fun p us h => Tpow_succ_mono _ p us (ih p us h)
 
 /-- Every iterate `T_Pⁿ(∅)` lies in the least model. -/
-theorem Tpow_le_LHM (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF) :
-    ∀ (n : Nat) p us, Tpow R P n p us → LHM R P p us
+theorem Tpow_le_LHM (hR : ∀ p ts, R p ts → Tm.lcAtList 0 ts) (hP : ∀ h ∈ P, h.WF) :
+    ∀ (n : Nat) p ts, Tpow R P n p ts → LHM R P p ts
   | 0,     _, _,  h => (h : False).elim
   | n + 1, p, us, h => (Tp_LHM hR hP p us).1 (Tp_mono (Tpow_le_LHM hR hP n) p us h)
 
 /-- `M_P = T_P↑ω`. -/
-theorem LHM_iff_Tpow (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
-    (p : String) (us : List Tm) : LHM R P p us ↔ ∃ n, Tpow R P n p us := by
+theorem LHM_iff_Tpow (hR : ∀ p ts, R p ts → Tm.lcAtList 0 ts) (hP : ∀ h ∈ P, h.WF)
+    (p : String) (ts : List Tm) : LHM R P p ts ↔ ∃ n, Tpow R P n p ts := by
   constructor
   · intro hl
     have key : ∀ {φ : Form}, Holds R P φ → ∃ n, HTrue (Tpow R P n) φ := by
@@ -174,14 +174,15 @@ theorem LHM_iff_Tpow (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h �
       | ex t ht _ ih =>
           obtain ⟨n, hn⟩ := ih
           exact ⟨n, HTrue_exists.2 ⟨t, ht, hn⟩⟩
-      | @fire h ts hh hlen hts _ ih =>
+      | @fire h ts _ _ hh hlen hts _ hp hus ih =>
+          subst hp hus
           obtain ⟨n, hn⟩ := ih
           exact ⟨n + 1, (HTrue_pred (Tm.lcAtList_instAllList ts h.args hts
             (by rw [hlen]; exact (hP h hh).2))).2 (Or.inr ⟨h, hh, ts, hlen, hts, hn, rfl, rfl⟩)⟩
-    obtain ⟨n, hn⟩ := key (φ := .pred p us) hl
+    obtain ⟨n, hn⟩ := key (φ := .pred p ts) hl
     exact ⟨n, (HTrue_pred (LHM_lc hR hP hl)).1 hn⟩
   · rintro ⟨n, hn⟩
-    exact Tpow_le_LHM hR hP n p us hn
+    exact Tpow_le_LHM hR hP n p ts hn
 
 /-! ## `M_P = lfp T_P`, in Mathlib's terms -/
 
@@ -192,7 +193,7 @@ def TpHom (R : String → List Tm → Prop) (P : List Horn) :
 
 /-- The least model is Mathlib's least fixpoint of `T_P`.  The only result of the Herbrand
 stage that uses `Classical.choice`, through `OrderHom.lfp`. -/
-theorem LHM_eq_lfp (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF) :
+theorem LHM_eq_lfp (hR : ∀ p ts, R p ts → Tm.lcAtList 0 ts) (hP : ∀ h ∈ P, h.WF) :
     LHM R P = OrderHom.lfp (TpHom R P) := by
   have e := OrderHom.map_lfp (TpHom R P)
   apply le_antisymm

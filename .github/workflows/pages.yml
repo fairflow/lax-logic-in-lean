@@ -34,12 +34,8 @@ on:
       - 'docs/claude-techniques.md'
       - 'docs/belief-draft.md'
       - 'paper/belief.pdf'
-      - 'CLPPaper/**'
-      - 'CLPPaperMain.lean'
-      - 'LaxPaper/**'
-      - 'LaxPaperMain.lean'
-      - 'CurryPaper/**'
-      - 'CurryPaperMain.lean'
+      # A paper's own sources (CLPPaper/, LaxPaper/, CurryPaper/) are checked
+      # by paper-pages.yml, which builds that paper alone (2026-10-15).
       - '.github/workflows/pages.yml'
       - '.github/workflows/blueprint-pages.yml'
   workflow_dispatch:

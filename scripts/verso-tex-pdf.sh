@@ -16,7 +16,7 @@ texdir=$1; out=$2
 export PATH=/Library/TeX/texbin:$PATH
 work=$texdir/build; mkdir -p "$work"; cp "$texdir/main.tex" "$work/main.tex"
 python3 - "$work/main.tex" <<'PY'
-import sys
+import sys, os
 p = sys.argv[1]; s = open(p, encoding='utf-8').read()
 s = s.replace(r'\setmonofont{DejaVu Sans Mono}',
   r'\setmonofont{DejaVuSansMono}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold, '
@@ -34,7 +34,9 @@ extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, 
   + r'\makeoddhead{headings}{}{\parbox{\textwidth}{\centering\versoStampLine\makebox[\textwidth]{{\slshape\rightmark}\hfill\thepage}}}{}' '\n'
   + r'\makeevenhead{headings}{}{\parbox{\textwidth}{\centering\versoStampLine\makebox[\textwidth]{\thepage\hfill{\slshape\leftmark}}}}{}' '\n'
   + r'\makeoddhead{plain}{}{\versoStampText}{}' '\n'
-  + r'\makeevenhead{plain}{}{\versoStampText}{}' '\n')
+  + r'\makeevenhead{plain}{}{\versoStampText}{}' '\n'
+  # an optional per-paper addition to the preamble (e.g. no blank recto pages)
+  + os.environ.get('VERSO_TEX_EXTRA', '') + '\n')
 s = s.replace('\\begin{document}', extra + '\\begin{document}', 1)
 open(p, 'w', encoding='utf-8').write(s)
 PY

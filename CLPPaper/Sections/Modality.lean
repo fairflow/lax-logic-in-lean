@@ -2,295 +2,306 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Cite
+import CLPPaper.Decl
 import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Math
+open CLPPaper CLPPaper.Math CLPPaper.Cite
 open LaxLogic.QLL LaxLogic.QLL.SLD
+open LaxLogic.QLL.BodyCirc LaxLogic.QLL.HeadFlatten
 
 #doc (Manual) "What the modality buys: placements and realisers" =>
 
-The draft places $`\bigcirc` in one position, the clause head.  This section asks
-what the other positions would do, and finds that the right notion for
-answering is not provability but the realiser: two provably equivalent
-formulas can have different realisers, and then a program is not the same
-program after rewriting one to the other.
+This section is new; the 1997 report has no counterpart.  The report places
+$`\bigcirc` in one position, the clause head, and a framework built on a
+modality invites the question whether its other positions mean anything, and
+whether they add to what programs can say or only repeat it.  Here the other
+positions are examined: in a clause
+body, over a conjunction, on one disjunct of a goal, and with constructors in
+the head.  The finding is that the right notion for these questions is not
+provability but the _realiser_, the value that extraction (Section 6) assigns:
+two provably equivalent formulas can have different realisers, and then a
+program is not the same program after one is rewritten into the other.  The
+section also proves the inclusion lemma, which compares derivations by the
+table entries they use.
 
-# `◯` in a clause body
+# The modality in a clause body
 
-Bodies are Σ-formulas, so $`\bigcirc` cannot occur in them.  What would it do?  The
-answer turns on the head.
+Bodies are Σ-formulas, so $`\bigcirc` cannot occur in them.  What would it do?
+The answer depends on the head.
 
-With a plain head, a body $`\bigcirc` implies the same clause with the $`\bigcirc` deleted:
+*With a plain head, a body $`\bigcirc` can be deleted:*
+$`(A \land \bigcirc_q B) \twoheadrightarrow P \vdash (A \land B) \twoheadrightarrow P`.
+
 {stmt}`BodyCirc.body_circ_to_plain`
 
-{docstring BodyCirc.body_circ_to_plain +allowMissing}
+{leanDecl BodyCirc.body_circ_to_plain}
 
-{srcLink}`BodyCirc.body_circ_to_plain`
-
-REFUTED converse: $`(A \land B) \supset P` does not prove $`(A \land \bigcirc B) \supset P`.  Two worlds
-$`w_0 \le w_1`, every arrow modal, nothing fallible, `A` everywhere, `B` and `P`
-at `w1` only.  So with a plain head a body $`\bigcirc` is strictly stronger: it lets a
-lax premise justify a non-lax conclusion — it *discharges* a constraint,
-which is exactly the fault of Proposition 6.6's second half, sound only under
-$`\vdash \bigcirc c`.  Read positively, $`\bigcirc B \supset P` says "if `B` is derivable in the
-abstraction, conclude `P` concretely": abstract derivability as a guard, a
-two-level program whose least-model theorem is OPEN.
+*REFUTED: the converse.*  $`(A \land B) \twoheadrightarrow P` does not prove
+$`(A \land \bigcirc B) \twoheadrightarrow P`.  The countermodel has two worlds
+$`w_0 \le w_1`, every arrow modal, nothing fallible, with $`A` true at both
+worlds and $`B` and $`P` at $`w_1` only.
 
 {stmt}`BodyCirc.not_prv_plain_to_body_circ`
 
-{docstring BodyCirc.not_prv_plain_to_body_circ +allowMissing}
+{leanDecl BodyCirc.not_prv_plain_to_body_circ}
 
-{srcLink}`BodyCirc.not_prv_plain_to_body_circ`
+So with a plain head a body $`\bigcirc` is strictly stronger.  It lets a lax
+premise justify a non-lax conclusion: it _discharges_ a constraint, which is
+exactly the fault of the second half of Proposition 6.6 (Section 6), sound
+only under $`\vdash \bigcirc c`.  Read positively,
+$`\bigcirc B \twoheadrightarrow P` says “if $`B` is derivable in the
+abstraction, conclude $`P` concretely”: abstract derivability as a guard, in a
+two-level program whose least-model theorem is OPEN.
 
-With a modal head the two forms are interderivable, because $`\bigcirc E` absorbs the
-body's $`\bigcirc`: $`(A \land B) \supset \bigcirc P \vdash (A \land \bigcirc B) \supset \bigcirc P`, and conversely.
+*With a modal head the two forms are interderivable,* because
+$`(\bigcirc E)` absorbs the body's $`\bigcirc`:
+$`(A \land B) \twoheadrightarrow \bigcirc_q P \vdash (A \land \bigcirc_q B) \twoheadrightarrow \bigcirc_q P`.
+The converse is `clause3` in the library.
 
 {stmt}`BodyCirc.clause4`
 
-{docstring BodyCirc.clause4 +allowMissing}
+{leanDecl BodyCirc.clause4}
 
-{srcLink}`BodyCirc.clause4`
+*The same, with the $`\bigcirc` under an existential,* the shape a body
+actually has:
 
-The same with the $`\bigcirc` under an existential, the shape a body actually has:
-$`\forall t. (\exists s. B s \land C s t) \supset \bigcirc P t \vdash \forall t. (\exists s. \bigcirc B s \land C s t) \supset \bigcirc P t`, and
-conversely.  So in an abstract program, whose heads are all modal, a body $`\bigcirc`
-adds nothing: it is `val`.
+$$`\forall t.\, \bigl(\exists s.\, B(s) \land C(s, t)\bigr) \twoheadrightarrow \bigcirc_q P(t) \;\;\vdash\;\; \forall t.\, \bigl(\exists s.\, \bigcirc_q B(s) \land C(s, t)\bigr) \twoheadrightarrow \bigcirc_q P(t),`
+
+the two clauses being `clEII` and `clEI` in Lean; the converse is
+`fo_ex_I_to_II`.  So in an abstract program, whose heads are all modal, a body
+$`\bigcirc` adds nothing: its realiser is $`\mathit{val}`.
 
 {stmt}`BodyCirc.fo_ex_II_to_I`
 
-{docstring BodyCirc.fo_ex_II_to_I +allowMissing}
+{leanDecl BodyCirc.fo_ex_II_to_I}
 
-{srcLink}`BodyCirc.fo_ex_II_to_I`
-
-$`\bigcirc \bigcirc A \dashv\vdash \bigcirc A`: nesting one modality on itself is not a layering device.  But
-$`\bigcirc` under $`\supset` and $`\bot` does create structure — the variable-free fragment of
-intuitionistic logic has two classes and gains infinitely many when $`\bigcirc` is
-added — so layers are to be sought in negative positions, not in depth.
+*Nesting does not layer:* $`\bigcirc_q \bigcirc_q A` and $`\bigcirc_q A` are
+interderivable from any context.  But $`\bigcirc` under $`\twoheadrightarrow`
+and $`\bot` does create structure (the variable-free fragment of intuitionistic
+logic has two classes up to provable equivalence and gains infinitely many when
+$`\bigcirc` is added), so layers are to be sought in negative positions, not
+in depth.
 
 {stmt}`BodyCirc.circ_circ_iff`
 
-{docstring BodyCirc.circ_circ_iff +allowMissing}
+{leanDecl BodyCirc.circ_circ_iff}
 
-{srcLink}`BodyCirc.circ_circ_iff`
+# The modality over a conjunction: interderivable, not the same realisers
 
-# `◯` over a conjunction: interderivable, not the same realisers
+$`\bigcirc (A \land B) \dashv\vdash \bigcirc A \land \bigcirc B` in QLL.  Under
+extraction the two sides have different types,
 
-$`\bigcirc (A \land B) \dashv\vdash \bigcirc A \land \bigcirc B` in QLL.  Under extraction the two sides have different
-types, $`C \times (|A| \times |B|)` against $`(C \times |A|) \times (C \times |B|)`: on the left one
-constraint may relate both witnesses, on the right each constraint sees only
-its own.  The two directions of the equivalence are the double strength
-$`\mathit{dstr} ((c_1,z_1),(c_2,z_2)) = (c_1 \land c_2, (z_1,z_2))` and the duplication
-`dup (c,(z₁,z₂)) = ((c,z₁),(c,z₂))`.
+$$`C \times (|A| \times |B|) \qquad\text{against}\qquad (C \times |A|) \times (C \times |B|):`
+
+on the left one constraint may relate both witnesses, on the right each
+constraint sees only its own.  The two directions of the equivalence are
+realised by the double strength and the duplication,
+
+$$`\mathit{dstr}\,((c_1, z_1), (c_2, z_2)) = (c_1 \land c_2, (z_1, z_2)), \qquad \mathit{dup}\,(c, (z_1, z_2)) = ((c, z_1), (c, z_2)).`
+
+*Splitting:* $`\bigcirc_q (A \land B) \vdash \bigcirc_q A \land \bigcirc_q B`.
 
 {stmt}`circ_and_split`
 
-{docstring circ_and_split +allowMissing}
+{leanDecl circ_and_split}
 
-{srcLink}`circ_and_split`
+*Joining:* $`\bigcirc_q A \land \bigcirc_q B \vdash \bigcirc_q (A \land B)`.
 
 {stmt}`circ_and_join`
 
-{docstring circ_and_join +allowMissing}
+{leanDecl circ_and_join}
 
-{srcLink}`circ_and_join`
-
-$`\mathit{dstr} \circ \mathit{dup}` is the identity up to $`\dashv\vdash`.
+*One composite is the identity:* $`\mathit{dstr} \circ \mathit{dup}` is the
+identity up to $`\mathit{WEq}`.
 
 {stmt}`dstr_dup`
 
-{docstring dstr_dup +allowMissing}
+{leanDecl dstr_dup}
 
-{srcLink}`dstr_dup`
-
-REFUTED: $`\mathit{dup} \circ \mathit{dstr}` is not; $`((\top,\star),(\bot,\star))` comes back with first
-component $`(\top \land \bot, \star)`.  A clause body cannot be regrouped this way without
-changing what is extracted.
+*REFUTED: the other composite is the identity.*
+$`\mathit{dup} \circ \mathit{dstr}` sends $`((\top, \star), (\bot, \star))` to a
+pair whose first component is $`(\top \land \bot, \star)`, not
+$`(\top, \star)` up to $`\mathit{WEq}`.  So a clause body cannot be regrouped
+this way without changing what is extracted.
 
 {stmt}`not_dup_dstr`
 
-{docstring not_dup_dstr +allowMissing}
+{leanDecl not_dup_dstr}
 
-{srcLink}`not_dup_dstr`
-
-Fig. 3's $`\land \bigcirc` is `dstr`: the second subgoal's constraint never sees the
-first's witness.  A constraint relating two subgoals' witnesses can live only
-in the table entry of the enclosing clause — a design property of the draft,
-now visible.
+*Fig. 3's $`\land\bigcirc` is $`\mathit{dstr}`:* the second subgoal's
+constraint never sees the first subgoal's witness.  A constraint relating two
+subgoals' witnesses can therefore live only in the table entry of the
+enclosing clause.  This is a design property of the 1997 report, made visible here.
 
 {stmt}`AProof.ext_andC`
 
-{docstring AProof.ext_andC +allowMissing}
-
-{srcLink}`AProof.ext_andC`
+{leanDecl AProof.ext_andC}
 
 # The inclusion lemma
 
-Two derivations of one $`\bigcirc S` can differ in the clause applications they make,
-and only there: the monad laws identify everything else.  The entries
-`(w, t̃, z)` a derivation summons fix its constraint parametrically in the
-table, and inclusion of entries gives entailment for every table.
+Two derivations of one $`\bigcirc S` can differ in the clause applications they
+make, and only there: the monad laws identify everything else.  The _entries_
+$`(w, \tilde{t}, z)` that a derivation uses (clause $`w` at instance
+$`\tilde{t}` with body witness $`z`) fix its extracted constraint
+parametrically in the table, and inclusion of entries gives entailment for
+every table.
 
-The table entries a derivation summons.
+*The table entries a derivation uses.*  This is a definition, so no statement
+is displayed.
 
 {stmt}`AProof.entries`
 
-{docstring AProof.entries +allowMissing}
+{leanDecl AProof.entries}
 
-{srcLink}`AProof.entries`
-
-If every entry `a` summons is summoned by `a'`, then `a'`'s extracted
-constraint entails `a`'s, for every table.  Depends on `propext` only.
+*The inclusion lemma.*  If every entry used by $`a` is used by $`a'`, then the
+constraint extracted from $`a'` entails the one extracted from $`a`, for every
+table $`T`.  It depends on `propext` only.
 
 {stmt}`AProof.ext_prv_of_entries_subset`
 
-{docstring AProof.ext_prv_of_entries_subset +allowMissing}
+{leanDecl AProof.ext_prv_of_entries_subset}
 
-{srcLink}`AProof.ext_prv_of_entries_subset`
-
-Equal entry sets give $`\dashv\vdash`.
+*Equal entry sets give $`\dashv\vdash`.*
 
 {stmt}`AProof.ext_peq_of_entries_eq`
 
-{docstring AProof.ext_peq_of_entries_eq +allowMissing}
-
-{srcLink}`AProof.ext_peq_of_entries_eq`
+{leanDecl AProof.ext_peq_of_entries_eq}
 
 This is what lets derivations be compared at the abstract level, before any
-constraint is looked at: prefer the derivation that summons fewer entries.
-Derivations differing only up to the monad laws are the same; derivations
+constraint is looked at: prefer the derivation that uses fewer entries.
+Derivations that differ only up to the monad laws are the same; derivations
 with incomparable entry sets cannot be ranked without the domain, and the
-two-world model says no abstract argument could rank them.
+two-world model says that no abstract argument could rank them.
 
 # Variable-only heads
 
 Definition 5.1 forbids constructors in heads.  Nothing is lost, given the
-equality axioms a constraint theory supplies — this is the first step of
-Clark's completed definition — and the same two axioms suffice under a modal
-head.
+equality axioms a constraint theory supplies; this is the first step of
+Clark's completed definition, and the same two axioms suffice under a modal
+head.  Write
 
-$`\forall x. (\exists y. x = f y \land S y) \supset P x` with $`\forall x. x = x` proves $`\forall y. S y \supset P(f y)`.
+$$`\mathit{orig} = \forall y.\, S(y) \twoheadrightarrow P(f(y)), \qquad \mathit{flat} = \forall x.\, \bigl(\exists y.\, x = f(y) \land S(y)\bigr) \twoheadrightarrow P(x),`
+
+$$`\mathit{eqRefl} = \forall x.\, x = x, \qquad \mathit{eqSubst} = \forall x\, y.\, x = y \twoheadrightarrow P(y) \twoheadrightarrow P(x),`
+
+where $`=` is an ordinary predicate symbol.
+
+*The flattened clause and reflexivity prove the original.*
 
 {stmt}`HeadFlatten.flat_to_orig`
 
-{docstring HeadFlatten.flat_to_orig +allowMissing}
+{leanDecl HeadFlatten.flat_to_orig}
 
-{srcLink}`HeadFlatten.flat_to_orig`
-
-$`\forall y. S y \supset P(f y)` with $`\forall x y. x = y \supset P y \supset P x` proves the flattening.
+*The original clause and substitutivity prove the flattened one.*
 
 {stmt}`HeadFlatten.orig_to_flat`
 
-{docstring HeadFlatten.orig_to_flat +allowMissing}
+{leanDecl HeadFlatten.orig_to_flat}
 
-{srcLink}`HeadFlatten.orig_to_flat`
-
-The same with a $`\bigcirc P(f y)` head and the same plain substitutivity axiom:
-$`\bigcirc E` lifts it.  So the fact is native to the $`\bigcirc`-free fragment and unchanged
-by $`\bigcirc`; what the constraint framework contributes is that `=` is a constraint
-solved in the domain rather than an algorithm wired into resolution.  This
-development has no Herbrand equality solver, so constructor heads are
-logically available and computationally not; the recommended design is
-constructor heads as surface syntax elaborated to variable heads and `=`
-constraints, with unification an untrusted oracle whose certificate is the
-substitution.
+*The same with a modal head*
+$`\mathit{orig}_q = \forall y.\, S(y) \twoheadrightarrow \bigcirc_q P(f(y))` and
+$`\mathit{flat}_q = \forall x.\, (\exists y.\, x = f(y) \land S(y)) \twoheadrightarrow \bigcirc_q P(x)`,
+and the same plain substitutivity axiom: $`(\bigcirc E)` lifts it.
 
 {stmt}`HeadFlatten.orig_to_flat_circ`
 
-{docstring HeadFlatten.orig_to_flat_circ +allowMissing}
+{leanDecl HeadFlatten.orig_to_flat_circ}
 
-{srcLink}`HeadFlatten.orig_to_flat_circ`
+So the fact is native to the $`\bigcirc`-free fragment and unchanged by
+$`\bigcirc`.  What the constraint framework contributes is that $`=` is a
+constraint solved in the domain rather than an algorithm wired into
+resolution.  This development has no Herbrand equality solver, so constructor
+heads are logically available and computationally not.  The recommended
+design is constructor heads as surface syntax, elaborated to variable heads
+and $`=` constraints, with unification an untrusted oracle whose certificate
+is the substitution.
 
 # Decorating a disjunct
 
-A goal may be a disjunction, and one disjunct may carry the modality while the
-other does not: $`A \lor \bigcirc B`, "either `A` outright, or `B` up to a constraint".
-Under an outer $`\bigcirc` the decoration collapses; as a plain goal it is a genuine
-weakening.
+A goal may be a disjunction one of whose disjuncts carries the modality:
+$`A \lor \bigcirc B`, “either $`A` outright, or $`B` up to a constraint”.
+Under an outer $`\bigcirc` the decoration collapses; as a plain goal it is a
+genuine weakening.
+
+*Collapse:* $`\bigcirc_q (A \lor \bigcirc_q B) \vdash \bigcirc_q (A \lor B)`.
 
 {stmt}`circ_or_circ_collapse`
 
-{docstring circ_or_circ_collapse +allowMissing}
+{leanDecl circ_or_circ_collapse}
 
-{srcLink}`circ_or_circ_collapse`
-
-$`\bigcirc (A \lor B) \vdash \bigcirc (A \lor \bigcirc B)`: under $`\bigcirc` the two goals are the same.
+*Expansion:* $`\bigcirc_q (A \lor B) \vdash \bigcirc_q (A \lor \bigcirc_q B)`.
+Under $`\bigcirc` the two goals are the same.
 
 {stmt}`circ_or_circ_expand`
 
-{docstring circ_or_circ_expand +allowMissing}
+{leanDecl circ_or_circ_expand}
 
-{srcLink}`circ_or_circ_expand`
+*Weakening:* $`A \lor B \vdash A \lor \bigcirc_q B`.
 
 {stmt}`or_to_or_circ`
 
-{docstring or_to_or_circ +allowMissing}
+{leanDecl or_to_or_circ}
 
-{srcLink}`or_to_or_circ`
-
-REFUTED converse: $`P \lor \bigcirc B` does not prove $`P \lor B`; in the two-world model the
-lax branch is the only one open.  So a plain decorated goal accepts the
-constraint-only route where the undecorated one does not.
+*REFUTED: the converse of weakening.*  $`P \lor \bigcirc B` does not prove
+$`P \lor B`: in the two-world model the lax branch is the only one open.  So a
+plain decorated goal accepts the constraint-only route where the undecorated
+one does not.
 
 {stmt}`BodyCirc.not_prv_or_circ_to_or`
 
-{docstring BodyCirc.not_prv_or_circ_to_or +allowMissing}
+{leanDecl BodyCirc.not_prv_or_circ_to_or}
 
-{srcLink}`BodyCirc.not_prv_or_circ_to_or`
+Under extraction a disjunction is a sum, and each branch's constraint sits
+inside its injection: the realiser of $`A \lor \bigcirc B` has type
+$`|A| + (C \times |B|)`, one branch free and one costing a constraint.  What
+makes a branch free is not that it applies no clauses but that every clause it
+applies has the table entry $`\top`.
 
-Under extraction a disjunction is a sum and each branch's constraint sits
-inside its injection: the realiser of $`A \lor \bigcirc B` is $`|A| + (C \times |B|)`, one
-branch free and one costing a constraint.  What makes a branch free is not
-that it applies no clauses but that every clause it applies has a $`\top` table
-entry.
-
-$`|\lor \bigcirc p| = (\pi _1|p| \land \top, \mathit{inl} \pi _2|p|)`: the branch's constraint travels with the
-injection.
+*Extraction at a left injection:*
+$`|{\lor}\bigcirc\, p| = (\pi_1|p| \land \top,\; \mathit{inl}\; \pi_2|p|)`; the
+branch's constraint travels with the injection.
 
 {stmt}`AProof.ext_orL`
 
-{docstring AProof.ext_orL +allowMissing}
+{leanDecl AProof.ext_orL}
 
-{srcLink}`AProof.ext_orL`
-
-A derivation whose summoned entries all have table value $`\top` extracts $`\top`.
+*A derivation whose entries all have table value $`\top` extracts $`\top`.*
 
 {stmt}`AProof.ext_top_of_pure`
 
-{docstring AProof.ext_top_of_pure +allowMissing}
+{leanDecl AProof.ext_top_of_pure}
 
-{srcLink}`AProof.ext_top_of_pure`
-
-A sound `once`: every other derivation's answer entails such a derivation's.
-Succeed on the free branch and no other branch can be more general — what
-Prolog's cut does by fiat and Andorra's quiet guards by entailment, obtained
-here from the type.
+*A sound “once”.*  Every other derivation's answer entails such a derivation's
+answer.  Succeed on the free branch, and no other branch can be more general:
+what Prolog's cut does by fiat, and the quiet guards of the Andorra Kernel
+Language {pcite}`Franzen1991` do by entailment, is obtained here from the type.
 
 {stmt}`AProof.once_of_pure`
 
-{docstring AProof.once_of_pure +allowMissing}
+{leanDecl AProof.once_of_pure}
 
-{srcLink}`AProof.once_of_pure`
-
-Kernel-run instance: $`Q(t) \subset R(t) \lor \exists s. B(s) \land t \ge s + 2` with `R`
-constraint-free.  The engine's first answer for `Q(z)` is $`\top` and its second
-is `B`'s constraint $`s \ge 5 \land z \ge s + 2`; the free branch extracts $`\top` under
-the $`\bigcirc` pass, and every other derivation's answer entails it.
+*A kernel-run instance.*  Take the program
+$`Q(t) \leftarrow R(t) \lor \exists s.\, B(s) \land t \ge s + 2`, with $`R`
+constraint-free and $`B(s) \leftarrow s \ge 5` (`exD` in Lean).  The engine's
+first answer for $`Q(z)` is $`\top`, and its second is $`B`'s constraint,
+$`s \ge 5 \land z \ge s + 2`.  The free branch extracts $`\top` under the
+$`\bigcirc` pass, and every other derivation's answer entails it.
 
 {stmt}`BodyCirc.extD_top`
 
-{docstring BodyCirc.extD_top +allowMissing}
-
-{srcLink}`BodyCirc.extD_top`
+{leanDecl BodyCirc.extD_top}
 
 # Placements not yet built
 
-A clause under the modality, $`\bigcirc (\land \Gamma \supset M)`, carries a constraint independent of
-the body witness; between it and the LLP clause lies a three-level hierarchy
-by where the constraint may depend, and such a clause fires only against a
-modal goal, which constrains clause order.  Negative occurrences, $`\lnot \bigcirc B`, read
-as negation as failure in the two-world model and are trivialised by the
-fallible world in the four-world one — so solvability and negation as failure
-are one frame parameter seen from two sides.  Both are stated with their
-cells and not built.
+A clause under the modality, $`\bigcirc (\bigwedge \Gamma \twoheadrightarrow M)`,
+carries a constraint independent of the body witness.  Between it and the
+clause of a lax logic program lies a three-level hierarchy according to what
+the constraint may depend on, and such a clause fires only against a modal
+goal, which constrains clause order.  Negative occurrences,
+$`\lnot \bigcirc B`, read as negation as failure in the two-world model and are
+trivialised by the fallible world in the four-world one, so solvability and
+negation as failure are one frame parameter seen from two sides.  Both are
+stated with their designed cells and not built (OPEN).

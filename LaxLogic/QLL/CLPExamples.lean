@@ -2,12 +2,15 @@
 # `LaxLogic.QLL.CLPExamples` — the draft's examples
 
 Examples 6.1 and 9.5, run by the engine inside the kernel (`runL`) and checked
-there, in both passes; the generated programs (adders, the mortgage program,
+there, in both passes; Example 9.5 step by step (`run95_*`), the running
+example of the CLP paper: its Table 2 run, SLD and SLD◯ runs state by state,
+`Θ♯`, and the extracted constraint; the generated programs (adders, the mortgage program,
 scheduling) used by `CLPBench` and `CLPWolfram`.  Write-up:
 `docs/qll-clp-writeup.md`, §9.
 -/
 import LaxLogic.QLL.CLPEngine
 import LaxLogic.QLL.CLPAbstract
+import LaxLogic.QLL.CLPMachine
 
 namespace LaxLogic.QLL.CLPExamples
 
@@ -83,6 +86,53 @@ theorem ex61_answer (r : ℚ) : (∃ σ, σ "z" = r ∧ CSat σ proof61.total) �
     refine ⟨raise (asg w61) "z" r, by simp [raise], CSat.of_holds cons61 ?_⟩
     exact upClosed_sound up61 (by rw [at61]; exact hr) (checkWitness_sound wit61)
 
+/-! ### Example 6.1 as the CLP paper displays it
+
+The program, the engine's proof tree, its total constraint, and the constraint
+extracted by the `◯` pass, each checked by the kernel, so that the paper's
+Section 9 shows nothing computed by hand.  `_v0` is the engine's fresh
+variable for the existential of `θ₂`. -/
+
+-- equality of trees, decided by the kernel in the checks below and in those of
+-- the running example
+deriving instance DecidableEq for CProof
+deriving instance DecidableEq for AProof
+deriving instance DecidableEq for SLD.PTree
+deriving instance DecidableEq for SLD.ATree
+deriving instance DecidableEq for Goal
+
+/-- The program as formulas. -/
+theorem run61_program : ex61.forms =
+    [.forall_ (.imp (.pred "geq" [.bvar 0, .fn "5" []]) (.pred "A1" [.bvar 0])),
+     .forall_ (.imp (.pred "geq" [.bvar 0, .fn "9" []]) (.pred "A2" [.bvar 0])),
+     .forall_ (.imp (.exists_ (.and (.pred "A1" [.bvar 0]) (.and (.pred "A2" [.bvar 0])
+        (.pred "geq" [.bvar 1, .fn "add" [.bvar 0, .fn "35" []]]))))
+        (.pred "B" [.bvar 0]))] := by
+  decide +kernel
+
+/-- The engine's proof tree for `B(z)`. -/
+theorem run61_tree : proof61 =
+    .clause 2 [.fvar "z"] (.exI (.fvar "_v0")
+      (.andI (.clause 0 [.fvar "_v0"] (.cstr "geq" [.fvar "_v0", .fn "5" []]))
+        (.andI (.clause 1 [.fvar "_v0"] (.cstr "geq" [.fvar "_v0", .fn "9" []]))
+          (.cstr "geq" [.fvar "z", .fn "add" [.fvar "_v0", .fn "35" []]])))) := by
+  decide +kernel
+
+/-- Its total constraint: the three constraint leaves. -/
+theorem run61_total : proof61.total =
+    .and (.pred "geq" [.fvar "_v0", .fn "5" []])
+      (.and (.pred "geq" [.fvar "_v0", .fn "9" []])
+        (.pred "geq" [.fvar "z", .fn "add" [.fvar "_v0", .fn "35" []]])) := by
+  decide +kernel
+
+/-- The constraint extracted from the abstract image of the tree (`ext61` proves
+it `⊣⊢` the total constraint). -/
+theorem run61_ext : (proof61.toA.ext (ex61.table isLinC)).1 =
+    .and (.and (.and (.and .top (.pred "geq" [.fvar "_v0", .fn "5" []]))
+        (.and (.and (.and .top (.pred "geq" [.fvar "_v0", .fn "9" []])) (.and .top .top)) .top)) .top)
+      (.and .top (.and .top (.pred "geq" [.fvar "z", .fn "add" [.fvar "_v0", .fn "35" []]]))) := by
+  decide +kernel
+
 /-! ## Example 9.5 -/
 
 def isC95 (B : String) : Bool := B == "c1" || B == "c2" || B == "c3" || B == "c4"
@@ -118,12 +168,12 @@ def P (i : Nat) : Form := .pred s!"P{i}" []
 /-- The draft's six steps: Rule 5, 2a, 3, 5, 1, 1. -/
 theorem steps95 : Steps isC95 ex95 (fun _ => True)
     ⟨.top, [goal95]⟩ ⟨.and (.and .top (c 1)) (c 3), []⟩ :=
-  .step (Step.clause (l := []) (r := []) (cl := θ3) 2 [] rfl rfl rfl (by simp)) <|
-  .step (Step.orL (l := []) (r := [])) <|
-  .step (Step.and (l := []) (r := [])) <|
-  .step (Step.clause (l := []) (r := [c 3]) (cl := θ1) 0 [] rfl rfl rfl (by simp)) <|
-  .step (Step.cstr (l := []) (r := [c 3]) rfl trivial) <|
-  .step (Step.cstr (l := []) (r := []) rfl trivial) <|
+  .step (Step.clause (l := []) (r := []) (cl := θ3) 2 [] rfl rfl rfl (by simp) rfl rfl) <|
+  .step (Step.orL (l := []) (r := []) rfl rfl) <|
+  .step (Step.and (l := []) (r := []) rfl rfl) <|
+  .step (Step.clause (l := []) (r := [c 3]) (cl := θ1) 0 [] rfl rfl rfl (by simp) rfl rfl) <|
+  .step (Step.cstr (l := []) (r := [c 3]) rfl trivial rfl rfl) <|
+  .step (Step.cstr (l := []) (r := []) rfl trivial rfl rfl) <|
   .refl _
 
 /-- **Example 9.5**, through Corollary 9.8. -/
@@ -165,6 +215,197 @@ theorem thm97_95 : ∃ p : CProof, CTyped isC95 ex95 goal95 p ∧
     PEq (.and (.and .top (c 1)) (c 3)) (p.toA.ext (ex95.table isC95)).1 :=
   thm_9_7 .ex heads95 steps95 (.pred _ _) (by decide)
 
+/-! ## The running example: Example 9.5, step by step
+
+The CLP paper follows Example 9.5 through its Sections 4–7: the program, its
+Table 2 run, the same run as SLD partial trees, the abstract program `Θ♯`, its
+SLD◯ run, and the constraint extracted at the end.  Every program, state, tree
+and constraint the paper shows for it is in a statement below, checked here. -/
+
+/-- The program, as formulas: `c₁ ⊃ P₁`, `c₂ ⊃ P₂`, `(P₁ ∧ c₃) ∨ (P₂ ∧ c₄) ⊃ Q`. -/
+theorem run95_program : ex95.forms =
+    [.imp (.pred "c1" []) (.pred "P1" []),
+     .imp (.pred "c2" []) (.pred "P2" []),
+     .imp (.or (.and (.pred "P1" []) (.pred "c3" [])) (.and (.pred "P2" []) (.pred "c4" [])))
+       (.pred "Q" [])] := by
+  decide +kernel
+
+/-- The third clause, split into Horn clauses by the indices of its body. -/
+theorem run95_horn : θ3.toHorn.map Horn.form =
+    [.imp (.and (.pred "P1" []) (.pred "c3" [])) (.pred "Q" []),
+     .imp (.and (.pred "P2" []) (.pred "c4" [])) (.pred "Q" [])] := by
+  decide +kernel
+
+/-- The draft's six steps as a Table 2 run without pruning, state by state. -/
+theorem run95_table2 :
+    Step isC95 ex95 SLD.NoPrune ⟨.top, [.pred "Q" []]⟩
+      ⟨.top, [.or (.and (.pred "P1" []) (.pred "c3" [])) (.and (.pred "P2" []) (.pred "c4" []))]⟩ ∧
+    Step isC95 ex95 SLD.NoPrune
+      ⟨.top, [.or (.and (.pred "P1" []) (.pred "c3" [])) (.and (.pred "P2" []) (.pred "c4" []))]⟩
+      ⟨.top, [.and (.pred "P1" []) (.pred "c3" [])]⟩ ∧
+    Step isC95 ex95 SLD.NoPrune ⟨.top, [.and (.pred "P1" []) (.pred "c3" [])]⟩
+      ⟨.top, [.pred "P1" [], .pred "c3" []]⟩ ∧
+    Step isC95 ex95 SLD.NoPrune ⟨.top, [.pred "P1" [], .pred "c3" []]⟩
+      ⟨.top, [.pred "c1" [], .pred "c3" []]⟩ ∧
+    Step isC95 ex95 SLD.NoPrune ⟨.top, [.pred "c1" [], .pred "c3" []]⟩
+      ⟨.and .top (.pred "c1" []), [.pred "c3" []]⟩ ∧
+    Step isC95 ex95 SLD.NoPrune ⟨.and .top (.pred "c1" []), [.pred "c3" []]⟩
+      ⟨.and (.and .top (.pred "c1" [])) (.pred "c3" []), []⟩ :=
+  ⟨Step.clause (l := []) (r := []) (cl := θ3) 2 [] rfl rfl rfl (by simp) rfl rfl,
+   Step.orL (l := []) (r := []) rfl rfl,
+   Step.and (l := []) (r := []) rfl rfl,
+   Step.clause (l := []) (r := [.pred "c3" []]) (cl := θ1) 0 [] rfl rfl rfl (by simp) rfl rfl,
+   Step.cstr (l := []) (r := [.pred "c3" []]) rfl trivial rfl rfl,
+   Step.cstr (l := []) (r := []) rfl trivial rfl rfl⟩
+
+/-- The proof tree the engine finds for `Q`, written out. -/
+theorem run95_tree : proof95 =
+    .clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" [])) (.cstr "c3" []))) := by
+  decide +kernel
+
+/-- The same run on SLD partial trees: each step expands one open leaf. -/
+theorem run95_sld :
+    SLD.SLDStep isC95 ex95 SLD.NoPrune ⟨.top, [.hole (.pred "Q" [])]⟩
+      ⟨.top, [.clause 2 [] (.hole (.or (.and (.pred "P1" []) (.pred "c3" []))
+        (.and (.pred "P2" []) (.pred "c4" []))))]⟩ ∧
+    SLD.SLDStep isC95 ex95 SLD.NoPrune
+      ⟨.top, [.clause 2 [] (.hole (.or (.and (.pred "P1" []) (.pred "c3" []))
+        (.and (.pred "P2" []) (.pred "c4" []))))]⟩
+      ⟨.top, [.clause 2 [] (.orL (.hole (.and (.pred "P1" []) (.pred "c3" []))))]⟩ ∧
+    SLD.SLDStep isC95 ex95 SLD.NoPrune
+      ⟨.top, [.clause 2 [] (.orL (.hole (.and (.pred "P1" []) (.pred "c3" []))))]⟩
+      ⟨.top, [.clause 2 [] (.orL (.andI (.hole (.pred "P1" [])) (.hole (.pred "c3" []))))]⟩ ∧
+    SLD.SLDStep isC95 ex95 SLD.NoPrune
+      ⟨.top, [.clause 2 [] (.orL (.andI (.hole (.pred "P1" [])) (.hole (.pred "c3" []))))]⟩
+      ⟨.top, [.clause 2 [] (.orL (.andI (.clause 0 [] (.hole (.pred "c1" [])))
+        (.hole (.pred "c3" []))))]⟩ ∧
+    SLD.SLDStep isC95 ex95 SLD.NoPrune
+      ⟨.top, [.clause 2 [] (.orL (.andI (.clause 0 [] (.hole (.pred "c1" [])))
+        (.hole (.pred "c3" []))))]⟩
+      ⟨.and .top (.pred "c1" []), [.clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" []))
+        (.hole (.pred "c3" []))))]⟩ ∧
+    SLD.SLDStep isC95 ex95 SLD.NoPrune
+      ⟨.and .top (.pred "c1" []), [.clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" []))
+        (.hole (.pred "c3" []))))]⟩
+      ⟨.and (.and .top (.pred "c1" [])) (.pred "c3" []),
+        [.clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" [])) (.cstr "c3" [])))]⟩ :=
+  ⟨.mk [] [] (.clause (cl := θ3) 2 [] rfl rfl rfl (by simp) rfl rfl rfl) rfl rfl,
+   .mk [] [] (.inClause .orL) rfl rfl,
+   .mk [] [] (.inClause (.inOrL .and)) rfl rfl,
+   .mk [] [] (.inClause (.inOrL (.andL (.clause (cl := θ1) 0 [] rfl rfl rfl (by simp) rfl rfl rfl))))
+     rfl rfl,
+   .mk [] [] (.inClause (.inOrL (.andL (.inClause (.cstr rfl trivial))))) rfl rfl,
+   .mk [] [] (.inClause (.inOrL (.andR (.cstr rfl trivial)))) rfl rfl⟩
+
+/-- The goals of the seven SLD states (the store, and the open leaves from left to
+right) are the seven states of the Table 2 run. -/
+theorem run95_goals :
+    [SLD.MState.mk .top [.hole (.pred "Q" [])],
+     ⟨.top, [.clause 2 [] (.hole (.or (.and (.pred "P1" []) (.pred "c3" []))
+        (.and (.pred "P2" []) (.pred "c4" []))))]⟩,
+     ⟨.top, [.clause 2 [] (.orL (.hole (.and (.pred "P1" []) (.pred "c3" []))))]⟩,
+     ⟨.top, [.clause 2 [] (.orL (.andI (.hole (.pred "P1" [])) (.hole (.pred "c3" []))))]⟩,
+     ⟨.top, [.clause 2 [] (.orL (.andI (.clause 0 [] (.hole (.pred "c1" [])))
+        (.hole (.pred "c3" []))))]⟩,
+     ⟨.and .top (.pred "c1" []), [.clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" []))
+        (.hole (.pred "c3" []))))]⟩,
+     ⟨.and (.and .top (.pred "c1" [])) (.pred "c3" []),
+        [.clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" [])) (.cstr "c3" [])))]⟩].map
+      SLD.MState.goal =
+    [⟨.top, [.pred "Q" []]⟩,
+     ⟨.top, [.or (.and (.pred "P1" []) (.pred "c3" [])) (.and (.pred "P2" []) (.pred "c4" []))]⟩,
+     ⟨.top, [.and (.pred "P1" []) (.pred "c3" [])]⟩,
+     ⟨.top, [.pred "P1" [], .pred "c3" []]⟩,
+     ⟨.top, [.pred "c1" [], .pred "c3" []]⟩,
+     ⟨.and .top (.pred "c1" []), [.pred "c3" []]⟩,
+     ⟨.and (.and .top (.pred "c1" [])) (.pred "c3" []), []⟩] := by
+  decide +kernel
+
+/-- The final SLD tree has no open leaf, and closes to the engine's proof tree. -/
+theorem run95_close :
+    SLD.PTree.close (.clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" [])) (.cstr "c3" [])))) =
+      some proof95 := by
+  decide +kernel
+
+/-- The abstract program `Θ♯`: constraints replaced by `⊤`, heads made modal. -/
+theorem run95_abs : (ex95.abs isC95 .ex).forms =
+    [.imp .top (.circ .ex (.pred "P1" [])),
+     .imp .top (.circ .ex (.pred "P2" [])),
+     .imp (.or (.and (.pred "P1" []) .top) (.and (.pred "P2" []) .top)) (.circ .ex (.pred "Q" []))] := by
+  decide +kernel
+
+/-- The abstract image of the engine's proof tree. -/
+theorem run95_abstree : proof95.toA = .impC 2 [] (.orL (.andC (.impC 0 [] .val) .val)) := by
+  decide +kernel
+
+/-- The SLD◯ run on `Θ♯`: the same six steps, with `cstr` become `top` and no store. -/
+theorem run95_sldc :
+    SLD.SLDCStep (ex95.abs isC95 .ex) .ex [.hole (.pred "Q" [])]
+      [.impC 2 [] (.hole (.or (.and (.pred "P1" []) .top) (.and (.pred "P2" []) .top)))] ∧
+    SLD.SLDCStep (ex95.abs isC95 .ex) .ex
+      [.impC 2 [] (.hole (.or (.and (.pred "P1" []) .top) (.and (.pred "P2" []) .top)))]
+      [.impC 2 [] (.orL (.hole (.and (.pred "P1" []) .top)))] ∧
+    SLD.SLDCStep (ex95.abs isC95 .ex) .ex
+      [.impC 2 [] (.orL (.hole (.and (.pred "P1" []) .top)))]
+      [.impC 2 [] (.orL (.andC (.hole (.pred "P1" [])) (.hole .top)))] ∧
+    SLD.SLDCStep (ex95.abs isC95 .ex) .ex
+      [.impC 2 [] (.orL (.andC (.hole (.pred "P1" [])) (.hole .top)))]
+      [.impC 2 [] (.orL (.andC (.impC 0 [] (.hole .top)) (.hole .top)))] ∧
+    SLD.SLDCStep (ex95.abs isC95 .ex) .ex
+      [.impC 2 [] (.orL (.andC (.impC 0 [] (.hole .top)) (.hole .top)))]
+      [.impC 2 [] (.orL (.andC (.impC 0 [] .val) (.hole .top)))] ∧
+    SLD.SLDCStep (ex95.abs isC95 .ex) .ex
+      [.impC 2 [] (.orL (.andC (.impC 0 [] .val) (.hole .top)))]
+      [.impC 2 [] (.orL (.andC (.impC 0 [] .val) .val))] :=
+  ⟨.mk [] [] (.clause (cl := θ3.abs isC95 .ex) 2 [] rfl rfl rfl rfl (by simp) rfl rfl (by decide))
+     rfl rfl,
+   .mk [] [] (.inImp .orL) rfl rfl,
+   .mk [] [] (.inImp (.inOrL .and)) rfl rfl,
+   .mk [] [] (.inImp (.inOrL (.andL
+     (.clause (cl := θ1.abs isC95 .ex) 0 [] rfl rfl rfl rfl (by simp) rfl rfl (by decide))))) rfl rfl,
+   .mk [] [] (.inImp (.inOrL (.andL (.inImp .top)))) rfl rfl,
+   .mk [] [] (.inImp (.inOrL (.andR .top))) rfl rfl⟩
+
+/-- The SLD◯ run is the image of the SLD run under `toA`, tree by tree. -/
+theorem run95_toA :
+    [SLD.PTree.hole (.pred "Q" []),
+     .clause 2 [] (.hole (.or (.and (.pred "P1" []) (.pred "c3" [])) (.and (.pred "P2" []) (.pred "c4" [])))),
+     .clause 2 [] (.orL (.hole (.and (.pred "P1" []) (.pred "c3" [])))),
+     .clause 2 [] (.orL (.andI (.hole (.pred "P1" [])) (.hole (.pred "c3" [])))),
+     .clause 2 [] (.orL (.andI (.clause 0 [] (.hole (.pred "c1" []))) (.hole (.pred "c3" [])))),
+     .clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" [])) (.hole (.pred "c3" [])))),
+     .clause 2 [] (.orL (.andI (.clause 0 [] (.cstr "c1" [])) (.cstr "c3" [])))].map
+      (SLD.PTree.toA isC95) =
+    [.hole (.pred "Q" []),
+     .impC 2 [] (.hole (.or (.and (.pred "P1" []) .top) (.and (.pred "P2" []) .top))),
+     .impC 2 [] (.orL (.hole (.and (.pred "P1" []) .top))),
+     .impC 2 [] (.orL (.andC (.hole (.pred "P1" [])) (.hole .top))),
+     .impC 2 [] (.orL (.andC (.impC 0 [] (.hole .top)) (.hole .top))),
+     .impC 2 [] (.orL (.andC (.impC 0 [] .val) (.hole .top))),
+     .impC 2 [] (.orL (.andC (.impC 0 [] .val) .val))] := by
+  decide +kernel
+
+/-- The final SLD◯ tree closes to the abstract image of the engine's proof tree. -/
+theorem run95_closeA :
+    SLD.ATree.close (.impC 2 [] (.orL (.andC (.impC 0 [] .val) .val))) = some proof95.toA := by
+  decide +kernel
+
+/-- The constraint extracted from the abstract proof, read with the program's table. -/
+theorem run95_ext :
+    (AProof.ext (ex95.table isC95) (.impC 2 [] (.orL (.andC (.impC 0 [] .val) .val)))).1 =
+      .and (.and (.and (.and .top (.pred "c1" [])) (.and .top .top)) .top)
+        (.and .top (.pred "c3" [])) := by
+  decide +kernel
+
+/-- **Theorem 9.7 on the running example**: the extracted constraint is, up to `⊣⊢`,
+the answer `(⊤ ∧ c₁) ∧ c₃` of the Table 2 run. -/
+theorem run95_agree :
+    PEq (AProof.ext (ex95.table isC95) (.impC 2 [] (.orL (.andC (.impC 0 [] .val) .val)))).1
+      (.and (.and .top (.pred "c1" [])) (.pred "c3" [])) := by
+  rw [run95_ext]
+  exact ⟨.andI (.andE₁ (.andE₁ (.andE₁ .hd))) (.andE₂ (.andE₂ .hd)),
+    .andI (.andI (.andI (.andE₁ .hd) (.andI .topI .topI)) .topI) (.andI .topI (.andE₂ .hd))⟩
+
 /-! ## Generated programs -/
 
 /-- A gate: its output settles `d` after all its inputs have. -/
@@ -205,6 +446,18 @@ def mortgage : Program :=
 /-- info: 'LaxLogic.QLL.CLPExamples.ex61_answer' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms ex61_answer
 
+/-- info: 'LaxLogic.QLL.CLPExamples.run61_program' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run61_program
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run61_tree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run61_tree
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run61_total' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run61_total
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run61_ext' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run61_ext
+
 /-- info: 'LaxLogic.QLL.CLPExamples.check95' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms check95
 
@@ -238,6 +491,50 @@ def mortgage : Program :=
 
 /-- info: 'LaxLogic.QLL.CLPExamples.thm97_95' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms thm97_95
+
+/-! The running example's checks. -/
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_program' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_program
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_horn' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_horn
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_table2' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_table2
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_tree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run95_tree
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_sld' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_sld
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_goals' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_goals
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_close' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run95_close
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_abstree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run95_abstree
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_abs' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_abs
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_sldc' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_sldc
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_toA' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_toA
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_closeA' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms run95_closeA
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_ext' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_ext
+
+/-- info: 'LaxLogic.QLL.CLPExamples.run95_agree' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms run95_agree
 
 /-- Precedence scheduling with one shared machine (a disjunctive constraint). -/
 def sched : Program :=

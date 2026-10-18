@@ -409,7 +409,7 @@ theorem Prv.foralls_congr : ∀ (m : Nat) (Γ : List Form) (B : Form),
         obtain ⟨A', hA', rfl⟩ := List.mem_map.1 hC
         obtain ⟨A, hA, rfl⟩ := List.mem_map.1 hA'
         have := Prv.allE (.fvar a) trivial
-          (Prv.var (Γ := Γ.map (Form.foralls (m + 1))) (List.mem_map.2 ⟨A, hA, rfl⟩))
+          (Prv.var (Γ := Γ.map (Form.foralls (m + 1))) (List.mem_map.2 ⟨A, hA, rfl⟩)) rfl
         rwa [Form.openAt_foralls, Nat.zero_add] at this
       · refine Prv.foralls_congr m _ _ fun ts hts hlc => ?_
         have := h (.fvar a :: ts) (by rw [List.length_cons, hts]) fun t ht => by

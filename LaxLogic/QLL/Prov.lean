@@ -54,7 +54,9 @@ inductive Prv : List Form → Form → Prop where
   | circE {Γ q A B} : Prv Γ (.circ q A) → Prv (A :: Γ) (.circ q B) → Prv Γ (.circ q B)
   | allI  {Γ A} (L : List String) :
       (∀ a, a ∉ L → Prv Γ (A.openWith a)) → Prv Γ (.forall_ A)
-  | allE  {Γ A} (t : Tm) : Tm.lcAt 0 t → Prv Γ (.forall_ A) → Prv Γ (A.openAt 0 t)
+  -- the instance `B = A[t/0]` is an equation field, not a computed index
+  -- (green slime; docs/qll-slime-census-2026-10-15.md), as in `Derives.allE`
+  | allE  {Γ A B} (t : Tm) : Tm.lcAt 0 t → Prv Γ (.forall_ A) → B = A.openAt 0 t → Prv Γ B
   | exI   {Γ A} (t : Tm) : Tm.lcAt 0 t → Prv Γ (A.openAt 0 t) → Prv Γ (.exists_ A)
   | exE   {Γ A K} (L : List String) :
       Prv Γ (.exists_ A) → (∀ a, a ∉ L → Prv (A.openWith a :: Γ) K) → Prv Γ K
@@ -82,7 +84,7 @@ theorem Prv.weaken {Γ Δ : List Form} {A : Form} (h : Γ ⊢ A) (hs : ∀ B ∈
   | circI _ ih => exact .circI (ih hs)
   | circE _ _ ih₁ ih₂ => exact .circE (ih₁ hs) (ih₂ (List.cons_subset_cons _ hs))
   | allI L _ ih => exact .allI L (fun a ha => ih a ha hs)
-  | allE t ht _ ih => exact .allE t ht (ih hs)
+  | allE t ht _ hB ih => exact .allE t ht (ih hs) hB
   | exI t ht _ ih => exact .exI t ht (ih hs)
   | exE L _ _ ih₀ ih => exact .exE L (ih₀ hs) (fun a ha => ih a ha (List.cons_subset_cons _ hs))
 
@@ -179,7 +181,8 @@ theorem Prv.soundT {Γ : List Form} {A : Form} (h : Γ ⊢ A) : ConsequenceT Γ 
       rw [M.force_openWith (updρ ρ a d) a A v, updρ_eq] at key
       exact (M.force_congr A v (updρ ρ a d) ρ [d]
         (fun x hx => updρ_of_ne ρ d (hneA x hx))).mp key
-  | @allE Γ A t ht _ ih =>
+  | @allE Γ A B t ht _ hB ih =>
+      subst hB
       intro M s ρ hρ hΓ
       have key := ih M s ρ hρ hΓ s (M.refl_i s) (M.evTm ρ [] t) (M.evTm_dom hρ (by simp) t)
       exact (M.force_openAt ρ t ht A s []).mpr key
