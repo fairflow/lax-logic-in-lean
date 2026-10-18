@@ -120,4 +120,11 @@ Run a **control** first — a family you already believe clean, e.g.
 nothing. `Nat` offsets (`n + 1`) are inert by design, so height-indexed
 families come out clean.
 
+Since 2026-10-17 each index is judged by its weak head normal form, as
+the unifier sees it: a definition that unfolds to a constructor and a
+numeral `0` are clean (both were false reports before), while a
+projection `c.head`, a definition wrapping one, or a recursion on a
+variable is slime. `Meta/SlimeTests.lean` pins all eight cases with
+`#guard_msgs`, each verdict established by `cases` itself.
+
 Full rationale, the fix, and the repo-wide census: `green-slime.md`.

@@ -4,6 +4,30 @@ McBride's rule for indexed inductive families. In a constructor's
 **return type**, every index must be a *variable*, or a *constructor
 applied to* variables. Never a function applied to anything.
 
+Stated precisely for Lean (tested 2026-10-17): the unifier unfolds
+definitions before it unifies, so what matters is the index's weak head
+normal form. An index is clean if it reduces to constructor form
+(constructors, literals, `n + k`), and slime if it stays **stuck on a
+variable**. A projection `c.head` behaves exactly like a defined
+function: both get stuck on the variable `c`. A definition that unfolds
+to a constructor (`mkCl s := ⟨s, 0⟩`) is clean, although it looks like a
+function application.
+
+| index in the conclusion | `cases` against a concrete index | |
+|---|---|---|
+| `c.head` (projection) | fails: `"add" = c.1` | slime |
+| `headOf c`, `def headOf c := c.head` | fails, same equation | slime |
+| `headAb c`, an `abbrev` | fails, same equation | slime |
+| `double n`, `def double n := n + n` | fails: `4 = n.add n` | slime |
+| `mkCl s`, `def mkCl s := ⟨s, 0⟩` | succeeds | clean |
+| `⟨s, 0⟩` (constructor) | succeeds | clean |
+| `n + 1` | succeeds | clean |
+| `0` (numeral) | succeeds | clean |
+
+Against a *variable* index every one of them succeeds, which is why slime
+can survive unnoticed until the first proof about a concrete case.
+Constructors may therefore stay in conclusions; projections may not.
+
     | andI1 {St Th} {A₁ A₂}
         (d : FRJi G St Th A₁) : FRJi G St Th (.and A₁ A₂)      -- clean
     | impInI {St Th Lam} {A B}
@@ -112,6 +136,15 @@ and after:
 `Nat.succ n` and the unifier inverts it natively, so height-indexed
 families are **not** slimed. The tool knows this; a version that did not
 falsely condemned all five height-indexed calculi in this repo.
+
+A second fault of the same kind was fixed on 2026-10-17. The tool judged
+the index as written, so the numeral `0` (internally
+`OfNat.ofNat ℕ 0 _`) counted as computed. That gave a false 8 of 13 on
+the CLP machine's `ExpandAt`, where the genuine count was 3, and would
+have condemned any definition unfolding to a constructor. The tool now
+judges the weak head normal form; `Meta/SlimeTests.lean` pins the eight
+cases of the table above, and was watched failing with the change
+disabled.
 
 ## Run a control
 
