@@ -122,7 +122,7 @@ grind (unprovable but missed by the battery):
   failing.
 * **Measured node counts** (nodes visited by `find`, i.e.
   `budget - remaining` from `G4cTm.findBounded`; re-measured on this tree,
-  2026-07-27):
+  2026-10-19, after the failure-memo correction in `G4Term.lean`):
 
   | sequent | nodes | outcome |
   |---|---:|---|
@@ -131,26 +131,29 @@ grind (unprovable but missed by the battery):
   | `⊢ (p ⊃ q ⊃ r) ⊃ (p ⊃ q) ⊃ p ⊃ r` | 8 | proved |
   | `⊢ ((p ⊃ q) ⊃ p) ⊃ p` (Peirce) | 8 | exhausted |
   | `⊢ (p ∧ ◯q) ⊃ ◯(p ∧ q)` | 18 | proved |
-  | `◯((◯p ⊃ r) ⊃ ◯p), ◯p ⊃ r ⊢ r` (the gap sequent) | 136 | proved |
+  | `◯((◯p ⊃ r) ⊃ ◯p), ◯p ⊃ r ⊢ r` (the gap sequent) | 154 | proved |
 
   The gap sequent used to cost 825 nodes; the order-canonical loop key and
-  the failure memo have landed since, and the figure is now **136**.
+  the failure memo brought it to 136, and the dependency-aware memo of
+  2026-10-19 (which stopped reusing failures that depended on loop-check
+  cuts made on other branches) to **154**.
 
 * **How the grind grows.**  Three families of underivable sequents against
-  an unreachable atom `z`, measured the same way (times are elapsed
-  interpreter time on this machine, so read the ratios, not the absolutes):
+  an unreachable atom `z`, measured the same way (2026-10-19, compiled; `—`
+  not measured):
 
   | family | k=1 | k=2 | k=3 | k=4 | k=5 | k=6 |
   |---|---:|---:|---:|---:|---:|---:|
-  | A: `◯aᵢ ⊃ b` (k of them) with `◯cᵢ` (k of them) | 11 | 109 | 637 | 2801 | 10411 | 34693 |
-  | B: chained `◯aᵢ ⊃ ◯aᵢ₊₁` with `◯a₀` | 34 | 596 | 7125 | 67608 | 544671 | >3·10⁶ |
-  | C: `(pᵢ ⊃ q) ⊃ pᵢ` (Peirce shapes) | 7 | 49 | 277 | 1345 | 5921 | 24409 |
+  | A: `◯aᵢ ⊃ b` (k of them) with `◯cᵢ` (k of them) | 11 | 295 | 5669 | 83121 | 1039771 | — |
+  | B: chained `◯aᵢ ⊃ ◯aᵢ₊₁` with `◯a₀` | 34 | 1533 | 124957 | 28082415 | — | — |
+  | C: `(pᵢ ⊃ q) ⊃ pᵢ` (Peirce shapes) | 7 | 69 | 572 | 4120 | 27236 | — |
 
-  Family B is the "◯-implication pool" the previous version of this header
-  quoted at 7,256 nodes for k=3; the current figure is **7,125**.  Growth is
-  about ×9 per premise for B, ×3.3 for A, ×4.2 for C.  Family B takes 26 s
-  at k=5 and over three minutes at k=6 — so the multi-minute thrashes start
-  at *six* chained premises, not the "~25" the old header claimed.
+  Growth is about ×13–19 per premise for A, ×80–225 for B, ×7 for C.
+  Compiled, family A takes 5.0 s at k=5 and family B 88 s at k=4.  The
+  figures of 2026-07-27 were far lower (A 11, 109, 637, 2801, 10411, 34693;
+  B 34, 596, 7125, 67608, 544671, >3·10⁶; C 7, 49, 277, 1345, 5921, 24409),
+  but they came from a memo that reused failures caused by loop-check cuts
+  on other branches: unsound, it lost derivable sequents (`Run.lean`).
 
 * **The grind is cappable.**  `Config.findBudget := some b` runs the
   positive stage under a global budget of `b` visited sequents

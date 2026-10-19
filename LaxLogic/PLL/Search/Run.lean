@@ -1,5 +1,6 @@
 import LaxLogic.PLL.Normalisation.TopTop
 import LaxLogic.PLL.G4.G4Term
+import Meta.Audit
 
 /-!
 # Running the mechanisation: the normaliser as a program, and a
@@ -29,9 +30,10 @@ term, which the kernel checks and the mechanised equivalences
 (`G4cTm.toTm`, `G4c.equiv_sc`, `G4c.equiv_nd`) transport to the goal.
 Trust therefore reduces to the transport lemmas — clean-classical
 (`propext`, `Classical.choice`, `Quot.sound`) for `Tm`/`LaxND`/`SC`
-goals, *no axioms at all* for a bare `G4cTm` certificate — and by
-completeness of G4iLL″ (`G4c.equiv_tm`) a search failure refutes
-derivability instead of proving nothing.
+goals, *no axioms at all* for a bare `G4cTm` certificate.  A search
+failure is **not** a refutation: G4iLL″ is complete (`G4c.equiv_tm`), but
+the searcher is unverified `partial` code, and until 2026-10-19 its failure
+memo made it miss derivable sequents (the regression below).
 -/
 
 open PLLFormula
@@ -205,11 +207,18 @@ Closes goals of the forms
 * `G4c Γ C`
 * `G4cTm Γ C` and `Nonempty (G4cTm Γ C)`
 
-for concrete `Γ` and `C`.  **Sound and complete** (`G4c.equiv_tm`),
-unlike the retired `pll_g4` (naive `G4`, incomplete: `PLLG4Gap`).  A
-positive verdict adds no compiled-evaluator axiom — the trust base is
-exactly that of the transport lemmas (clean-classical; empty for a
-bare `G4cTm` goal) — and failure refutes derivability. -/
+for concrete `Γ` and `C`.  **Sound**: a closed goal is closed by a
+kernel-checked certificate, and adds no compiled-evaluator axiom — the
+trust base is exactly that of the transport lemmas (clean-classical;
+empty for a bare `G4cTm` goal).  The calculus is complete
+(`G4c.equiv_tm`), unlike the naive `G4` of the retired `pll_g4`
+(`PLLG4Gap`), but the tactic is **not a decision procedure**: when
+`G4cTm.find` returns `none` the tactic fails, and that failure is not a
+refutation, because the searcher is unverified `partial` code.  By
+design (`proveM`) the search is exhaustive, so failure is expected only
+on underivable sequents; until 2026-10-19 the failure memo also made it
+fail on some derivable ones, so earlier failures prove nothing.  To
+refute, use a kernel-checked countermodel (`PLLND.Search.settle`). -/
 elab "pll_g4c" : tactic => do
   let g ← getMainGoal
   g.withContext do
@@ -223,8 +232,9 @@ elab "pll_g4c" : tactic => do
           evalTactic (← `(tactic| exact $prf))
       | none =>
           throwError "pll_g4c: backward proof search in G4iLL″ found no \
-            derivation; the calculus is complete (`G4c.equiv_tm`), so the \
-            sequent is not PLL-derivable:{indentExpr ty}"
+            derivation.  This is not a refutation: the searcher is \
+            unverified `partial` code; refute with a kernel-checked \
+            countermodel (`PLLND.Search.settle`):{indentExpr ty}"
     if ty.isAppOfArity ``Nonempty 1 then
       let α := ty.appArg!.consumeMData
       if α.isAppOfArity ``Tm 2 then
@@ -294,6 +304,48 @@ def gap_certificate : G4cTm [Ggap.somehow, Fgap] (prop "r") := by pll_g4c
 #guard_msgs in
 #eval (G4cTm.find [Ggap.somehow, Fgap] (prop "r")).map (·.pretty)
 
+/-! ### Regression: a loop-check failure is not unconditional (2026-10-19)
+
+Three interderivable closed sequents, all PLL-derivable (`u ⊢ e₅` and
+`e₆ = e₅ ↠ e₄`).  Until 2026-10-19 the searcher memoised every failure as
+unconditional, although a failure caused by a loop-check cut depends on the
+ancestors of the branch it was met on; reused on another branch it gave a
+false `none` on the first sequent while finding the other two.  The
+dependency-aware failure memo (`G4Term.lean`) finds all three. -/
+
+private def e₁ : PLLFormula := ◯⊥
+private def e₂ : PLLFormula := e₁ ↠ ⊥
+private def e₃ : PLLFormula := e₂ ↠ ⊥
+private def e₄ : PLLFormula := ◯e₂
+private def e₅ : PLLFormula := e₃ ↠ e₁
+private def e₆ : PLLFormula := e₅ ↠ e₄
+/-- `gap = e₄ ↠ (e₁ ∨ e₂)`. -/
+private def eGap : PLLFormula := e₄ ↠ (e₁ ∨ e₂)
+/-- `u = gap ↠ e₄`. -/
+private def eU : PLLFormula := eGap ↠ e₄
+
+/-- info: (true, true, true) -/
+#guard_msgs in
+#eval ((G4cTm.find [] (e₆ ↠ (eU ↠ e₄))).isSome,
+  (G4cTm.find [] (eU ↠ (e₆ ↠ e₄))).isSome,
+  (G4cTm.find [] ((e₆ ∧ eU) ↠ e₄)).isSome)
+
+-- the budgeted mirror agrees, with budget to spare
+/-- info: (true, true, true) -/
+#guard_msgs in
+#eval ((G4cTm.findBounded 1000000 [] (e₆ ↠ (eU ↠ e₄))).1.isSome,
+  (G4cTm.findBounded 1000000 [] (eU ↠ (e₆ ↠ e₄))).1.isSome,
+  (G4cTm.findBounded 1000000 [] ((e₆ ∧ eU) ↠ e₄)).1.isSome)
+
+/-- The first sequent, the one the old memo lost, closed by the tactic. -/
+def memo_regression_certificate : G4cTm [] (e₆ ↠ (eU ↠ e₄)) := by pll_g4c
+
+example : Nonempty (LaxND [] (e₆ ↠ (eU ↠ e₄))) := by pll_g4c
+example : Nonempty (LaxND [] (eU ↠ (e₆ ↠ e₄))) := by pll_g4c
+example : Nonempty (LaxND [] ((e₆ ∧ eU) ↠ e₄)) := by pll_g4c
+
+#axioms_within memo_regression_certificate []
+
 /-! ### The trust base, pinned honestly
 
 The searcher ran as untrusted elaboration-time code, so no
@@ -315,12 +367,17 @@ theorem unit_nd : Nonempty (LaxND [] (A₀ ↠ ◯A₀)) := by pll_g4c
 #guard_msgs in
 #print axioms gap_certificate
 
-/-! Completeness makes failure informative: on an underivable sequent
-the tactic refutes rather than merely gives up (the retired incomplete
-tactic could not tell the two apart).  `◯` admits no escape: -/
+-- the searchers themselves (untrusted, `partial`) stay choice-free
+#axioms_within G4cTm.find [propext, Quot.sound]
+#axioms_within G4cTm.findBounded [propext, Quot.sound]
+#axioms_within proveM [propext, Quot.sound]
+#axioms_within proveBounded [propext, Quot.sound]
+
+/-! On an underivable sequent the search fails and so does the tactic; the
+failure is reported, not certified (`◯` admits no escape): -/
 
 /--
-error: pll_g4c: backward proof search in G4iLL″ found no derivation; the calculus is complete (`G4c.equiv_tm`), so the sequent is not PLL-derivable:
+error: pll_g4c: backward proof search in G4iLL″ found no derivation.  This is not a refutation: the searcher is unverified `partial` code; refute with a kernel-checked countermodel (`PLLND.Search.settle`):
   SC [◯A₀] A₀
 -/
 #guard_msgs in
