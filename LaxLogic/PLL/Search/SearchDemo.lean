@@ -447,13 +447,13 @@ visited.  That makes it the profiler for choosing a `findBudget`. -/
 /-! ### 4.4 The awkward sequent
 
 `◯((◯p ⊃ r) ⊃ ◯p), ◯p ⊃ r ⊢ r` is the sequent G4iLL″ derives and Iemhoff's
-G4iLL misses.  136 nodes, and the tree shows `→L◯◯` doing the work. -/
+G4iLL misses.  154 nodes, and the tree shows `→L◯◯` doing the work. -/
 
 /-- info: some "(→L◯◯ (→L→ (→R (→L◯◯ (◯R init) init)) (◯L (◯R init))) init)" -/
 #guard_msgs_show in
 #eval (proof [gapA, gapB] (prop "r")).map (·.pretty)
 
-/-- info: 136 -/
+/-- info: 154 -/
 #guard_msgs_show in
 #eval 100000 - (G4cTm.findBounded 100000 [gapA, gapB] (prop "r")).2
 

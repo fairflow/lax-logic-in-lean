@@ -14,7 +14,7 @@ constructors and cons; side conditions as plain list-membership propositions;
 no `Finset`, no decidability instances.  A value of `G4cTm Γ C` is a
 *kernel-checkable certificate* of derivability.
 
-`prove` is a **fuel-free** backward searcher into that type.  It is `partial`,
+`proveM` is a **fuel-free** backward searcher into that type.  It is `partial`,
 so Lean demands no termination measure — hence no `decideFuel` and no `enum`;
 the exponential fuel of `PLLG4Dec.lean` was an artefact of *proving* the
 decider total, not of searching.  Termination in practice is by the loop check
@@ -22,7 +22,10 @@ alone: the visited set is keyed by `(canon Γ, C)` where `canon` removes
 duplicates (keeping last occurrences), so re-deriving a formula already
 present leaves the key unchanged and the revisit is caught.  Along any search
 path the context only grows by consing subformula pieces, of which there are
-finitely many, so keys must repeat.
+finitely many, so keys must repeat.  A failure memo prunes failing subgoals
+met on several branches; each failure is stored with the loop-check cuts it
+depended on and reused only where those ancestors are present (corrected
+2026-10-19: an unconditional memo lost derivable sequents, see `proveM`).
 
 `proveBounded` is the same search with one extra piece of threaded state: a
 global budget of search nodes.  Every node entered (revisits included) costs
@@ -33,7 +36,7 @@ unprovable but missed by the countermodel battery.  Budget exhaustion is an
 honest "unknown": it never asserts anything about the sequent.  See
 `G4cTm.findBounded` for the precise reading of the result.
 
-Trust is factored exactly as it should be: `prove` is *untrusted* code, but
+Trust is factored exactly as it should be: `proveM` is *untrusted* code, but
 anything it emits inhabits `G4cTm Γ C`, and
 
 * `G4cTm.sound`    : every term projects to a `G4s` derivation, hence
@@ -134,14 +137,49 @@ termination are unchanged, the search space only shrinks. -/
 def ckey (Γ : List PLLFormula) (C : PLLFormula) : List PLLFormula × PLLFormula :=
   ((canon Γ).mergeSort (fun a b => compare (hash a) (hash b) |>.isLE), C)
 
-/-- The failure memo: canonical sequent keys already found underivable.  Keyed
-by `ckey` (homogeneous, so no dependent proof term is ever stored); a hit prunes
-the whole subtree. -/
-abbrev FailMemo := Std.HashMap (List PLLFormula × PLLFormula) Bool
+/-- A canonical sequent key, as computed by `ckey`. -/
+abbrev SeqKey : Type := List PLLFormula × PLLFormula
+
+/-- The **dependency-aware failure memo**: a key found underivable, mapped to
+the *dependency set* of that failure — the keys of the node's ancestors (on
+the branch where the failure was found) that loop-check cuts below it hit,
+directly or through a reused memo entry.  `[]` is an unconditional failure.
+A key searched again and failing again keeps the latest dependency set.
+Keyed by `ckey` (homogeneous, so no dependent proof term is ever stored). -/
+abbrev FailMemo := Std.HashMap SeqKey (List SeqKey)
+
+/-- Search state shared by `proveM` and `proveBounded`: the failure memo, and
+an accumulator of the dependencies (cut keys and the dependency sets of reused
+memo entries) met since the current node was entered. -/
+structure MemoState where
+  memo : FailMemo := ∅
+  cuts : List SeqKey := []
+
+/-- The dependency set of a memoised failure of `key`, if that failure may be
+reused under the ancestors `V`: only when every key it depends on is among
+them. -/
+@[inline] def MemoState.reusable (s : MemoState) (V : List SeqKey) (key : SeqKey) :
+    Option (List SeqKey) :=
+  match s.memo[key]? with
+  | some D => if D.all (· ∈ V) then some D else none
+  | none => none
+
+/-- Record dependencies met: a loop-check cut (`[key]`) or a reused failure. -/
+@[inline] def MemoState.note (s : MemoState) (D : List SeqKey) : MemoState :=
+  { s with cuts := D ++ s.cuts }
+
+/-- Close a failed node with ancestors `V`: its dependency set `D` is the part
+of the accumulator lying in `V` (the node's own key, and every key of the
+subtree, drops out); memoise `D` when `record`, and hand it up by restoring the
+parent's accumulator `saved` with `D` added. -/
+@[inline] def MemoState.fail (s : MemoState) (V : List SeqKey) (key : SeqKey)
+    (saved : List SeqKey) (record : Bool := true) : MemoState :=
+  let D := if s.cuts.isEmpty then [] else V.filter (· ∈ s.cuts)
+  { memo := if record then s.memo.insert key D else s.memo, cuts := D ++ saved }
 
 /-- First `some` in a short-circuiting monadic scan, threading the memo. -/
 partial def firstSomeM {α β : Type} (xs : List α)
-    (f : α → StateM FailMemo (Option β)) : StateM FailMemo (Option β) := do
+    (f : α → StateM MemoState (Option β)) : StateM MemoState (Option β) := do
   match xs with
   | [] => return none
   | x :: rest => match ← f x with
@@ -150,35 +188,71 @@ partial def firstSomeM {α β : Type} (xs : List α)
 
 mutual
 
-/-- **Fuel-free backward proof search** for G4iLL″ with a global failure memo
-(UI-track optimisation `g4ill_probe.g4bM`, retargeted to G4c and specialised to
-caching failures).  `V` is the path-local ancestor set (functional, so it
-backtracks) driving the loop check; the `StateM` cache records canonical keys
-already found underivable, so a failing subgoal reached on many branches is
-searched only once.
+/-- **Fuel-free backward proof search** for G4iLL″ with a dependency-aware
+failure memo.  `V` is the path-local ancestor set (functional, so it
+backtracks) driving the loop check; the `StateM` memo records failures, so a
+failing subgoal reached on many branches is searched again only when its
+recorded failure depended on an ancestor that the current branch lacks.
 
-Untrusted `partial` code; success is self-certifying (the result inhabits
-`G4cTm Γ C`).  Caching failures needs **no taint logic**: the loop check is
-complete, so a `none` verdict is unconditional (independent of `V`), and
-provability depends only on the sequent, which `ckey` identifies up to order and
-contraction.  Successes are not cached — they carry a dependent term, and
-returning on the first success already makes them cheap. -/
-partial def proveM (V : List (List PLLFormula × PLLFormula))
-    (Γ : List PLLFormula) (C : PLLFormula) : StateM FailMemo (Option (G4cTm Γ C)) := do
+**Why the memo carries dependencies** (corrected 2026-10-19).  A failure can be
+caused by a loop-check cut (`key ∈ V`) below it, and is then conditional on
+`V`: the same sequent can be derivable on a branch that lacks the cut
+ancestor.  Until 2026-10-19 every failure was memoised as unconditional, and
+reusing a conditional one gave a false `none` on derivable sequents (the
+regression in `Search/Run.lean`).  Now a failure is stored with its
+dependency set `D` (`MemoState.fail`) and reused only when `D ⊆ V`
+(`MemoState.reusable`).
+
+**What a `none` means** (an argument about this code, not a theorem).  Write
+`Der_S(s)` for: `s` has a `G4cTm` derivation in which no node's key (`ckey`)
+lies in `S` and no key repeats along a branch.  At a failing node every rule
+instance of G4c is tried, so by induction over the search a call with
+ancestors `V` that fails with dependency set `D` has `D ⊆ V` and
+`¬ Der_D(s)`:
+
+* a cut (`key ∈ V`) fails with `D = [key]`;
+* a memo entry is reused only under ancestors containing its `D`;
+* a node fails only when every rule instance has a premise failing with some
+  `D' ⊆ key :: V`; its `D` is the union of these minus `key`, which may be
+  dropped because `Der_D(s)` asks the premises to avoid `key` anyway.
+
+Reuse across sequents with the same key is sound because `Der_D` depends on
+the key alone: equal keys mean the same context set and succedent, and as
+`ckey` is a stable sort of the deduplicated context, consing one formula onto
+two such sequents again gives equal keys.  At the root `V = []`, so `D = []`,
+and `¬ Der_∅(s)` is G4c-underivability: a derivation with fewest nodes
+repeats no key along a branch (the rules see only the set of the context, so
+the upper of two same-key nodes, transported down, replaces the lower).  So
+a `none` is *intended* to mean "not G4c-derivable", hence (`G4c.equiv_tm`)
+not PLL-derivable.  It is **not a certificate**: `proveM` is `partial`, its
+body is invisible to Lean's logic, and no lemma relates it to `G4c`.  A
+refutation needs a kernel-checked countermodel (`PLLND.Search.settle`'s
+`.refuted`).
+
+Success is self-certifying (the result inhabits `G4cTm Γ C`).  Successes are
+not cached — they carry a dependent term, and returning on the first success
+already makes them cheap — and a successful subtree hands no dependencies up,
+since it is not the cause of any failure. -/
+partial def proveM (V : List SeqKey)
+    (Γ : List PLLFormula) (C : PLLFormula) : StateM MemoState (Option (G4cTm Γ C)) := do
   let key := ckey Γ C
-  if key ∈ V then return none
-  if (← get).contains key then return none
+  if key ∈ V then
+    modify (·.note [key]); return none
+  if let some D := (← get).reusable V key then
+    modify (·.note D); return none
   if h : falsePLL ∈ Γ then return some (G4cTm.botL h)
-  match ← proveRightM (key :: V) Γ C with
-  | some t => return some t
-  | none =>
-    match ← proveLeftM (key :: V) Γ C with
-    | some t => return some t
-    | none => modify (·.insert key false); return none
+  let saved := (← get).cuts
+  modify fun s => { s with cuts := [] }
+  let r ← match ← proveRightM (key :: V) Γ C with
+    | some t => pure (some t)
+    | none => proveLeftM (key :: V) Γ C
+  match r with
+  | some t => modify (fun s => { s with cuts := saved }); return some t
+  | none => modify (·.fail V key saved); return none
 
 /-- Right rules (with `init` folded into the atom case). -/
-partial def proveRightM (V : List (List PLLFormula × PLLFormula))
-    (Γ : List PLLFormula) : (C : PLLFormula) → StateM FailMemo (Option (G4cTm Γ C))
+partial def proveRightM (V : List SeqKey)
+    (Γ : List PLLFormula) : (C : PLLFormula) → StateM MemoState (Option (G4cTm Γ C))
   | .prop a => pure (if h : prop a ∈ Γ then some (G4cTm.init h) else none)
   | .falsePLL => pure none
   | .and A B => do
@@ -209,8 +283,8 @@ partial def proveRightM (V : List (List PLLFormula × PLLFormula))
           | _, _ => pure none)
 
 /-- Left rules, tried on each context formula in turn. -/
-partial def proveLeftM (V : List (List PLLFormula × PLLFormula))
-    (Γ : List PLLFormula) (C : PLLFormula) : StateM FailMemo (Option (G4cTm Γ C)) :=
+partial def proveLeftM (V : List SeqKey)
+    (Γ : List PLLFormula) (C : PLLFormula) : StateM MemoState (Option (G4cTm Γ C)) :=
   firstSomeM Γ.attach (fun ⟨F, hF⟩ =>
     match F, hF with
     | .and A B, h => do
@@ -265,29 +339,36 @@ partial def proveLeftM (V : List (List PLLFormula × PLLFormula))
 
 end
 
-/-- Search a sequent from scratch (with a fresh failure memo). -/
+/-- Search a sequent from scratch (with a fresh failure memo).  `some t` is a
+kernel-checkable derivation.  `none` means the search space was exhausted; by
+the argument in `proveM`'s docstring that is intended to mean "not
+G4c-derivable", but it is **untrusted** — `proveM` is `partial`, so nothing
+about it is proved — and is not a refutation.  Until 2026-10-19 the failure
+memo also returned `none` on some derivable sequents; earlier `none` verdicts
+are not evidence of underivability. -/
 def G4cTm.find (Γ : List PLLFormula) (C : PLLFormula) : Option (G4cTm Γ C) :=
-  (proveM [] Γ C).run' ∅
+  (proveM [] Γ C).run' {}
 
 /-! ## The node-budgeted searcher
 
-`proveBounded` mirrors `prove` rule for rule (same rules, same try order —
-**keep the two in sync**), but threads a global node budget through the
-search: state `Nat` is the remaining budget, and failure *preserves* it, so
-sequential alternatives (`<|>`, `firstM`) draw from one shared pool.  One
-unit is spent per `proveBounded` entry, i.e. per visited sequent (loop-check
-revisits included, since the `canon`-key lookup is real work too).
+`proveBounded` mirrors `proveM` rule for rule (same rules, same try order,
+same dependency-aware failure memo — **keep the two in sync**), but threads a
+global node budget through the search: the `Nat` in the state is the
+remaining budget, and failure *preserves* it, so sequential alternatives
+(`<|>`, `firstM`) draw from one shared pool.  One unit is spent per
+`proveBounded` entry, i.e. per visited sequent (loop-check revisits and memo
+hits included, since the `canon`-key lookup is real work too).
 
-Two honesty notes, both *by construction* rather than as theorems (`partial`
-definitions are opaque to Lean's logic, so no lemma can relate `prove` and
+Two notes, both *by construction* rather than as theorems (`partial`
+definitions are opaque to Lean's logic, so no lemma can relate `proveM` and
 `proveBounded` — the trust story is unaffected, because any emitted term
 inhabits `G4cTm Γ C` and is checked by the kernel):
 
 * the budget only ever truncates the search, so `none` under an exhausted
   budget means "not settled within the budget" — never underivability;
 * the budget is inert until it reaches `0`, so a run that finishes with
-  budget to spare made exactly the same rule attempts, in the same order,
-  as the fuel-free `prove`.
+  budget to spare made exactly the same rule attempts, memo entries and memo
+  reuses, in the same order, as the fuel-free `proveM`.
 
 Since both searchers are `partial`, neither reduces in the kernel; discovery
 stays evaluation-side (`#eval` / `#guard`), and found terms are pinned and
@@ -298,57 +379,67 @@ explicit work-list machine; that is a different engine, not a variant of
 this one.) -/
 
 /-- The budget-threading monad for `proveBounded`: an `Option` computation
-over a state of remaining node budget PLUS the global failure memo — the
+over a state of remaining node budget PLUS the memo state of `proveM` — the
 full UI-track composition (budget × memo × canonical key, the `g4bM`
 shape).  Failure returns the *remaining* state, so alternation continues
-from wherever the failed branch left off and cached failures accumulate
+from wherever the failed branch left off and memoised failures accumulate
 across branches. -/
-abbrev BudgetM (α : Type) : Type := OptionT (StateM (Nat × FailMemo)) α
+abbrev BudgetM (α : Type) : Type := OptionT (StateM (Nat × MemoState)) α
 
 instance {α : Type} : Inhabited (BudgetM α) := ⟨failure⟩
+
+/-- Read the whole state (budget, memo state). -/
+@[inline] def BudgetM.getState : BudgetM (Nat × MemoState) :=
+  OptionT.lift (get : StateM (Nat × MemoState) (Nat × MemoState))
+
+/-- Update the memo state, leaving the budget alone. -/
+@[inline] def BudgetM.modifyMemo (f : MemoState → MemoState) : BudgetM Unit :=
+  OptionT.lift (modify (fun s => (s.1, f s.2)) : StateM (Nat × MemoState) Unit)
 
 /-- Spend one unit of search budget; fail when the pool is dry.  This is the
 single point where the budget is consumed or checked.  Exhaustion is
 STICKY — failing at `0` leaves the pool at `0` and nothing refills it — so
-a subgoal failure observed with budget still remaining provably involved no
+a subgoal failure observed with budget still remaining involved no
 truncation anywhere inside it. -/
 @[inline] def BudgetM.spendNode : BudgetM Unit := do
-  match (← OptionT.lift (get : StateM (Nat × FailMemo) (Nat × FailMemo))).1 with
+  match (← BudgetM.getState).1 with
   | 0 => failure
   | f + 1 =>
-      OptionT.lift (modify (fun s => (f, s.2)) : StateM (Nat × FailMemo) Unit)
+      OptionT.lift (modify (fun s => (f, s.2)) : StateM (Nat × MemoState) Unit)
 
 mutual
 
-/-- Node-budgeted mirror of `prove` (see the section header).  Untrusted
-`partial` code, same as `prove`; success is self-certifying. -/
-partial def proveBounded (V : List (List PLLFormula × PLLFormula))
+/-- Node-budgeted mirror of `proveM` (see the section header, and `proveM`'s
+docstring for the failure memo).  Untrusted `partial` code, same as `proveM`;
+success is self-certifying. -/
+partial def proveBounded (V : List SeqKey)
     (Γ : List PLLFormula) (C : PLLFormula) : BudgetM (G4cTm Γ C) := do
   BudgetM.spendNode
   let key := ckey Γ C
-  if key ∈ V then failure
-  else if (← OptionT.lift
-      (get : StateM (Nat × FailMemo) (Nat × FailMemo))).2.contains key then
-    failure
-  else
+  if key ∈ V then
+    BudgetM.modifyMemo (·.note [key]); failure
+  else match (← BudgetM.getState).2.reusable V key with
+  | some D => BudgetM.modifyMemo (·.note D); failure
+  | none =>
+    let saved := (← BudgetM.getState).2.cuts
+    BudgetM.modifyMemo fun m => { m with cuts := [] }
     let r ← OptionT.lift (OptionT.run (
       (if h : falsePLL ∈ Γ then pure (G4cTm.botL h) else failure)
       <|> proveRightBounded (key :: V) Γ C
       <|> proveLeftBounded (key :: V) Γ C))
     match r with
-    | some t => pure t
-    | none => do
+    | some t => BudgetM.modifyMemo (fun m => { m with cuts := saved }); pure t
+    | none =>
         -- budget remaining ⟹ the failure was truncation-free (sticky
-        -- exhaustion): the verdict is unconditional, cache it.  A `none`
-        -- at exhausted budget is a mere truncation and is NOT cached.
-        let s ← OptionT.lift (get : StateM (Nat × FailMemo) (Nat × FailMemo))
-        if s.1 > 0 then
-          OptionT.lift
-            (set (s.1, s.2.insert key false) : StateM (Nat × FailMemo) Unit)
+        -- exhaustion): memoise it with its dependency set, as `proveM` does.
+        -- A `none` at exhausted budget is a mere truncation and is NOT
+        -- memoised (the whole run then reads as unknown anyway).
+        let s ← BudgetM.getState
+        BudgetM.modifyMemo (·.fail V key saved (record := s.1 > 0))
         failure
 
-/-- Right rules, budgeted (mirror of `proveRight`). -/
-partial def proveRightBounded (V : List (List PLLFormula × PLLFormula))
+/-- Right rules, budgeted (mirror of `proveRightM`). -/
+partial def proveRightBounded (V : List SeqKey)
     (Γ : List PLLFormula) : (C : PLLFormula) → BudgetM (G4cTm Γ C)
   | .prop a => if h : prop a ∈ Γ then pure (G4cTm.init h) else failure
   | .falsePLL => failure
@@ -369,8 +460,8 @@ partial def proveRightBounded (V : List (List PLLFormula × PLLFormula))
                 pure (G4cTm.laxL h (← proveBounded V (X :: Γ) (somehow A)))
             | _, _ => failure
 
-/-- Left rules, budgeted (mirror of `proveLeft`). -/
-partial def proveLeftBounded (V : List (List PLLFormula × PLLFormula))
+/-- Left rules, budgeted (mirror of `proveLeftM`). -/
+partial def proveLeftBounded (V : List SeqKey)
     (Γ : List PLLFormula) (C : PLLFormula) : BudgetM (G4cTm Γ C) :=
   Γ.attach.firstM fun ⟨F, hF⟩ =>
     match F, hF with
@@ -414,18 +505,22 @@ together with the *remaining* budget.  Reading the pair:
   `find` (a smaller budget can only lose proofs, never invent them);
 * `(none, k + 1)` — the search space was exhausted with budget to spare:
   the run made the same attempts as the fuel-free `find`, so this is the
-  same (certificate-free, see the trust note) `none` that `find` returns;
+  same `none` that `find` returns — intended to mean "not G4c-derivable"
+  (the argument in `proveM`'s docstring), but **untrusted**, since the
+  searcher is `partial` and nothing about it is proved: not a refutation;
 * `(none, 0)`     — the budget ran out (or the search finished exactly as
   it hit `0` — indistinguishable, so read it conservatively): honest
   **unknown**, never a negative verdict.
 
-`budget - remaining` is the number of nodes visited — a free profiler for
-tuning budgets in probe sessions. -/
+Until 2026-10-19 the failure memo could also give `(none, k + 1)` on
+derivable sequents; such earlier verdicts are not evidence of
+underivability.  `budget - remaining` is the number of nodes visited — a free
+profiler for tuning budgets in probe sessions. -/
 def G4cTm.findBounded (budget : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
     Option (G4cTm Γ C) × Nat :=
   let (r, s) :=
     Id.run (StateT.run (OptionT.run (proveBounded [] Γ C))
-      (budget, (∅ : FailMemo)))
+      (budget, ({} : MemoState)))
   (r, s.1)
 
 /-! ## The bridge: terms certify provability, provability yields terms -/
