@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-10-14 11:09 BST from `219c44c` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-10-19 20:18 BST from `0ae8ebd` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**30024 declarations** in **611 modules**: 13782 theorems, 16242 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**30053 declarations** in **611 modules**: 13785 theorems, 16268 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -95,11 +95,11 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.Obligation.StdCtxBridge` | 12 | 8 | 12 |  |  |
 | `LaxLogic.Obligation.Tactics` | 5 | 0 | 5 |  |  |
 | `LaxLogic.Obligation.Timing` | 6 | 5 | 6 |  |  |
-| `LaxLogic.PLL.G4` | 604 | 285 | 604 |  |  |
+| `LaxLogic.PLL.G4` | 624 | 288 | 624 |  |  |
 | `LaxLogic.PLL.ND` | 555 | 218 | 555 |  |  |
 | `LaxLogic.PLL.Normalisation` | 398 | 170 | 398 |  |  |
 | `LaxLogic.PLL.Realisability` | 112 | 40 | 112 |  |  |
-| `LaxLogic.PLL.Search` | 437 | 74 | 437 |  |  |
+| `LaxLogic.PLL.Search` | 446 | 74 | 446 |  |  |
 | `LaxLogic.PLL.SemUI` | 939 | 537 | 938 | 1 |  |
 | `LaxLogic.PLL.Semantics` | 623 | 352 | 623 |  |  |
 | `LaxLogic.PLL.Sequent` | 266 | 116 | 266 |  |  |
@@ -396,8 +396,8 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12945 |
-| `propext`, `Quot.sound` | 8496 |
+| *(none — axiom-free)* | 12955 |
+| `propext`, `Quot.sound` | 8515 |
 | `propext` | 5712 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2837 |
 | `sorryAx` | 8 |
