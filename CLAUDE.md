@@ -57,7 +57,9 @@ proof pipeline, rule 7).
 - Never build a simpset or table from an unproved cell (`RwRule.ok`, the
   DB's `ok`; keep their pins).
 - Never ship a gate you have not watched fail.
-- Every run is bounded: exec the built binary under a deadline, never
-  `lake exe`; no unbounded waits; report every skip and cap. Builds of
-  the family module cost 25 minutes: test bodies on an `unsafe` copy and
-  edges on the bench before paying for one.
+- Every run is bounded: under a deadline (`gtimeout`), no unbounded
+  waits; report every skip and cap. Compiled code is wanted for search
+  (Matthew, 2026-10-21): `lake exe` is allowed, but build the target
+  first (`lake build <exe>`) so that the deadline times the run, not a
+  rebuild. Builds of the family module cost 25 minutes: test bodies on
+  an `unsafe` copy and edges on the bench before paying for one.
