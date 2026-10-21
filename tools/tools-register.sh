@@ -16,6 +16,8 @@ for p in \
   LaxLogic/PLL/Search/SearchConf.lean \
   RNDB \
   tools/Cover.lean \
+  tools/RNDBExport.lean \
+  scripts/rndb_audit.py \
   tools/rho-hasse-svg.py \
   tools/Cert.lean \
   tools/A2Probe.lean \

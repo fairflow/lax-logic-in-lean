@@ -189,7 +189,7 @@ complete for PLL, and the `FRJW`/`GBUW` dichotomy that yields `decidePLL`.
 * **`RNDB/` (6.3k), `Certified/` (8.4k)** — the RN(◯,{}) dictionary in layers: a
   certification register of the theorems the database may cite, each re-pinned
   with a checked `#print axioms`, and then the database itself as one object —
-  1,776 kernel-checked dictionary facts.
+  1,874 kernel-checked facts (audit: `docs/rndb-audit-2026-10-21.md`).
 * **`Audit/`** — the sweep gates (`Production`, `Experimental`), with every
   hold-out named and justified. Each line in a hold-out list is a claim that
   something is not meeting the bar; the list should get shorter.

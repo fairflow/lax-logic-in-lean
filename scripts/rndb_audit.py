@@ -116,17 +116,20 @@ def strip_lean_comments(src):
 # ----------------------------------------------------------------------------
 
 HEADER_CLAIMS = [
-    ("RNDB/DB.lean", "single definition is 1,776 kernel-checked dictionary facts", "total", 1776),
+    ("RNDB/DB.lean", "single definition is 1,874 kernel-checked facts", "total", 1874),
     ("RNDB/DB.lean", "| `RhoEntries`      |  185 |", "rho", 185),
     ("RNDB/DB.lean", "| `DictEntries`     |  236 |", "dictR1", 236),
     ("RNDB/DB.lean", "| `Dict2Entries`    |   82 |", "dictR2", 82),
     ("RNDB/DB.lean", "| `FRJCertEntries`  |   24 |", "frjCert", 24),
     ("RNDB/DB.lean", "| `DerivedEntries`  |  321 |", "derived", 321),
     ("RNDB/DB.lean", "| `EscEntries`      |  928 |", "esc", 928),
+    ("RNDB/DB.lean", "| `Order`           |    3 |", "order", 3),
+    ("RNDB/DB.lean", "| `SepEntries`      |   95 |", "sep", 95),
     ("RNDB/DB.lean", "theorem allEntries_length : allEntries.length = 1874", "total", 1874),
-    ("README.md", "1,776 kernel-checked dictionary facts", "total", 1776),
+    ("README.md", "1,874 kernel-checked facts", "total", 1874),
     ("docs/certified-computation-findings-2026-10-09.md", "1,776 kernel-checked facts as one object", "total", 1776),
-    ("TOOLS.md", "Census 2026-08-25: 1874 entries", "total", 1874),
+    # ^ a dated record: not rewritten, so STALE by design (it carries a dated note)
+    ("TOOLS.md", "re-measured 2026-10-21: 1874 entries", "total", 1874),
     ("docs/rn-catalogue.html", "<b>1874</b><span>RNDB entries</span>", "total", 1874),
     ("RNDB/RhoEntries.lean", "each of the 185 kernel-checked refutation", "rho", 185),
     ("RNDB/DictEntries.lean", "the 236 cells the pin-guarded", "dictR1", 236),
@@ -138,8 +141,8 @@ HEADER_CLAIMS = [
     ("RNDB/Order.lean", "theorem orderEntries_length : orderEntries.length = 3", "order", 3),
     ("RNDB/Order.lean", "the 158 ⊢ engine-certified, all 304 ⊬ kernel-pinned", "rho_matrix_nle", 304),
     ("RNDB/Frontier79.lean", "theorem frontier79_length : frontier79.length = 79", "frontier79", 79),
-    ("RNDB/Frontier79.lean", "UNSETTLED\nRELATIVE TO THIS DATABASE: no entry in `allEntries` backs it", "frontier79_backed", 0),
-    ("RNDB/Types.lean", "states\n323 cell theorems of which 87 are", "rnDict_sorry_tokens", 87),
+    ("RNDB/Frontier79.lean", "all 79 members are BANKED", "frontier79_backed", 79),
+    ("RNDB/Types.lean", "the file now contains\nno `sorry`", "rnDict_sorry_tokens", 0),
 ]
 
 
