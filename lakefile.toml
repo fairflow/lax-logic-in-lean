@@ -220,6 +220,14 @@ root = "tools.ClpCompare"
 name = "rhocover"
 root = "tools.Cover"
 
+# f0s2: spike S2 measurement (2026-10-21), READ-ONLY on RNDB: a designed test
+# set asked by key lookup, union-find, order facts and the public G4c/FinCM
+# decider (docs/f0-accepted-forms-proposal.md).  Build, then run the binary
+# under gtimeout.
+[[lean_exe]]
+name = "f0s2"
+root = "tools.F0S2Measure"
+
 [[lean_exe]]
 name = "frjterm"
 root = "tools.Terminate"

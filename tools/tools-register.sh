@@ -27,6 +27,8 @@ for p in \
   docs/rn-catalogue.html \
   Meta/Audit.lean \
   scripts/semui_fibres.py \
+  tools/F0S2Measure.lean \
+  scripts/f0_s2_summary.py \
 ; do
   printf '%-36s %s\n' "$p" "$(git log -1 --format='%h · %ad' --date=short -- "$p")"
 done
