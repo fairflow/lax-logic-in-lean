@@ -103,8 +103,15 @@ From the survey of `origin/main` that preceded this draft:
   closure enters `wip/`.
 - The simp set (681 rules) is not derived from RNDB.
 - The proving harness's search index does not include RNDB.
-- Spike S1 (an audit and export of RNDB) is running; its report will be
-  linked here.
+- Spike S1 (an audit and export of RNDB) is done:
+  `docs/rndb-audit-2026-10-21.md` (branch `rndb-audit`, 32c33eb).  No
+  contradictions; no `⊢` entries, so the order is not stored; no content
+  key; scope by reference; seven of eight generated files have no
+  generator; the closure reaches `wip/` and four sorried declarations.
+- Matthew's verdict on the result: the current build is a mess and
+  basically unworkable.  The response is `docs/f0-reimplementation-plan.md`:
+  a new library beside the old one, on stated principles, replacing it
+  only at gate G5.  Spike S2 (accepted forms and keys) is its first step.
 
 ## 8 · Questions for Matthew
 
