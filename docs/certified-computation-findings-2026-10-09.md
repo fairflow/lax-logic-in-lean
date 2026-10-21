@@ -217,3 +217,5 @@ certificates):**
 - The record has no measured cost of kernel `decide` over the whole of
   `Certified/RhoRefutations.lean`, and no use of `implemented_by` or
   `@[csimp]` to connect a fast implementation to a specification.
+
+*Note added 2026-10-21:* the RNDB figure in the table above (1,776) was already out of date when this was written; the database has held 1,874 entries since 2026-08-25. See `docs/rndb-audit-2026-10-21.md`.

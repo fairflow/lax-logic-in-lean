@@ -3,9 +3,9 @@
 
 The union of every migrated entry list.  `Entry.holds` makes each claim a
 theorem; `entries_hold` (RNDB/Types.lean) lifts that to any list; so this
-single definition is 1,776 kernel-checked dictionary facts with their
-provenance, and the pin at the foot is the standing guard: if any entry
-anywhere acquires `sorryAx`, the build fails HERE.
+single definition is 1,874 kernel-checked facts with their provenance
+(`allEntries_length` below), and the pin at the foot is the standing
+guard: if any entry anywhere acquires `sorryAx`, the build fails HERE.
 
 | source | entries | relation |
 |---|---|---|
@@ -15,6 +15,12 @@ anywhere acquires `sorryAx`, the build fails HERE.
 | `FRJCertEntries`  |   24 | `nle` (rnFRJCerts countermodels) |
 | `DerivedEntries`  |  321 | `interd` (318 symm + 3 trans, evidence DAG) |
 | `EscEntries`      |  928 | `nle` (the 58 universal escapes, decomposed) |
+| `Order`           |    3 | `nle`, ρ-scope (`orderEntries`, `ord-0001`…`ord-0003`) |
+| `SepEntries`      |   95 | `nle`, ρ-scope (battery separations, `sep-1`…`sep-95`) |
+
+There are no `le` entries: the 158 `⊢` cells of the ρ-order are
+engine-certified at run time (`lake exe rhocover`), not banked here.
+Audit of 2026-10-21: `docs/rndb-audit-2026-10-21.md`.
 
 Duplicates ACROSS sources are permitted and deliberate: an entry records
 one piece of evidence, and the same claim backed twice (say, an FRJ(◯)

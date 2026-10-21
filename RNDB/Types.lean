@@ -1,8 +1,10 @@
 /-
 # The RN(◯,{}) dictionary database — the type layer
 
-What went wrong in round 1 was not arithmetic.  `wip/rnDict.lean` states
-323 cell theorems of which 87 are `theorem foo : Interd a b := sorry`.
+What went wrong in round 1 was not arithmetic.  `wip/rnDict.lean` stated
+323 cell theorems of which 87 were `theorem foo : Interd a b := sorry`.
+(The sorried statements were deleted on 2026-08-25; the file now contains
+no `sorry`.  Audit of 2026-10-21: `docs/rndb-audit-2026-10-21.md`.)
 A `sorry` **asserts**: it produces an inhabitant of the type, so a
 sorried cell can be applied, cited and depended on exactly as a proved
 one can, and is distinguishable from a proof only by reading its body or
@@ -69,7 +71,7 @@ attempts, run against this module:
    unprovable (`… .scope.isSome = true` has no `rfl`);
 2. `Evidence.proof` offered for a negative claim — REJECTED,
    `decide` reports `Rel.nle.IsPositive` false;
-3. `ok := cAnd_4_14`, one of the 87 sorried cells of `wip/rnDict.lean` —
+3. `ok := cAnd_4_14`, then one of the 87 sorried cells of `wip/rnDict.lean` —
    **ACCEPTED**, and `#print axioms` on it reads
    `depends on axioms: [sorryAx]`.
 
@@ -84,7 +86,7 @@ obligation this file cannot discharge on the reader's behalf.
 ## A note on the imports
 
 The worked examples, which cite `wip/rnSep.lean` and `wip/rnSepColl.lean`
-(and through them the sorried `wip/rnDict.lean`), moved to
+(and through them `wip/rnDict.lean`, sorried until 2026-08-25), moved to
 `RNDB/Examples.lean` on 2026-08-24 so that THIS module — the schema every
 entry file imports — is `wip`-free.  The schema needs only the shared
 representatives and the `Deriv`/`Interd` definitions.

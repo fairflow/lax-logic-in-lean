@@ -878,3 +878,11 @@ root = "wip.ui_interpFS_run"
 [[lean_lib]]
 name = "CertifyAdoption"
 globs = ["CertifyAdoption", "CertifyAdoption.CheckDeriv", "CertifyAdoption.Regression"]
+
+# rndbexport: READ-ONLY JSON Lines export of RNDB.allEntries, the frontier
+# lists and the rho/q representatives, with Rewrite.canon keys (spike S1,
+# 2026-10-21; analysis in scripts/rndb_audit.py, findings in
+# docs/rndb-audit-2026-10-21.md).  Build, then run the binary under gtimeout.
+[[lean_exe]]
+name = "rndbexport"
+root = "tools.RNDBExport"
