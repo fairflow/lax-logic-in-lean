@@ -131,8 +131,14 @@ it.  (Answers §1.4.)
 
 **P3. Identity by content; one list of accepted forms.**  A formula's
 identity key is its printed canonical form, computed by `canon` iterated
-to a fixpoint, with a proof that it is interderivable with the input.
-The class representatives are one list with stable names that are never
+to a fixpoint.  **The key is an index, not evidence**: equal keys locate
+rows, and they certify nothing.  There are two reasons, both found by S2:
+* `Rewrite.canon_interd` depends on `Classical.choice`;
+* `Rewrite/` imports the sorried `SemUILayered`.
+
+So `canon` enters the new library only as a computation, moved out of
+`Rewrite/`.  Where a stored formula needs `φ ⊣⊢ canonFix φ`, that is two
+certified `⊢` rows like any others.  The class representatives are one list with stable names that are never
 reused, decided by Matthew at gate G3.  The ρ- and q-numberings become
 alias tables into that list.  Infinite families (the Rieger–Nishimura
 ladder rungs) are named by a parameter, not by an index into a growing
@@ -194,7 +200,7 @@ Four layers.  Each depends only on the layers before it.
 
 | layer | contents | depends on |
 |---|---|---|
-| L0 identity | closed formulas; `canonFix` and its interderivability theorem; the printed key; the list of accepted forms and its alias tables | `LaxLogic/Interd.lean`, `Rewrite.canon` (or a hoisted copy of its soundness, P6) |
+| L0 identity | closed formulas; `canonFix`; the printed key, an index only; the list of accepted forms and its alias tables | `LaxLogic/Interd.lean`; `canon` as a computation, moved out of `Rewrite/` (P3, P6) |
 | L1 certificates | `Fact`, `Cert`, `check`, `check_sound` | L0, `LJF/OCheckDeriv.lean`, `CountermodelEmit.lean` |
 | L2 store | generated row files, each with its one kernel evaluation; the id manifest; retirements; exports | L1 |
 | L3 query | `ask`, with the four strategies of P8; class of a formula; order, covers and Hasse diagram as computed views; generation of the ground rewrite table | L2, and the producers, which are untrusted |
@@ -253,7 +259,7 @@ day and end in a written result.
 
 | phase | work | gate | deliverable |
 |---|---|---|---|
-| A (running) | S2: accepted forms and keys, measured on the old data | G3 | `docs/f0-accepted-forms-proposal.md` |
+| A (S2 done; awaiting G3) | S2: accepted forms and keys, measured on the old data | G3 | `docs/f0-accepted-forms-proposal.md` |
 | A | Matthew: METHOD-F0 §1 and §8; the decisions of §8 below | G1 | edits to METHOD-F0.md |
 | B | S4: certificate cost.  On designed rows, measure kernel time for one `rows.all check` evaluation against per-row theorems, LJF◯ tree sizes on the hardest ⊢ cells (the `f := 44` cell ρ11 ∨ ρ18 ≡ ρ15), and FinCM model sizes.  Pin the transitive closure and axioms of both checkers | — | spike report |
 | C | Statements of L0–L1: `Fact`, `Cert`, `check`, `check_sound`, `canonFix` with its theorem, the key's injectivity, the form of `ask`'s answer | G2 | statements document, displayed formulas, `sorry`-free stubs only as typed parameters |
@@ -282,6 +288,11 @@ Only L3's class key needs G3.
   `unknown`, never dropped.  The old proof stays in RNDB until G5.
 * **`canon` is not idempotent** (S1, finding 10).  The plan uses
   `canonFix`; whether to repair `canon` itself is a separate small PR.
+* **`canon`'s soundness uses choice** (S2, §3.1).  `canon_interd` is
+  pinned at `[propext, Classical.choice, Quot.sound]`.  The first draft
+  of this plan used it as L0's certificate.  It has been corrected to
+  use the key as an index only (P3).  A choice-free `canon_interd` would
+  restore equal keys as evidence; that is S2's Q4.
 * **Drift.**  Each phase's report sets its work against §2 and METHOD-F0
   §1 (METHOD-F0.md §5, drift), and anything mapping to no goal is flagged.
 
@@ -298,7 +309,9 @@ Only L3's class key needs G3.
   today.
 * **D4.**  P7: base facts without scope, with scope kept only on
   aggregate claims and by value.
-* **D5.**  The accepted forms, at G3, from S2.
+* **D5.**  The accepted forms and keys, at G3.  S2's proposal is
+  `docs/f0-accepted-forms-proposal.md` (branch `f0-forms-s2`, 6ff5f88).
+  Its questions Q1–Q9, each with a default, are the G3 decisions.
 * **D6.**  The sorried library theorem `SemUILayered.amalgamation`.  The
   new library does not need it (P6), but `Rewrite/Core.lean` imports its
   module, so the old normaliser's closure keeps it until you decide.
