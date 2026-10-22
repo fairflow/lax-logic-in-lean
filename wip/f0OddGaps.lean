@@ -5,7 +5,8 @@ import Meta.Audit
 # Independence of the odd gaps, one gap on the right
 
 The gaps are `g k = gap k = ◯t(2k+1) ↠ t(2k+1)` (`wip/gapWidth.lean`), with
-`t n = rnSub n`.  The conjecture under test (`wip/f0IndepBlueprint.lean`) is
+`t n = rnSub n`.  Independence (now PROVED, choice-free: `indep`,
+`wip/f0Indep.lean`, which re-derives this case as `odd_gaps_single_cf`) is
 
     Indep:  for all finite disjoint S, T ⊆ ℕ,   ⋀_{i∈S} g(2i+1)  ⊬  ⋁_{j∈T} g(2j+1).
 

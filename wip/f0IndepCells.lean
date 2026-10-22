@@ -6,7 +6,7 @@ import Meta.Audit
 # B1 cells refuted by the designed multi-edge countermodels (GENERATED)
 
 The two `|T| = 2` cells of the B1 refutation stage for Indep
-(`wip/f0IndepBlueprint.lean`), each refuted by the truncation of the multi-edge
+(`wip/f0Indep.lean`), each refuted by the truncation of the multi-edge
 lift `cmM (levels T)` to the cone of its root, written as a `FRJ.Search.Tab`
 and checked by the kernel through the certificate path of `pll`/`pllfast`
 (`not_derivable_of_countermodel`, `by decide`).  Generated 2026-10-22 by the
@@ -24,8 +24,9 @@ In each table the worlds are numbered in increasing ladder order, the root
 next to last and the fallible top last; `leT a b` is the ladder order
 (`b = a` or `b + 2 ≤ a`, in ladder numbering), `rmT` is the identity plus
 `e ⇝ 0` for each edge world `e` and `w ⇝ top` for `w = 0` or an edge world.
-These validate the B2 design on the designed cells; they do not prove the
-forcing lemma.
+They were the validation of the B2 design before the forcing lemma was
+proved (`multi_edge_forcing`, `wip/f0Indep.lean`, 2026-10-22); they remain as
+finite instances checked independently of that proof.
 -/
 
 open FRJ
