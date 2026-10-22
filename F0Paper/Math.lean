@@ -34,6 +34,10 @@ import wip.f0Indep
 import wip.f0Dyadic
 import wip.f0Rat
 import wip.f0Minkowski
+import wip.f0Nuclear
+import wip.f0MacNeilleNonUnique
+import wip.f0Structure
+import wip.f0Hole
 import wip.gapWidth
 import wip.embedNeg
 import wip.ladder8
@@ -341,6 +345,23 @@ partial def model (st : St) (m : Expr) : MetaM String := do
   | (``PLLND.RNEmbed.Skel.cm, #[s]) => return (← generic st 9 s) ++ "^{+}"
   | _ => generic st 9 m
 
+/-- The head of an application `f(x)` of a bundled map: the nuclei and
+embeddings of the completion section by name, anything else generically. -/
+partial def funHead (st : St) (f : Expr) : MetaM String := do
+  let f := f.consumeMData
+  if f.isConstOf ``F0Nuclear.circNucleus then return "\\bigcirc"
+  if f.isConstOf ``MacNeille.principalHom then return "{\\downarrow}"
+  if f.isConstOf ``DedekindCut.principal then return "{\\downarrow}"
+  match f.getAppFnArgs with
+  | (``MacNeille.dmNucleus, #[_, _, j]) => return "\\overline{" ++ (← generic st 9 j) ++ "}"
+  | (``MacNeille.JoinDenseHeytingEmbedding.extNucleus, #[_, _, _, _, emb, j]) =>
+    return "\\overline{" ++ (← generic st 9 j) ++ "}^{" ++ (← generic st 9 emb) ++ "}"
+  | (``MacNeille.JoinDenseHeytingEmbedding.leastExt, #[_, _, _, _, emb, j]) =>
+    return "\\underline{" ++ (← generic st 9 j) ++ "}^{" ++ (← generic st 9 emb) ++ "}"
+  | (``MacNeille.JoinDenseHeytingEmbedding.toHom, #[_, _, _, _, emb]) => generic st 9 emb
+  | (``DedekindCut.principal, #[_, _]) => return "{\\downarrow}"
+  | _ => generic st 9 f
+
 /-- The edge set of the multi-edge lift. -/
 partial def edges (st : St) (ms : Expr) : MetaM String := do
   match ms.consumeMData.getAppFnArgs with
@@ -423,7 +444,10 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
     return "\\theta_{" ++ (← generic st 0 c) ++ "," ++ (← generic st 0 n) ++ "}(" ++ (← generic st 0 i) ++ ")"
   | (``PLLND.F0.Dy.formula, #[d]) => return "f(" ++ (← generic st 0 d) ++ ")"
   | (``PLLND.F0.Dy.lt, #[d, d']) => return wrap 5 s!"{← generic st 6 d} < {← generic st 6 d'}"
-  | (``PLLND.F0.Dy.mk, #[n, x, _]) => return (← generic st 7 n) ++ "/2^{" ++ (← generic st 0 x) ++ "}"
+  | (``PLLND.F0.Dy.mk, #[n, x, _]) =>
+    -- m/2^0 is printed m
+    if natLit? x == some 0 then generic st p n
+    else return (← generic st 7 n) ++ "/2^{" ++ (← generic st 0 x) ++ "}"
   | (``PLLND.F0.ratFormula, #[q]) => return "f_{\\mathbb{Q}}(" ++ (← generic st 0 q) ++ ")"
   -- Minkowski's question-mark function (`wip/f0Minkowski.lean`)
   | (``PLLND.F0.ratFormulaCF, #[q]) => return "f'(" ++ (← generic st 0 q) ++ ")"
@@ -437,7 +461,46 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   | (``PLLND.F0.root, #[t]) => return "\\mathrm{root}(" ++ (← generic st 0 t) ++ ")"
   | (``Decidable.decide, #[q, _]) => return "[" ++ (← generic st 0 q) ++ "]"
   -- a bundled map applied to an argument (Mathlib's `⇑f x`): `f(x)`
-  | (``DFunLike.coe, #[_, _, _, _, f, x]) => return s!"{← generic st 9 f}({← generic st 0 x})"
+  | (``DFunLike.coe, #[_, _, _, _, f, x]) => return s!"{← funHead st f}({← generic st 0 x})"
+  -- the order of F0 as an algebra, and its MacNeille completion
+  | (``PLLND.RNClass, #[]) => pure "F_0"
+  | (``F0Nuclear.circNucleus, #[]) | (``MacNeille.dmNucleus, #[_, _, _])
+  | (``MacNeille.JoinDenseHeytingEmbedding.extNucleus, #[_, _, _, _, _, _])
+  | (``MacNeille.JoinDenseHeytingEmbedding.leastExt, #[_, _, _, _, _, _]) => funHead st e
+  | (``DedekindCut, #[a, _]) => return "\\mathrm{DM}(" ++ (← generic st 0 a) ++ ")"
+  | (``DedekindCut.principal, #[_, _, a]) => return "{\\downarrow}" ++ (← generic st 9 a)
+  | (``DedekindCut.left, #[_, _, x]) => return "\\mathrm{L}(" ++ (← generic st 0 x) ++ ")"
+  | (``DedekindCut.right, #[_, _, x]) => return "\\mathrm{U}(" ++ (← generic st 0 x) ++ ")"
+  | (``F0Nuclear.himp, #[a, b]) => return wrap 6 s!"{← generic st 7 a} \\Rightarrow {← generic st 7 b}"
+  | (``F0Nuclear.box, #[a]) => return "\\bigcirc " ++ (← generic st 9 a)
+  | (``HImp.himp, #[_, _, a, b]) => return wrap 6 s!"{← generic st 7 a} \\Rightarrow {← generic st 7 b}"
+  | (``Min.min, #[_, _, a, b]) => return wrap 7 s!"{← generic st 7 a} \\sqcap {← generic st 8 b}"
+  | (``Max.max, #[_, _, a, b]) => return wrap 6 s!"{← generic st 6 a} \\sqcup {← generic st 7 b}"
+  | (``Top.top, #[_, _]) => pure "\\top"
+  | (``Bot.bot, #[_, _]) => pure "\\bot"
+  | (``SupSet.sSup, #[_, _, s]) => return wrap 6 ("\\bigvee " ++ (← generic st 9 s))
+  | (``InfSet.sInf, #[_, _, s]) => return wrap 6 ("\\bigwedge " ++ (← generic st 9 s))
+  | (``Set.image, #[_, _, f, s]) => return (← funHead st f) ++ "[" ++ (← generic st 0 s) ++ "]"
+  | (``Monotone, #[_, _, _, _, f]) => return wrap 5 ((← generic st 9 f) ++ "\\ \\text{monotone}")
+  | (``iInf, #[_, _, _, f]) =>
+    -- `⨅ (a) (_ : P a), b a` is `⋀ {b a : P a}`; `⨅ a, b a` is `⋀_a b a`
+    lambdaTelescope f fun xs b => do
+      let x ← xs.mapM fun x => do pure (ident (← x.fvarId!.getDecl).userName.toString)
+      match b.consumeMData.getAppFnArgs with
+      | (``iInf, #[_, P, _, g]) =>
+        if ← isProp P then
+          lambdaTelescope g fun _ b' => do
+            return wrap 6 ("\\bigwedge \\{" ++ (← generic st 0 b') ++ " : " ++ (← generic st 0 P) ++ "\\}")
+        else return wrap 6 ("\\bigwedge_{" ++ " ".intercalate x.toList ++ "} " ++ (← generic st 7 b))
+      | _ => return wrap 6 ("\\bigwedge_{" ++ " ".intercalate x.toList ++ "} " ++ (← generic st 7 b))
+  -- the structure results (`wip/f0Structure.lean`, `wip/f0Hole.lean`)
+  | (``PLLND.F0.half, #[n]) =>
+    if natLit? n == some 1 then return wrap 7 "1/2"
+    else return wrap 7 ("1/2^{" ++ (← generic st 0 n) ++ "}")
+  | (``PLLND.F0.idx, #[n, m]) => return "x_{" ++ (← generic st 0 n) ++ "," ++ (← generic st 0 m) ++ "}"
+  | (``PLLND.F0.copyF, #[p, q, k, d]) =>
+    return "e^{" ++ (← generic st 0 p) ++ "," ++ (← generic st 0 q) ++ "}_{" ++ (← generic st 0 k) ++
+      "}(" ++ (← generic st 0 d) ++ ")"
   -- F0 as a quotient
   | (``Quotient, #[_, s]) =>
     if s.consumeMData.isConstOf ``PLLND.LaxInfinite.closedSetoid then pure "F_0"

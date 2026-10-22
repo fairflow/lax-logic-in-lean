@@ -31,8 +31,9 @@ For elements $`x_i` of a distributive lattice, the condition
 $`\bigwedge_{i \in S} x_i \not\le \bigvee_{j \in T} x_j` for all finite disjoint
 $`S` and $`T` is the usual criterion for the bounded sublattice they generate
 to be free distributive on them; see {cite}`Gratzer2011` on free distributive
-lattices.  That restatement is not mechanised.  Section 5 uses `Indep` as it
-stands.
+lattices.  In the library that form is `lpoly_deriv_iff` (Section 7):
+derivability between lattice polynomials in the odd gaps is Boolean
+entailment.  Section 5 uses `Indep` as it stands.
 
 # The multi-edge lift
 

@@ -7,6 +7,8 @@ import F0Paper.Sections.Downsets
 import F0Paper.Sections.Independence
 import F0Paper.Sections.Rationals
 import F0Paper.Sections.Holes
+import F0Paper.Sections.Structure
+import F0Paper.Sections.Completion
 import F0Paper.Sections.Open
 
 open Verso.Genre

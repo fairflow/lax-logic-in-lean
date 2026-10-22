@@ -57,7 +57,9 @@ and $`L` has no greatest element.  PROVED.
 In order-theoretic terms, the pair consisting of $`L` and the set of upper
 bounds of $`L` is a cut of $`F_0` with no element of $`F_0` at it: in the
 Dedekind–MacNeille completion of $`F_0` the gaps have an infimum, and it is a
-new element.
+new element.  A second cut of this kind, below the copy of the dyadic
+rationals, is in Section 7, and Section 8 extends $`\bigcirc` to the
+completion.
 
 # Why
 

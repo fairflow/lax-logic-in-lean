@@ -38,8 +38,9 @@ initial one (Section 2), and it is infinite.  The question asked about it was:
 
 # The answers
 
-All of the following are PROVED: kernel-checked in Lean, sorry-free, with the
-axiom sets stated in each section.
+All of the following are PROVED, kernel-checked in Lean and sorry-free, with
+the axiom sets stated in each section, except where a statement is marked
+REFUTED or OPEN.
 
 _Covers exist at the bottom._  With $`t_n` the $`n`-th Rieger–Nishimura rung
 with $`\bigcirc\bot` for its variable (Section 2), so that $`t_0 = \bot`,
@@ -80,28 +81,43 @@ $`f` gives an order embedding of $`\mathbb{Q}` in $`F_0`, without
 dense linear orders, gives an order embedding too, and carries
 `Classical.choice`.
 
-_A cut that $`F_0` does not fill._  The gaps $`g_k`, $`k \ge 1`, have no greatest
+_Cuts that $`F_0` does not fill._  The gaps $`g_k`, $`k \ge 1`, have no greatest
 lower bound, among the variable-free formulas or among all formulas
-(Section 6).
+(Section 6), and neither has the descending chain $`f(1/2^n)` of the dyadic
+copy (Section 7).
+
+_Covers and copies together._  Apart from its bottom, the dyadic copy lies
+above the rungs $`t_0, \ldots, t_{15}`, and not above $`t_{16}`.  Derivability
+between lattice polynomials in the odd gaps is Boolean entailment, so between
+any two of them, one strictly below the other, hang $`\aleph_0` mutually
+incomparable copies of the dyadics.  And an element outside the downset of a
+finite table has an upper cover (Section 7).
+
+_The completion._  $`F_0` is a Heyting algebra with the nucleus $`\bigcirc`, and
+$`\bigcirc` extends to its Dedekind–MacNeille completion as a nucleus, the
+greatest monotone extension.  The extension theorem is Goldblatt's; the
+extensions form an interval, and they are not unique in general: REFUTED by a
+chain.  Uniqueness at $`F_0` is OPEN (Section 8).
 
 The answer to the first question is therefore no, and so is the answer to the
 second as stated, while $`\mathbb{Q}` does order-embed in $`F_0` itself.
-Section 7 will list the questions that remain, with their status.
+Section 9 lists the questions that remain, with their status.
 
 # Layout
 
 Section 2 fixes the logic, its models, $`F_0`, the rungs and the gaps.
-Sections 3 to 6 prove the results above, one section each.  Section 7 is
-reserved for the open questions, and Section 8 lists the references.
+Sections 3 to 8 prove the results above, one topic each, and Section 9 lists
+the open questions.  Section 10 lists the references.
 
 Each result is stated in words, then as a displayed formula generated from the
 Lean statement when the document is built, then as the Lean declaration
 printed from the compiled library, then as a link to its source line at the
 commit that was built.  The declarations live in the repository's `wip/`
 directory: `wip/f0Covers.lean`, `wip/f0Indep.lean`, `wip/f0Dyadic.lean`,
-`wip/f0Minkowski.lean`, `wip/f0Rat.lean`, `wip/gapWidth.lean`,
-`wip/embedNeg.lean`, `wip/floor.lean`
-and the files they import.  In the displayed formulas the meta-level
-conjunction and disjunction are written "and" and "or", so that they are not
-confused with the connectives $`\land` and $`\lor` of PLL, and
+`wip/f0Minkowski.lean`, `wip/f0Rat.lean`, `wip/f0Structure.lean`,
+`wip/f0Hole.lean`, `wip/f0Nuclear.lean`, `wip/f0MacNeille.lean`,
+`wip/f0MacNeilleNonUnique.lean`, `wip/gapWidth.lean`, `wip/embedNeg.lean`,
+`wip/floor.lean` and the files they import.  In the displayed formulas the
+meta-level conjunction and disjunction are written "and" and "or", so that
+they are not confused with the connectives $`\land` and $`\lor` of PLL, and
 $`x \in \mathrm{Fm}_0` says that $`x` is variable-free.

@@ -21,9 +21,12 @@ p = sys.argv[1]; s = open(p, encoding='utf-8').read()
 s = s.replace(r'\setmonofont{DejaVu Sans Mono}',
   r'\setmonofont{DejaVuSansMono}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold, '
   r'ItalicFont=*-Oblique, BoldItalicFont=*-BoldOblique]')
-fallback = '◯ℚ⊨⊫⋃⋂⋁⊬⊢⊣⊤⊥∧∨⊃≥≤∀∃⟹⟺⇝⋆⋖⋀ℕ'   # ⋖⋀ℕ: the F0 paper (2026-10-22)
+fallback = '◯ℚ⊨⊫⋃⋂⋁⊬⊢⊣⊤⊥∧∨⊃≥≤∀∃⟹⟺⇝⋆⋖⋀ℕ∈⊓'   # ⋖⋀ℕ∈⊓: the F0 paper (2026-10-22)
+fallback2 = '⨅'   # not in DejaVu Sans; STIX Two Math has it (the F0 paper, 2026-10-22)
 extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold]' '\n'
+  + r'\newfontfamily\symbolfontb{STIXTwoMath-Regular}[Extension=.otf]' '\n'
   + ''.join('\\newunicodechar{%s}{{\\symbolfont %s}}\n' % (c, c) for c in fallback)
+  + ''.join('\\newunicodechar{%s}{{\\symbolfontb %s}}\n' % (c, c) for c in fallback2)
   + r'\usepackage{amsmath,amssymb}' '\n'                      # \Vdash, \nvdash, \square, \rightsquigarrow (KaTeX has them too)
   + r'\usepackage[a4paper,margin=24mm,headheight=26pt,headsep=14pt]{geometry}' '\n'
   + r'\hypersetup{colorlinks=true, urlcolor=blue!55!black, linkcolor=black, citecolor=black}' '\n'   # no link boxes
@@ -35,6 +38,8 @@ extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, 
   + r'\makeevenhead{headings}{}{\parbox{\textwidth}{\centering\versoStampLine\makebox[\textwidth]{\thepage\hfill{\slshape\leftmark}}}}{}' '\n'
   + r'\makeoddhead{plain}{}{\versoStampText}{}' '\n'
   + r'\makeevenhead{plain}{}{\versoStampText}{}' '\n'
+  # the title page (memoir's titlingpage style is an alias of empty)
+  + r'\makepagestyle{titlingpage}\makeoddhead{titlingpage}{}{\versoStampText}{}\makeevenhead{titlingpage}{}{\versoStampText}{}' '\n'
   # an optional per-paper addition to the preamble (e.g. no blank recto pages)
   + os.environ.get('VERSO_TEX_EXTRA', '') + '\n')
 # the stamp is defined where {buildStamp} is rendered, after the title page and

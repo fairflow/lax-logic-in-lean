@@ -39,11 +39,11 @@ Starting from $`\bot < \top` and inserting a fresh generator between each pair
 of neighbours, level by level, gives a chain of the order type of the dyadic
 rationals in $`[0, 1]`.
 
-The lattice-theoretic restatement of Section 4 (that the odd gaps generate a
-free distributive lattice) is not mechanised, so the argument is carried out
-on lattice polynomials directly: derivability between their interpretations
-is proved by lattice reasoning in PLL, and underivability by assignments,
-through `indep`.
+The argument is carried out on lattice polynomials directly: derivability
+between their interpretations is proved by lattice reasoning in PLL, and
+underivability by assignments, through `indep`.  (The full lattice-theoretic
+statement, that derivability between such polynomials is Boolean entailment,
+is `lpoly_deriv_iff` of Section 7.)
 
 # Lattice polynomials
 
@@ -271,11 +271,11 @@ numerator and denominator, as a pair that is not reduced.  The composite
 $`\mathit{qm} = \mathord{?} \circ \sigma` is then an explicit, computable map
 from $`\mathbb{Q}` to the dyadic rationals in $`(0, 1)`.
 
-{stmt}`sq`
+{stmt}`Mink.sq`
 
-{docstring sq +allowMissing}
+{docstring Mink.sq +allowMissing}
 
-{srcLink}`sq`
+{srcLink}`Mink.sq`
 
 {stmt}`qm`
 
