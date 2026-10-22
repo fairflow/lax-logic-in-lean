@@ -69,6 +69,13 @@ name = "CurryPaper"
 [[lean_lib]]
 name = "CLPPaper"
 
+# F0Paper: the vanilla-Verso paper on the order of F0, the Lindenbaum algebra
+# of the variable-free PLL formulas (wip/f0Covers, f0Indep, f0Dyadic, f0Rat,
+# gapWidth, embedNeg, ladder8, floor).  Deliberately NOT in defaultTargets, as
+# CLPPaper.  Build HTML + PDF with scripts/f0-paper.sh.
+[[lean_lib]]
+name = "F0Paper"
+
 [[lean_lib]]
 name = "LaxLogic"
 

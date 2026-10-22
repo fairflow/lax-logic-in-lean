@@ -21,7 +21,7 @@ p = sys.argv[1]; s = open(p, encoding='utf-8').read()
 s = s.replace(r'\setmonofont{DejaVu Sans Mono}',
   r'\setmonofont{DejaVuSansMono}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold, '
   r'ItalicFont=*-Oblique, BoldItalicFont=*-BoldOblique]')
-fallback = '◯ℚ⊨⊫⋃⋂⋁⊬⊢⊣⊤⊥∧∨⊃≥≤∀∃⟹⟺⇝⋆'
+fallback = '◯ℚ⊨⊫⋃⋂⋁⊬⊢⊣⊤⊥∧∨⊃≥≤∀∃⟹⟺⇝⋆⋖⋀ℕ'   # ⋖⋀ℕ: the F0 paper (2026-10-22)
 extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold]' '\n'
   + ''.join('\\newunicodechar{%s}{{\\symbolfont %s}}\n' % (c, c) for c in fallback)
   + r'\usepackage{amsmath,amssymb}' '\n'                      # \Vdash, \nvdash, \square, \rightsquigarrow (KaTeX has them too)
@@ -37,6 +37,13 @@ extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, 
   + r'\makeevenhead{plain}{}{\versoStampText}{}' '\n'
   # an optional per-paper addition to the preamble (e.g. no blank recto pages)
   + os.environ.get('VERSO_TEX_EXTRA', '') + '\n')
+# the stamp is defined where {buildStamp} is rendered, after the title page and
+# the contents; a copy in the preamble puts it in those pages' headers too
+# (2026-10-22, the F0 paper)
+import re
+m = re.search(r'\\gdef\\versoBuildStamp\{[^{}]*\}', s)
+if m:
+  extra += m.group(0) + '\n'
 s = s.replace('\\begin{document}', extra + '\\begin{document}', 1)
 open(p, 'w', encoding='utf-8').write(s)
 PY
