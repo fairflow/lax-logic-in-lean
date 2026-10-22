@@ -6,6 +6,7 @@ import RNDB.DB
 import RNDB.Frontier79
 import RNDB.Examples
 import Rewrite.Canon
+import F0.Names
 import Lean.Data.Json
 
 /-!
@@ -16,7 +17,7 @@ historical labels in order of discovery) it decides, with the subframe
 tableau (`SubTab.solve`), every cell the explorer shows, and writes
 
 * Lean source, one theorem per fact, under `F0/` (`F0/Order/PartK.lean`,
-  `F0/Ops/PartK.lean`, `F0/Members/PartK.lean` and the three umbrella
+  `F0/Ops/PartK.lean`, `F0/Members/PartK.lean`, `F0/Families/PartK.lean` and the umbrella
   modules), each fact `PLLND.SubTab.yes'.verdict` (a closed tableau,
   translated into a derivation; `LaxLogic/PLL/SubTab/Translate.lean`) or
   `PLLND.SubTab.no.verdict` (a finite subframe countermodel), checked by
@@ -42,8 +43,17 @@ facts of `F0/Members` (`⊢ X ↠ ρk`, `⊢ ρk ↠ X`).  The RNDB evidence and
 
 Usage (run the built binary under a deadline):
 
-    explorergen lean <repo-root>
-    explorergen json <repo-root> <date> <commit> <checked: order,ops,members>
+    explorergen lean <repo-root> [part-size]
+    explorergen json <repo-root> <date> <facts-commit> <generator-commit> <checked>
+
+where `<checked>` lists the parts the kernel accepted, among
+`order,tables,members,families`.
+
+Names (2026-10-22, METHOD-F0 §1 E): a class is shown under the preferred
+certified membership in the families of `F0/Names.lean` (`F0.nameOf`);
+`F0/Families` certifies each membership with two facts, and names the op
+results outside R that are family members.  The ρ-labels stay as ids
+(`id`, `legacy`).
 -/
 
 open Lean (Json toJson)
@@ -100,31 +110,42 @@ def named : List (String × F) :=
         RNReps.q15].contains (rho i) then none
     else some (rhoSrc i, rho i))
 
-def src (φ : F) : String :=
-  match named.find? (·.2 == φ) with
+/-- The family members of the search domain (`F0/Names.lean`), as names for
+the facts of `F0/Families` only (the other parts print as before). -/
+def famNamed : List (String × F) :=
+  F0.Fam.domain.filterMap fun (f, n) => match f with
+    | .bot | .top => none
+    | _ => some (s!"(F0.{f.tag} {n})", f.term n)
+
+def srcWith (ns : List (String × F)) (φ : F) : String :=
+  match ns.find? (·.2 == φ) with
   | some (n, _) => n
   | none =>
     match φ with
     | .prop a => s!"(PLLFormula.prop \"{a}\")"
     | .falsePLL => "PLLFormula.falsePLL"
-    | .and A B => s!"(PLLFormula.and {src A} {src B})"
-    | .or A B => s!"(PLLFormula.or {src A} {src B})"
-    | .ifThen A B => s!"(PLLFormula.ifThen {src A} {src B})"
-    | .somehow A => s!"(PLLFormula.somehow {src A})"
+    | .and A B => s!"(PLLFormula.and {srcWith ns A} {srcWith ns B})"
+    | .or A B => s!"(PLLFormula.or {srcWith ns A} {srcWith ns B})"
+    | .ifThen A B => s!"(PLLFormula.ifThen {srcWith ns A} {srcWith ns B})"
+    | .somehow A => s!"(PLLFormula.somehow {srcWith ns A})"
 
-def tcertSrc : TCert → String
+def src (φ : F) : String := srcWith named φ
+
+def tcertSrcWith (ns : List (String × F)) : TCert → String
   | .bot => ".bot"
-  | .ax A => s!"(.ax {src A})"
-  | .andL A B c => s!"(.andL {src A} {src B} {tcertSrc c})"
-  | .orL A B c₁ c₂ => s!"(.orL {src A} {src B} {tcertSrc c₁} {tcertSrc c₂})"
-  | .impL A B c₁ c₂ => s!"(.impL {src A} {src B} {tcertSrc c₁} {tcertSrc c₂})"
-  | .boxL A c => s!"(.boxL {src A} {tcertSrc c})"
-  | .andR A B c₁ c₂ => s!"(.andR {src A} {src B} {tcertSrc c₁} {tcertSrc c₂})"
-  | .orR A B c => s!"(.orR {src A} {src B} {tcertSrc c})"
-  | .impLoc A B c => s!"(.impLoc {src A} {src B} {tcertSrc c})"
-  | .boxLoc A c => s!"(.boxLoc {src A} {tcertSrc c})"
-  | .impR A B c => s!"(.impR {src A} {src B} {tcertSrc c})"
-  | .boxR A c => s!"(.boxR {src A} {tcertSrc c})"
+  | .ax A => s!"(.ax {srcWith ns A})"
+  | .andL A B c => s!"(.andL {srcWith ns A} {srcWith ns B} {tcertSrcWith ns c})"
+  | .orL A B c₁ c₂ => s!"(.orL {srcWith ns A} {srcWith ns B} {tcertSrcWith ns c₁} {tcertSrcWith ns c₂})"
+  | .impL A B c₁ c₂ => s!"(.impL {srcWith ns A} {srcWith ns B} {tcertSrcWith ns c₁} {tcertSrcWith ns c₂})"
+  | .boxL A c => s!"(.boxL {srcWith ns A} {tcertSrcWith ns c})"
+  | .andR A B c₁ c₂ => s!"(.andR {srcWith ns A} {srcWith ns B} {tcertSrcWith ns c₁} {tcertSrcWith ns c₂})"
+  | .orR A B c => s!"(.orR {srcWith ns A} {srcWith ns B} {tcertSrcWith ns c})"
+  | .impLoc A B c => s!"(.impLoc {srcWith ns A} {srcWith ns B} {tcertSrcWith ns c})"
+  | .boxLoc A c => s!"(.boxLoc {srcWith ns A} {tcertSrcWith ns c})"
+  | .impR A B c => s!"(.impR {srcWith ns A} {srcWith ns B} {tcertSrcWith ns c})"
+  | .boxR A c => s!"(.boxR {srcWith ns A} {tcertSrcWith ns c})"
+
+def tcertSrc (c : TCert) : String := tcertSrcWith named c
 
 def subcmSrc (m : SubCM) : String :=
   s!"\{ n := {m.n}, root := {m.root}, le := {m.le}, S := {m.S}, val := {repr m.val} }"
@@ -141,6 +162,8 @@ def tsize : TCert → Nat
 inductive Cell where
   | le (c : TCert)
   | nle (m : SubCM)
+  /-- `⊢ A ↠ C` from two proved facts `⊢ A ↠ B`, `⊢ B ↠ C` (`F0.holds_trans`). -/
+  | comp (a b : String)
 
 /-- Cheap: is `⊢ φ` provable (the search's verdict only). -/
 def provable (φ : F) : Bool :=
@@ -172,18 +195,27 @@ def decideF (φ : F) : Except String Cell :=
 def Cell.isLe : Cell → Bool
   | .le _ => true
   | .nle _ => false
+  | .comp _ _ => true
+
+def Cell.weight : Cell → Nat
+  | .le c => tsize c
+  | .nle m => m.n
+  | .comp _ _ => 0
 
 def certJson : Cell → Json
   | .le c => Json.mkObj [("kind", Json.str "tableau"), ("nodes", toJson (tsize c))]
   | .nle m => Json.mkObj [("kind", Json.str "countermodel"), ("n", toJson m.n),
       ("root", toJson m.root), ("le", toJson m.le), ("S", toJson m.S), ("val", toJson m.val)]
+  | .comp a b => Json.mkObj [("kind", Json.str "composed"), ("of", toJson [a, b])]
 
 /-- One theorem: `name` (unqualified), its docstring, the spec as source. -/
-def thmSrc (name doc specS : String) : Cell → String
+def thmSrc (name doc specS : String) (ns : List (String × F)) : Cell → String
   | .le c =>
-    s!"/-- {doc} -/\ntheorem {name} : PLLND.SubTab.Holds {specS} :=\n  PLLND.SubTab.yes'.verdict {specS}\n    {tcertSrc c}\n"
+    s!"/-- {doc} -/\ntheorem {name} : PLLND.SubTab.Holds {specS} :=\n  PLLND.SubTab.yes'.verdict {specS}\n    {tcertSrcWith ns c}\n"
   | .nle m =>
     s!"/-- {doc} (countermodel, {m.n} worlds) -/\ntheorem {name} : PLLND.SubTab.Holds {specS} → False :=\n  PLLND.SubTab.no.verdict {specS}\n    {subcmSrc m}\n"
+  | .comp a b =>
+    s!"/-- {doc} (composed) -/\ntheorem {name} : PLLND.SubTab.Holds {specS} :=\n  F0.holds_trans {a} {b}\n"
 
 /-! ## The facts -/
 
@@ -207,7 +239,7 @@ def orderCells : Except String (List OrderCell) :=
   ((List.range nR).flatMap fun i => (List.range nR).filterMap fun j =>
       if i == j then none else some (i, j)).mapM fun (i, j) => do
     let c ← decideF ((rho i).ifThen (rho j))
-    let rel := match c with | .le _ => "⊢" | .nle _ => "⊬"
+    let rel := if c.isLe then "⊢" else "⊬"
     pure ⟨i, j, ⟨s!"F0.Order.c_{i}_{j}", s!"{nm i} {rel} {nm j}",
       s!"({rhoSrc i}.ifThen {rhoSrc j})", c⟩⟩
 
@@ -349,17 +381,182 @@ def members : Except String (List Member × Nat) := do
       t := t + 1
   return (out.toList, outside)
 
+/-! ### Family memberships (`F0/Names.lean`) -/
+
+def famTag (f : F0.Fam) : String := f.tag
+
+/-- The displayed name: `⊥`, `⊤`, or the family letter and the index
+(`F0.Fam.label`). -/
+def famLabel (f : F0.Fam) (n : Nat) : String := f.label n
+
+/-- The member as a Lean term (for the JSON `term` field). -/
+def famTerm (f : F0.Fam) (n : Nat) : String :=
+  match f with
+  | .bot => "PLLFormula.falsePLL"
+  | .top => "PLLFormula.truePLL"
+  | _ => s!"F0.{famTag f} {n}"
+
+/-- The member as Lean source in a fact. -/
+def famSrc (f : F0.Fam) (n : Nat) : String := s!"({famTerm f n})"
+
+/-- One (family, index) of the search domain: its class among the 22 with
+the two bridge facts, or `none` (outside R). -/
+structure FamCell where
+  f : F0.Fam
+  n : Nat
+  φ : F
+  res : Option (Nat × Fact × Fact)
+
+def famCells : Except String (List FamCell) :=
+  F0.Fam.domain.mapM fun (f, n) => do
+    let φ := f.term n
+    match (List.range nR).find? (fun k => provable (φ.ifThen (rho k)) && provable ((rho k).ifThen φ)) with
+    | some k =>
+      let cf ← decideF (φ.ifThen (rho k))
+      let cb ← decideF ((rho k).ifThen φ)
+      let tag := s!"{famTag f}_{n}"
+      pure ⟨f, n, φ, some (k,
+        ⟨s!"F0.Families.{tag}_fwd", s!"{famLabel f n} ⊢ {nm k}", s!"({famSrc f n}.ifThen {rhoSrc k})", cf⟩,
+        ⟨s!"F0.Families.{tag}_bwd", s!"{nm k} ⊢ {famLabel f n}", s!"({rhoSrc k}.ifThen {famSrc f n})", cb⟩)⟩
+    | none => pure ⟨f, n, φ, none⟩
+
+def FamCell.facts (c : FamCell) : List Fact :=
+  match c.res with
+  | some (_, f, b) => [f, b]
+  | none => []
+
+/-- The name of an op result outside R: the preferred family member outside
+R interderivable with it (`F0.nameOf` over the run-time memberships), and
+the two bridge facts. -/
+structure OpName where
+  tag : String
+  f : F0.Fam
+  n : Nat
+  fwd : Fact
+  bwd : Fact
+
+/-- Names of the op results outside R.  For each family member that names
+some of them, ONE op cell (the hub, the one with the smallest bridge
+certificates) is bridged to the member directly; every other cell is
+bridged to the hub (two small facts, `F0/Families`) and the bridge to the
+member is composed (`F0.holds_trans`, `F0/Named`).  Returns the names, the
+direct facts and the composed facts. -/
+def opNames (fcs : List FamCell) (ops : List OpCell) :
+    Except String (List OpName × List Fact × List Fact) := do
+  let outside := fcs.filter (·.res.isNone)
+  let mut hits : Array (OpCell × F0.Fam × Nat) := #[]
+  for c in ops do
+    if !c.isHit then
+      let φ := c.op.apply c.i (c.j.getD 0)
+      let ms := (outside.filter fun x => provable (φ.ifThen x.φ) && provable (x.φ.ifThen φ)).map
+        fun x => (x.f, x.n)
+      match F0.nameOf ms with
+      | some (f, n) => hits := hits.push (c, f, n)
+      | none => pure ()
+  let targets := hits.foldl (fun (acc : Array (F0.Fam × Nat)) (_, f, n) =>
+    if acc.contains (f, n) then acc else acc.push (f, n)) #[]
+  let mut names := #[]
+  let mut direct := #[]
+  let mut composed := #[]
+  for (f, n) in targets do
+    let X := f.term n
+    let xs := famSrc f n
+    let xl := famLabel f n
+    let xt := s!"{famTag f}_{n}"
+    let hs := (hits.filter fun (_, f', n') => f' == f && n' == n).toList.map (·.1)
+    -- the hub: the cell whose direct bridge is cheapest (first on ties)
+    let mut best : Option (OpCell × Cell × Cell × Nat) := none
+    for c in hs do
+      let φ := c.op.apply c.i (c.j.getD 0)
+      let cf ← decideF (φ.ifThen X)
+      let cb ← decideF (X.ifThen φ)
+      let w := cf.weight + cb.weight
+      match best with
+      | some (_, _, _, w') => if w < w' then best := some (c, cf, cb, w)
+      | none => best := some (c, cf, cb, w)
+    match best with
+    | none => pure ()
+    | some (hub, hf, hb, _) =>
+      let hφ := hub.op.apply hub.i (hub.j.getD 0)
+      let hφs := hub.op.srcOf hub.i (hub.j.getD 0)
+      let htag := hub.op.tag hub.i (hub.j.getD 0)
+      let hdoc := hub.op.docOf hub.i (hub.j.getD 0)
+      let hubF : Fact := ⟨s!"F0.Families.{htag}_is_{xt}_fwd", s!"{hdoc} ⊢ {xl}", s!"({hφs}.ifThen {xs})", hf⟩
+      let hubB : Fact := ⟨s!"F0.Families.{htag}_is_{xt}_bwd", s!"{xl} ⊢ {hdoc}", s!"({xs}.ifThen {hφs})", hb⟩
+      direct := direct.push hubF |>.push hubB
+      names := names.push (⟨htag, f, n, hubF, hubB⟩ : OpName)
+      for c in hs do
+        let tag := c.op.tag c.i (c.j.getD 0)
+        if tag != htag then
+          let φ := c.op.apply c.i (c.j.getD 0)
+          let φs := c.op.srcOf c.i (c.j.getD 0)
+          let doc := c.op.docOf c.i (c.j.getD 0)
+          let a ← decideF (φ.ifThen hφ)
+          let b ← decideF (hφ.ifThen φ)
+          let toF : Fact := ⟨s!"F0.Families.{tag}_to_{htag}_fwd", s!"{doc} ⊢ {hdoc}", s!"({φs}.ifThen {hφs})", a⟩
+          let toB : Fact := ⟨s!"F0.Families.{tag}_to_{htag}_bwd", s!"{hdoc} ⊢ {doc}", s!"({hφs}.ifThen {φs})", b⟩
+          direct := direct.push toF |>.push toB
+          let cF : Fact := ⟨s!"F0.Named.{tag}_is_{xt}_fwd", s!"{doc} ⊢ {xl}", s!"({φs}.ifThen {xs})",
+            .comp toF.name hubF.name⟩
+          let cB : Fact := ⟨s!"F0.Named.{tag}_is_{xt}_bwd", s!"{xl} ⊢ {doc}", s!"({xs}.ifThen {φs})",
+            .comp hubB.name toB.name⟩
+          composed := composed.push cF |>.push cB
+          names := names.push (⟨tag, f, n, cF, cB⟩ : OpName)
+  return (names.toList, direct.toList, composed.toList)
+
+/-- The family members outside R, grouped by class (in the order of
+preference, so the first member of a group is its name): 22 separations
+for the first member, and two bridge facts for each other member. -/
+structure OutGroup where
+  rep : FamCell
+  others : List (FamCell × Fact × Fact)
+  seps : List (Nat × String × Fact)
+
+def outGroups (fcs : List FamCell) : Except String (List OutGroup) := do
+  let mut gs : Array OutGroup := #[]
+  for x in fcs.filter (·.res.isNone) do
+    match (gs.toList.zipIdx).find? (fun (g, _) =>
+        provable (x.φ.ifThen g.rep.φ) && provable (g.rep.φ.ifThen x.φ)) with
+    | some (g, i) =>
+      let rt := s!"{famTag g.rep.f}_{g.rep.n}"
+      let xt := s!"{famTag x.f}_{x.n}"
+      let cf ← decideF (x.φ.ifThen g.rep.φ)
+      let cb ← decideF (g.rep.φ.ifThen x.φ)
+      gs := gs.set! i { g with others := g.others ++ [(x,
+        ⟨s!"F0.Families.{xt}_is_{rt}_fwd", s!"{famLabel x.f x.n} ⊢ {famLabel g.rep.f g.rep.n}",
+          s!"({famSrc x.f x.n}.ifThen {famSrc g.rep.f g.rep.n})", cf⟩,
+        ⟨s!"F0.Families.{xt}_is_{rt}_bwd", s!"{famLabel g.rep.f g.rep.n} ⊢ {famLabel x.f x.n}",
+          s!"({famSrc g.rep.f g.rep.n}.ifThen {famSrc x.f x.n})", cb⟩)] }
+    | none =>
+      let xt := s!"{famTag x.f}_{x.n}"
+      let doc := famLabel x.f x.n
+      let φs := famSrc x.f x.n
+      let seps ← (List.range nR).mapM fun k => do
+        if provable (x.φ.ifThen (rho k)) then
+          let c ← decideF ((rho k).ifThen x.φ)
+          pure (k, "bwd", (⟨s!"F0.Families.out_{xt}_sep_{k}", s!"{nm k} ⊬ {doc}",
+            s!"({rhoSrc k}.ifThen {φs})", c⟩ : Fact))
+        else
+          let c ← decideF (x.φ.ifThen (rho k))
+          pure (k, "fwd", (⟨s!"F0.Families.out_{xt}_sep_{k}", s!"{doc} ⊬ {nm k}",
+            s!"({φs}.ifThen {rhoSrc k})", c⟩ : Fact))
+      gs := gs.push ⟨x, [], seps⟩
+  return gs.toList
+
+def OutGroup.facts (g : OutGroup) : List Fact :=
+  g.seps.map (·.2.2) ++ g.others.flatMap fun (_, f, b) => [f, b]
+
 /-! ## Writing the Lean files -/
 
-def header (part title : String) : String :=
-  s!"import LaxLogic.PLL.SubTab.Translate\nimport LaxLogic.RN.Rho\n\n/-!\n# {title}\n\nGENERATED by `explorergen lean` (tools/F0/ExplorerGen.lean); do not edit.\nOne theorem per fact: `PLLND.SubTab.yes'.verdict` (a closed subframe\ntableau, translated into a derivation) or `PLLND.SubTab.no.verdict` (a\nfinite subframe countermodel), checked by the kernel; each pinned at\n`[propext, Quot.sound]`.  The ρ-indices are historical labels.\n-/\n\nset_option maxRecDepth 100000\n\nopen RNReps\n\nnamespace F0.{part}\n\n"
+def header (part title : String) (extra : String := "") : String :=
+  s!"import LaxLogic.PLL.SubTab.Translate\nimport LaxLogic.RN.Rho\n{extra}\n/-!\n# {title}\n\nGENERATED by `explorergen lean` (tools/F0/ExplorerGen.lean); do not edit.\nOne theorem per fact: `PLLND.SubTab.yes'.verdict` (a closed subframe\ntableau, translated into a derivation) or `PLLND.SubTab.no.verdict` (a\nfinite subframe countermodel), checked by the kernel; each pinned at\n`[propext, Quot.sound]`.  The ρ-indices are historical labels.\n-/\n\nset_option maxRecDepth 100000\n\nopen RNReps\n\nnamespace F0.{part}\n\n"
 
 def short (full : String) : String := (full.splitOn ".").getLast!
 
-def partFile (part title : String) (fs : List Fact) : String :=
-  let body := String.intercalate "\n" (fs.map fun f => thmSrc (short f.name) f.doc f.spec f.cell)
+def partFile (part title : String) (fs : List Fact) (extra : String := "") (ns : List (String × F) := named) : String :=
+  let body := String.intercalate "\n" (fs.map fun f => thmSrc (short f.name) f.doc f.spec ns f.cell)
   let pins := String.intercalate "\n" (fs.map fun f => s!"#axioms_within {f.name} [propext, Quot.sound]")
-  header part title ++ body ++ s!"\nend F0.{part}\n\n" ++ pins ++ "\n"
+  header part title extra ++ body ++ s!"\nend F0.{part}\n\n" ++ pins ++ "\n"
 
 def chunk {α} (n : Nat) (l : List α) : List (List α) :=
   if n == 0 then [l] else
@@ -367,8 +564,8 @@ def chunk {α} (n : Nat) (l : List α) : List (List α) :=
 
 /-- Write `F0/<part>/PartK.lean` and the umbrella `F0/<part>.lean`;
 returns the module names. -/
-def writePart (root : System.FilePath) (part title : String) (psize : Nat) (fs : List Fact) :
-    IO (List String) := do
+def writePart (root : System.FilePath) (part title : String) (psize : Nat) (fs : List Fact)
+    (extra : String := "") (ns : List (String × F) := named) : IO (List String) := do
   let dir := root / "F0" / part
   IO.FS.createDirAll dir
   let cs := chunk psize fs
@@ -376,7 +573,7 @@ def writePart (root : System.FilePath) (part title : String) (psize : Nat) (fs :
   let mut k := 0
   for c in cs do
     IO.FS.writeFile (dir / s!"Part{k}.lean")
-      (partFile part s!"{title}, part {k} ({c.length} facts)" c)
+      (partFile part s!"{title}, part {k} ({c.length} facts)" c extra ns)
     mods := mods.push s!"F0.{part}.Part{k}"
     k := k + 1
   let umb := String.intercalate "\n" (mods.toList.map (s!"import {·}")) ++
@@ -413,6 +610,12 @@ def run (args : List String) : IO UInt32 := do
     let (ms, outside) ← IO.ofExcept members
     let t3 ← IO.monoMsNow
     IO.eprintln s!"members: {ms.length} certified members ({outside} RNDB candidates outside R) in {t3 - t2} ms"
+    let fcs ← IO.ofExcept famCells
+    let (onames, oDirect, oComposed) ← IO.ofExcept (opNames fcs ops)
+    let ogs ← IO.ofExcept (outGroups fcs)
+    let t4 ← IO.monoMsNow
+    IO.eprintln s!"families: {fcs.length} members searched, {(fcs.filter (·.res.isSome)).length} in R; {ogs.length} classes outside R; {onames.length} op results outside R named ({oDirect.length} direct facts, {oComposed.length} composed); in {t4 - t3} ms"
+    let famFacts := fcs.flatMap FamCell.facts ++ oDirect ++ ogs.flatMap OutGroup.facts
     match mode with
     | "lean" =>
       let partSize := ((rest.head?).bind String.toNat?).getD 120
@@ -421,15 +624,44 @@ def run (args : List String) : IO UInt32 := do
         (ops.flatMap OpCell.facts)
       let m3 ← writePart root "Members" "Known members of the 22 ρ-classes" partSize
         (ms.flatMap fun m => [m.fwd, m.bwd])
-      IO.println s!"modules: {m1 ++ m2 ++ m3}"
+      let m4 ← writePart root "Families" "Family memberships of the classes (F0/Names.lean)"
+        20 famFacts "import F0.Names\n" (named ++ famNamed)
+      let m5 ← writePart root "Named" "Op results outside R bridged to their family names (composed)"
+        partSize oComposed "import F0.Names\nimport F0.Bridge\nimport F0.Families\n" (named ++ famNamed)
+      IO.println s!"modules: {m1 ++ m2 ++ m3 ++ m4 ++ m5}"
       return 0
     | "json" =>
       match rest with
-      | date :: commit :: checked :: _ =>
+      | date :: commit :: genCommit :: checked :: _ =>
         let ck := checked.splitOn ","
         let okO := ck.contains "order"
-        let okP := ck.contains "ops"
+        let okP := ck.contains "tables"
         let okM := ck.contains "members"
+        let okF := ck.contains "families"
+        -- family memberships and names (F0.nameOf), only from checked bridges
+        let famsIn (k : Nat) : List FamCell := fcs.filter fun c => match c.res with
+          | some (k', _, _) => k' == k
+          | none => false
+        let famJson (c : FamCell) : Json :=
+          let br := match c.res with
+            | some (_, f, b) => [f.name, b.name]
+            | none => []
+          Json.mkObj [("family", js (famTag c.f)),
+            ("index", match c.f with | .bot | .top => Json.null | _ => toJson c.n),
+            ("label", js (famLabel c.f c.n)), ("term", js (famTerm c.f c.n)),
+            ("bridge", toJson br)]
+        let nameFields (k : Nat) : List (String × Json) :=
+          let fs := famsIn k
+          let nm? := if okF then F0.nameOf (fs.map fun c => (c.f, c.n)) else none
+          let nmJ := match nm? with
+            | some (f, n) => js (famLabel f n)
+            | none => Json.null
+          let tmJ := match nm? with
+            | some (f, n) => js (famTerm f n)
+            | none => Json.null
+          [("name", nmJ), ("term", tmJ),
+           ("families", Json.arr (if okF then (fs.map famJson).toArray else #[])),
+           ("legacy", js (nm k)), ("legacy_const", js s!"RhoOrder.rhoF {k}")]
         -- classes
         let classes := (List.range nR).map fun k =>
           let mk := ms.filter (·.k == k)
@@ -443,7 +675,7 @@ def run (args : List String) : IO UInt32 := do
           let vfFacts := (vfw.bind fun v => mk.find? (·.φ == v)).map (fun m => [m.fwd.name, m.bwd.name])
           Json.mkObj <|
             [("id", js (nm k)), ("index", toJson k), ("number", Json.null),
-             ("formula", js (pp (rho k)))] ++ weightOf (rho k) ++
+             ("formula", js (pp (rho k)))] ++ nameFields k ++ weightOf (rho k) ++
             [("members_status", js (if okM then "proved" else "pending")),
              ("minimal", if okM then js (pp minimal) else js (pp (rho k))),
              ("minimal_weight", toJson (let mw := if okM then minimal else rho k; [F0.boxDepth mw, F0.size mw, F0.boxScope mw])),
@@ -483,11 +715,20 @@ def run (args : List String) : IO UInt32 := do
             else match c.res with
               | .hit k f b => [("status", js "proved"), ("result", js (nm k)),
                   ("theorems", toJson [f.name, b.name])]
-              | .notR seps => [("status", js "proved"), ("result", js "notR"),
+              | .notR seps =>
+                let tag := c.op.tag c.i (c.j.getD 0)
+                let on := if okF then onames.find? (·.tag == tag) else none
+                [("status", js "proved"), ("result", js "notR"),
+                  ("result_name", (match on with
+                    | some o => js (famLabel o.f o.n)
+                    | none => Json.null)),
+                  ("result_name_bridge", toJson (match on with
+                    | some o => [o.fwd.name, o.bwd.name]
+                    | none => [])),
                   ("theorems", toJson (seps.map (·.2.2.name))),
                   ("separations", Json.arr (seps.map fun (k, d, f) =>
                     Json.mkObj [("k", toJson k), ("dir", js d), ("theorem", js f.name),
-                      ("worlds", (match f.cell with | .nle m => toJson m.n | .le _ => Json.null))]).toArray)]
+                      ("worlds", (match f.cell with | .nle m => toJson m.n | _ => Json.null))]).toArray)]
           Json.mkObj (base ++ tail)
         let nNotR := if okP then (ops.filter (!·.isHit)).length else 0
         let nUnknown := if okP then 0 else ops.length
@@ -501,27 +742,64 @@ def run (args : List String) : IO UInt32 := do
           ("per_op", Json.mkObj perOp),
           ("note", js (if okP then "every op cell decided and kernel-checked; notR = op(ρi,ρj) separated from all 22 ρ-classes"
                        else "op tables not yet kernel-checked"))]
+        let outsideMembers := fcs.filter (·.res.isNone)
         let metaJ := Json.mkObj [("pins", js "[propext, Quot.sound]"),
           ("yes", js "PLLND.SubTab.yes' (LaxLogic/PLL/SubTab/Translate.lean)"),
           ("no", js "PLLND.SubTab.no (LaxLogic/PLL/SubTab/Sound.lean)"),
-          ("checked", toJson ck), ("rho_pairwise_distinct", toJson (okO && distinct)),
+          ("commit_meaning", js "commit: the commit whose F0/*.lean facts certify every proved entry of this file (each entry names its theorems); generator_commit: the commit of tools/F0/ExplorerGen.lean that wrote this file"),
+          ("checked", toJson ck),
+          ("checked_meaning", js "the parts whose generated modules the Lean kernel accepted at commit (order = F0/Order, tables = F0/Ops, members = F0/Members, families = F0/Families and F0/Named), each theorem pinned at [propext, Quot.sound]; entries of other parts are pending"),
+          ("rho_pairwise_distinct", toJson (okO && distinct)),
           ("rndb_candidates", toJson candidatesRNDB.length),
           ("rndb_candidates_outside_R", toJson outside),
-          ("labels", js "ρ0…ρ21 are historical labels in order of discovery; number is reserved for a systematic numbering")]
+          ("naming", js "name = the preferred certified family membership (F0.nameOf, F0/Names.lean): families ⊥, ⊤, t, c, g, s, r, w in that order, then the smallest index; t n = rn n [p := ◯⊥] for n ≤ 12, c/g/s/r/w at k = 1…4; null = no certified membership (unnamed). id and legacy (ρk) are the historical labels, kept as stable ids only"),
+          ("family_members_outside_R", toJson (outsideMembers.map fun c => famLabel c.f c.n))]
+        let familyDefs := F0.Fam.all.map fun f =>
+          Json.mkObj [("family", js f.tag), ("definition", js f.definition), ("lean", js f.leanName),
+            ("indices", toJson f.indices)]
+        -- the family members outside R, one entry per class
+        let outsideNamed := ogs.map fun g =>
+          let rt := famLabel g.rep.f g.rep.n
+          let opsHere := onames.filter fun o => o.f == g.rep.f && o.n == g.rep.n
+          let opForms : List (F × List String) := opsHere.filterMap fun o =>
+            (ops.find? fun c => c.op.tag c.i (c.j.getD 0) == o.tag).map fun c =>
+              (c.op.apply c.i (c.j.getD 0), [o.fwd.name, o.bwd.name])
+          let cands : List (F × List String) :=
+            g.others.map (fun (x, f, b) => (x.φ, [f.name, b.name])) ++ opForms
+          let minimal := F0.pickRep g.rep.φ (cands.map (·.1))
+          let minThms := if minimal == g.rep.φ then [] else
+            ((cands.find? (·.1 == minimal)).map (·.2)).getD []
+          Json.mkObj [("name", js rt), ("term", js (famTerm g.rep.f g.rep.n)),
+            ("formula", js (pp g.rep.φ)),
+            ("families", Json.arr ((Json.mkObj [("family", js (famTag g.rep.f)),
+                ("index", toJson g.rep.n), ("label", js rt), ("term", js (famTerm g.rep.f g.rep.n)),
+                ("bridge", toJson ([] : List String))]) ::
+              g.others.map fun (x, f, b) => Json.mkObj [("family", js (famTag x.f)),
+                ("index", toJson x.n), ("label", js (famLabel x.f x.n)),
+                ("term", js (famTerm x.f x.n)), ("bridge", toJson [f.name, b.name])]).toArray),
+            ("minimal", js (pp minimal)),
+            ("minimal_weight", toJson [F0.boxDepth minimal, F0.size minimal, F0.boxScope minimal]),
+            ("minimal_theorems", toJson minThms),
+            ("op_results", toJson (opsHere.map (·.tag))),
+            ("separations", toJson g.seps.length),
+            ("theorems", toJson (g.seps.map (·.2.2.name)))]
         let out :=
           "{\n  \"schema\": 1,\n" ++
           s!"  \"generated\": {(js date).compress},\n  \"commit\": {(js commit).compress},\n" ++
+          s!"  \"generator_commit\": {(js genCommit).compress},\n" ++
           s!"  \"meta\": {metaJ.compress},\n" ++
           s!"  \"classes\": {lines classes},\n" ++
           s!"  \"order\": {lines order},\n" ++
           s!"  \"covers\": {(Json.arr covers.toArray).compress},\n" ++
           s!"  \"ops\": {lines opsJ},\n" ++
+          s!"  \"family_defs\": {lines familyDefs},\n" ++
+          s!"  \"outside_named\": {lines (if okF then outsideNamed else [])},\n" ++
           s!"  \"boundary\": {boundary.compress}\n}\n"
         let path := root / "docs" / "explorer" / "f0-explorer-data.json"
         IO.FS.writeFile path out
         IO.println s!"wrote {path}: order {oc.length} ({if okO then "proved" else "pending"}), ops {ops.length} ({if okP then "proved" else "pending"}), members {ms.length} ({if okM then "proved" else "pending"}); distinct = {distinct}; covers {covers.length}"
         return 0
-      | _ => IO.eprintln "usage: explorergen json <root> <date> <commit> <checked>"; return 2
+      | _ => IO.eprintln "usage: explorergen json <root> <date> <facts-commit> <generator-commit> <checked: order,tables,members,families>"; return 2
     | _ => IO.eprintln "usage: explorergen lean|json <root> ..."; return 2
   | _ => IO.eprintln "usage: explorergen lean|json <root> ..."; return 2
 

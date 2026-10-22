@@ -944,7 +944,7 @@ root = "tools.RNDBExport"
 # target: `lake build F0`.  The globs are an explicit list, as SubTab.
 [[lean_lib]]
 name = "F0"
-globs = ["F0.Weight", "F0.WeightGates", "F0.Order.*", "F0.Ops.*", "F0.Members.*"]
+globs = ["F0.Weight", "F0.WeightGates", "F0.Names", "F0.NamesGates", "F0.Bridge", "F0.Order.*", "F0.Ops.*", "F0.Members.*", "F0.Families.*", "F0.Named.*"]
 
 # explorergen: the (untrusted) generator of the F0 facts and of
 # docs/explorer/f0-explorer-data.json.  Run the built binary under gtimeout.
