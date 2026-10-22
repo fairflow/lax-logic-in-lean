@@ -47,7 +47,7 @@ Usage (run the built binary under a deadline):
     explorergen json <repo-root> <date> <facts-commit> <generator-commit> <checked>
 
 where `<checked>` lists the parts the kernel accepted, among
-`order,tables,members,families`.
+`order,tables,members,families,names`.
 
 Names (2026-10-22, METHOD-F0 §1 E): a class is shown under the preferred
 certified membership in the families of `F0/Names.lean` (`F0.nameOf`);
@@ -546,6 +546,83 @@ def outGroups (fcs : List FamCell) : Except String (List OutGroup) := do
 def OutGroup.facts (g : OutGroup) : List Fact :=
   g.seps.map (·.2.2) ++ g.others.flatMap fun (_, f, b) => [f, b]
 
+/-! ### Compound names (`F0.compoundOf`), for the classes with no family name -/
+
+/-- The family name of class `k` (`F0.nameOf` over its run-time placed
+memberships, each certified in `F0/Families`). -/
+def famNameOf (fcs : List FamCell) (k : Nat) : Option (F0.Fam × Nat) :=
+  F0.nameOf ((fcs.filter fun c => match c.res with
+    | some (k', _, _) => k' == k
+    | none => false).map fun c => (c.f, c.n))
+
+def Op.cop : Op → F0.COp
+  | .and => .and | .or => .or | .imp => .imp | .box => .box
+
+/-- The compound as Lean source (its `term`, over the family constants). -/
+def cmTerm (k : F0.Compound) : String :=
+  match k.op with
+  | .box => s!"PLLFormula.somehow {famSrc k.x.1 k.x.2}"
+  | .and => s!"PLLFormula.and {famSrc k.x.1 k.x.2} {famSrc k.y.1 k.y.2}"
+  | .or => s!"PLLFormula.or {famSrc k.x.1 k.x.2} {famSrc k.y.1 k.y.2}"
+  | .imp => s!"PLLFormula.ifThen {famSrc k.x.1 k.x.2} {famSrc k.y.1 k.y.2}"
+
+def cmTag (k : F0.Compound) : String :=
+  match k.op with
+  | .box => s!"box_{famTag k.x.1}_{k.x.2}"
+  | o => s!"{o.tag}_{famTag k.x.1}_{k.x.2}_{famTag k.y.1}_{k.y.2}"
+
+structure CompName where
+  k : Nat
+  cmp : F0.Compound
+  fwd : Fact
+  bwd : Fact
+
+/-- For each class with no family name: the candidates are the certified
+op cells landing in it whose operands have family names; `F0.compoundOf`
+picks the preferred (a shaped term first); two tableau facts on the family terms certify it. -/
+def compoundNames (fcs : List FamCell) (ops : List OpCell) : Except String (List CompName) := do
+  let mut out := #[]
+  for k in List.range nR do
+    if (famNameOf fcs k).isNone then
+      let cands : List F0.Compound := ops.filterMap fun c => match c.res with
+        | .notR _ => none
+        | .hit k' _ _ =>
+          if k' != k then none else
+          match famNameOf fcs c.i with
+          | none => none
+          | some x =>
+            if c.op == .box then some ⟨.box, x, (.bot, 0)⟩
+            else match c.j.bind (famNameOf fcs) with
+              | some y => some ⟨c.op.cop, x, y⟩
+              | none => none
+      match F0.compoundOf cands with
+      | none => pure ()
+      | some cm =>
+        let cf ← decideF (cm.term.ifThen (rho k))
+        let cb ← decideF ((rho k).ifThen cm.term)
+        let tag := cmTag cm
+        out := out.push ⟨k, cm,
+          ⟨s!"F0.Compound.{tag}_fwd", s!"{cm.label} ⊢ {nm k}", s!"(({cmTerm cm}).ifThen {rhoSrc k})", cf⟩,
+          ⟨s!"F0.Compound.{tag}_bwd", s!"{nm k} ⊢ {cm.label}", s!"({rhoSrc k}.ifThen ({cmTerm cm}))", cb⟩⟩
+  return out.toList
+
+/-- The textbook shape of a name's term (`F0.shapeOf`), with the operands
+named by `F0.labelOf?` where they are family members, printed otherwise;
+and the nickname it gives (`F0.Shape.nickname`, the only source of
+nicknames). -/
+def shapeAndNick (φ : F) : Json × Json :=
+  match F0.shapeOf φ with
+  | none => (Json.null, Json.null)
+  | some s =>
+    let (x, y) := match s with
+      | .exclMid x y => (x, y)
+      | .peirceAnt x y => (x, y)
+    let lab (ψ : F) : String := match F0.labelOf? ψ with
+      | some (f, n) => f.label n
+      | none => pp ψ
+    (Json.mkObj [("kind", Json.str s.kind), ("x", Json.str (lab x)), ("y", Json.str (lab y))],
+     Json.str (s.nickname (lab x) (lab y)))
+
 /-! ## Writing the Lean files -/
 
 def header (part title : String) (extra : String := "") : String :=
@@ -616,6 +693,8 @@ def run (args : List String) : IO UInt32 := do
     let t4 ← IO.monoMsNow
     IO.eprintln s!"families: {fcs.length} members searched, {(fcs.filter (·.res.isSome)).length} in R; {ogs.length} classes outside R; {onames.length} op results outside R named ({oDirect.length} direct facts, {oComposed.length} composed); in {t4 - t3} ms"
     let famFacts := fcs.flatMap FamCell.facts ++ oDirect ++ ogs.flatMap OutGroup.facts
+    let cnames ← IO.ofExcept (compoundNames fcs ops)
+    IO.eprintln s!"compound names: {cnames.map fun c => (nm c.k, c.cmp.label)}"
     match mode with
     | "lean" =>
       let partSize := ((rest.head?).bind String.toNat?).getD 120
@@ -628,7 +707,9 @@ def run (args : List String) : IO UInt32 := do
         20 famFacts "import F0.Names\n" (named ++ famNamed)
       let m5 ← writePart root "Named" "Op results outside R bridged to their family names (composed)"
         partSize oComposed "import F0.Names\nimport F0.Bridge\nimport F0.Families\n" (named ++ famNamed)
-      IO.println s!"modules: {m1 ++ m2 ++ m3 ++ m4 ++ m5}"
+      let m6 ← writePart root "Compound" "Compound names of the classes with no family name"
+        partSize (cnames.flatMap fun c => [c.fwd, c.bwd]) "import F0.Names\n" (named ++ famNamed)
+      IO.println s!"modules: {m1 ++ m2 ++ m3 ++ m4 ++ m5 ++ m6}"
       return 0
     | "json" =>
       match rest with
@@ -650,16 +731,33 @@ def run (args : List String) : IO UInt32 := do
             ("index", match c.f with | .bot | .top => Json.null | _ => toJson c.n),
             ("label", js (famLabel c.f c.n)), ("term", js (famTerm c.f c.n)),
             ("bridge", toJson br)]
+        let okN := ck.contains "names"
         let nameFields (k : Nat) : List (String × Json) :=
           let fs := famsIn k
           let nm? := if okF then F0.nameOf (fs.map fun c => (c.f, c.n)) else none
-          let nmJ := match nm? with
-            | some (f, n) => js (famLabel f n)
+          let cn? := if okF && okN && nm?.isNone then cnames.find? (·.k == k) else none
+          -- name, long name, term, kind, bridge, the name's formula (for the shape)
+          let (nmJ, longJ, tmJ, kindJ, brJ, φ?) : Json × Json × Json × Json × Json × Option F :=
+            match nm?, cn? with
+            | some (f, n), _ =>
+              let br := (fs.find? fun c => c.f == f && c.n == n).bind fun c =>
+                c.res.map fun (_, a, b) => [a.name, b.name]
+              (js (famLabel f n), js (f.long n), js (famTerm f n), js "family", toJson (br.getD []),
+                some (f.term n))
+            | none, some c =>
+              (js c.cmp.label, js c.cmp.long, js (cmTerm c.cmp), js "compound",
+                toJson [c.fwd.name, c.bwd.name], some c.cmp.term)
+            | none, none => (Json.null, Json.null, Json.null, Json.null, toJson ([] : List String), none)
+          let (shapeJ, nickJ) := match φ? with
+            | some φ => shapeAndNick φ
+            | none => (Json.null, Json.null)
+          let cmpJ := match cn? with
+            | some c => Json.mkObj [("op", js c.cmp.op.tag),
+                ("x", js (c.cmp.x.1.label c.cmp.x.2)),
+                ("y", if c.cmp.op == .box then Json.null else js (c.cmp.y.1.label c.cmp.y.2))]
             | none => Json.null
-          let tmJ := match nm? with
-            | some (f, n) => js (famTerm f n)
-            | none => Json.null
-          [("name", nmJ), ("term", tmJ),
+          [("name", nmJ), ("long", longJ), ("term", tmJ), ("name_kind", kindJ), ("name_bridge", brJ),
+           ("compound", cmpJ), ("shape", shapeJ), ("nickname", nickJ),
            ("families", Json.arr (if okF then (fs.map famJson).toArray else #[])),
            ("legacy", js (nm k)), ("legacy_const", js s!"RhoOrder.rhoF {k}")]
         -- classes
@@ -748,14 +846,14 @@ def run (args : List String) : IO UInt32 := do
           ("no", js "PLLND.SubTab.no (LaxLogic/PLL/SubTab/Sound.lean)"),
           ("commit_meaning", js "commit: the commit whose F0/*.lean facts certify every proved entry of this file (each entry names its theorems); generator_commit: the commit of tools/F0/ExplorerGen.lean that wrote this file"),
           ("checked", toJson ck),
-          ("checked_meaning", js "the parts whose generated modules the Lean kernel accepted at commit (order = F0/Order, tables = F0/Ops, members = F0/Members, families = F0/Families and F0/Named), each theorem pinned at [propext, Quot.sound]; entries of other parts are pending"),
+          ("checked_meaning", js "the parts whose generated modules the Lean kernel accepted at commit (order = F0/Order, tables = F0/Ops, members = F0/Members, families = F0/Families and F0/Named, names = F0/Compound), each theorem pinned at [propext, Quot.sound]; entries of other parts are pending"),
           ("rho_pairwise_distinct", toJson (okO && distinct)),
           ("rndb_candidates", toJson candidatesRNDB.length),
           ("rndb_candidates_outside_R", toJson outside),
-          ("naming", js "name = the preferred certified family membership (F0.nameOf, F0/Names.lean): families ⊥, ⊤, t, c, g, s, r, w in that order, then the smallest index; t n = rn n [p := ◯⊥] for n ≤ 12, c/g/s/r/w at k = 1…4; null = no certified membership (unnamed). id and legacy (ρk) are the historical labels, kept as stable ids only"),
+          ("naming", js "name = the preferred certified family membership (F0.nameOf, F0/Names.lean): families ⊥, ⊤, t, c, g, s, r, w in that order, then the smallest index; t n = rn n [p := ◯⊥] for n ≤ 12, c/g/s/r/w at k = 1…4; a class with no family membership takes a compound name (F0.compoundOf: of the certified x ∘ y or ◯x over family-named operands whose table cell lands in the class, the preferred: a term of a textbook shape (F0.shapeOf) first, then operation order ◯, ∧, ∨, ↠, then the operands in name order), certified by two facts on the family terms (name_bridge); null = neither (unnamed). shape: F0.shapeOf on the name's term, two textbook shapes only; nickname: from the shape only (F0.Shape.nickname); long: the name in words (F0.Fam.word: t rung, c lax rung, g gap, s lax join, r lax arrow, w zigzag). id and legacy (ρk) are the historical labels, kept as stable ids only"),
           ("family_members_outside_R", toJson (outsideMembers.map fun c => famLabel c.f c.n))]
         let familyDefs := F0.Fam.all.map fun f =>
-          Json.mkObj [("family", js f.tag), ("definition", js f.definition), ("lean", js f.leanName),
+          Json.mkObj [("family", js f.tag), ("word", js f.word), ("definition", js f.definition), ("lean", js f.leanName),
             ("indices", toJson f.indices)]
         -- the family members outside R, one entry per class
         let outsideNamed := ogs.map fun g =>
@@ -769,7 +867,7 @@ def run (args : List String) : IO UInt32 := do
           let minimal := F0.pickRep g.rep.φ (cands.map (·.1))
           let minThms := if minimal == g.rep.φ then [] else
             ((cands.find? (·.1 == minimal)).map (·.2)).getD []
-          Json.mkObj [("name", js rt), ("term", js (famTerm g.rep.f g.rep.n)),
+          Json.mkObj [("name", js rt), ("long", js (g.rep.f.long g.rep.n)), ("term", js (famTerm g.rep.f g.rep.n)), ("shape", (shapeAndNick g.rep.φ).1), ("nickname", (shapeAndNick g.rep.φ).2),
             ("formula", js (pp g.rep.φ)),
             ("families", Json.arr ((Json.mkObj [("family", js (famTag g.rep.f)),
                 ("index", toJson g.rep.n), ("label", js rt), ("term", js (famTerm g.rep.f g.rep.n)),
@@ -799,7 +897,7 @@ def run (args : List String) : IO UInt32 := do
         IO.FS.writeFile path out
         IO.println s!"wrote {path}: order {oc.length} ({if okO then "proved" else "pending"}), ops {ops.length} ({if okP then "proved" else "pending"}), members {ms.length} ({if okM then "proved" else "pending"}); distinct = {distinct}; covers {covers.length}"
         return 0
-      | _ => IO.eprintln "usage: explorergen json <root> <date> <facts-commit> <generator-commit> <checked: order,tables,members,families>"; return 2
+      | _ => IO.eprintln "usage: explorergen json <root> <date> <facts-commit> <generator-commit> <checked: order,tables,members,families,names>"; return 2
     | _ => IO.eprintln "usage: explorergen lean|json <root> ..."; return 2
   | _ => IO.eprintln "usage: explorergen lean|json <root> ..."; return 2
 

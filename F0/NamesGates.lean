@@ -67,7 +67,60 @@ theorem term_s : F0.Fam.term .s = F0.s := rfl
 theorem term_r : F0.Fam.term .r = F0.r := rfl
 theorem term_w : F0.Fam.term .w = F0.w := rfl
 
+/-! ## Compound names and shapes -/
+
+/-- The simplest compound: operation first, then the operands in name order. -/
+theorem compound_simplest :
+    F0.compoundOf [⟨.or, (.g, 1), (.c, 1)⟩, ⟨.or, (.c, 1), (.g, 1)⟩, ⟨.imp, (.c, 1), (.g, 1)⟩] =
+      some ⟨.or, (.c, 1), (.g, 1)⟩ ∧
+    F0.compoundOf [⟨.imp, (.t, 1), (.t, 1)⟩, ⟨.box, (.w, 1), (.bot, 0)⟩, ⟨.and, (.top, 0), (.t, 1)⟩] =
+      some ⟨.box, (.w, 1), (.bot, 0)⟩ := by decide
+
+theorem compound_none : F0.compoundOf [] = none := rfl
+
+/-- Shape first (Matthew, 2026-10-22): a compound whose term has a textbook
+shape beats every compound without one, whatever its operation and
+operands, in either list order; among shaped compounds the plain order
+decides.  The first two lists are ρ19's case: `g1 ↠ c1` (Peirce for c1 over
+t3) is preferred to `g1 ↠ t3`, although `t` precedes `c` in the name order. -/
+theorem compound_shape_first :
+    F0.compoundOf [⟨.imp, (.g, 1), (.t, 3)⟩, ⟨.imp, (.g, 1), (.c, 1)⟩] = some ⟨.imp, (.g, 1), (.c, 1)⟩ ∧
+    F0.compoundOf [⟨.imp, (.g, 1), (.c, 1)⟩, ⟨.imp, (.g, 1), (.t, 3)⟩] = some ⟨.imp, (.g, 1), (.c, 1)⟩ ∧
+    F0.compoundOf [⟨.box, (.t, 5), (.bot, 0)⟩, ⟨.imp, (.g, 1), (.c, 1)⟩] = some ⟨.imp, (.g, 1), (.c, 1)⟩ ∧
+    F0.compoundOf [⟨.imp, (.g, 1), (.c, 1)⟩, ⟨.or, (.c, 1), (.g, 1)⟩] = some ⟨.or, (.c, 1), (.g, 1)⟩ := by
+  decide
+
+/-- `c1 ∨ g1` unfolds to `c1 ∨ (c1 ↠ t3)`: excluded middle for c1 relative to t3. -/
+theorem shape_c1_or_g1 :
+    F0.shapeOf (⟨.or, (.c, 1), (.g, 1)⟩ : F0.Compound).term = some (.exclMid (F0.c 1) (F0.t 3)) := by
+  decide
+
+/-- `g1 ↠ c1` unfolds to `(c1 ↠ t3) ↠ c1`: Peirce's antecedent. -/
+theorem shape_g1_imp_c1 :
+    F0.shapeOf (⟨.imp, (.g, 1), (.c, 1)⟩ : F0.Compound).term = some (.peirceAnt (F0.c 1) (F0.t 3)) := by
+  decide
+
+/-- `g1 ∨ c1` is not syntactically of either shape (the disjuncts are the other way round). -/
+theorem shape_g1_or_c1 : F0.shapeOf (⟨.or, (.g, 1), (.c, 1)⟩ : F0.Compound).term = none := by decide
+
+/-- The odd RN elements are excluded middles: `t5 = t3 ∨ (t3 ↠ t1)`. -/
+theorem shape_t5 : F0.shapeOf (F0.t 5) = some (.exclMid (F0.t 3) (F0.t 1)) := by decide
+
+theorem labelOf_t3 : F0.labelOf? (F0.t 3) = some (.t, 3) ∧ F0.labelOf? falsePLL = some (.bot, 0) := by
+  decide
+
 end F0.NamesGates
+
+#guard (⟨.or, (.c, 1), (.g, 1)⟩ : F0.Compound).label == "c1 ∨ g1" &&
+  (⟨.box, (.t, 5), (.bot, 0)⟩ : F0.Compound).label == "◯t5"
+
+-- The words and the long names (display only; `String`, checked by evaluation).
+#guard F0.Fam.all.map F0.Fam.word ==
+  ["⊥", "⊤", "rung", "lax rung", "gap", "lax join", "lax arrow", "zigzag"]
+#guard F0.Fam.long .c 1 == "lax rung 1" && F0.Fam.long .top 0 == "⊤" &&
+  (⟨.or, (.c, 1), (.g, 1)⟩ : F0.Compound).long == "lax rung 1 ∨ gap 1"
+#guard (F0.Shape.exclMid (F0.c 1) (F0.t 3)).nickname "c1" "t3" == "excluded middle for c1 over t3" &&
+  (F0.Shape.peirceAnt (F0.c 1) (F0.t 3)).nickname "c1" "t3" == "Peirce for c1 over t3"
 
 -- The displayed labels (a `String` computation, checked by evaluation).
 #guard F0.Fam.label .t 7 == "t7" && F0.Fam.label .c 2 == "c2" && F0.Fam.label .bot 0 == "⊥"
@@ -87,3 +140,10 @@ end F0.NamesGates
 #axioms_within F0.NamesGates.c_def [propext, Quot.sound]
 #axioms_within F0.NamesGates.w_def [propext, Quot.sound]
 #axioms_within F0.NamesGates.term_t [propext, Quot.sound]
+#axioms_within F0.NamesGates.compound_simplest [propext, Quot.sound]
+#axioms_within F0.NamesGates.compound_shape_first [propext, Quot.sound]
+#axioms_within F0.NamesGates.shape_c1_or_g1 [propext, Quot.sound]
+#axioms_within F0.NamesGates.shape_g1_imp_c1 [propext, Quot.sound]
+#axioms_within F0.NamesGates.shape_g1_or_c1 [propext, Quot.sound]
+#axioms_within F0.NamesGates.shape_t5 [propext, Quot.sound]
+#axioms_within F0.NamesGates.labelOf_t3 [propext, Quot.sound]

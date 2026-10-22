@@ -114,6 +114,19 @@ def label (f : Fam) (n : Nat) : String :=
   | top => "⊤"
   | _ => f.tag ++ toString n
 
+/-- The family's word, for display (Matthew, 2026-10-22: letters are hard
+to remember); `⊥` and `⊤` keep their symbols. -/
+def word : Fam → String
+  | bot => "⊥" | top => "⊤"
+  | t => "rung" | c => "lax rung" | g => "gap" | s => "lax join" | r => "lax arrow" | w => "zigzag"
+
+/-- The long name of a member: the word and the index, e.g. `lax rung 1`. -/
+def long (f : Fam) (n : Nat) : String :=
+  match f with
+  | bot => "⊥"
+  | top => "⊤"
+  | _ => f.word ++ " " ++ toString n
+
 /-- The Lean constant of the family. -/
 def leanName : Fam → String
   | bot => "PLLFormula.falsePLL" | top => "PLLFormula.truePLL"
@@ -149,6 +162,129 @@ def nameOf : List (Fam × Nat) → Option (Fam × Nat)
   | [] => none
   | m :: ms => some (ms.foldl (fun best x => if prefLt x best then x else best) m)
 
+/-! ## Compound names, for the classes with no family membership
+
+2026-10-22, at Matthew's request ("give them evocative names").  A class
+with no certified family membership is named by the simplest certified
+expression `x ∘ y` (or `◯x`) whose operands are classes with family names
+and whose operation-table cell lands in the class.  Simplest: a term of a
+textbook shape first (`Compound.shaped`, below), then the operation in the
+order `◯, ∧, ∨, ↠` (`COp.rank`), then the first operand, then the second,
+each in the name order (`prefLt`).  A compound name only
+fills a class that `nameOf` leaves unnamed.  The certificate (two tableau
+facts, `F0/Compound`) is stated on the family terms, so the name's Lean
+term (`Compound.term`) is what is proved. -/
+
+/-- The operations of a compound name. -/
+inductive COp where
+  | box | and | or | imp
+  deriving DecidableEq, Repr
+
+namespace COp
+
+/-- The order of simplicity. -/
+def rank : COp → Nat
+  | box => 0 | and => 1 | or => 2 | imp => 3
+
+def sym : COp → String
+  | box => "◯" | and => "∧" | or => "∨" | imp => "↠"
+
+def tag : COp → String
+  | box => "box" | and => "and" | or => "or" | imp => "imp"
+
+end COp
+
+/-- A compound name `x ∘ y`, or `◯x` (then `y` is ignored; by convention
+`(bot, 0)`). -/
+structure Compound where
+  op : COp
+  x : Fam × Nat
+  y : Fam × Nat
+  deriving DecidableEq, Repr
+
+namespace Compound
+
+/-- The formula the name denotes, over the family terms. -/
+def term (k : Compound) : PLLFormula :=
+  match k.op with
+  | .box => (k.x.1.term k.x.2).somehow
+  | .and => (k.x.1.term k.x.2).and (k.y.1.term k.y.2)
+  | .or => (k.x.1.term k.x.2).or (k.y.1.term k.y.2)
+  | .imp => (k.x.1.term k.x.2).ifThen (k.y.1.term k.y.2)
+
+/-- The displayed name, e.g. `c1 ∨ g1`, `◯t5`. -/
+def label (k : Compound) : String :=
+  match k.op with
+  | .box => "◯" ++ k.x.1.label k.x.2
+  | o => k.x.1.label k.x.2 ++ " " ++ o.sym ++ " " ++ k.y.1.label k.y.2
+
+/-- The long name, in words, e.g. `lax rung 1 ∨ gap 1`. -/
+def long (k : Compound) : String :=
+  match k.op with
+  | .box => "◯" ++ k.x.1.long k.x.2
+  | o => k.x.1.long k.x.2 ++ " " ++ o.sym ++ " " ++ k.y.1.long k.y.2
+
+end Compound
+
+/-! ## Textbook shapes
+
+A fixed table of two shapes, recognised syntactically on a name's term
+(its formula, the families unfolded):
+* `x ∨ (x ↠ y)`: excluded middle for `x` relative to `y`;
+* `(x ↠ y) ↠ x`: Peirce's antecedent. -/
+
+inductive Shape where
+  | exclMid (x y : PLLFormula)
+  | peirceAnt (x y : PLLFormula)
+  deriving DecidableEq, Repr
+
+def shapeOf : PLLFormula → Option Shape
+  | .or x (.ifThen x' y) => if x = x' then some (.exclMid x y) else none
+  | .ifThen (.ifThen x y) x' => if x = x' then some (.peirceAnt x y) else none
+  | _ => none
+
+/-- The family member a formula is, syntactically (the preferred one), if any. -/
+def labelOf? (φ : PLLFormula) : Option (Fam × Nat) :=
+  Fam.domain.find? fun (f, n) => f.term n == φ
+
+/-- The shape's kind, for display. -/
+def Shape.kind : Shape → String
+  | .exclMid .. => "excluded_middle"
+  | .peirceAnt .. => "peirce_antecedent"
+
+/-- The nickname a shape gives, from the displayed operands; the only
+source of nicknames. -/
+def Shape.nickname (s : Shape) (x y : String) : String :=
+  match s with
+  | .exclMid .. => "excluded middle for " ++ x ++ " over " ++ y
+  | .peirceAnt .. => "Peirce for " ++ x ++ " over " ++ y
+
+/-! ## The order of compound names
+
+2026-10-22, at Matthew's direction: a compound whose term (the families
+unfolded) has a textbook shape (`shapeOf`) comes before every compound
+without one; among compounds with the same shape status, the operation
+in the order `◯, ∧, ∨, ↠`, then the first operand, then the second, each
+in the name order (`prefLt`). -/
+
+/-- The compound's term has a textbook shape. -/
+def Compound.shaped (k : Compound) : Bool := (shapeOf k.term).isSome
+
+/-- `a` is simpler than `b`, ignoring shapes. -/
+def compoundPlainLt (a b : Compound) : Bool :=
+  a.op.rank < b.op.rank ||
+    (a.op.rank == b.op.rank && (prefLt a.x b.x || (a.x == b.x && prefLt a.y b.y)))
+
+/-- `a` is preferred to `b`: shaped before unshaped, then `compoundPlainLt`. -/
+def compoundLt (a b : Compound) : Bool :=
+  (a.shaped && !b.shaped) || (a.shaped == b.shaped && compoundPlainLt a b)
+
+/-- The compound name of a class: of its certified candidates, the
+preferred (`compoundLt`); `none` when there is none. -/
+def compoundOf : List Compound → Option Compound
+  | [] => none
+  | m :: ms => some (ms.foldl (fun best x => if compoundLt x best then x else best) m)
+
 end F0
 
 #axioms_within F0.t [propext, Quot.sound]
@@ -160,3 +296,7 @@ end F0
 #axioms_within F0.Fam.term [propext, Quot.sound]
 #axioms_within F0.Fam.domain [propext, Quot.sound]
 #axioms_within F0.nameOf [propext, Quot.sound]
+#axioms_within F0.Compound.term [propext, Quot.sound]
+#axioms_within F0.compoundOf [propext, Quot.sound]
+#axioms_within F0.shapeOf [propext, Quot.sound]
+#axioms_within F0.labelOf? [propext, Quot.sound]
