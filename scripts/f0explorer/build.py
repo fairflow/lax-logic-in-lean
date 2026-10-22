@@ -13,6 +13,8 @@ This script reads it (never writes it), and does only two things:
   columns by family: ⊥, ⊤ and odd t on a spine, even t to its left (the RN
   ladder); c g s r w drawn between their family column to the right and the
   mean of their neighbours; unnamed classes at the mean of their neighbours;
+  each node labelled by the data's `long` name (a compound broken before its
+  connective), with the short `name` beneath;
 * embeds the data, the layout and the page code (template.html, explorer.css,
   explorer.js beside this file) into one self-contained HTML file.
 
@@ -33,8 +35,10 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 
 # Layout constants (SVG user units).
-ROW_H = 58          # vertical distance between layers
-UNIT = 74           # horizontal distance between family columns
+ROW_H = 74          # vertical distance between layers
+UNIT = 92           # horizontal distance between family columns
+CHAR_W = 6.9        # width of one character of a node label (12px sans)
+LINE_H = 14         # height of one line of a node label
 GAP = 10            # minimum horizontal gap between two nodes of one layer
 MARGIN_X = 18
 MARGIN_TOP = 34     # room for the frame label
@@ -74,10 +78,30 @@ def pinned(name: str | None) -> bool:
     return name in ("⊥", "⊤") or (m is not None and m.group(1) == "t")
 
 
-def node_width(name: str | None) -> int:
-    if name is None:
-        return 58  # the muted label "unnamed"
-    return max(30, 9 * len(name) + 16)
+OP_SYM = {"and": "∧", "or": "∨", "imp": "↠", "box": "◯"}
+
+
+def node_label(c: dict) -> dict:
+    """The drawn label of a class (display only): the long name, a compound
+    broken before its connective; the short name beneath when it differs."""
+    long = c.get("long") or c.get("name")
+    name = c.get("name")
+    if long is None:
+        return {"lines": ["unnamed"], "sub": None}
+    lines = [long]
+    comp = c.get("compound")
+    if c.get("name_kind") == "compound" and isinstance(comp, dict):
+        sym = OP_SYM.get(comp.get("op"))
+        cut = f" {sym} " if sym else None
+        if cut and cut in long:
+            left, right = long.split(cut, 1)
+            lines = [left, f"{sym} {right}"]
+    sub = name if name is not None and name != long else None
+    return {"lines": lines, "sub": sub}
+
+
+def node_width(label: dict) -> int:
+    return round(max(30, CHAR_W * max(len(t) for t in label["lines"]) + 20))
 
 
 def layout(classes: list[dict], covers: list[list[int]]) -> dict:
@@ -108,7 +132,8 @@ def layout(classes: list[dict], covers: list[list[int]]) -> dict:
         fail("the covers in the data contain a cycle; cannot lay out")
 
     names = [c.get("name") for c in classes]
-    width = [node_width(nm) for nm in names]
+    labels = [node_label(c) for c in classes]
+    width = [node_width(lb) for lb in labels]
     x = [0.0] * n
     top = max(layer) if n else 0
     layers = [[k for k in range(n) if layer[k] == L] for L in range(top + 1)]
@@ -153,13 +178,17 @@ def layout(classes: list[dict], covers: list[list[int]]) -> dict:
     min_x = min(x[k] - width[k] / 2 for k in range(n))
     max_x = max(x[k] + width[k] / 2 for k in range(n))
     W = (max_x - min_x) + 2 * MARGIN_X
-    H = top * ROW_H + MARGIN_TOP + MARGIN_BOTTOM + 28
+    y0 = MARGIN_TOP + 22
+    H = y0 + top * ROW_H + 36 + MARGIN_BOTTOM
     nodes = []
     for k in range(n):
         nodes.append({
             "x": round(x[k] - min_x + MARGIN_X, 1),
-            "y": round(MARGIN_TOP + 14 + (top - layer[k]) * ROW_H, 1),
+            "y": round(y0 + (top - layer[k]) * ROW_H, 1),
             "w": width[k],
+            "h": 22 + LINE_H * (len(labels[k]["lines"]) - 1),
+            "lines": labels[k]["lines"],
+            "sub": labels[k]["sub"],
             "layer": layer[k],
         })
     return {"width": round(W, 1), "height": round(H, 1), "nodes": nodes}

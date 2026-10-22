@@ -81,9 +81,15 @@
 
   // ------------------------------------------------------------ labels
   const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  // Names: `long` (in words, the primary label), `name` (the short letter name, secondary),
+  // `nickname` (only for a textbook shape).  All three are read from the data.
   const name = (k) => (C[k].name == null ? null : String(C[k].name));
-  const label = (k) => name(k) ?? 'unnamed';
+  const longName = (k) => (C[k].long != null ? String(C[k].long) : name(k));
+  const label = (k) => longName(k) ?? 'unnamed';
   const short = (k) => name(k) ?? '·';
+  const cellName = (k) => short(k).replace(/ /g, '');
+  const nick = (k) => (C[k].nickname ? String(C[k].nickname) : null);
+  const isCompound = (k) => C[k].name_kind === 'compound';
   const term = (k) => (C[k].term ? String(C[k].term) : null);
   const vfk = (k) => C[k].vfree_known === true;
   const minimal = (k) => (C[k].minimal != null ? C[k].minimal : C[k].formula);
@@ -91,18 +97,51 @@
   function weightText(w) {
     return w ? `◯-depth ${w[0]} · size ${w[1]} · ◯-scope ${w[2]}` : 'weight not in the data';
   }
-  // In a relation: the name, or the minimal form of an unnamed class.
-  const relName = (k) => (name(k) != null ? esc(name(k)) : `<span class="f">${esc(minimal(k))}</span>`);
-  const operand = (k) => (name(k) != null ? esc(name(k)) : `(<span class="f">${esc(minimal(k))}</span>)`);
+  // In a relation: the long name (a compound in brackets as an operand), or the minimal form of an unnamed class.
+  const relName = (k) => (name(k) != null ? `<span class="cn">${esc(label(k))}</span>` : `<span class="f">${esc(minimal(k))}</span>`);
+  const operand = (k) => (name(k) != null
+    ? `<span class="cn">${isCompound(k) ? '(' + esc(label(k)) + ')' : esc(label(k))}</span>`
+    : `(<span class="f">${esc(minimal(k))}</span>)`);
+  const headOperand = (k) => (isCompound(k) ? `(${label(k)})` : label(k));
+
+  // Lookups by name string (filters over the data, nothing derived).
+  const posOfName = new Map();
+  C.forEach((c, k) => { if (c.name != null) posOfName.set(String(c.name), k); });
+  const FAMBY = new Map(FAMS.map((f) => [String(f.family), f]));
+  const famOfLabel = new Map();
+  for (const c of C.concat(D.outside_named || [])) {
+    for (const f of (Array.isArray(c.families) ? c.families : [])) if (f && f.label != null) famOfLabel.set(String(f.label), String(f.family));
+  }
+  const OPSYM = { and: '∧', or: '∨', imp: '↠', box: '◯' };
+  // The definition behind a short name: its family's definition (the index is in the name),
+  // or, for a compound, the compound with its operands' family definitions.
+  function defLines(nm, compound) {
+    const out = [];
+    const famDef = (n) => {
+      const f = FAMBY.get(famOfLabel.get(n));
+      return f && /=/.test(String(f.definition || '')) ? `${esc(n)}: <span class="f">${esc(f.definition)}</span>` : null;
+    };
+    if (compound && typeof compound === 'object') {
+      // The compound name is its own definition; list its operands' family definitions.
+      for (const n of [compound.x, compound.y]) { if (n != null) { const l = famDef(String(n)); if (l && !out.includes(l)) out.push(l); } }
+    } else if (nm != null) {
+      const l = famDef(String(nm));
+      if (l) out.push(l);
+    }
+    return out;
+  }
 
   function cref(k) {
     const cls = ['cref'];
     if (name(k) == null) cls.push('unnamed');
     if (vfk(k)) cls.push('vfk');
-    return `<button type="button" class="${cls.join(' ')}" data-k="c:${k}">${esc(label(k))}</button>`;
+    const sub = name(k) != null && name(k) !== label(k) ? `<small>${esc(name(k))}</small>` : '';
+    return `<button type="button" class="${cls.join(' ')}" data-k="c:${k}">${esc(label(k))}${sub}</button>`;
   }
+  function outsideLong(nm) { const o = outside.get(nm); return o && o.info && o.info.long ? String(o.info.long) : nm; }
   function oref(nm) {
-    return `<button type="button" class="cref outside" data-k="x:${encodeURIComponent(nm)}">${esc(nm)}</button>`;
+    const lg = outsideLong(nm);
+    return `<button type="button" class="cref outside" data-k="x:${encodeURIComponent(nm)}">${esc(lg)}${lg !== nm ? `<small>${esc(nm)}</small>` : ''}</button>`;
   }
   const thm = (t) => `<code class="thm">${esc(t)}</code>`;
 
@@ -118,7 +157,9 @@
   function nameKey(k) {
     const m = name(k);
     const idx = C[k].index;
-    if (m == null) { const w = weight(k) || [0, 0, 0]; return [9, 0, w[0], w[1], w[2], idx]; }
+    const w = weight(k) || [0, 0, 0];
+    if (m == null) return [9, 0, w[0], w[1], w[2], idx];
+    if (isCompound(k)) return [8, 0, w[0], w[1], w[2], idx];
     return strKey(m).concat([0, 0, 0, idx]);
   }
   function weightKey(k) { const w = weight(k) || [0, 0, 0]; return [w[0], w[1], w[2]].concat(nameKey(k)); }
@@ -177,19 +218,20 @@
   function famSym(f) { return f === 'bot' ? '⊥' : f === 'top' ? '⊤' : String(f); }
   function renderAbout() {
     const defs = FAMS.filter((f) => /=/.test(String(f.definition || ''))).map((f) =>
-      `<span class="f">${esc(f.definition)}</span>${f.lean ? ` (<code>${esc(f.lean)}</code>)` : ''}`).join('; ');
+      `${f.word && f.word !== famSym(f.family) ? `<em>${esc(f.word)}</em> ` : ''}<span class="f">${esc(f.definition)}</span>${f.lean ? ` (<code>${esc(f.lean)}</code>)` : ''}`).join('; ');
     const order = FAMS.map((f) => esc(famSym(f.family))).join(', ');
     const domain = FAMS.filter((f) => Array.isArray(f.indices) && f.family !== 'bot' && f.family !== 'top' && f.indices.length)
       .map((f) => `${esc(f.family)}${esc(Math.min(...f.indices))}…${esc(f.family)}${esc(Math.max(...f.indices))}`).join(', ');
     $('about-body').innerHTML =
       `<p>F0 is the variable-free fragment of propositional lax logic (PLL). This page shows R, the classes of F0 in the
       current database, ordered by derivability (u below v when [u] ⊢ v), and the tables of ∧, ∨, ↠ and ◯ on R.
-      Hover over a class for its minimal form and weight (◯-depth, size, ◯-scope); click a class, an edge,
-      a pair or a table cell for its Lean theorems and, for ⊬, the countermodel.</p>
+      Hover over a class for its letter name's definition, its minimal form and its weight (◯-depth, size, ◯-scope);
+      click a class, an edge, a pair or a table cell for its Lean theorems and, for ⊬, the countermodel.</p>
       <p>The RN embedding substitutes ◯⊥ for p in the Rieger–Nishimura formulas rn n of one-variable intuitionistic
       logic. The families: ${defs}. A class is named by its preferred certified membership (families in the order
-      ${order}, then the smallest index; searched over ${domain}) and shows the Lean term of that membership. A class
-      with no certified membership is unnamed, written · in the grids.</p>
+      ${order}, then the smallest index; searched over ${domain}); a class with none takes a compound name x ∘ y over
+      family-named classes, certified by two bridge facts. Names are written in words (lax rung 1), with the letter
+      name (c1) beside them; a name of a textbook shape also carries a nickname.</p>
       <p>∉R marks a result certified distinct from every class of R; it may still carry a family name. Unknown marks
       a fact not yet decided. Each fact shown is a Lean theorem, pinned at ${esc(META.pins || '(pins not stated)')}.
       The ∨-free switch marks the classes with a known ∨-free member: a lower bound.</p>`;
@@ -228,21 +270,26 @@
       let s = `<div class="diagram-wrap"><svg class="diagram" viewBox="0 0 ${W} ${H}" role="group" aria-label="Hasse diagram of R">`;
       s += `<rect class="frame" x="3" y="3" width="${W - 6}" height="${H - 6}" rx="10"></rect>`;
       s += `<text class="frame-label" x="14" y="21">R · ${N} classes</text>`;
+      const hh = (p) => (p.h || 24) / 2;
       for (const [a, b] of covers) {
         const p = LAY.nodes[a], q = LAY.nodes[b];
         const key = `e:${a},${b}`;
+        const qBottom = q.y + hh(q) + (q.sub ? 13 : 0);
         s += `<g class="edge" data-k="${key}" role="button" aria-label="${esc(label(a))} ⋖ ${esc(label(b))}"><line class="hit" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"></line>` +
-          `<line class="vis" x1="${p.x}" y1="${p.y - 12}" x2="${q.x}" y2="${q.y + 12}"></line></g>`;
+          `<line class="vis" x1="${p.x}" y1="${p.y - hh(p)}" x2="${q.x}" y2="${qBottom}"></line></g>`;
       }
       for (let k = 0; k < N; k++) {
         const p = LAY.nodes[k];
+        const h2 = hh(p);
+        const lines = Array.isArray(p.lines) && p.lines.length ? p.lines : [label(k)];
         const cls = ['node'];
         if (name(k) == null) cls.push('unnamed');
         if (vfk(k)) cls.push('vfk');
-        s += `<g class="${cls.join(' ')}" data-k="c:${k}" tabindex="0" role="button" aria-label="${esc(label(k))}" transform="translate(${p.x},${p.y})">` +
-          `<rect class="vfring" x="${-p.w / 2 - 3.5}" y="-15.5" width="${p.w + 7}" height="31" rx="15.5"></rect>` +
-          `<rect class="body" x="${-p.w / 2}" y="-12" width="${p.w}" height="24" rx="12"></rect>` +
-          `<text x="0" y="0.5">${esc(label(k))}</text></g>`;
+        s += `<g class="${cls.join(' ')}" data-k="c:${k}" tabindex="0" role="button" aria-label="${esc(label(k))}${name(k) != null && name(k) !== label(k) ? ' (' + esc(name(k)) + ')' : ''}" transform="translate(${p.x},${p.y})">` +
+          `<rect class="vfring" x="${-p.w / 2 - 3.5}" y="${-h2 - 3.5}" width="${p.w + 7}" height="${2 * h2 + 7}" rx="${Math.min(15.5, h2 + 3.5)}"></rect>` +
+          `<rect class="body" x="${-p.w / 2}" y="${-h2}" width="${p.w}" height="${2 * h2}" rx="${Math.min(12, h2)}"></rect>` +
+          lines.map((t, i) => `<text x="0" y="${((i - (lines.length - 1) / 2) * 14 + 0.5).toFixed(1)}">${esc(t)}</text>`).join('') +
+          (p.sub ? `<text class="sub" x="0" y="${(h2 + 8.5).toFixed(1)}">${esc(p.sub)}</text>` : '') + '</g>';
       }
       s += '</svg></div>';
       h += s;
@@ -256,15 +303,21 @@
     return h;
   }
 
+  // Grid headers carry both names: the long name (vertical in column heads) on wide
+  // screens, the short name on compact screens (CSS chooses).
   function gridHead(ax, corner) {
     let h = `<colgroup><col class="hcol" style="width:${headColWidth()}"></colgroup>`;
     h += `<thead><tr><th class="corner" scope="col">${corner}</th>`;
-    for (const k of ax) h += `<th scope="col" class="${name(k) == null ? 'unnamed' : ''} ${vfk(k) ? 'vfk' : ''}" data-k="c:${k}">${esc(short(k))}</th>`;
+    for (const k of ax) {
+      h += `<th scope="col" class="${name(k) == null ? 'unnamed' : ''} ${vfk(k) ? 'vfk' : ''}" data-k="c:${k}">` +
+        `<span class="vt">${esc(label(k))}</span><span class="st">${esc(cellName(k))}</span></th>`;
+    }
     return h + '</tr></thead>';
   }
-  function headColWidth() { return window.matchMedia('(max-width: 600px)').matches ? '20px' : '46px'; }
+  function headColWidth() { return window.matchMedia('(max-width: 600px)').matches ? '30px' : '150px'; }
   function rowHead(k) {
-    return `<th scope="row" class="${name(k) == null ? 'unnamed' : ''} ${vfk(k) ? 'vfk' : ''}" data-k="c:${k}">${esc(short(k))}</th>`;
+    return `<th scope="row" class="${name(k) == null ? 'unnamed' : ''} ${vfk(k) ? 'vfk' : ''}" data-k="c:${k}">` +
+      `<span class="lt">${esc(label(k))}</span><span class="st">${esc(cellName(k))}</span></th>`;
   }
 
   function rowSelect(ax) {
@@ -310,7 +363,7 @@
       const cls = ['k-in'];
       if (vfk(r)) cls.push('vfk');
       if (name(r) == null) cls.push('unnamed-res');
-      return `<td class="${cls.join(' ')}" data-k="${key}">${esc(short(r))}</td>`;
+      return `<td class="${cls.join(' ')}" data-k="${key}">${esc(cellName(r))}</td>`;
     }
     if (kind === 'out') {
       const nm = c.result_name;
@@ -341,23 +394,22 @@
     let h = `<div class="view-head"><h2>Tables</h2><span class="seg" role="group" aria-label="Operation">${['and', 'or', 'imp'].map((o) =>
       `<button type="button" data-op="${o}" aria-pressed="${o === op}">${OPS[o].sym}</button>`).join('')}</span>${sortControl()}</div>`;
     h += bars();
-    h += `<div class="grid-wrap"><table class="grid box-row">${gridHead(ax, '◯x')}<tbody><tr><th scope="row" class="corner">◯</th>`;
+    h += `<div class="grid-wrap"><table class="grid">${gridHead(ax, 'row ' + sym + ' col; ◯ col')}<tbody class="box-row"><tr><th scope="row" class="corner">◯ col</th>`;
     for (const b of ax) h += opCellHtml('box', b, null);
-    h += '</tr></tbody></table></div>';
-    h += `<div class="grid-wrap"><table class="grid">${gridHead(ax, 'row ' + sym + ' col')}<tbody>`;
+    h += '</tr></tbody><tbody>';
     for (const a of ax) {
       h += `<tr>${rowHead(a)}`;
       for (const b of ax) h += opCellHtml(op, a, b);
       h += '</tr>';
     }
     h += '</tbody></table></div>';
-    h += `<div class="legend"><span><i class="sw in"></i>result in R, by name (· unnamed)</span>
+    h += `<div class="legend"><span><i class="sw in"></i>result in R, by letter name (hover for the name in words)</span>
       <span><i class="sw out"></i>∉R; <i>c2</i> = named, outside R</span><span><i class="sw unk"></i>unknown</span>
       <span><i class="sw vf"></i>result with a known ∨-free member (switch on)</span></div>`;
     const list = (o, a, b) => {
       const c = opCell(o, a, b);
       const kind = opKind(c);
-      const expr = o === 'box' ? `◯${operand(a)}` : `${operand(a)} ${OPS[o].sym} ${operand(b)}`;
+      const expr = o === 'box' ? `◯ ${operand(a)}` : `${operand(a)} ${OPS[o].sym} ${operand(b)}`;
       let res;
       if (kind === 'in') res = relName(posOfId.get(c.result));
       else if (kind === 'out') res = c.result_name != null ? `${esc(c.result_name)} (∉R)` : '∉R';
@@ -373,8 +425,10 @@
     let h = `<div class="view-head"><h2>Classes of R</h2>${sortControl()}</div><div class="cards">`;
     for (const k of ax) {
       const c = C[k];
+      const sn = name(k) != null && name(k) !== label(k) ? `<span class="sn f">${esc(name(k))}</span>` : '';
       h += `<button type="button" class="card${vfk(k) ? ' vfk' : ''}" data-k="c:${k}">
-        <div><span class="nm${name(k) == null ? ' unnamed' : ''}">${esc(label(k))}</span>${term(k) ? `<code class="term">${esc(term(k))}</code>` : ''}</div>
+        <div><span class="nm${name(k) == null ? ' unnamed' : ''}">${esc(label(k))}</span>${sn}${term(k) ? `<code class="term">${esc(term(k))}</code>` : ''}</div>
+        ${nick(k) ? `<div class="nick">“${esc(nick(k))}”</div>` : ''}
         <div class="min f">${esc(minimal(k))}</div>
         <div class="meta">${weightText(weight(k))} · ${esc(c.members_known ?? '?')} known members</div>
         <div class="meta">∨-free: ${c.vfree_known ? `<span class="f">${esc(c.vfree_witness)}</span>` : 'none known'}</div></button>`;
@@ -456,9 +510,22 @@
     let h = `<h2${name(k) == null ? ' class="muted"' : ''}>${esc(label(k))}</h2>`;
     // An unnamed class has no short handle but its legacy label: shown at the top, still styled as legacy.
     if (name(k) == null) h += `<p class="legacy legacy-top">${legacyText}</p>`;
-    if (term(k)) h += `<p>${thm(term(k))} <span class="note">Lean term of the name</span></p>`;
+    if (name(k) != null) {
+      h += `<p class="names">${name(k) !== label(k) ? `<span class="sn f">${esc(name(k))}</span> ` : ''}${term(k) ? thm(term(k)) : ''}</p>`;
+    }
+    if (nick(k)) h += `<p class="nick">“${esc(nick(k))}”</p>`;
+    const defs = defLines(name(k), isCompound(k) ? c.compound : null);
+    if (defs.length) h += `<div class="defs">${defs.map((l) => `<div>${l}</div>`).join('')}</div>`;
     h += `<h3>Minimal form</h3><p class="f">${esc(minimal(k))}</p><p class="note">${weightText(weight(k))}</p>`;
     if (Array.isArray(c.minimal_theorems) && c.minimal_theorems.length) h += `<p class="note">member by ${c.minimal_theorems.map(thm).join(', ')}</p>`;
+    if (isCompound(k)) {
+      // A compound name, shown the way a family membership is: the name, its term, its bridge facts.
+      const comp = c.compound || {};
+      const ops = [comp.x, comp.y].filter((n) => n != null).map((n) => (posOfName.has(String(n)) ? cref(posOfName.get(String(n))) : esc(n))).join(' ');
+      const bridge = Array.isArray(c.name_bridge) && c.name_bridge.length ? `<div class="note">bridge: ${c.name_bridge.map(thm).join(', ')}</div>` : '';
+      h += `<h3>Compound name</h3><ul><li><span class="f">${esc(name(k))}</span>${term(k) ? ` ${thm(term(k))}` : ''}${bridge}` +
+        `${ops ? `<div class="note">operands: ${ops}</div>` : ''}</li></ul>`;
+    }
     const fams = Array.isArray(c.families) ? c.families : [];
     h += `<h3>Family memberships</h3>${fams.length ? `<ul>${fams.map(famItem).join('')}</ul>` : '<p class="empty">none in the data</p>'}`;
     h += '<h3>∨-free member</h3>';
@@ -481,9 +548,9 @@
 
   function pairPanel(a, b, asCover) {
     let h = asCover
-      ? `<h2>${esc(label(a))} ⋖ ${esc(label(b))}</h2><p class="note">A cover in R (the data's <code>covers</code>):
+      ? `<h2>${esc(headOperand(a))} ⋖ ${esc(headOperand(b))}</h2><p class="note">A cover in R (the data's <code>covers</code>):
         [${relName(a)}] ⊢ ${relName(b)}, [${relName(b)}] ⊬ ${relName(a)}, and no class of R strictly between.</p>`
-      : `<h2>${esc(label(a))} · ${esc(label(b))}</h2>`;
+      : `<h2>${esc(headOperand(a))} · ${esc(headOperand(b))}</h2>`;
     h += `<p>${cref(a)} ${cref(b)}</p>`;
     h += factBlock(a, b) + factBlock(b, a);
     return h;
@@ -493,8 +560,8 @@
     const c = opCell(op, a, b);
     const kind = opKind(c);
     const sym = OPS[op].sym;
-    const headExpr = op === 'box' ? `◯${esc(label(a))}` : `${esc(label(a))} ${sym} ${esc(label(b))}`;
-    const X = op === 'box' ? `◯${operand(a)}` : `${operand(a)} ${sym} ${operand(b)}`;
+    const headExpr = op === 'box' ? `◯ ${esc(headOperand(a))}` : `${esc(headOperand(a))} ${sym} ${esc(headOperand(b))}`;
+    const X = op === 'box' ? `◯ ${operand(a)}` : `${operand(a)} ${sym} ${operand(b)}`;
     let h = `<h2>${headExpr}</h2><p>${cref(a)}${op === 'box' ? '' : ' ' + cref(b)}</p>`;
     if (!c) return h + '<p class="empty">No cell in the data.</p>';
     h += `<h3>Formula</h3><p class="f">${esc(c.formula)}</p><h3>Result</h3>`;
@@ -510,7 +577,7 @@
       const ks = new Set(seps.map((s) => P(s.k)).filter((x) => x !== undefined));
       h += `<p><strong class="out-badge">∉R</strong>${c.result_name != null ? ` · named ${oref(String(c.result_name))}` : ' · no name in the data'}</p>`;
       if (c.result_name != null && Array.isArray(c.result_name_bridge) && c.result_name_bridge.length) {
-        h += `<p class="note">${X} ⊣⊢ ${esc(c.result_name)} by ${c.result_name_bridge.map(thm).join(', ')}</p>`;
+        h += `<p class="note">${X} ⊣⊢ <span class="cn">${esc(outsideLong(String(c.result_name)))}</span> by ${c.result_name_bridge.map(thm).join(', ')}</p>`;
       }
       h += `<p>${seps.length} certified separations${ks.size === N ? `, one from each of the ${N} classes of R` : ''}.</p>`;
       h += `<details><summary>show the separations</summary><p class="note">X = ${X}</p><ul>${seps.map((s) => {
@@ -527,11 +594,15 @@
 
   function outsidePanel(nm) {
     const o = outside.get(nm);
-    let h = `<h2>${esc(nm)}</h2><p><strong class="out-badge">outside R</strong></p>`;
+    const lg = outsideLong(nm);
+    let h = `<h2>${esc(lg)}</h2><p><strong class="out-badge">outside R</strong></p>`;
     if (!o) return h + '<p class="empty">Not in the data.</p>';
     const info = o.info;
+    h += `<p class="names">${lg !== nm ? `<span class="sn f">${esc(nm)}</span> ` : ''}${info && info.term ? thm(info.term) : ''}</p>`;
+    if (info && info.nickname) h += `<p class="nick">“${esc(info.nickname)}”</p>`;
+    const defs = defLines(nm, null);
+    if (defs.length) h += `<div class="defs">${defs.map((l) => `<div>${l}</div>`).join('')}</div>`;
     if (info) {
-      if (info.term) h += `<p>${thm(info.term)} <span class="note">Lean term of the name</span></p>`;
       if (info.minimal) h += `<h3>Minimal form</h3><p class="f">${esc(info.minimal)}</p><p class="note">${weightText(Array.isArray(info.minimal_weight) ? info.minimal_weight : null)}</p>`;
       if (Array.isArray(info.minimal_theorems) && info.minimal_theorems.length) h += `<p class="note">member by ${info.minimal_theorems.map(thm).join(', ')}</p>`;
       if (Array.isArray(info.families) && info.families.length) h += `<h3>Family memberships</h3><ul>${info.families.map(famItem).join('')}</ul>`;
@@ -545,7 +616,7 @@
     if (o.cells.length) {
       h += `<ul>${o.cells.map((c) => {
         const a = P(c.i), b = c.j == null ? null : P(c.j);
-        const expr = c.op === 'box' ? `◯${operand(a)}` : `${operand(a)} ${OPS[c.op].sym} ${operand(b)}`;
+        const expr = c.op === 'box' ? `◯ ${operand(a)}` : `${operand(a)} ${OPS[c.op].sym} ${operand(b)}`;
         return `<li><button type="button" class="lnk" data-k="o:${c.op}:${a}:${c.op === 'box' ? '' : b}">${expr}</button></li>`;
       }).join('')}</ul>`;
     } else h += '<p class="empty">none</p>';
@@ -602,7 +673,7 @@
     hideTip();
     const panel = $('panel');
     const r = panel.getBoundingClientRect();
-    if (window.matchMedia('(max-width: 1000px)').matches && (r.top > window.innerHeight * 0.6 || r.bottom < 0)) {
+    if (window.matchMedia('(max-width: 1199px)').matches && (r.top > window.innerHeight * 0.6 || r.bottom < 0)) {
       panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
@@ -611,11 +682,14 @@
   function tipHtml(key) {
     const p = parseKey(key);
     if (!p) return null;
-    const cls = (k) => `<div class="tn">${esc(label(k))}${term(k) ? ` <code>${esc(term(k))}</code>` : ''}</div>
-      <div class="tf">${esc(minimal(k))}</div><div class="tw">${weightText(weight(k))}${vfk(k) ? ' · known ∨-free member' : ''}</div>`;
+    const cls = (k) => `<div class="tn">${esc(label(k))}</div>` +
+      (name(k) != null ? `<div class="ts">${name(k) !== label(k) ? `<span class="f">${esc(name(k))}</span> · ` : ''}${term(k) ? `<code>${esc(term(k))}</code>` : ''}</div>` : '') +
+      (nick(k) ? `<div class="tk">“${esc(nick(k))}”</div>` : '') +
+      defLines(name(k), isCompound(k) ? C[k].compound : null).map((l) => `<div class="td">${l}</div>`).join('') +
+      `<div class="tf">${esc(minimal(k))}</div><div class="tw">${weightText(weight(k))}${vfk(k) ? ' · known ∨-free member' : ''}</div>`;
     if (p.t === 'c' && C[p.k]) return cls(p.k);
     if ((p.t === 'p' || p.t === 'e') && C[p.a] && C[p.b]) {
-      if (p.t === 'e') return `<div class="tn">${esc(label(p.a))} ⋖ ${esc(label(p.b))}</div><div class="tw">a cover in R; click for both certificates</div>`;
+      if (p.t === 'e') return `<div class="tn">${esc(headOperand(p.a))} ⋖ ${esc(headOperand(p.b))}</div><div class="tw">a cover in R; click for both certificates</div>`;
       const kind = orderKind(ord[p.a][p.b]);
       const rel = kind === 'le' ? '⊢' : kind === 'nle' ? '⊬' : '? (unknown)';
       return `<div class="tf">[${relName(p.a)}] ${rel} ${relName(p.b)}</div><div class="tw">${ord[p.a][p.b] ? esc(ord[p.a][p.b].theorem) : ''}</div>`;
@@ -623,7 +697,7 @@
     if (p.t === 'o' && p.op in OPS && C[p.a]) {
       const c = opCell(p.op, p.a, p.b);
       const kind = opKind(c);
-      const expr = p.op === 'box' ? `◯${operand(p.a)}` : `${operand(p.a)} ${OPS[p.op].sym} ${operand(p.b)}`;
+      const expr = p.op === 'box' ? `◯ ${operand(p.a)}` : `${operand(p.a)} ${OPS[p.op].sym} ${operand(p.b)}`;
       let res = 'unknown';
       if (kind === 'in') { const r = posOfId.get(c.result); return `<div class="tf">${expr} =</div>${cls(r)}`; }
       if (kind === 'out') res = c.result_name != null ? `${esc(c.result_name)}, outside R (∉R)` : '∉R';
@@ -632,7 +706,11 @@
     if (p.t === 'x') {
       const o = outside.get(p.nm);
       const info = o && o.info;
-      return `<div class="tn">${esc(p.nm)} <span class="tw">outside R</span></div>` +
+      const lg = outsideLong(p.nm);
+      return `<div class="tn">${esc(lg)} <span class="tw">outside R</span></div>` +
+        `<div class="ts">${lg !== p.nm ? `<span class="f">${esc(p.nm)}</span> · ` : ''}${info && info.term ? `<code>${esc(info.term)}</code>` : ''}</div>` +
+        (info && info.nickname ? `<div class="tk">“${esc(info.nickname)}”</div>` : '') +
+        defLines(p.nm, null).map((l) => `<div class="td">${l}</div>`).join('') +
         (info && info.minimal ? `<div class="tf">${esc(info.minimal)}</div><div class="tw">${weightText(info.minimal_weight)}</div>` : '');
     }
     return null;
