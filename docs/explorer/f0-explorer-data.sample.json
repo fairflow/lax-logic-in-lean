@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "sample": true,
+  "note": "FORMAT SAMPLE ONLY: three classes and a few cells, values from the untrusted producer, NOT kernel-checked. Statuses show both shapes; the certified file is f0-explorer-data.json.",
+  "generated": "2026-10-22",
+  "commit": "27bbb04",
+  "classes": [
+    {"id": "ρ0", "index": 0, "number": null, "formula": "⊥", "depth": 0, "size": 1, "scope": 0,
+     "minimal": "⊥", "members_known": 3, "vfree_known": true},
+    {"id": "ρ1", "index": 1, "number": null, "formula": "⊤", "depth": 0, "size": 3, "scope": 0,
+     "minimal": "⊤", "members_known": 5, "vfree_known": true},
+    {"id": "ρ2", "index": 2, "number": null, "formula": "◯⊥", "depth": 1, "size": 2, "scope": 1,
+     "minimal": "◯⊥", "members_known": 4, "vfree_known": true}
+  ],
+  "order": [
+    {"i": 0, "j": 1, "status": "proved", "rel": "le", "theorem": "F0.Order.c_0_1",
+     "cert": {"kind": "tableau", "nodes": 2}},
+    {"i": 0, "j": 2, "status": "proved", "rel": "le", "theorem": "F0.Order.c_0_2",
+     "cert": {"kind": "tableau", "nodes": 2}},
+    {"i": 1, "j": 0, "status": "proved", "rel": "nle", "theorem": "F0.Order.c_1_0",
+     "cert": {"kind": "countermodel", "n": 1, "root": 0, "le": [[true]], "S": [false], "val": [[]]}},
+    {"i": 1, "j": 2, "status": "proved", "rel": "nle", "theorem": "F0.Order.c_1_2",
+     "cert": {"kind": "countermodel", "n": 1, "root": 0, "le": [[true]], "S": [true], "val": [[]]}},
+    {"i": 2, "j": 0, "status": "proved", "rel": "nle", "theorem": "F0.Order.c_2_0",
+     "cert": {"kind": "countermodel", "n": 1, "root": 0, "le": [[true]], "S": [false], "val": [[]]}},
+    {"i": 2, "j": 1, "status": "pending", "rel": null, "theorem": "F0.Order.c_2_1", "cert": null}
+  ],
+  "covers": [[0, 2], [2, 1]],
+  "ops": [
+    {"op": "and", "i": 0, "j": 1, "status": "proved", "result": "ρ0", "formula": "⊥ ∧ ⊤",
+     "theorems": ["F0.Ops.and_0_1_fwd", "F0.Ops.and_0_1_bwd"]},
+    {"op": "imp", "i": 2, "j": 0, "status": "proved", "result": "ρ3", "formula": "¬◯⊥",
+     "theorems": ["F0.Ops.imp_2_0_fwd", "F0.Ops.imp_2_0_bwd"]},
+    {"op": "box", "i": 2, "j": null, "status": "proved", "result": "ρ2", "formula": "◯◯⊥",
+     "theorems": ["F0.Ops.box_2_fwd", "F0.Ops.box_2_bwd"]},
+    {"op": "or", "i": 2, "j": 1, "status": "pending", "result": "unknown", "formula": "◯⊥ ∨ ⊤",
+     "theorems": []}
+  ],
+  "boundary": {"notR": 0, "unknown": 1, "note": "sample: one pending cell shown as unknown"}
+}
