@@ -446,7 +446,7 @@ def run (args : List String) : IO UInt32 := do
              ("formula", js (pp (rho k)))] ++ weightOf (rho k) ++
             [("members_status", js (if okM then "proved" else "pending")),
              ("minimal", if okM then js (pp minimal) else js (pp (rho k))),
-             ("minimal_weight", toJson [F0.boxDepth minimal, F0.size minimal, F0.boxScope minimal]),
+             ("minimal_weight", toJson (let mw := if okM then minimal else rho k; [F0.boxDepth mw, F0.size mw, F0.boxScope mw])),
              ("minimal_theorems", toJson (if okM then minFacts.getD [] else [])),
              ("members_known", toJson (if okM then mk.length + 1 else 1)),
              ("members", toJson (if okM then (mk.map fun m => pp m.φ) else [])),
