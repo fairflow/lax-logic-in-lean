@@ -231,7 +231,7 @@
       for (const [a, b] of covers) {
         const p = LAY.nodes[a], q = LAY.nodes[b];
         const key = `e:${a},${b}`;
-        s += `<g class="edge" data-k="${key}"><line class="hit" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"></line>` +
+        s += `<g class="edge" data-k="${key}" role="button" aria-label="${esc(label(a))} ⋖ ${esc(label(b))}"><line class="hit" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"></line>` +
           `<line class="vis" x1="${p.x}" y1="${p.y - 12}" x2="${q.x}" y2="${q.y + 12}"></line></g>`;
       }
       for (let k = 0; k < N; k++) {
@@ -452,7 +452,10 @@
 
   function classPanel(k) {
     const c = C[k];
+    const legacyText = `legacy label ${esc(c.legacy ?? c.id)}${c.legacy_const ? ` (${esc(c.legacy_const)})` : ''}`;
     let h = `<h2${name(k) == null ? ' class="muted"' : ''}>${esc(label(k))}</h2>`;
+    // An unnamed class has no short handle but its legacy label: shown at the top, still styled as legacy.
+    if (name(k) == null) h += `<p class="legacy legacy-top">${legacyText}</p>`;
     if (term(k)) h += `<p>${thm(term(k))} <span class="note">Lean term of the name</span></p>`;
     h += `<h3>Minimal form</h3><p class="f">${esc(minimal(k))}</p><p class="note">${weightText(weight(k))}</p>`;
     if (Array.isArray(c.minimal_theorems) && c.minimal_theorems.length) h += `<p class="note">member by ${c.minimal_theorems.map(thm).join(', ')}</p>`;
@@ -472,7 +475,7 @@
     const members = [c.formula].concat(Array.isArray(c.members) ? c.members.filter((f) => f !== c.formula) : []);
     h += `<h3>Known members</h3><p>${esc(c.members_known ?? members.length)} known · status ${esc(c.members_status ?? 'not stated')}</p>`;
     h += `<details><summary>show the list</summary><ul>${members.map((f) => `<li class="f">${esc(f)}</li>`).join('')}</ul></details>`;
-    h += `<p class="legacy">legacy label ${esc(c.legacy ?? c.id)}${c.legacy_const ? ` (${esc(c.legacy_const)})` : ''}</p>`;
+    if (name(k) != null) h += `<p class="legacy">${legacyText}</p>`;
     return h;
   }
 

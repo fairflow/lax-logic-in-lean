@@ -130,6 +130,7 @@ h1 { font-size: 1.35rem; margin: 0; letter-spacing: -.01em; }
 .panel-body details summary { cursor: pointer; color: var(--accent); }
 .panel-body select { max-width: 100%; font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--rule-strong); background: var(--panel); color: var(--ink); }
 .legacy { margin-top: 18px; padding-top: 8px; border-top: 1px dashed var(--rule-strong); color: var(--muted); font-size: .86em; }
+.legacy.legacy-top { display: inline-block; margin: 4px 0 2px; padding: 3px 9px; border: 1px dashed var(--rule-strong); border-radius: 6px; font-size: .95em; color: var(--ink); }
 .fact { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; margin: 8px 0; }
 .fact .rel { font-family: var(--fm); font-size: 1.05rem; }
 .fact.le { border-left: 4px solid var(--le); }
