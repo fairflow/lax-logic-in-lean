@@ -49,9 +49,10 @@ proof is induction on `x`, one reduction lemma per connective.
     ↓t1 = {⊥, t1}   ↓t2 = {⊥, t2}   ↓t3 = {⊥, t1, t2, t3}
     ↓t4 = {⊥, t1, t4}   ↓t5 = {⊥, t1, t2, t3, t4, t5}
 
-Every cell (224 `⊣⊢` cells, 17 `⊢` cells) is a pair of closed subframe
-tableaux, re-checked by the kernel (`SubTab.check`, `decide +kernel`) and
-translated into `LaxND` derivations by `SubTab.termOf`.  The cells were
+Each of the 224 `⊣⊢` cells is a pair of closed subframe tableaux and each
+of the 17 `⊢` cells (`Dn_below_i`) one, re-checked by the kernel
+(`SubTab.check`, `decide +kernel`) and translated into `LaxND` derivations
+by `SubTab.termOf`.  The cells were
 found by the untrusted producer `SubTab.solve` (scratch generator,
 2026-10-22); nothing in a cell is trusted but the kernel check.  The
 pen facts behind the tables hold: `¬¬◯⊥` is ◯-closed (`D5_box_4`:
