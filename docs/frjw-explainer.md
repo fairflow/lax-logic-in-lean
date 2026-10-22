@@ -473,16 +473,17 @@ and the crown, after the closure and saturation stages have built a
 concrete saturated store for every `G`,
 
 ```lean
-def decideGbuW (G : Form) : ProvableGbuC G ⊕' DisprovableW G              -- saturate:2387
-def decideGbuWData (G : Form) : GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G)    -- saturate:2485
-def decidePLL (G : Form) : Decidable (PLL G)                              -- saturate:2428
+def decideGbuW (G : Form) : ProvableGbuC G ⊕' DisprovableW G              -- FRJ/Gbu/W/Saturate.lean:2292
+def decideGbuWData (G : Form) : GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G)    -- FRJ/Gbu/W/Saturate.lean:2390
+def decidePLL (G : Form) : Decidable (PLL G)                              -- FRJ/Gbu/W/Saturate.lean:2333
 theorem frjw_complete : ¬ ProvableGbuC G → DisprovableW G
 theorem gbuw_complete : ¬ DisprovableW G → ProvableGbuC G
 theorem provableGbuC_iff_pll : ProvableGbuC G ↔ PLL G
 theorem disprovableW_iff_not_pll : DisprovableW G ↔ ¬ PLL G
 ```
 
-all pinned `[propext, Quot.sound]`.
+all pinned `[propext, Quot.sound]`.  (The three line anchors above are
+on `main` as of 2026-10-22, not at `b2f2525`.)
 
 ---
 

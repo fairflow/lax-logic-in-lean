@@ -9,9 +9,12 @@ instance depends on the model (§10 addendum).  This file sets up the
 replacement organisation: a demand-closure predicate `AllMet`, from
 which completeness follows in one step, and which the landed ◯-free
 construction already establishes in the circ-free case (validation
-below).  The open content of FRJ◯ completeness is exactly:
-`AllMet K G` for every `K` — the progress lemma of the per-instance
-fixpoint.
+below).  This was the route of the attempted proof of FRJ◯
+completeness, whose remaining content was `AllMet K G` for every `K`
+(the progress lemma of the per-instance fixpoint).  FRJ◯ completeness
+is REFUTED: `FRJ80.not_CompletenessFRJ : ¬ Certified.CompletenessFRJ`
+(`wip/frj80_noprov.lean`, witness #80).  The organisation is kept as
+the record of the attempt.
 -/
 import FRJ.Minimal
 
@@ -1126,8 +1129,9 @@ the Υ-edges drop phase, the floats drop height (`metI_imp` records
 `e ≠ a`; `minZetaNS` prefers a non-self candidate), the in-layer edges
 drop size.  The single un-orderable edge — the irregular ◯-demand at a
 world that is its own sole minZeta candidate — is discharged by an
-explicit supply (`CircSupply`), which is thereby THE open kernel of
-FRJ◯ completeness. -/
+explicit supply (`CircSupply`), which was thereby the kernel of the
+FRJ◯ completeness attempt.  FRJ◯ completeness is REFUTED
+(`FRJ80.not_CompletenessFRJ`, `wip/frj80_noprov.lean`). -/
 
 /-- Anchor weakening: a wit for a demand at `b` serves any `a ≤ b`. -/
 def MRWitOf.weaken {Rr : Form → Tag → List Form → Form → Type}
@@ -1199,8 +1203,10 @@ def minRef {K : Kripke} {a : K.W} {Z : Form}
           rw [hc] at hmem
           exact List.not_mem_nil hmem }
 
-/-- **The open kernel of FRJ◯ completeness**: supply for the irregular
-◯-demand at a world every proper extension of which forces the body.
+/-- **The kernel of the FRJ◯ completeness attempt** (FRJ◯ completeness
+is REFUTED: `FRJ80.not_CompletenessFRJ`, `wip/frj80_noprov.lean`):
+supply for the irregular ◯-demand at a world every proper extension of
+which forces the body.
 (This entails `cone(a) = {a}` and that `a` is the sole minZeta
 candidate; it is the weakest corner the visit cannot route around.)
 The `IrrWit` may be produced by any route — `metI_circ_syn` over a
