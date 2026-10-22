@@ -14,6 +14,46 @@ replaces the old one only when it answers every question the old one
 answers (gate G5).  **Nothing existing is removed or rewritten** by this
 plan, apart from the documentation fixes in the tidy-up PR.
 
+## 0 · Revision of 2026-10-22
+
+Matthew has decided the following since the first draft.  Where §3 (P2)
+or §4 (L1) differs from this section, this section wins.
+
+* **Tools are adopted through lean-certify** (METHOD-F0 §6).
+  * Each tool is a lean-certify `Engine`: its API, an untrusted producer
+    plus a certifier for each side.
+  * Tools are invoked only through one decider settings file, and a
+    pre-registered comparison (G4) orders the pairs.
+  * This replaces the bespoke `Fact`/`Cert`/`check` of P2 and L1.  Rows are
+    (claim, certificate), checked by the engines' own certifiers;
+    `certify_all` (lean-certify `Chunk`) checks a file of rows chunk by
+    chunk.
+  * The database is itself an engine, first in the settings, and every
+    answer the decider certifies is banked as a row.
+* **The subframe tableau and `pllfast` are public** (moved 2026-10-22),
+  with certified certificates on both sides.
+* **The certificate formats (D3) follow the comparison**, not a choice
+  made in advance.
+* **Accepted forms (D5, G3)**, by the rule of METHOD-F0 invariant 5:
+  * names denote classes;
+  * the representative is the minimal known member under (◯-depth, size);
+  * it is replaced only by a strictly smaller member, append-only, with a
+    certified `⊣⊢` row;
+  * authorised agents apply the rule.
+
+  The test of 2026-10-22 found all 22 ρ minimal among their known members
+  (`docs/f0-minimal-forms-test-2026-10-22.md`).
+* **The proof user** (METHOD-F0 §1 A): a tactic that turns a chain of
+  covers `u ⋖ v ⋖ w` in the store into a kernel-checked `u < w` inside a
+  proof.
+  * `[u] ⊢ w` is the chain of `⊢` certificates, sound by transitivity.
+    This needs one new certifier.
+  * `[w] ⊬ u` reuses the countermodel of `[v] ⊬ u`, by the propagation
+    rule.
+* **Deadline: the explorer** (Beads `lax-183`) is due no later than
+  **2026-11-25**, and it reads the new store (METHOD-F0 §1 E).  §6 works
+  back from that date.
+
 ## 1 · Why the current build is unworkable
 
 What is right and should be kept: entries carry proofs (`Entry.ok`), so
@@ -252,10 +292,27 @@ stay as they are and keep building.
    pointer, not a deletion.  Until then the old `fullSetC` stays the
    normaliser of record for the probes and the proving harness.
 
-## 6 · Phases
+## 6 · Steps (revised 2026-10-22)
 
-Each phase names its gate and its deliverable.  Spikes are at most half a
-day and end in a written result.
+Each step names its gate.  The targets are estimates, set to leave the
+explorer two weeks.
+
+| step | work | gate | target |
+|---|---|---|---|
+| 1 | Move the subframe tableau and `pllfast` to the public repository (16 modules, port validated on 33 cells) | G6, given | PR 2026-10-22 |
+| 2 | `deriveOf` / `termOf`, the tableau → derivation translation as data; `pllfast` takes its proof terms from the tableau | G2, given | 2026-10-24 |
+| 3 | The tableau's API made self-contained: the engine and its producer in the library, with no `tools.`/`wip.` import; the `Repr TCert` choice leak removed | — | 2026-10-25 |
+| 4 | The other contestants as Engines (FinCM/G4c, LJF◯ two-sided, FRJW `checkClosed`), statements first; one public settings file; the FRJ rebuild happens here | G2 | statements 2026-10-23; engines 2026-10-30 |
+| 5 | The pre-registered comparison, run through the decider; the result recorded in TOOLS.md and the settings ordered by it | G4 | 2026-11-04 |
+| 6 | The F0 store as a lean-certify client: rows checked by `certify_all`; the database engine first in the settings; the chain certifier and the tactic of §0; import of RNDB with the parity report of §5 | G2 for the statements | 2026-11-12 |
+| 7 | The explorer, rebuilt from the store (`lax-183`) | G6 for any Pages run | **2026-11-25 at the latest** |
+| later | Supersession (G5); F1, the one-variable fragment (G1) | | |
+
+The spikes S4 (certificate cost) and S5 (import dry run) of the first
+draft are folded into step 6: lean-certify's `Chunk` answers S4's
+question, and the import's parity report is S5's result.
+
+### Phases of the first draft (superseded 2026-10-22)
 
 | phase | work | gate | deliverable |
 |---|---|---|---|
@@ -302,7 +359,8 @@ Only L3's class key needs G3.
 * **D2.**  The name and place of the new library.  The proposal is a
   top-level `F0/` with namespace `F0`, a new `lean_lib`, outside
   `defaultTargets` until G5.
-* **D3.**  The certificate formats.  The recommendation is LJF◯ trees for
+* **D3.**  The certificate formats.  *Revised 2026-10-22: they follow the
+  comparison of step 5 (§0).*  The first draft's recommendation was LJF◯ trees for
   `⊢` (fuel-free, checker on main, carried to `LaxND` by `bridge_iff`)
   and FinCM models for `⊬`.  The alternative is `LaxND` terms for `⊢`,
   which uses the reference calculus directly but has no Boolean checker
@@ -311,7 +369,10 @@ Only L3's class key needs G3.
   aggregate claims and by value.
 * **D5.**  The accepted forms and keys, at G3.  S2's proposal is
   `docs/f0-accepted-forms-proposal.md` (branch `f0-forms-s2`, 6ff5f88).
-  Its questions Q1–Q9, each with a default, are the G3 decisions.
+  *Decided 2026-10-22* by the rule of METHOD-F0 invariant 5 (§0).  This
+  supersedes S2's A2 ("never re-pointed"), its A5 ("only Matthew") and
+  the default of its Q1.  Still open: the tie rule (METHOD-F0 §8 Q5), and
+  S2's Q3–Q9.
 * **D6.**  The sorried library theorem `SemUILayered.amalgamation`.  The
   new library does not need it (P6), but `Rewrite/Core.lean` imports its
   module, so the old normaliser's closure keeps it until you decide.

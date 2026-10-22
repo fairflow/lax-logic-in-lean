@@ -70,9 +70,19 @@ steerable.
    Completeness of a tool is claimed only when proved.
 4. **Identities are append-only.**  Entry ids, q-indices and ρ-indices never
    change meaning.  A superseded row is marked as superseded, never deleted.
-5. **The accepted forms are a decision.**  The list of class
-   representatives is fixed by Matthew (gate G3).  Changing it is a
-   decision, not a refactor.
+5. **The accepted forms follow a rule** (§1 C; agreed 2026-10-22).
+   * A class has a stable **name**, its number, which denotes the class
+     and never a particular formula.
+   * Its **representative** is the minimal known member under the order
+     (◯-depth, size), compared lexicographically.  Ties go to the
+     incumbent; for a new class, a fixed syntactic order decides.  The
+     tie rule is *proposed* after the 2026-10-22 test, and awaits Matthew.
+   * A representative is replaced only by a **strictly** smaller member.
+     The replacement is an append-only event backed by a certified `⊣⊢`
+     row.  The old representative stays a recorded member.
+   * Within this rule, **authorised agents, or agents that obtain
+     permission**, add classes and replace representatives.  Every change
+     is reported to Matthew.  The rule itself is his (gate G3).
 6. **Private stays private.**  Results developed in the private repository
    enter the public database only when Matthew releases them.
 
@@ -82,7 +92,7 @@ steerable.
 |---|---|---|
 | G1 | vision and scope | any campaign under this file (§1) |
 | G2 | statements | any proof, checker specification or certifier (lean-certify R10) |
-| G3 | accepted forms and keys | any tool that maps formulas to classes |
+| G3 | the rule for accepted forms (invariant 5: the order that defines minimality, the tie rule, who may add) and the keys | any tool that maps formulas to classes.  Applying the rule is not gated: authorised agents, or agents that obtain permission, add classes and replace representatives under it, and report each change |
 | G4 | comparison design | any engine comparison: the designed cells, budgets and measures are fixed *before* the runs, so the comparison is fair |
 | G5 | supersession | any tool or data set that replaces another (the `constraint-supersession-check` skill first) |
 | G6 | release | anything private becoming public, and any Pages publication |
@@ -157,5 +167,11 @@ From the survey of `origin/main` that preceded this draft:
    start?
 3. Who are the database's users: you reading it, proofs in Lean, agents
    searching, or all three?  *Answered: all three (§1 A).*
-4. Are the gates of §3 the right ones, and are any missing?  (§1 C lets
-   authorised agents add forms, which G3 as written reserves to Matthew.)
+4. Are the gates of §3 the right ones, and are any missing?  (G3
+   rewritten 2026-10-22 to §1 C: Matthew sets the rule, agents apply it.)
+5. The tie rule of invariant 5 (the incumbent wins on equal
+   (◯-depth, size)).  The test of 2026-10-22
+   (`docs/f0-minimal-forms-test-2026-10-22.md`) found 14 of the 22 ρ tied
+   with another known member.  13 of the ties are only a reordering of
+   `∨`; under a purely syntactic tie-break, all 14 would be re-pointed for
+   no gain (§1 D).
