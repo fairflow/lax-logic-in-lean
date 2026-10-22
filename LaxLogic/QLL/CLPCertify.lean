@@ -13,11 +13,13 @@ program as the context (one proof variable per clause).  A success is a
 derivation `Derives p Γ (◯S)` in the calculus of TPHOLs 2001, obtained without
 any appeal to `ATyped`.
 
-**Scaling.**  Only small terms: `certify` names each binder `freshFor` of the
-names in scope, which concatenates them (`freshFor_byteSize`), so fresh names
-double in length with each nested `let`.  The term of a 3-bit adder (about 25
-nested lets) exhausted memory (38 GB, killed).  Do not run `certify` on deep
-terms until `freshFor` is made linear.
+**Scaling.**  `certify` names each binder `freshFor` of the names in scope.
+That was their concatenation, so fresh names doubled in length with each
+nested `let`, and the term of a 3-bit adder (binder depth 25) exhausted memory
+(38 GB, killed).  `freshFor` now returns a name one byte longer than the
+longest in scope (`freshFor_byteSize`), so names grow by one byte per binder;
+the 3-bit adder is checked below, and the 32-bit one (binder depth 257) in
+about 0.1 s.
 -/
 import LaxLogic.QLL.CLPExamples
 import LaxLogic.QLL.Certify
@@ -96,6 +98,16 @@ def certifyAbs (flat : Bool) (isC : String → Bool) (q : Q) (Θ : Program) (S :
 #guard_msgs in #eval certifyAbs true isLinC .ex ex61 goal61 proof61
 /-- info: "certified" -/
 #guard_msgs in #eval certifyAbs true isC95 .ex ex95 goal95 proof95
+
+/-- The 3-bit adder: binder depth 25, the term that exhausted memory while
+`freshFor` concatenated the names in scope. -/
+def goalAdder3 : Form := query (at_ "c3" [v "z"])
+
+/-- info: "certified" -/
+#guard_msgs in #eval
+  match run (adder 3) isLinC false 80 goalAdder3 with
+  | some (p, _) => certifyAbs true isLinC .ex (adder 3) goalAdder3 p
+  | none => "no answer"
 
 #eval Surface.renderPf (AProof.toPfN .ex (clauseNames 3) proof61.toA)
 
