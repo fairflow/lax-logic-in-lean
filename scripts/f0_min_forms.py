@@ -1,4 +1,10 @@
-"""Cheap test for METHOD-F0 §1 C / invariant 5: is each ρ-representative
+"""CROSS-CHECK ONLY (2026-10-22).  The weight and the choice of representative
+are defined in Lean (`F0/Weight.lean`: `F0.weight`, `F0.pickRep`); that is
+the source the store and the explorer use (METHOD-F0 §6: Lean computes,
+scripts only read, report and render).  This script is an independent
+re-implementation over printed formulas, kept to cross-check the Lean results.
+
+Cheap test for METHOD-F0 §1 C / invariant 5: is each ρ-representative
 minimal in its known class under the order (◯-depth, size), with a fixed
 syntactic order as the last tie-break?
 

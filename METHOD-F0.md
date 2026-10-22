@@ -138,6 +138,11 @@ steerable.
   regenerate-and-diff check.
 - **Register every tool** in `TOOLS.md` with its version cell, in the same
   commit as any change in its behaviour.
+- **Lean computes; other languages only read, report and render**
+  (Matthew, 2026-10-22).  Anything the store, a tactic or the explorer
+  relies on (weights, minimal forms, the order, class membership) is a
+  Lean definition over `PLLFormula`.  A script may cross-check it, but is
+  never its source.
 - **Every tool is adopted as a lean-certify `Engine`** (DRAFT, 2026-10-22).
   An engine is the tool's API: an untrusted producer, plus a certifier for
   each side, each proved sound.  Tools are invoked only through the decider
