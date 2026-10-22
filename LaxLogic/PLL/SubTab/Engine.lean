@@ -1,19 +1,19 @@
 import LaxLogic.PLL.SubTab.Complete
-import tools.SubTab.Tableau
+import LaxLogic.PLL.SubTab.Tableau
 
 /-!
 # The subframe tableau as a lean-certify engine
 
 2026-10-15.  The untrusted producer (`SubTab.solve`,
-`tools/SubTab/Tableau.lean`) with the two certifiers proved sound
+`LaxLogic/PLL/SubTab/Tableau.lean`) with the two certifiers proved sound
 (`LaxLogic/PLL/SubTab/Sound.lean`).  `complete`
 (`LaxLogic/PLL/SubTab/Complete.lean`) proves that the search of the proof
 terminates, by strong induction on the measure `meas`; the compiled producer
 `SubTab.solve` is `partial`, and its termination is a paper argument.  The
 budget is unused: `produce` returns `pass` or `fail`, never `flag`.
 
-This module lives in `tools/`, not beside the certifiers, because the
-producer's module imports `tools.Decide`, whose import closure reaches `wip/`.
+In the library since 2026-10-22: the producer no longer imports `pll`'s
+tools, so the engine's import closure is free of `tools.` and `wip.`.
 -/
 
 namespace PLLND

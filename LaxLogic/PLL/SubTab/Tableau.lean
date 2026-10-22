@@ -1,4 +1,4 @@
-import tools.SubTab.ModelEnum
+import LaxLogic.PLL.SubTab.ModelEnum
 import LaxLogic.PLL.SubTab.Sound
 import Std.Data.HashMap
 
@@ -7,7 +7,9 @@ import Std.Data.HashMap
 
 2026-10-15, at Matthew's request ("we do need a new refuter based
 on subframes").  UNTRUSTED search: every model it returns is confirmed by
-`Tab.refutes` (the evaluator of the kernel certificate) before use.
+`Tab.refutes` (the evaluator of the kernel certificate) before use.  In the
+library since 2026-10-22; the source printers `tcertSrc` and `subcmSrc`, which
+use `pll`'s printer, are in `tools/SubTab/Source.lean`.
 
 Subframe models: x ⊩ ◯A iff A holds at every S-point above x.  A world
 carries signed formulas, T (true there) and F (false there).
@@ -306,24 +308,5 @@ def minimiseCM (m : PLLND.SubTab.SubCM) (φ : PLLFormula) : PLLND.SubTab.SubCM :
       | none => keep
       | some i => go fuel (keep.filter (· != i))
   restrictCM m (go m.n (List.range m.n))
-
-/-- A closed tableau as Lean source (expected type `TCert`). -/
-def tcertSrc : PLLND.SubTab.TCert → String
-  | .bot => ".bot"
-  | .ax A => s!"(.ax {PLLTools.srcOfP A})"
-  | .andL A B c => s!"(.andL {PLLTools.srcOfP A} {PLLTools.srcOfP B} {tcertSrc c})"
-  | .orL A B c₁ c₂ => s!"(.orL {PLLTools.srcOfP A} {PLLTools.srcOfP B} {tcertSrc c₁} {tcertSrc c₂})"
-  | .impL A B c₁ c₂ => s!"(.impL {PLLTools.srcOfP A} {PLLTools.srcOfP B} {tcertSrc c₁} {tcertSrc c₂})"
-  | .boxL A c => s!"(.boxL {PLLTools.srcOfP A} {tcertSrc c})"
-  | .andR A B c₁ c₂ => s!"(.andR {PLLTools.srcOfP A} {PLLTools.srcOfP B} {tcertSrc c₁} {tcertSrc c₂})"
-  | .orR A B c => s!"(.orR {PLLTools.srcOfP A} {PLLTools.srcOfP B} {tcertSrc c})"
-  | .impLoc A B c => s!"(.impLoc {PLLTools.srcOfP A} {PLLTools.srcOfP B} {tcertSrc c})"
-  | .boxLoc A c => s!"(.boxLoc {PLLTools.srcOfP A} {tcertSrc c})"
-  | .impR A B c => s!"(.impR {PLLTools.srcOfP A} {PLLTools.srcOfP B} {tcertSrc c})"
-  | .boxR A c => s!"(.boxR {PLLTools.srcOfP A} {tcertSrc c})"
-
-/-- Countermodel tables as Lean source (expected type `SubCM`). -/
-def subcmSrc (m : PLLND.SubTab.SubCM) : String :=
-  s!"\{ n := {m.n}, root := {m.root}, le := {m.le}, S := {m.S}, val := {repr m.val} }"
 
 end SubTab

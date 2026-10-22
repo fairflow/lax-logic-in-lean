@@ -1,43 +1,21 @@
-import tools.Decide
+import FRJ.Search.Pin
 import LaxLogic.PLL.SubTab.Sound
 
 /-!
-# Finite-model enumeration for `pllfast` and `refbench` (library, no `main`)
+# Finite-model enumeration of subframe models (library, no `main`)
 
-See `tools/SubTab/PllFast.lean` for the race.  Split out 2026-10-15 so that
-`refbench` can import the enumeration (two root `main`s in one import
-closure is an error).
+2026-10-15; in the library since 2026-10-22 (the output through `pll`'s layer
+stays in `tools/SubTab/PllFast.lean`).  UNTRUSTED search, used by `pllfast`,
+by the disprover `enum` of `tools/SubTab/Settings.lean` and by `refbench`.
 
-## The original header of `pllfast`
-
-
-2026-10-15, after a benchmark of `lake exe pll` on closed cells:
-the W-engine proves fast, but on some refutable cells its disproof side runs
-out of memory, while direct enumeration of small models finds the
-countermodel in milliseconds.
-
-A sequent is unprovable exactly when it has a countermodel, so the two
-searches are run together:
-
-  * the W-engine (`FRJ.Arity.decideDataByEngine`, verified `checkClosed`), in a
-    dedicated thread, exactly as `lake exe pll` runs it;
-  * in the main thread, enumeration of finite rooted subframe models
-    (W, ≤, S, V) smallest first: a root below a naturally labelled poset, every
-    S ⊆ W, every persistent valuation of the atoms of the formula; the formula
-    is evaluated on bitmasks.
-
-The first verdict wins.  A model hit is written as a `Tab` with one fallible
-top world (`Rm` reaches it exactly from the worlds outside `S`, so `◯φ` holds
-at `x` iff `φ` holds at every S-point above `x`) and CONFIRMED by
-`Tab.refutes`, the evaluator the kernel certificate runs; an unconfirmed hit
-is reported as a tool defect and ignored.  ORDER (2026-10-15, measured on the
-benchmark cells): the subframe refutation tableau (`tools/SubTab/Tableau.lean`)
-first, for the verdict; then the enumeration, only over the sizes below the
-tableau's minimised model (`--maxN`, default 5; `--cap`, default 50,000), to
-shrink the certificate; the engine supplies proof terms (and decides alone
-if both searches fail).
-Output layer, exit codes and flags as `lake exe pll`, plus `--maxN=` and
-`--cap=`.
+Finite rooted subframe models (W, ≤, S, V) are enumerated smallest first: a
+root below a naturally labelled poset, every S ⊆ W, every persistent valuation
+of the atoms of the formula; the formula is evaluated on bitmasks.  A hit is
+returned as a bitmask model `BM`, written either as a `Tab` with one fallible
+top world (`toTab`: `Rm` reaches the top exactly from the worlds outside `S`,
+so `◯φ` holds at `x` iff `φ` holds at every S-point above `x`), to be confirmed
+by `Tab.refutes`, or as `SubCM` tables (`bmToSubCM`), to be judged by the
+certifier `no`.
 -/
 
 open FRJ FRJ.Search FRJ.Gbu FRJ.Gbu.W PLLND
