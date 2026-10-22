@@ -1,7 +1,7 @@
 name = "lax-logic"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["LaxLogic", "FRJGbu"]
+defaultTargets = ["LaxLogic", "FRJGbu", "SubTab"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -145,6 +145,23 @@ name = "FRJ"
 name = "FRJGbu"
 globs = ["FRJ.Gbu.Base", "FRJ.Gbu.DB", "FRJ.Gbu.Search", "FRJ.Gbu.Measure", "FRJ.Gbu.Circ", "FRJ.Gbu.Transport", "FRJ.Gbu.W.Dichotomy", "FRJ.Gbu.W.DB", "FRJ.Gbu.W.CircDB", "FRJ.Gbu.W.Corner", "FRJ.Gbu.W.Search", "FRJ.Gbu.W.Closure", "FRJ.Gbu.W.Exclusion", "FRJ.Gbu.W.Saturate", "FRJ.Gbu.LaxND", "FRJ.Gbu.W.LaxND"]
 
+# SubTab: the subframe tableau for PLL (LaxLogic/PLL/SubTab/, 2026-10-22):
+# choice-free soundness and finite-model completeness for subframe models,
+# the closed-tableau and countermodel certifiers with their soundness, the
+# dichotomy and completeness of the tableau, the translation of closed
+# tableaux into LaxND, the negative gates and the generated facts.  Every
+# declaration is within [propext, Quot.sound] except the derived `Repr TCert`
+# instance (Classical.choice), and the import closure is wip-free.  An
+# explicit list in defaultTargets, as FRJGbu: the `LaxLogic` root module does
+# not import these.  The producer and the deciders are in SubTabTools.
+[[lean_lib]]
+name = "SubTab"
+globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
+         "LaxLogic.PLL.SubTab.Steps", "LaxLogic.PLL.SubTab.Dich",
+         "LaxLogic.PLL.SubTab.Model", "LaxLogic.PLL.SubTab.Complete",
+         "LaxLogic.PLL.SubTab.Translate", "LaxLogic.PLL.SubTab.Gates",
+         "LaxLogic.PLL.SubTab.Facts"]
+
 [[lean_exe]]
 name = "bilaxscreen"
 root = "BiLax.Screens"
@@ -185,6 +202,39 @@ root = "tools.PllMain"
 [[lean_exe]]
 name = "pllbench"
 root = "tools.Bench"
+
+# The subframe tableau's tools (tools/SubTab/, 2026-10-22): the untrusted
+# producer and the finite-model enumeration, the lean-certify engine and the
+# decider settings.  The certifiers and their theory (soundness, completeness,
+# the translation of closed tableaux into LaxND) are the library SubTab,
+# LaxLogic/PLL/SubTab/; these four import tools.Decide, whose import closure
+# reaches wip/, so they live here.  The globs are an explicit list, as above.
+[[lean_lib]]
+name = "SubTabTools"
+globs = ["tools.SubTab.ModelEnum", "tools.SubTab.Tableau", "tools.SubTab.Engine",
+         "tools.SubTab.Settings"]
+
+# pllfast: the decider as a race — the subframe refutation tableau for the
+# verdict, the finite-model enumeration to shrink the countermodel, the
+# W-engine (as `pll`) for proof terms; output layer and flags as `pll`, plus
+# --maxN= and --cap=.  Run the built binary under gtimeout.  (2026-10-15)
+[[lean_exe]]
+name = "pllfast"
+root = "tools.SubTab.PllFast"
+
+# subtabdecide: the lean-certify decider of tools/SubTab/Settings.lean (the
+# subframe tableau proves, the enumeration or the tableau refutes; both sides
+# certified).  (2026-10-15)
+[[lean_exe]]
+name = "subtabdecide"
+root = "tools.SubTab.SubTabDecide"
+
+# refbench: one countermodel search at a time, timed (g4c, trees, frjw, enum,
+# tab, engine), and `fact` mode, which prints a kernel-checked fact for
+# LaxLogic/PLL/SubTab/Facts.lean.  (2026-10-15)
+[[lean_exe]]
+name = "refbench"
+root = "tools.SubTab.RefBench"
 
 
 # Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup

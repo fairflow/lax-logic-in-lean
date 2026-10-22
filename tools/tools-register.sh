@@ -25,6 +25,10 @@ for p in \
   tools/Decide.lean \
   tools/Svg.lean \
   tools/DecideCmd.lean \
+  tools/SubTab/PllFast.lean \
+  tools/SubTab/SubTabDecide.lean \
+  tools/SubTab \
+  LaxLogic/PLL/SubTab \
   wip/check_closed.lean \
   docs/rn-catalogue.html \
   Meta/Audit.lean \
