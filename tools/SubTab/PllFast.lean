@@ -1,7 +1,16 @@
 import tools.SubTab.Tableau
+import LaxLogic.PLL.SubTab.Translate
 
 /-!
 # `pllfast`: the decider as a race (see `tools/SubTab/ModelEnum.lean` for the header and the enumeration)
+
+2026-10-22: the proofs come from the tableau too.  When the tableau closes, its
+closed tableau (`SubTab.solve`) is judged by `check` and translated into a
+`LaxND` derivation by `PLLND.SubTab.termOf` (`LaxLogic/PLL/SubTab/Translate.lean`)
+and into a `PLLND.Tm` by `ndToTm`, which `pll`'s output layer prints (and, with
+`--check-term`, checks in two passes).  The W-engine is a fallback only, run
+when the closed tableau is rejected (a TOOL DEFECT) or when neither search gives
+a verdict; it no longer runs alongside the tableau.
 -/
 
 open FRJ FRJ.Search FRJ.Gbu FRJ.Gbu.W PLLND
@@ -68,12 +77,14 @@ def run (fs : String) (a : PLLTools.Args) (maxN cap : Nat) : IO UInt32 := do
       IO.println s!"normalised {PLLSvg.ppF (ofPLL φ)}   \
 (certified: Rewrite.simplifyWith_interd; --raw to skip)"
     let t0 ← IO.monoMsNow
-    let eng := Task.spawn (prio := .dedicated) fun _ =>
-      FRJ.Arity.decideDataByEngine (ofPLL φ) a.cfg
     let ats := (atomsL φ).eraseDups
+    -- the W-engine, as `pll` runs it: a fallback only (2026-10-22), run when the
+    -- tableau's certificate is rejected or neither search gives a verdict
     let engineAnswer : IO UInt32 := do
+      IO.println "fallback  the W-engine (FRJW store, verified checkClosed), as `pll` runs it"
+      let dec ← IO.lazyPure fun _ => FRJ.Arity.decideDataByEngine (ofPLL φ) a.cfg
       let t1 ← IO.monoMsNow
-      match eng.get with
+      match dec with
       | none =>
           IO.println s!"NOT CLOSED at this budget [{t1 - t0} ms]: the engine's store did not \
 pass checkClosed, and no model of ≤ {maxN} worlds (cap {cap}) refutes the formula.  A frontier \
@@ -125,10 +136,23 @@ falling back to the enumeration"
 + fallible top, {count} models)"
           IO.Process.exit (← emitModel φ r2 (r2.minimise (ofPLL φ)) a).toUInt8
     | none =>
-        let t1 ← IO.monoMsNow
-        IO.println s!"tableau closed [{t1 - t2} ms]: provable by the paper argument; \
-waiting for the engine's proof term"
-    -- 3. the engine (proofs; also the complete decision past both searches)
+        -- the tableau closed: its closed tableau, judged by `check`, is translated
+        -- into a LaxND derivation (`PLLND.SubTab.termOf`) and a proof term (`ndToTm`)
+        match SubTab.solve φ with
+        | .ok c =>
+          if h : PLLND.SubTab.check ⟨false, [], [φ]⟩ c = true then
+            let t ← IO.lazyPure fun _ => ndToTm (PLLND.SubTab.termOf φ c h)
+            let t1 ← IO.monoMsNow
+            IO.println s!"verdict   PROVED  [{t1 - t0} ms]  (subframe tableau: closed tableau, \
+checked → LaxND (termOf) → Tm, {t1 - t2} ms)"
+            IO.Process.exit (← PLLTools.emitProved φ t a).toUInt8
+          else
+            IO.println "TOOL DEFECT  the closed tableau is rejected by check; falling back to \
+the engine"
+        | .error _ =>
+            IO.println "TOOL DEFECT  the refuter closed but the certificate search left an \
+open tree; falling back to the engine"
+    -- 3. the engine (fallback only: a certificate defect, or no verdict from either search)
     engineAnswer
 
 end PllFast

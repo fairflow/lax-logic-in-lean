@@ -322,24 +322,35 @@ result is really about**.
       holds_of_check : check ⟨false, [], [φ]⟩ c = true → Holds φ
       SubCM.refutes_sound : m.refutes φ = true → Holds φ → False
       complete φ : (∃ c, yes.check φ c = true) ∨ (∃ m, no.check φ m = true)
-      derive_of_check c s : check s c = true → Nonempty (s.ant ⊢ goal s)
-          where goal ⟨false, Γ, Δ⟩ = ⋁Δ,  goal ⟨true, Γ, Δ⟩ = ◯⋁Δ,  ⋁[] = ⊥
+      derive_of_check c s : check s c = true → Nonempty (s.ant ⊢ s.goal)
+          where ⟨false, Γ, Δ⟩.goal = ⋁Δ,  ⟨true, Γ, Δ⟩.goal = ◯⋁Δ,  ⋁[] = ⊥
       holds_of_check' : check ⟨false, [], [φ]⟩ c = true → Holds φ
       completeness_fin φ : (∀ (M : SubframeModel) [FinDec M] (x : M.W), M.force x φ) → Holds φ
       CF.derivable_iff_valid :
         Nonempty ([] ⊢ θ) ↔ ∀ (M : SubframeModel) [FinDec M] (x : M.W), M.force x θ
 
+  The translation is also data (2026-10-22): `def`s into `LaxND`, after
+  `LJFO.provable_of_checkDeriv`, from which the theorems above are read off
+  (`derive_of_check c s h = ⟨deriveOf c s h⟩`, `holds_of_check' h = ⟨termOf φ c h⟩`):
+
+      deriveOf : (c : TCert) → (s : SSeq) → check s c = true → (s.ant ⊢ s.goal)
+      termOf (φ : PLLFormula) (c : TCert) (h : check ⟨false, [], [φ]⟩ c = true) : [] ⊢ φ
+
+  `pllfast` turns a closed tableau into a proof term with `termOf` and
+  `ndToTm`.
+
   Each tableau result has its ◯-free instance proved first
-  (`dich_boxFree`, `complete_boxFree`, `derive_of_check_boxFree`,
-  `completeness_fin_boxFree`).  Every declaration of the library is within
-  `[propext, Quot.sound]` except the derived `Repr TCert` instance
-  (sweep, 2026-10-22).
+  (`dich_boxFree`, `complete_boxFree`, `deriveOf_boxFree`,
+  `derive_of_check_boxFree`, `completeness_fin_boxFree`).  Every declaration
+  of the library is within `[propext, Quot.sound]` except the derived
+  `Repr TCert` instance (sweep, 2026-10-22).
 * **Do not confuse**: (i) the two yes sides.  `holds_of_check` (certifier
   `yes`) goes through `CF.completeness`, hence through FRJW
   (`FRJ.Gbu.W.decideLaxND`); `holds_of_check'` (certifier `yes'`) goes
-  through `derive_of_check` and reaches no `FRJ` constant, nor does
-  `completeness_fin` (checked 2026-10-22 on the transitive closure of the
-  constants used).  `complete` names `yes`, so it does reach FRJW.
+  through `termOf` and reaches no `FRJ` constant, nor do `deriveOf`,
+  `derive_of_check` and `completeness_fin` (checked 2026-10-22 on the
+  transitive closure of the constants used).  `complete` names `yes`, so it
+  does reach FRJW.
   (ii) `dich` and `complete` are about the search of the proof, by strong
   induction on `meas`; the compiled producer `SubTab.solve`
   (`tools/SubTab/Tableau.lean`) is `partial` and unverified, its
@@ -386,7 +397,7 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | `LaxND` provability decidable choice-free; the finite POSET model property (`PLL_iff_laxND`, `decideLaxND`) | `LaxND`, via `Gbu◯` → `LaxND` and `FRJ.Kripke` | `FRJ/Gbu/W/LaxND.lean` |
 | choice-free soundness for subframe models, completeness for the finite decidable ones (`CF.derivable_iff_valid`) | `LaxND` + subframe models, completeness via `FRJW` | `LaxLogic/PLL/SubTab/Semantics.lean` |
 | every formula has a closed tableau or a finite subframe countermodel, both certificates checked by certifiers proved sound (`SubTab.complete`, `check_sound`, `SubCM.refutes_sound`) | `SubTab` + subframe models | `LaxLogic/PLL/SubTab/Complete.lean`, `Sound.lean` |
-| a closed tableau is an `LaxND` derivation (`derive_of_check`); completeness for finite subframe models from the tableau alone (`completeness_fin`) | `SubTab` → `LaxND` | `LaxLogic/PLL/SubTab/Translate.lean` |
+| a closed tableau is an `LaxND` derivation (`derive_of_check`; as data, `deriveOf`, `termOf`); completeness for finite subframe models from the tableau alone (`completeness_fin`) | `SubTab` → `LaxND` | `LaxLogic/PLL/SubTab/Translate.lean` |
 | the θ-chain, the GZ-candidate cell, `thetaStabilises` | `LaxND` (certificates from `G4c` search) | `wip/ljfo_theta_*.lean` |
 | the 1-pv ∃p wrapper: `semExC_upper`/`semExC_adjunction` PROVED; the amalgamation conditional on `ClosedCollapse 6` — REFUTED-in-spirit (no collapse ≤ 7; `R₀ = 5` refuted outright), so the kernels stand OPEN; `SemExC1Definable` OPEN | `DerivU` + confluent constraint models | `wip/pcll1pv_stage*.lean`, `wip/closed_frag*.lean` |
 

@@ -10,6 +10,9 @@ closure is an error).
 
 ## The original header of `pllfast`
 
+(Changed 2026-10-22: the proof terms now come from the tableau, through
+`PLLND.SubTab.termOf`, and the W-engine is a fallback that no longer runs
+alongside the searches; see `tools/SubTab/PllFast.lean`.)
 
 2026-10-15, after a benchmark of `lake exe pll` on closed cells:
 the W-engine proves fast, but on some refutable cells its disproof side runs
