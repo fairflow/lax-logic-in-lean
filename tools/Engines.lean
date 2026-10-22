@@ -28,6 +28,9 @@ than in the results.
 import Certified.Register
 import LaxLogic.PLL.Search.Search
 import FRJ.SoundW
+import LaxLogic.PLL.SubTab.Engine
+import LaxLogic.PLL.SubTab.Translate
+import wip.check_closed
 
 open PLLND
 
@@ -81,7 +84,7 @@ unprovable input it must walk the whole ladder.  Use FRJ(◯) or G4c for
 the negative side.
 
 **RE-MEASURED 2026-08-22, and the standing claim does not scale.**
-`CLAUDE.md` records "~10³× cheaper than the G4c oracle", measured on the
+`TOOLS.md` §2 records "~10³× cheaper than the G4c oracle", measured on the
 462 ρ-order cells.  On the larger goals of `lake exe frjhard` the ordering
 REVERSES by two to three orders of magnitude:
 
@@ -108,12 +111,13 @@ def ljfoProve : Engine where
   corpus := "the 462 ρ-order cells: 158/158 at fuel ≤ 44.  BUT SEE BELOW"
   measured := "2026-08-15 (docs/two-sided-engine.md); RE-MEASURED 2026-08-22"
 
-/-- **The refutation engine.**  FRJ(◯) CONSTRUCTS its countermodel out of
-the refutation derivation (`FRJ.modR`); it never enumerates.  That is why
-it is the canonical finder despite completeness being open: against a
-workload of many sequents, a fast sound engine with an open completeness
-question beats a slow one with a closed one, and each failure it reports
-is itself a candidate incompleteness witness. -/
+/-- **The refutation engine of the paper calculus.**  FRJ(◯) CONSTRUCTS
+its countermodel out of the refutation derivation (`FRJ.modR`); it never
+enumerates.  A hit is a countermodel by `FRJ.soundness`.  The calculus is
+incomplete: `Certified.CompletenessFRJ` is REFUTED by
+`FRJ80.not_CompletenessFRJ` (`wip/frj80_noprov.lean`, witness #80), so a
+miss is never a verdict, at any bound.  The calculus whose completeness
+is PROVED is FRJW (`frjwRefute` below). -/
 def frjRefute : Engine where
   name := "FRJ(◯) forward refutation search (FRJ/)"
   version := 2
@@ -122,7 +126,7 @@ def frjRefute : Engine where
   soundStmt := ∀ G : FRJ.Form, FRJ.Provable G → ¬ FRJ.PLL G
   sound := fun _ h => FRJ.soundness h
   pin := "[propext, Quot.sound]"
-  completeness := "OPEN — docs/frj-w4.md §9; see Certified.CompletenessFRJ"
+  completeness := "REFUTED: FRJ80.not_CompletenessFRJ : ¬ Certified.CompletenessFRJ (wip/frj80_noprov.lean, witness #80)"
   corpus := "the RN(◯,{}) bank (tools/Bank.lean), whose status tags are WITHDRAWN"
   measured := "2026-08-21"
 
@@ -161,7 +165,8 @@ touch.  It also remains the only tool for premise-loaded (PCLL /
 and that is what `enginecmp` is for. -/
 def g4cSearch : Engine where
   name := "G4c certificate search (PLLND.Search.decide)"
-  version := 3
+  -- 4 (2026-10-19, #70): `find` memoises a failure with the ancestor keys its loop-check cuts met.
+  version := 4
   role := .proves
   mayDiscover := true
   soundStmt := ∀ (Γ : List PLLFormula) (C : PLLFormula), PLLND.G4cTm Γ C →
@@ -180,23 +185,99 @@ modular saturation core (`FRJ/Search/OpsW.lean`): FRJV's rule set with
 (`disprovableW_of_hit`).  Smoke-validated 2026-08-31 on the duality-gap
 cell: on `◯(◯p ⊃ p)` the V-engine has no irregular row (matching the
 kernel-checked `not_evalI_Gcc`) and this engine produces one via
-`Lift`, matching W4's hand witness. -/
+`Lift`, matching W4's hand witness.
+
+Completeness of the CALCULUS is PROVED (`FRJ.Gbu.W.frjw_complete`,
+`FRJ.Gbu.W.decideGbuW`, `FRJ/Gbu/W/Saturate.lean`).  The ENGINE is
+bounded (join arities `jmax`/`pmax`, rounds), so a miss is
+`not-found-within-bound`, never a verdict; `checkClosedCheck` below
+certifies its store. -/
 def frjwRefute : Engine where
   name := "FRJW forward refutation search (FRJ/Search/OpsW.lean, wOps)"
-  version := 1
+  -- 2 (2026-09-02/03): the A3 repair (relaxed ⋈^◯) and the semi-naive round (`Config.semiNaive`, default off).
+  version := 2
   role := .refutes
   mayDiscover := true
   soundStmt := ∀ G : FRJ.Form, FRJ.DisprovableW G → ¬ FRJ.PLL G
   sound := fun _ h => FRJ.soundnessW h
   pin := "[propext, Quot.sound]"
-  completeness := "OPEN — target is the dichotomy decideGbuW (docs/frjw-plan.md); the exclusion half is banked (wip/gbu_frjw_exclusion.lean)"
+  completeness := "calculus PROVED: FRJ.Gbu.W.frjw_complete, FRJ.Gbu.W.decideGbuW (FRJ/Gbu/W/Saturate.lean), [propext, Quot.sound]; the exclusion half is FRJ/Gbu/W/Exclusion.lean.  The engine is bounded: a miss is not-found-within-bound, never a verdict"
   corpus := "smoke 2026-08-31: Gcc gap cell (irregular row via Lift where V has none); ◯-free agreement with vOps on Peirce; no false hits on p ⊃ p or ◯(p ⊃ ◯p)"
   measured := "2026-08-31"
+
+/-- **The subframe tableau, proof side** (`PLLND.SubTab.engine`, library
+`SubTab`, `LaxLogic/PLL/SubTab/`).  The producer `SubTab.solve`
+(`Tableau.lean`) is `partial` and UNTRUSTED: it returns a closed tableau
+`TCert` or a finite subframe countermodel `SubCM`, and the certifiers
+judge.  This record is the proof side, for `Holds φ := Nonempty ([] ⊢ φ)`.
+Two certifiers check the same `TCert`, both PROVED
+`[propext, Quot.sound]`: `yes` (the engine's, sound through
+`SubframeModel.CF.completeness`, which reaches FRJW) and `yes'`
+(`Translate.lean`, sound by the tableau's own rules through `termOf`).
+`complete` (`Complete.lean`) proves that every formula has a closed
+tableau or a finite subframe countermodel; it is a theorem about the
+proof's dichotomy, and that the compiled `solve` terminates is a paper
+argument, so completeness of the producer (`Certify.Engine.Complete`)
+is not claimed. -/
+def subTabProve : Engine where
+  name := "subframe tableau, proof side (PLLND.SubTab.engine; certifiers yes, yes')"
+  version := 1
+  role := .proves
+  mayDiscover := true
+  soundStmt := ∀ (φ : PLLFormula) (c : PLLND.SubTab.TCert),
+    PLLND.SubTab.yes.check φ c = true → PLLND.SubTab.Holds φ
+  sound := PLLND.SubTab.yes.sound
+  pin := "[propext, Quot.sound]"
+  completeness := "PROVED for the tableau: PLLND.SubTab.complete, [propext, Quot.sound]; the producer SubTab.solve is partial, its termination a paper argument"
+  corpus := "the 26 benchmark cells and the 7 refbench cells: the same 33 verdicts as the earlier benchmark record"
+  measured := "2026-10-15; port checks 2026-10-22 (TOOLS.md §3)"
+
+/-- **The subframe tableau, refutation side** (`PLLND.SubTab.engine`).  An
+open tableau becomes a finite subframe countermodel (`toSubCM`), so the
+countermodel is CONSTRUCTED from the search, not drawn from a battery;
+`no` checks it, PROVED `[propext, Quot.sound]` (`SubCM.refutes_sound`).
+The finite-model enumeration of `ModelEnum.lean` (the `enum` disprover
+of `subtabdecide`, and the minimiser of `pllfast`) is enumeration, and
+is not registered here. -/
+def subTabRefute : Engine where
+  name := "subframe tableau, refutation side (PLLND.SubTab.engine; certifier no)"
+  version := 1
+  role := .refutes
+  mayDiscover := true
+  soundStmt := ∀ (φ : PLLFormula) (m : PLLND.SubTab.SubCM),
+    PLLND.SubTab.no.check φ m = true → ¬ PLLND.SubTab.Holds φ
+  sound := PLLND.SubTab.no.sound
+  pin := "[propext, Quot.sound]"
+  completeness := "PROVED for the tableau: PLLND.SubTab.complete, [propext, Quot.sound]; the producer SubTab.solve is partial, its termination a paper argument"
+  corpus := "the 26 benchmark cells and the 7 refbench cells: the same 33 verdicts as the earlier benchmark record"
+  measured := "2026-10-15; port checks 2026-10-22 (TOOLS.md §3)"
+
+/-- **The verified store certificate behind `pll`** (`wip/check_closed.lean`).
+The untrusted W-engine (`frjwRefute`) proposes a store of FRJW
+disproofs; `FRJ.Arity.checkClosed` certifies that the store is closed
+under the 21 clauses, whence `DBClosed G db` (`dbClosed_of_check`) and
+the decision `ProvableGbuC G ⊕' DisprovableW G` (`decideGbuW_of_check`).
+A checker, not a finder: the store comes from the engine, and
+`decideByEngine` returning `none` is `not-closed-within-bound`, never a
+verdict. -/
+def checkClosedCheck : Engine where
+  name := "checkClosed, the store certificate (FRJ.Arity.checkClosed, wip/check_closed.lean)"
+  version := 1
+  role := .checks
+  mayDiscover := false
+  soundStmt := ∀ (G : FRJ.Form) (db : List (FRJ.Gbu.W.WRow G)),
+    FRJ.Arity.checkClosed G db = true → FRJ.Gbu.W.DBClosed G db
+  sound := fun _ _ h => FRJ.Arity.dbClosed_of_check h
+  pin := "[propext, Quot.sound]"
+  completeness := "none claimed for the check: a store failing it is not-closed-within-bound; the closure theorem decideGbuW_of_dbClosed turns a passing store into the decision"
+  corpus := "the 20 probe stores of checkprobe, sub-millisecond; gate watched failing 2026-09-02 (join rows deleted: false 14/14; first row deleted: false 20/20)"
+  measured := "2026-09-02 (wip/checkprobe_out.txt)"
 
 /-- Every engine the database may cite.  Anything absent from this list
 is not citable, whatever it can do. -/
 def registered : List Engine :=
-  [ljfoProve, frjRefute, frjwRefute, rejectCheck, g4cSearch]
+  [ljfoProve, frjRefute, frjwRefute, rejectCheck, g4cSearch,
+   subTabProve, subTabRefute, checkClosedCheck]
 
 /-- The engines that may ORIGINATE a result.  `Evidence` in the database
 must draw from this list, which is how the battery-enumeration ban is

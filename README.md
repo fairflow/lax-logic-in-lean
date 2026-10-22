@@ -86,15 +86,18 @@ purpose; and **1 unintended open case** in a library —
 ## The top-level Lean files
 
 Each of these is a library root: a list of imports that defines what the library
-is. `lakefile.toml` builds `LaxLogic` and `FRJGbu` by default; the rest are built
-on demand.
+is. `lakefile.toml` builds `LaxLogic`, `FRJGbu` and `SubTab` by default; the rest
+are built on demand.
 
 ### `LaxLogic.lean` — the main library (81k lines, 210 files)
 
 The root of everything about PLL itself, and the only library the other roots
-depend on. The dependency direction is one-way throughout: `LJF`, `FRJ`, `BiLax`,
-`Reject` and `Rewrite` all import `LaxLogic`; it imports none of them. Its main
-lines, by size:
+depend on. `LJF`, `FRJ`, `BiLax`, `Reject` and `Rewrite` all import `LaxLogic`,
+and `LaxLogic.lean` imports none of them. The exception to this direction is the
+library `SubTab` (the subframe tableau, since 2026-10-22): its modules live under
+`LaxLogic/PLL/SubTab/`, `LaxLogic.lean` does not import them, and they import
+`FRJ` (`Semantics.lean` imports `FRJ.Gbu.W.LaxND`, `ModelEnum.lean` imports
+`FRJ.Search.Pin`). The main lines of `LaxLogic`, by size:
 
 * **`PLL/Syntax`, `PLL/ND`, `PLL/Semantics`** — the paper. Formulas, natural
   deduction (`LaxND`, the reference system), the Hilbert presentation, the

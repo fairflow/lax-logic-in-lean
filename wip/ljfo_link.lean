@@ -28,7 +28,12 @@ fire.  What neither side has is a feasible BOUND — the engine
 (`wip/two_sided.lean`) therefore interleaves them and reports `flag`
 at budget, per the repo's three-valued doctrine.
 
-Everything here is choice-free: the pins are `[propext, Quot.sound]`.
+The two sides and their disjointness are choice-free: the pins of
+`laxND_of_searchProves`, `searchProves_complete` and
+`two_sided_disjoint` are `[propext, Quot.sound]`.  The exception is the
+normalisation transfer of the last section: `deriv_iff_simplify`
+depends on `Classical.choice`, through `Rewrite.simplifyWith_interd`,
+and its pin below records `[propext, Classical.choice, Quot.sound]`.
 
 NEW FILE.  Nothing under `LaxLogic/` or `Reject/` is edited.
 -/
