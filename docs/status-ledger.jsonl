@@ -15024,6 +15024,7 @@
 {"axioms":["propext","Classical.choice","Quot.sound"],"decl":"LaxLogic.QLL.CLPCertify.certifyAbs","kind":"def","module":"LaxLogic.QLL.CLPCertify","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LaxLogic.QLL.CLPCertify.clauseNames","kind":"def","module":"LaxLogic.QLL.CLPCertify","native":false,"sorry":false}
 {"axioms":[],"decl":"LaxLogic.QLL.CLPCertify.closeP","kind":"def","module":"LaxLogic.QLL.CLPCertify","native":false,"sorry":false}
+{"axioms":[],"decl":"LaxLogic.QLL.CLPCertify.goalAdder3","kind":"def","module":"LaxLogic.QLL.CLPCertify","native":false,"sorry":false}
 {"axioms":[],"decl":"LaxLogic.QLL.CProof","kind":"inductive","module":"LaxLogic.QLL.CLPCore","native":false,"sorry":false}
 {"axioms":[],"decl":"LaxLogic.QLL.CProof.active","kind":"def","module":"LaxLogic.QLL.CLPCore","native":false,"sorry":false}
 {"axioms":[],"decl":"LaxLogic.QLL.CProof.andI","kind":"ctor","module":"LaxLogic.QLL.CLPCore","native":false,"sorry":false}
@@ -16552,7 +16553,7 @@
 {"axioms":[],"decl":"LaxLogic.QLL.Err.unbound.sizeOf_spec","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":[],"decl":"LaxLogic.QLL.Pf.openI.eq_def","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":[],"decl":"LaxLogic.QLL.Pf.size.eq_def","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
-{"axioms":["propext"],"decl":"LaxLogic.QLL.byteSize_le_sum","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
+{"axioms":["propext"],"decl":"LaxLogic.QLL.byteSize_le_maxSize","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LaxLogic.QLL.freshFor","kind":"def","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"LaxLogic.QLL.freshFor_byteSize","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"LaxLogic.QLL.freshFor_notMem","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
@@ -16565,8 +16566,11 @@
 {"axioms":["propext"],"decl":"LaxLogic.QLL.instReprErr","kind":"def","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LaxLogic.QLL.instReprErr.repr","kind":"def","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LaxLogic.QLL.lookup_mem","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
+{"axioms":[],"decl":"LaxLogic.QLL.maxSize","kind":"def","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LaxLogic.QLL.size_openI","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LaxLogic.QLL.size_openP","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
+{"axioms":["propext"],"decl":"LaxLogic.QLL.zs","kind":"def","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"LaxLogic.QLL.zs_byteSize","kind":"theorem","module":"LaxLogic.QLL.Kit","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LaxLogic.QLL.Consequence","kind":"def","module":"LaxLogic.QLL.Kripke","native":false,"sorry":false}
 {"axioms":["propext"],"decl":"LaxLogic.QLL.ConsequenceT","kind":"def","module":"LaxLogic.QLL.Kripke","native":false,"sorry":false}
 {"axioms":[],"decl":"LaxLogic.QLL.KModel","kind":"inductive","module":"LaxLogic.QLL.Kripke","native":false,"sorry":false}

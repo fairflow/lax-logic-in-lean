@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-10-19 20:18 BST from `0ae8ebd` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-10-22 13:27 BST from `e14130a` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**30053 declarations** in **611 modules**: 13785 theorems, 16268 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**30057 declarations** in **611 modules**: 13786 theorems, 16271 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -114,7 +114,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.QLL.CLP` | 20 | 14 | 20 |  |  |
 | `LaxLogic.QLL.CLPAbstract` | 159 | 60 | 159 |  |  |
 | `LaxLogic.QLL.CLPBench` | 5 | 0 | 5 |  |  |
-| `LaxLogic.QLL.CLPCertify` | 6 | 0 | 6 |  |  |
+| `LaxLogic.QLL.CLPCertify` | 7 | 0 | 7 |  |  |
 | `LaxLogic.QLL.CLPCore` | 88 | 27 | 88 |  |  |
 | `LaxLogic.QLL.CLPEngine` | 91 | 22 | 91 |  |  |
 | `LaxLogic.QLL.CLPExamples` | 56 | 22 | 56 |  |  |
@@ -138,7 +138,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.QLL.Interp` | 26 | 5 | 26 |  |  |
 | `LaxLogic.QLL.InterpTests` | 4 | 0 | 4 |  |  |
 | `LaxLogic.QLL.Judgement` | 41 | 0 | 41 |  |  |
-| `LaxLogic.QLL.Kit` | 76 | 37 | 76 |  |  |
+| `LaxLogic.QLL.Kit` | 79 | 38 | 79 |  |  |
 | `LaxLogic.QLL.Kripke` | 78 | 40 | 78 |  |  |
 | `LaxLogic.QLL.LLP` | 67 | 11 | 67 |  |  |
 | `LaxLogic.QLL.Lc` | 45 | 35 | 45 |  |  |
@@ -396,9 +396,9 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12955 |
-| `propext`, `Quot.sound` | 8515 |
-| `propext` | 5712 |
+| *(none — axiom-free)* | 12957 |
+| `propext`, `Quot.sound` | 8516 |
+| `propext` | 5713 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2837 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |

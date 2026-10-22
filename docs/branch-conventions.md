@@ -1,5 +1,13 @@
 # Branch conventions
 
+> **SUPERSEDED (2026-10-22).** The branch layout described below is out of
+> date. The current rules are in `HANDOFF.md` §2026-10-05 (both sections of
+> that date): `tooling` is cherry-pick only and is never merged, in either
+> direction; `frj-dev` is merged into `main`; `ljfo-dev` was merged and then
+> deleted from `origin`; `publication/core` is not to be merged (it needs
+> adjudication). The text below is kept, unchanged, as the record of
+> 2026-08-30.
+
 Written 2026-08-30, after `frj-dev` and `tools-dev` drifted apart and syncing
 them by hand meant sorting a 465-file diff into "theory" and "tooling" one file
 at a time.

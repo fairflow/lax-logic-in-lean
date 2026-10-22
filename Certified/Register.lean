@@ -147,7 +147,9 @@ never enumerates candidate models.  That is why it is the canonical
 finder, and why generate-and-test is banned as a discovery method: a
 battery filter cannot beat a construction, it can only check one.
 
-Completeness is OPEN — see §7. -/
+Completeness is REFUTED (§7): `FRJ80.not_CompletenessFRJ`
+(`wip/frj80_noprov.lean`) exhibits a PLL-invalid formula with no
+refutation derivation, so a miss of this engine is never a verdict. -/
 
 /-- info: 'FRJ.soundness' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
@@ -215,17 +217,31 @@ it is talking about. -/
 #guard_msgs in
 #print axioms Reject.not_laxND_iff_built
 
-/-! ## 7. OPEN — stated, never asserted
+/-! ## 7. Named statements, stated and never asserted
 
 Each of these is a `def … : Prop`.  It gives the statement a name so that
 documents and plans can refer to it precisely, and it produces NO
-inhabitant, so nothing can accidentally be built on it. -/
+inhabitant, so nothing can accidentally be built on it.  The status of
+each is in its docstring: `CompletenessFRJ` is REFUTED, `SearchComplete`
+is OPEN. -/
 
-/-- **OPEN.**  Completeness of FRJ(◯): every PLL-invalid formula has a
-refutation derivation.  Soundness is `FRJ.soundness` above; this is the
-converse.  The live route is the demand-closure predicate `AllMet` of
-`FRJ/Saturate.lean`, whose progress lemma IS this statement's open
-content.  Status: `docs/frj-w4.md` §9. -/
+/-- **REFUTED.**  Completeness of FRJ(◯), the paper calculus: every
+PLL-invalid formula has a refutation derivation.  Soundness is
+`FRJ.soundness` above; this is the converse, and it fails:
+
+    FRJ80.not_CompletenessFRJ : ¬ Certified.CompletenessFRJ
+
+in `wip/frj80_noprov.lean`, pinned `[propext, Quot.sound]`, from witness
+#80 (`FRJ80.frj_incompleteness_80 : ¬ PLL G80 ∧ ¬ Provable G80`).  That
+file imports this one, so the refutation is cited here, not imported.
+The statement keeps its name so that documents can refer to it.  The
+demand-closure predicate `AllMet` of `FRJ/Saturate.lean` was the route
+of the attempted proof (history: `docs/frj-w4.md` §9).
+
+The calculi after FRJ(◯): completeness of FRJV was abandoned, never
+established, and is not an open problem; completeness of FRJW is PROVED
+(`FRJ.Gbu.W.frjw_complete`, `FRJ.Gbu.W.decideGbuW`,
+`FRJ/Gbu/W/Saturate.lean`). -/
 def CompletenessFRJ : Prop := ∀ G : FRJ.Form, ¬ FRJ.PLL G → FRJ.Provable G
 
 /-- **OPEN.**  Completeness of the SEARCH, as distinct from the calculus:
