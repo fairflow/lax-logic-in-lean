@@ -71,11 +71,14 @@ with $`f(0) = \bot`, $`f(1) = \top`, and
 
 $$`d < d' \;\Longrightarrow\; f(d) \vdash f(d') \;\text{and}\; f(d') \nvdash f(d),`
 
-an order embedding (Section 5).  The dyadic rationals strictly between $`0` and
-$`1` form a countable dense linear order without endpoints, so they are
-order-isomorphic to $`\mathbb{Q}`, and composing gives an order embedding of
-$`\mathbb{Q}` in $`F_0`.  That last step uses `Classical.choice`; the dyadic
-embedding does not.
+an order embedding (Section 5).  Minkowski's question-mark function, composed
+with an explicit order-isomorphism from $`\mathbb{Q}` onto
+$`\mathbb{Q} \cap (0, 1)`, is an explicit order-isomorphism from $`\mathbb{Q}`
+onto the dyadic rationals strictly between $`0` and $`1`; composing it with
+$`f` gives an order embedding of $`\mathbb{Q}` in $`F_0`, without
+`Classical.choice`.  A second route, through Cantor's theorem on countable
+dense linear orders, gives an order embedding too, and carries
+`Classical.choice`.
 
 _A cut that $`F_0` does not fill._  The gaps $`g_k`, $`k \ge 1`, have no greatest
 lower bound, among the variable-free formulas or among all formulas
@@ -96,7 +99,8 @@ Lean statement when the document is built, then as the Lean declaration
 printed from the compiled library, then as a link to its source line at the
 commit that was built.  The declarations live in the repository's `wip/`
 directory: `wip/f0Covers.lean`, `wip/f0Indep.lean`, `wip/f0Dyadic.lean`,
-`wip/f0Rat.lean`, `wip/gapWidth.lean`, `wip/embedNeg.lean`, `wip/floor.lean`
+`wip/f0Minkowski.lean`, `wip/f0Rat.lean`, `wip/gapWidth.lean`,
+`wip/embedNeg.lean`, `wip/floor.lean`
 and the files they import.  In the displayed formulas the meta-level
 conjunction and disjunction are written "and" and "or", so that they are not
 confused with the connectives $`\land` and $`\lor` of PLL, and

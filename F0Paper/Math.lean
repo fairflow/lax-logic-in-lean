@@ -4,7 +4,8 @@ declaration, generated from its type at build time.  The method and the layout
 code are those of `CLPPaper/Math.lean` (docs/verso-paper-workflow.md §3); the
 notation table is new, for propositional lax logic and the objects of the F0
 development (`wip/f0Covers.lean`, `wip/f0Indep.lean`, `wip/f0Dyadic.lean`,
-`wip/f0Rat.lean`, `wip/gapWidth.lean`, `wip/embedNeg.lean`, `wip/floor.lean`).
+`wip/f0Rat.lean`, `wip/f0Minkowski.lean`, `wip/gapWidth.lean`,
+`wip/embedNeg.lean`, `wip/floor.lean`).
 
 * Binders become quantifiers without type annotations; hypotheses, and
   derivations `p : Γ ⊢ A` taken as arguments, become premises; instance
@@ -32,6 +33,7 @@ import wip.f0Covers
 import wip.f0Indep
 import wip.f0Dyadic
 import wip.f0Rat
+import wip.f0Minkowski
 import wip.gapWidth
 import wip.embedNeg
 import wip.ladder8
@@ -423,6 +425,14 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   | (``PLLND.F0.Dy.lt, #[d, d']) => return wrap 5 s!"{← generic st 6 d} < {← generic st 6 d'}"
   | (``PLLND.F0.Dy.mk, #[n, x, _]) => return (← generic st 7 n) ++ "/2^{" ++ (← generic st 0 x) ++ "}"
   | (``PLLND.F0.ratFormula, #[q]) => return "f_{\\mathbb{Q}}(" ++ (← generic st 0 q) ++ ")"
+  -- Minkowski's question-mark function (`wip/f0Minkowski.lean`)
+  | (``PLLND.F0.ratFormulaCF, #[q]) => return "f'(" ++ (← generic st 0 q) ++ ")"
+  | (``PLLND.F0.Mink.mink, #[q]) => return "\\mathord{?}(" ++ (← generic st 0 q) ++ ")"
+  | (``PLLND.F0.Mink.qmP, #[a, b]) =>
+    return "\\mathord{?}(" ++ (← generic st 7 a) ++ "/" ++ (← generic st 8 b) ++ ")"
+  | (``PLLND.F0.Mink.sq, #[q]) => return "\\sigma(" ++ (← generic st 0 q) ++ ")"
+  | (``PLLND.F0.Mink.eqv, #[a, b]) => return wrap 5 s!"{← generic st 6 a} \\equiv {← generic st 6 b}"
+  | (``PLLND.F0.Mink.rq, #[n, d, _, _]) => return wrap 7 ((← generic st 7 n) ++ "/" ++ (← generic st 8 d))
   | (``PLLND.F0.levels, #[t]) => return "\\mathrm{lev}(" ++ (← generic st 0 t) ++ ")"
   | (``PLLND.F0.root, #[t]) => return "\\mathrm{root}(" ++ (← generic st 0 t) ++ ")"
   | (``Decidable.decide, #[q, _]) => return "[" ++ (← generic st 0 q) ++ "]"
