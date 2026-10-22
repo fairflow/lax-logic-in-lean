@@ -1,7 +1,54 @@
-import tools.SubTab.Tableau
+import tools.Decide
+import LaxLogic.PLL.SubTab.Tableau
+import LaxLogic.PLL.SubTab.Translate
 
 /-!
-# `pllfast`: the decider as a race (see `tools/SubTab/ModelEnum.lean` for the header and the enumeration)
+# `pllfast`: `pll` with the subframe tableau in front
+
+The searches are library modules: the refutation tableau
+(`LaxLogic/PLL/SubTab/Tableau.lean`) and the finite-model enumeration
+(`LaxLogic/PLL/SubTab/ModelEnum.lean`); this file is the driver and the output
+through `pll`'s layer.
+
+2026-10-22: the proofs come from the tableau too.  When the tableau closes, its
+closed tableau (`SubTab.solve`) is judged by `check` and translated into a
+`LaxND` derivation by `PLLND.SubTab.termOf` (`LaxLogic/PLL/SubTab/Translate.lean`)
+and into a `PLLND.Tm` by `ndToTm`, which `pll`'s output layer prints (and, with
+`--check-term`, checks in two passes).  The W-engine is a fallback only, run
+when the closed tableau is rejected (a TOOL DEFECT) or when neither search gives
+a verdict; it no longer runs alongside the tableau.
+
+## The original header of `pllfast`
+
+(Changed 2026-10-22 as above: the proof terms come from the tableau and the
+W-engine no longer runs alongside the searches.)
+
+2026-10-15, after a benchmark of `lake exe pll` on closed cells:
+the W-engine proves fast, but on some refutable cells its disproof side runs
+out of memory, while direct enumeration of small models finds the
+countermodel in milliseconds.
+
+A sequent is unprovable exactly when it has a countermodel, so the two
+searches are run together:
+
+  * the W-engine (`FRJ.Arity.decideDataByEngine`, verified `checkClosed`), in a
+    dedicated thread, exactly as `lake exe pll` runs it;
+  * in the main thread, enumeration of finite rooted subframe models
+    (W, ≤, S, V) smallest first: a root below a naturally labelled poset, every
+    S ⊆ W, every persistent valuation of the atoms of the formula; the formula
+    is evaluated on bitmasks.
+
+The first verdict wins.  A model hit is written as a `Tab` with one fallible
+top world (`Rm` reaches it exactly from the worlds outside `S`, so `◯φ` holds
+at `x` iff `φ` holds at every S-point above `x`) and CONFIRMED by
+`Tab.refutes`, the evaluator the kernel certificate runs; an unconfirmed hit
+is reported as a tool defect and ignored.  ORDER (2026-10-15, measured on the
+benchmark cells): the subframe refutation tableau first, for the verdict; then
+the enumeration, only over the sizes below the tableau's minimised model
+(`--maxN`, default 5; `--cap`, default 50,000), to shrink the certificate; the
+engine supplies proof terms (and decides alone if both searches fail).
+Output layer, exit codes and flags as `lake exe pll`, plus `--maxN=` and
+`--cap=`.
 -/
 
 open FRJ FRJ.Search FRJ.Gbu FRJ.Gbu.W PLLND
@@ -68,12 +115,14 @@ def run (fs : String) (a : PLLTools.Args) (maxN cap : Nat) : IO UInt32 := do
       IO.println s!"normalised {PLLSvg.ppF (ofPLL φ)}   \
 (certified: Rewrite.simplifyWith_interd; --raw to skip)"
     let t0 ← IO.monoMsNow
-    let eng := Task.spawn (prio := .dedicated) fun _ =>
-      FRJ.Arity.decideDataByEngine (ofPLL φ) a.cfg
     let ats := (atomsL φ).eraseDups
+    -- the W-engine, as `pll` runs it: a fallback only (2026-10-22), run when the
+    -- tableau's certificate is rejected or neither search gives a verdict
     let engineAnswer : IO UInt32 := do
+      IO.println "fallback  the W-engine (FRJW store, verified checkClosed), as `pll` runs it"
+      let dec ← IO.lazyPure fun _ => FRJ.Arity.decideDataByEngine (ofPLL φ) a.cfg
       let t1 ← IO.monoMsNow
-      match eng.get with
+      match dec with
       | none =>
           IO.println s!"NOT CLOSED at this budget [{t1 - t0} ms]: the engine's store did not \
 pass checkClosed, and no model of ≤ {maxN} worlds (cap {cap}) refutes the formula.  A frontier \
@@ -87,8 +136,8 @@ marker, NOT a verdict."
           | .refuted raw min =>
               IO.println s!"verdict   REFUTED [{t1 - t0} ms]  (engine: FRJW disproof → Kripke countermodel)"
               PLLTools.emitRefuted φ raw min a
-    -- 1. the subframe refutation tableau (tools/SubTab/Tableau.lean): fastest
-    --    on every measured cell
+    -- 1. the subframe refutation tableau (LaxLogic/PLL/SubTab/Tableau.lean):
+    --    fastest on every measured cell
     let t2 ← IO.monoMsNow
     match SubTab.refute φ with
     | some raw =>
@@ -125,10 +174,23 @@ falling back to the enumeration"
 + fallible top, {count} models)"
           IO.Process.exit (← emitModel φ r2 (r2.minimise (ofPLL φ)) a).toUInt8
     | none =>
-        let t1 ← IO.monoMsNow
-        IO.println s!"tableau closed [{t1 - t2} ms]: provable by the paper argument; \
-waiting for the engine's proof term"
-    -- 3. the engine (proofs; also the complete decision past both searches)
+        -- the tableau closed: its closed tableau, judged by `check`, is translated
+        -- into a LaxND derivation (`PLLND.SubTab.termOf`) and a proof term (`ndToTm`)
+        match SubTab.solve φ with
+        | .ok c =>
+          if h : PLLND.SubTab.check ⟨false, [], [φ]⟩ c = true then
+            let t ← IO.lazyPure fun _ => ndToTm (PLLND.SubTab.termOf φ c h)
+            let t1 ← IO.monoMsNow
+            IO.println s!"verdict   PROVED  [{t1 - t0} ms]  (subframe tableau: closed tableau, \
+checked → LaxND (termOf) → Tm, {t1 - t2} ms)"
+            IO.Process.exit (← PLLTools.emitProved φ t a).toUInt8
+          else
+            IO.println "TOOL DEFECT  the closed tableau is rejected by check; falling back to \
+the engine"
+        | .error _ =>
+            IO.println "TOOL DEFECT  the refuter closed but the certificate search left an \
+open tree; falling back to the engine"
+    -- 3. the engine (fallback only: a certificate defect, or no verdict from either search)
     engineAnswer
 
 end PllFast

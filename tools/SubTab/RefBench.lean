@@ -1,4 +1,5 @@
-import tools.SubTab.Engine
+import LaxLogic.PLL.SubTab.Engine
+import tools.SubTab.Source
 import wip.two_sided
 
 /-!
@@ -11,7 +12,7 @@ to when its enumeration reaches the cap?  Run one refuter on one formula:
     refbench trees "<φ>" [maxK]         -- Built-class trees (TwoSided.builtFrames), CLOSED φ only
     refbench frjw  "<φ>"                -- the W-engine decision (FRJ.Arity.decideDataByEngine)
     refbench enum  "<φ>" [maxN]         -- the finite-model enumeration of pllfast, no model cap
-    refbench tab   "<φ>"                -- the subframe refutation tableau (tools/SubTab/Tableau.lean)
+    refbench tab   "<φ>"                -- the subframe refutation tableau (LaxLogic/PLL/SubTab/Tableau.lean)
     refbench engine "<φ>"               -- the lean-certify engine: certificate, judged by its certifier
 
 Prints the outcome and the time.  Run the binary under a deadline.

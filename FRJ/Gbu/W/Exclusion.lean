@@ -6,14 +6,18 @@ results (`pll_of_provableGbuC`, `soundnessW`) — a Gbu◯ proof and an
 FRJW disproof of the same goal cannot coexist, since one forces
 PLL-validity and the other refutes it.
 
-The other half of the duality — JOINT EXHAUSTIVENESS, no goal escapes
-both — is FRJW completeness under another name, and is OPEN.  Its
+The other half of the duality, JOINT EXHAUSTIVENESS (no goal escapes
+both), is FRJW completeness under another name, and is PROVED in
+`FRJ/Gbu/W/Saturate.lean`, pinned `[propext, Quot.sound]`.  Its
 constructive form is the dichotomy
 
-    decideGbuW : ∀ G, ProvableGbuC G ⊕ DisprovableW G
+    decideGbuW G : ProvableGbuC G ⊕' DisprovableW G
 
-(the W-successor of the stood-down W5/W6 database route); no
-declaration for it exists, per the open-status rule.
+(the W-successor of the stood-down W5/W6 database route), from which
+
+    frjw_complete : ¬ ProvableGbuC G → DisprovableW G
+
+is read off.  This file holds the exclusion half only.
 -/
 import FRJ.Gbu.Circ
 import FRJ.SoundW

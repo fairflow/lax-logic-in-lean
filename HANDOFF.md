@@ -5577,3 +5577,100 @@ PROVED).  Then the `∀`-side gluing.  OPEN: the level `2ν + 1` for PLL.
 
 **Ledger.**  110 rows by the one-module route; 30,024 rows in 611 modules;
 `23 sorryAx / 2 native_decide` unchanged.
+
+## 2026-10-22 — a manager session: the subframe tableau public, tools through lean-certify, the F0 rebuild, and a review
+
+This section covers 2026-10-14 to 2026-10-22.  Matthew directed
+throughout; the record of each step is in the PRs and commits named here.
+
+**Merged since the last section.**
+* #62: CI skips the Lean build for prose-only pull requests.
+* #63, #67: lean-certify v0.2.1, then v0.3.0, which adds deciders:
+  prover/disprover pairs, fallback pairs, a settings file and a CLI.
+* #64: the Iemhoff note correction.
+* #65, #66: the master bibliography `docs/references.bib`, with
+  `scripts/bib-sync.py`.
+* #68: `#slime` judges an index by its weak head normal form; regression
+  tests added.
+* #69: CLP paper 0.9.1, with references, the SWI-Prolog comparison, and
+  per-paper Pages runs.
+* #70: **the G4c searcher's failure memo fixed.**  It was incomplete; the
+  memo is now dependency-aware.  Every negative verdict of `pll_g4c` or
+  `G4cTm.find` before 2026-10-19 is not a refutation.  None after is a
+  refutation either, because the searcher is `partial` and unverified: a
+  refutation is a kernel-checked countermodel.
+* #71: the ledger rows for #70.
+* #72: CLAUDE.md now wants compiled search: `lake exe` is allowed after
+  `lake build`, under a deadline.
+* #73: the RNDB audit (spike S1, `docs/rndb-audit-2026-10-21.md`), and a
+  documentation tidy-up.
+* #74: **the subframe tableau joins the library**, in `LaxLogic/PLL/SubTab/`
+  with tools in `tools/SubTab/`.
+  * Closed tableaux `TCert` and finite subframe countermodels `SubCM`,
+    each checked by a certifier proved sound.
+  * Completeness, and `derive_of_check`.
+  * All pinned at `[propext, Quot.sound]`.
+  * The executables `pllfast`, `subtabdecide` and `refbench`.
+* #75, open as this is written:
+  * `deriveOf` / `termOf`: a closed tableau as an `LaxND` derivation, as
+    data.
+  * `pllfast` now proves through the tableau: the 7 benchmark proofs take
+    56–63 ms per process, against up to 1555 ms by the FRJW engine.
+  * The tableau's engine and producer are in the library, with an import
+    closure free of `tools/` and `wip/`.  Sweep: 795 declarations, 0
+    exceptions.
+
+**Method.**  `METHOD-F0.md` (branch `method-f0`) sets out how
+infrastructure that answers questions about F0 is built and steered.
+Matthew's §1 (A–E) is the vision.  Decided on 2026-10-22:
+* every tool is adopted as a lean-certify `Engine` and invoked only through
+  the decider settings, ordered by a pre-registered comparison (gate G4);
+* Lean computes, and scripts only read, report and render;
+* accepted forms follow a rule: the representative is the minimal known
+  member under (◯-depth, size, ◯-scope), and stable names denote classes;
+* the ρ-labels are historical labels, not numbers.
+
+**The F0 rebuild.**
+* Matthew judged the current F0 build (RNDB, the ground rewrite set and a
+  dozen tools) "a mess and basically unworkable".
+* The plan is `docs/f0-reimplementation-plan.md` (branch `method-f0`): a
+  new library on certified base facts, beside RNDB, replacing it only at
+  gate G5.
+* Spike S2: `docs/f0-accepted-forms-proposal.md` (branch `f0-forms-s2`).
+* The first rows exist, on branch `explorer-data`, not merged:
+  * the 462 cells of the ρ-order;
+  * the four operation tables: 1474 cells, 0 unknown, 6248 facts.
+
+  All are certified by the subframe tableau and checked by the kernel.
+
+**Explorer.**  Due 2026-10-25, because Matthew takes it with him.  It is a
+new page, `docs/f0-explorer.html`, built from the certified data.  The old
+`docs/rn-explorer.html` is a content reference only.
+
+**A review (2026-10-22).**  Four read-only reviewers found merging and the
+mathematics consistent: no wrong PROVED claim was found.  The records were
+not consistent.  In progress:
+* a status sweep: FRJ◯ completeness marked REFUTED where records said
+  OPEN, FRJW completeness marked PROVED, and a routing paragraph in
+  TOOLS.md;
+* these handover sections;
+* the QLL `freshFor` fix (0333c19);
+* a build of every target, including the targets outside the default
+  build.
+
+**Done items from earlier sections.**
+* The seven merged branches that §2026-10-09 listed as awaiting deletion
+  are gone from origin.
+* `docs/semui-amalgamation-2026-10-14.md` is no longer empty; #55
+  restored it.
+* The survey correction of §2026-10-14 (later) merged as #54.
+
+**Open.**
+* The ledger refresh.  #69, #73, #74, `LJF.OCheckDeriv` and
+  `CertifyAdoption` are not yet recorded, and the refresh needs a full
+  estate build.
+* Promoting the finished `wip/` results, the `checkClosed` family first.
+* The repository has no LICENSE.  The Apache 2.0 decision exists only on
+  `publication/core`; this is Matthew's decision.
+* The repository ruleset "No delete" covers all branches and blocks
+  branch deletion.

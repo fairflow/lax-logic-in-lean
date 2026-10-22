@@ -194,13 +194,17 @@ refer to `docs/qll-clp-implementation-plan.md`.
 * Abstract proofs as λ̄c terms (`CLPCertify`): the direct reading of Fig. 3
   nests `let` in scrutinee position and the verified checker `certify` refuses
   it (`notInferable "ι_t(p)"`); the let-flattened term, equal by the monad's
-  commuting conversions, is accepted for Examples 6.1 and 9.5 (`#guard_msgs`
-  in the build).  It does not scale: `certify` names each binder
-  `freshFor` of the names in scope, which concatenates them
-  (`Kit.freshFor_byteSize`), so names double in length with every nested
-  `let`; on a 3-bit adder (about 25 nested lets) the run reached 38 GB and was
-  killed.  A fresh name one byte longer than the longest in scope would grow
-  linearly with the same freshness proof; flagged as a separate task.
+  commuting conversions, is accepted for Examples 6.1 and 9.5 and the 3-bit
+  adder (`#guard_msgs` in the build).  Until the `freshFor` fix (written
+  2026-09-11, merged to main in October 2026) it did not scale: `certify`
+  names each binder `freshFor` of the names in scope, which then
+  concatenated them, so names doubled in length with every nested `let`; on
+  the 3-bit adder (binder depth 25) the run reached 38 GB and was killed.
+  `freshFor` now returns a name one byte longer than the longest in scope
+  (`Kit.freshFor_byteSize`), with the same freshness proof and pins; the
+  adders n = 3, 8, 32 (binder depth 25, 65, 257) certify in 3, 10, 97 ms
+  (`certifyAbs` alone, 2026-10-22), peak RSS 1.79-1.80 GB against an
+  import-only baseline of 1.77 GB.
 * REFUTED: Proposition 6.6, second half (`(p : θ)♭ ⊢ θ` for a modal clause):
   a one-world countermodel (`HerbrandCLP.p66_refuted`).  It holds once the
   table's constraints are assumed lax-true (`p66_with_lax`).

@@ -149,18 +149,20 @@ globs = ["FRJ.Gbu.Base", "FRJ.Gbu.DB", "FRJ.Gbu.Search", "FRJ.Gbu.Measure", "FRJ
 # choice-free soundness and finite-model completeness for subframe models,
 # the closed-tableau and countermodel certifiers with their soundness, the
 # dichotomy and completeness of the tableau, the translation of closed
-# tableaux into LaxND, the negative gates and the generated facts.  Every
-# declaration is within [propext, Quot.sound] except the derived `Repr TCert`
-# instance (Classical.choice), and the import closure is wip-free.  An
-# explicit list in defaultTargets, as FRJGbu: the `LaxLogic` root module does
-# not import these.  The producer and the deciders are in SubTabTools.
+# tableaux into LaxND, the untrusted producer and the finite-model
+# enumeration, the lean-certify engine, the negative gates and the generated
+# facts.  Every declaration is within [propext, Quot.sound], and the import
+# closure is free of tools/ and wip/.  An explicit list in defaultTargets, as
+# FRJGbu: the `LaxLogic` root module does not import these.  The deciders and
+# the output layer are in SubTabTools.
 [[lean_lib]]
 name = "SubTab"
 globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
          "LaxLogic.PLL.SubTab.Steps", "LaxLogic.PLL.SubTab.Dich",
          "LaxLogic.PLL.SubTab.Model", "LaxLogic.PLL.SubTab.Complete",
-         "LaxLogic.PLL.SubTab.Translate", "LaxLogic.PLL.SubTab.Gates",
-         "LaxLogic.PLL.SubTab.Facts"]
+         "LaxLogic.PLL.SubTab.Translate", "LaxLogic.PLL.SubTab.ModelEnum",
+         "LaxLogic.PLL.SubTab.Tableau", "LaxLogic.PLL.SubTab.Engine",
+         "LaxLogic.PLL.SubTab.Gates", "LaxLogic.PLL.SubTab.Facts"]
 
 [[lean_exe]]
 name = "bilaxscreen"
@@ -203,21 +205,20 @@ root = "tools.PllMain"
 name = "pllbench"
 root = "tools.Bench"
 
-# The subframe tableau's tools (tools/SubTab/, 2026-10-22): the untrusted
-# producer and the finite-model enumeration, the lean-certify engine and the
-# decider settings.  The certifiers and their theory (soundness, completeness,
-# the translation of closed tableaux into LaxND) are the library SubTab,
-# LaxLogic/PLL/SubTab/; these four import tools.Decide, whose import closure
-# reaches wip/, so they live here.  The globs are an explicit list, as above.
+# The subframe tableau's tools (tools/SubTab/, 2026-10-22): the lean-certify
+# decider settings and the source printers of the certificates.  The tableau,
+# the enumeration, the engine and their theory are the library SubTab,
+# LaxLogic/PLL/SubTab/.  The globs are an explicit list, as above.
 [[lean_lib]]
 name = "SubTabTools"
-globs = ["tools.SubTab.ModelEnum", "tools.SubTab.Tableau", "tools.SubTab.Engine",
-         "tools.SubTab.Settings"]
+globs = ["tools.SubTab.Settings", "tools.SubTab.Source"]
 
-# pllfast: the decider as a race — the subframe refutation tableau for the
-# verdict, the finite-model enumeration to shrink the countermodel, the
-# W-engine (as `pll`) for proof terms; output layer and flags as `pll`, plus
-# --maxN= and --cap=.  Run the built binary under gtimeout.  (2026-10-15)
+# pllfast: `pll` with the subframe tableau in front — the tableau for the
+# verdict (a countermodel, or a closed tableau whose proof term comes from
+# PLLND.SubTab.termOf), the finite-model enumeration to shrink the
+# countermodel, the W-engine (as `pll`) as a fallback only; output layer and
+# flags as `pll`, plus --maxN= and --cap=.  Run the built binary under
+# gtimeout.  (2026-10-15; proofs from the tableau 2026-10-22)
 [[lean_exe]]
 name = "pllfast"
 root = "tools.SubTab.PllFast"
@@ -258,8 +259,9 @@ globs = ["tools.Bank", "tools.Cert", "tools.Pin", "tools.Search", "tools.Derive"
 
 # clpcompare: the CLP paper's comparison with SWI-Prolog's clpq (Section 12):
 # the mortgage program, search, arithmetic and checkers compiled to native code.
-# Run the built binary .lake/build/bin/clpcompare under gtimeout, never `lake exe`
-# (scripts/clp-compare/run.py).
+# Build first (`lake build clpcompare`), then run the binary
+# .lake/build/bin/clpcompare under gtimeout (scripts/clp-compare/run.py);
+# after the build `lake exe` is allowed too, as in CLAUDE.md.
 [[lean_exe]]
 name = "clpcompare"
 root = "tools.ClpCompare"

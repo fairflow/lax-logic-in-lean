@@ -129,9 +129,9 @@ result is really about**.
   `LJF/ORows.lean` (the three station maps `eConjRows` /
   `truStationRows` / `laxRows`, and the nine aggregate equations),
   `LJF/O.lean` (the minimality development). Direction-neutral
-  infrastructure: `LJFOHeight.lean` (height-indexed judgments + equivalence),
-  `LJFOUniverse.lean` (subformula closures), `LJFOSearch.lean` (the decider
-  round-trip), `LJFOFuel.lean` (`interpF`, the fuel-founded retention
+  infrastructure: `LJF/OHeight.lean` (height-indexed judgments + equivalence),
+  `LJF/OUniverse.lean` (subformula closures), `LJF/OSearch.lean` (the decider
+  round-trip), `LJF/OFuel.lean` (`interpF`, the fuel-founded retention
   interpolant). **Zero imports** throughout — not mathlib, not `Deriv`, not
   `G4c`.
 * **Whose**: ours. It is the `◯`-extension of `LaxLogic/Focusing/LJF.lean`, which is
@@ -164,8 +164,8 @@ result is really about**.
   `claude/t1-lax-logic-refutation-37c0bf`, not yet merged" was stale,
   corrected 2026-08-31). Clause-by-clause detail, with the
   four forced departures from paper practice: `docs/ljfo-fidelity.md`.
-* **Depended on by**: its own family — `LJFORows`, `LJFO`, `LJFOHeight`,
-  `LJFOUniverse`, `LJFOSearch`, `LJFOFuel`, and the four `wip/ljfo_*`
+* **Depended on by**: its own family — `LJF.ORows`, `LJF.O`, `LJF.OHeight`,
+  `LJF.OUniverse`, `LJF.OSearch`, `LJF.OFuel`, and the four `wip/ljfo_*`
   probes (`_eval`, `_attack`, `_attack_weights`, `_crosscheck`) — and,
   since 2026-08-31, by `Gbu◯` completeness: `gbuC_complete`
   (`wip/gbu_ljfo.lean`) rests on `bridge_iff`.  (The earlier claim here
@@ -223,6 +223,34 @@ result is really about**.
   its two supplies are jointly unsatisfiable
   (`residues_unsatisfiable`, `wip/gbu_search_circ.lean`).
 
+### `FRJ◯` and `FRJV` — the earlier modal refutation calculi
+
+* **Files**: `FRJ/Calculus.lean` (the paper family `FRJr`/`FRJi`,
+  `Provable`), `FRJ/Sound.lean` (`soundness`); `FRJ/CalculusV.lean`
+  (FRJV, the RefAt repair of the three barren joins, `ProvableV`),
+  `FRJ/SoundV.lean` (`soundnessV`).
+* **Whose**: FRJ(G) is Fiorentini–Ferrari (TOCL 2020); the `◯`
+  extension FRJ◯ and its repair FRJV are ours.
+* **Status**: soundness PROVED for both, `[propext, Quot.sound]`:
+
+      soundness  : Provable G → ¬ PLL G
+      soundnessV : ProvableV G → ¬ PLL G
+
+  Completeness of the paper calculus FRJ◯ is REFUTED, kernel-checked,
+  `[propext, Quot.sound]`:
+
+      FRJ80.not_CompletenessFRJ : ¬ Certified.CompletenessFRJ
+      Certified.CompletenessFRJ := ∀ G, ¬ PLL G → Provable G
+
+  (`wip/frj80_noprov.lean`, witness #80; a second witness,
+  `FRJ81.frj_incompleteness_81 : ¬ PLL G81 ∧ ¬ Provable G81`, is in
+  `wip/frj81_noprov.lean`).  Completeness of FRJV was never
+  established: the attempt was abandoned for FRJW, and it is not an
+  open problem.  The complete refutation calculus is FRJW (next
+  section).
+* **Do not confuse**: a miss of the FRJ◯ or FRJV engine is
+  `not-found-within-bound`, never a verdict.
+
 ### `FRJW` — the modal forward refutation calculus, and the decision chain
 
 * **Files**: `FRJ/CalculusW.lean` (the two judgments, regular
@@ -277,12 +305,15 @@ result is really about**.
   completeness for the finite decidable ones, `FinDec`), `Sound.lean` (the
   certificates and their checkers), `Steps.lean`, `Dich.lean`,
   `Model.lean`, `Complete.lean` (completeness of the tableau),
-  `Translate.lean` (closed tableaux as `LaxND` derivations), `Gates.lean`
-  (negative tests), `Facts.lean` (29 generated facts).  The untrusted
-  producer, the engine and the deciders are in `tools/SubTab/` (library
-  `SubTabTools`; executables `pllfast`, `subtabdecide`, `refbench`;
-  `TOOLS.md` §2–3).  Moved here on 2026-10-22, declaration names
-  unchanged.
+  `Translate.lean` (closed tableaux as `LaxND` derivations), `ModelEnum.lean`
+  (the finite-model enumeration), `Tableau.lean` (the untrusted producer
+  `SubTab.solve` and refuter `SubTab.refute`), `Engine.lean` (the
+  lean-certify engine), `Gates.lean` (negative tests), `Facts.lean`
+  (29 generated facts); the import closure is free of `tools/` and `wip/`.
+  The deciders and the output layer are in `tools/SubTab/` (library
+  `SubTabTools`: the settings and the source printers; executables
+  `pllfast`, `subtabdecide`, `refbench`; `TOOLS.md` §2–3).  Moved here on
+  2026-10-22, declaration names unchanged.
 * **Semantics**: subframe models (`LaxLogic/PLL/Semantics/Subframe.lean`), an
   intuitionistic Kripke model with a set `S` of points, no fallible worlds,
   and
@@ -310,7 +341,7 @@ result is really about**.
   `check : SSeq → TCert → Bool`; `SubCM`, a finite subframe countermodel
   as tables (no fallible world), checked by `SubCM.refutes`.  Packaged as
   the lean-certify certifiers `yes`, `yes'` and `no`, and the engine
-  `PLLND.SubTab.engine` (`tools/SubTab/Engine.lean`).
+  `PLLND.SubTab.engine` (`LaxLogic/PLL/SubTab/Engine.lean`).
 * **Whose**: ours (2026-10).  The ◯-free rules are those of a
   multi-succedent signed tableau for intuitionistic logic over Kripke
   models; the `S`-point marking and the three `◯` rules are designed for
@@ -322,27 +353,38 @@ result is really about**.
       holds_of_check : check ⟨false, [], [φ]⟩ c = true → Holds φ
       SubCM.refutes_sound : m.refutes φ = true → Holds φ → False
       complete φ : (∃ c, yes.check φ c = true) ∨ (∃ m, no.check φ m = true)
-      derive_of_check c s : check s c = true → Nonempty (s.ant ⊢ goal s)
-          where goal ⟨false, Γ, Δ⟩ = ⋁Δ,  goal ⟨true, Γ, Δ⟩ = ◯⋁Δ,  ⋁[] = ⊥
+      derive_of_check c s : check s c = true → Nonempty (s.ant ⊢ s.goal)
+          where ⟨false, Γ, Δ⟩.goal = ⋁Δ,  ⟨true, Γ, Δ⟩.goal = ◯⋁Δ,  ⋁[] = ⊥
       holds_of_check' : check ⟨false, [], [φ]⟩ c = true → Holds φ
       completeness_fin φ : (∀ (M : SubframeModel) [FinDec M] (x : M.W), M.force x φ) → Holds φ
       CF.derivable_iff_valid :
         Nonempty ([] ⊢ θ) ↔ ∀ (M : SubframeModel) [FinDec M] (x : M.W), M.force x θ
 
+  The translation is also data (2026-10-22): `def`s into `LaxND`, after
+  `LJFO.provable_of_checkDeriv`, from which the theorems above are read off
+  (`derive_of_check c s h = ⟨deriveOf c s h⟩`, `holds_of_check' h = ⟨termOf φ c h⟩`):
+
+      deriveOf : (c : TCert) → (s : SSeq) → check s c = true → (s.ant ⊢ s.goal)
+      termOf (φ : PLLFormula) (c : TCert) (h : check ⟨false, [], [φ]⟩ c = true) : [] ⊢ φ
+
+  `pllfast` turns a closed tableau into a proof term with `termOf` and
+  `ndToTm`.
+
   Each tableau result has its ◯-free instance proved first
-  (`dich_boxFree`, `complete_boxFree`, `derive_of_check_boxFree`,
-  `completeness_fin_boxFree`).  Every declaration of the library is within
-  `[propext, Quot.sound]` except the derived `Repr TCert` instance
-  (sweep, 2026-10-22).
+  (`dich_boxFree`, `complete_boxFree`, `deriveOf_boxFree`,
+  `derive_of_check_boxFree`, `completeness_fin_boxFree`).  Every declaration
+  of the library is within `[propext, Quot.sound]`, with no exception
+  (sweep, 2026-10-22: 795 declarations).
 * **Do not confuse**: (i) the two yes sides.  `holds_of_check` (certifier
   `yes`) goes through `CF.completeness`, hence through FRJW
   (`FRJ.Gbu.W.decideLaxND`); `holds_of_check'` (certifier `yes'`) goes
-  through `derive_of_check` and reaches no `FRJ` constant, nor does
-  `completeness_fin` (checked 2026-10-22 on the transitive closure of the
-  constants used).  `complete` names `yes`, so it does reach FRJW.
+  through `termOf` and reaches no `FRJ` constant, nor do `deriveOf`,
+  `derive_of_check` and `completeness_fin` (checked 2026-10-22 on the
+  transitive closure of the constants used).  `complete` names `yes`, so it
+  does reach FRJW.
   (ii) `dich` and `complete` are about the search of the proof, by strong
   induction on `meas`; the compiled producer `SubTab.solve`
-  (`tools/SubTab/Tableau.lean`) is `partial` and unverified, its
+  (`LaxLogic/PLL/SubTab/Tableau.lean`) is `partial` and unverified, its
   termination is a paper argument, and every answer it gives is judged by
   `yes` or `no`.  (iii) `SubframeModel.derivable_iff_valid`
   (`LaxLogic/PLL/Semantics/Subframe.lean`) is the classical theorem for
@@ -377,16 +419,17 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | the VARIABLE-FREE collapse to `{⊥, ⊤}` | `DerivUNoFall` | `LaxLogic/PLL/UI/NoFall.lean` |
 | conservativity over IPC on the `◯`-free fragment | `DerivUNoFall` | `LaxLogic/PLL/UI/NoFallNF.lean` |
 | strong normalisation | proof terms of `LaxND` | `LaxLogic/PLL/Normalisation/TopTop.lean` |
-| the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJFOCore.lean` |
-| the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
-| E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJFO.lean` |
+| the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJF/OCore.lean` |
+| the station maps and the nine aggregate equations | `LJF◯` | `LJF/ORows.lean` |
+| E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJF/O.lean` |
 | completeness of `Gbu◯` for PLL (`gbuC_complete`) | `Gbu◯`, via `LJF◯` (`bridge_iff` + `tInv`) | `wip/gbu_ljfo.lean` |
 | soundness of `Gbu◯` for natural deduction (`laxND_of_provableGbuC`) | `Gbu◯` → `LaxND` | `FRJ/Gbu/LaxND.lean` |
+| soundness of the refutation calculi FRJ◯ and FRJV PROVED (`soundness`, `soundnessV`); completeness of the paper calculus FRJ◯ REFUTED (`FRJ80.not_CompletenessFRJ`); completeness of FRJV abandoned, not an open problem; FRJW complete (`decideGbuW`) | `FRJ◯`, `FRJV`, `FRJW` | `FRJ/Sound.lean`, `FRJ/SoundV.lean`, `wip/frj80_noprov.lean`, `FRJ/Gbu/W/Saturate.lean` |
 | PLL decidable by simultaneous completeness (`decideGbuW`, `decidePLL`) | `Gbu◯` + `FRJW`, over the finite rooted poset models `FRJ.Kripke` | `FRJ/Gbu/W/Saturate.lean` |
 | `LaxND` provability decidable choice-free; the finite POSET model property (`PLL_iff_laxND`, `decideLaxND`) | `LaxND`, via `Gbu◯` → `LaxND` and `FRJ.Kripke` | `FRJ/Gbu/W/LaxND.lean` |
 | choice-free soundness for subframe models, completeness for the finite decidable ones (`CF.derivable_iff_valid`) | `LaxND` + subframe models, completeness via `FRJW` | `LaxLogic/PLL/SubTab/Semantics.lean` |
 | every formula has a closed tableau or a finite subframe countermodel, both certificates checked by certifiers proved sound (`SubTab.complete`, `check_sound`, `SubCM.refutes_sound`) | `SubTab` + subframe models | `LaxLogic/PLL/SubTab/Complete.lean`, `Sound.lean` |
-| a closed tableau is an `LaxND` derivation (`derive_of_check`); completeness for finite subframe models from the tableau alone (`completeness_fin`) | `SubTab` → `LaxND` | `LaxLogic/PLL/SubTab/Translate.lean` |
+| a closed tableau is an `LaxND` derivation (`derive_of_check`; as data, `deriveOf`, `termOf`); completeness for finite subframe models from the tableau alone (`completeness_fin`) | `SubTab` → `LaxND` | `LaxLogic/PLL/SubTab/Translate.lean` |
 | the θ-chain, the GZ-candidate cell, `thetaStabilises` | `LaxND` (certificates from `G4c` search) | `wip/ljfo_theta_*.lean` |
 | the 1-pv ∃p wrapper: `semExC_upper`/`semExC_adjunction` PROVED; the amalgamation conditional on `ClosedCollapse 6` — REFUTED-in-spirit (no collapse ≤ 7; `R₀ = 5` refuted outright), so the kernels stand OPEN; `SemExC1Definable` OPEN | `DerivU` + confluent constraint models | `wip/pcll1pv_stage*.lean`, `wip/closed_frag*.lean` |
 

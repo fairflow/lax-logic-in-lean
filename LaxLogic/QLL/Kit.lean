@@ -19,45 +19,63 @@ namespace LaxLogic.QLL
 
 /-! ## Fresh names -/
 
-/--
-X name not occurring in `used`: every name in the list concatenated onto a
-`"z"`, so the result is strictly longer than any of them.
+/-- `n` copies of `"z"`.  Appended on the right, so that at run time each step
+extends the (unshared) accumulator in place. -/
+def zs : Nat → String
+  | 0     => ""
+  | n + 1 => zs n ++ "z"
 
-Crude on purpose.  X counter would need a search to avoid collisions, and the
-freshness property is wanted as a *theorem* for soundness, not as a runtime
-check.
--/
-def freshFor : List String → String
-  | []      => "z"
-  | s :: ss => s ++ freshFor ss
-
-/-- The UTF-8 byte size of `freshFor ss` exceeds the sum over `ss`.
-
-Measured in bytes, not characters: in this toolchain `String.length` and
+/-- Measured in bytes, not characters: in this toolchain `String.length` and
 `String.toList` depend on `Classical.choice`, so any statement mentioning them
 does, while `String.utf8ByteSize` depends on no axioms and
 `String.utf8ByteSize_append` only on `propext` and `Quot.sound`. -/
-theorem freshFor_byteSize : ∀ ss : List String,
-    (freshFor ss).utf8ByteSize = 1 + (ss.map String.utf8ByteSize).sum
-  | []      => rfl
-  | s :: ss => by
-      show (s ++ freshFor ss).utf8ByteSize
-        = 1 + (s.utf8ByteSize + (ss.map String.utf8ByteSize).sum)
-      rw [String.utf8ByteSize_append, freshFor_byteSize ss, Nat.add_left_comm]
+theorem zs_byteSize : ∀ n : Nat, (zs n).utf8ByteSize = n
+  | 0     => rfl
+  | n + 1 => by
+      show (zs n ++ "z").utf8ByteSize = n + 1
+      rw [String.utf8ByteSize_append, zs_byteSize n]
+      rfl
 
-theorem byteSize_le_sum : ∀ (ss : List String) (s : String), s ∈ ss →
-    s.utf8ByteSize ≤ (ss.map String.utf8ByteSize).sum
+/-- The largest UTF-8 byte size of a name in the list (`0` for `[]`). -/
+def maxSize : List String → Nat
+  | []      => 0
+  | s :: ss => max s.utf8ByteSize (maxSize ss)
+
+theorem byteSize_le_maxSize : ∀ (ss : List String) (s : String), s ∈ ss →
+    s.utf8ByteSize ≤ maxSize ss
   | [],      _, h => nomatch h
   | t :: ts, s, h => by
-      show s.utf8ByteSize ≤ t.utf8ByteSize + (ts.map String.utf8ByteSize).sum
+      show s.utf8ByteSize ≤ max t.utf8ByteSize (maxSize ts)
       rcases List.mem_cons.mp h with rfl | h'
-      · exact Nat.le_add_right _ _
-      · exact Nat.le_trans (byteSize_le_sum ts s h') (Nat.le_add_left _ _)
+      · exact Nat.le_max_left _ _
+      · exact Nat.le_trans (byteSize_le_maxSize ts s h') (Nat.le_max_right _ _)
+
+/--
+A name not occurring in `ss`: `"z"` repeated one more time than the byte size
+of the longest name in `ss`, so it is strictly longer than every one of them.
+
+The length is one more than the *maximum*, not the sum.  An earlier revision
+concatenated every name in `ss` onto a `"z"`; since the checker puts each fresh
+name into the context before choosing the next, name length then doubled with
+every nested binder, and a term with about 25 nested `let`s exhausted memory.
+With the maximum, the name chosen at binder depth `d` has at most `d` bytes
+more than the longest name of the input.
+
+Crude on purpose.  A counter would need a search to avoid collisions, and the
+freshness property is wanted as a *theorem* for soundness, not as a runtime
+check.
+-/
+def freshFor (ss : List String) : String := zs (maxSize ss + 1)
+
+/-- The UTF-8 byte size of `freshFor ss` exceeds that of every name in `ss`. -/
+theorem freshFor_byteSize (ss : List String) :
+    (freshFor ss).utf8ByteSize = maxSize ss + 1 :=
+  zs_byteSize _
 
 /-- `freshFor` does what its name says.  Soundness will need this. -/
 theorem freshFor_notMem (ss : List String) : freshFor ss ∉ ss := by
   intro h
-  have h1 := byteSize_le_sum ss _ h
+  have h1 := byteSize_le_maxSize ss _ h
   rw [freshFor_byteSize ss] at h1
   omega
 

@@ -1,4 +1,40 @@
-# 2026-10-14 — semantic UI: the amalgamation lemma is proved; read this first
+# 2026-10-22 — the F0 rebuild and the tool adoption; read this first
+
+`HANDOFF.md` §2026-10-22 is the summary; `METHOD-F0.md` (branch `method-f0`)
+is the method.
+
+**Live threads.**
+1. **The explorer, due 2026-10-25.**  A new page built from the certified
+   F0 data (branches `explorer-data`, `f0-explorer`).
+2. **Tool adoption** (METHOD-F0 §6):
+   * the engine-adoption statements (gate G2) await Matthew;
+   * then the other engines become lean-certify Engines: FinCM/G4c, the
+     LJF◯ two-sided engine and FRJW `checkClosed`;
+   * one decider settings file;
+   * the pre-registered comparison (gate G4).
+3. **The F0 store**, after the explorer: `docs/f0-reimplementation-plan.md`
+   §6, steps 3–6.
+4. **Records:**
+   * the ledger refresh;
+   * promoting the `checkClosed` family out of `wip/`;
+   * promoting `wip/frj80_noprov`, the evidence that FRJ◯ completeness is
+     REFUTED, which is in no build target.
+
+**What needs Matthew.**
+* METHOD-F0 §8: the tie rule (Q5), and the naming scheme (Q6; the default
+  is family names).
+* The plan's decisions D1–D6.
+* The licence.
+
+**Do not** read a failure of `pll_g4c` or `find` as a refutation.  **Do
+not** pick a decider ad hoc (METHOD-F0 §1 D).  **Do not** compute facts
+about formulas outside Lean (METHOD-F0 §6).
+
+---
+
+# 2026-10-14 — semantic UI: the amalgamation lemma is proved
+
+*No longer the head thread; see the section above (2026-10-22).*
 
 `docs/semui-amalgamation-2026-10-14.md` is the record; `HANDOFF.md` §2026-10-14
 the summary.
