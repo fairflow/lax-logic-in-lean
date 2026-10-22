@@ -259,8 +259,9 @@ globs = ["tools.Bank", "tools.Cert", "tools.Pin", "tools.Search", "tools.Derive"
 
 # clpcompare: the CLP paper's comparison with SWI-Prolog's clpq (Section 12):
 # the mortgage program, search, arithmetic and checkers compiled to native code.
-# Run the built binary .lake/build/bin/clpcompare under gtimeout, never `lake exe`
-# (scripts/clp-compare/run.py).
+# Build first (`lake build clpcompare`), then run the binary
+# .lake/build/bin/clpcompare under gtimeout (scripts/clp-compare/run.py);
+# after the build `lake exe` is allowed too, as in CLAUDE.md.
 [[lean_exe]]
 name = "clpcompare"
 root = "tools.ClpCompare"
@@ -939,3 +940,18 @@ globs = ["CertifyAdoption", "CertifyAdoption.CheckDeriv", "CertifyAdoption.Regre
 [[lean_exe]]
 name = "rndbexport"
 root = "tools.RNDBExport"
+
+# F0: the certified data of the RN(◯,∅) explorer (2026-10-22).  Weight.lean
+# (the formula weights, light imports) and its gates; the generated facts
+# (Order, Ops, Members), written by `explorergen` (tools/F0/ExplorerGen.lean),
+# each fact a kernel-checked theorem with pinned axioms.  Not a default
+# target: `lake build F0`.  The globs are an explicit list, as SubTab.
+[[lean_lib]]
+name = "F0"
+globs = ["F0.Weight", "F0.WeightGates", "F0.Names", "F0.NamesGates", "F0.Bridge", "F0.Order.*", "F0.Ops.*", "F0.Members.*", "F0.Families.*", "F0.Named.*", "F0.Compound.*"]
+
+# explorergen: the (untrusted) generator of the F0 facts and of
+# docs/explorer/f0-explorer-data.json.  Run the built binary under gtimeout.
+[[lean_exe]]
+name = "explorergen"
+root = "tools.F0.ExplorerGen"

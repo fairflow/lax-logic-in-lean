@@ -132,8 +132,9 @@ theorem lamStar_not_circ {K : Kripke} {a : K.W} {G : Form} {X : Form}
   exact Bool.noConfusion hc
 
 /-- **Cone-triviality**: the world's modal cone is the world itself,
-`Rm(α) = {α}`.  `docs/frj-w4.md` §10 fact 3 localises the open kernel of
-FRJ◯ completeness to exactly these worlds. -/
+`Rm(α) = {α}`.  `docs/frj-w4.md` §10 fact 3 localised the kernel of the
+FRJ◯ completeness attempt to exactly these worlds (FRJ◯ completeness is
+REFUTED: `FRJ80.not_CompletenessFRJ`, `wip/frj80_noprov.lean`). -/
 def Kripke.ConeTrivial (K : Kripke) (a : K.W) : Prop := ∀ c, K.Rm a c → c = a
 
 /-- `≤`-maximal worlds are cone-trivial (`Rm ⊆ ≤`). -/
@@ -612,8 +613,12 @@ theorem minZeta_ne {K : Kripke} {a : K.W} {Z : Form}
 Statement (B) of the W4 targets is `Provable G ↔ ∃ K, ¬Fal root ∧
 ¬valid G`.  The forward direction needs no `◯`-freeness: the extracted
 model `modR d` refutes `G` at its root, and a world refuting anything is
-infallible.  The backward direction is FRJ◯ completeness, OPEN
-(docs/frj-w4.md §9). -/
+infallible.  The backward direction is FRJ◯ completeness, which is
+REFUTED by witness #80 (`FRJ80.frj_incompleteness_80`,
+`wip/frj80_noprov.lean`): `G80` is refuted at the root of the model
+`sepK`, so it has a root-infallible countermodel, and it has no
+derivation.  `FRJ80.not_CompletenessFRJ` refutes the named statement
+`Certified.CompletenessFRJ`.  History: docs/frj-w4.md §9. -/
 
 /-- **Soundness in root-infallible form, no `◯`-freeness hypothesis**:
 an `FRJ(G)`-derivation of `G` yields a countermodel whose root is

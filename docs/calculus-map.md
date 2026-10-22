@@ -129,9 +129,9 @@ result is really about**.
   `LJF/ORows.lean` (the three station maps `eConjRows` /
   `truStationRows` / `laxRows`, and the nine aggregate equations),
   `LJF/O.lean` (the minimality development). Direction-neutral
-  infrastructure: `LJFOHeight.lean` (height-indexed judgments + equivalence),
-  `LJFOUniverse.lean` (subformula closures), `LJFOSearch.lean` (the decider
-  round-trip), `LJFOFuel.lean` (`interpF`, the fuel-founded retention
+  infrastructure: `LJF/OHeight.lean` (height-indexed judgments + equivalence),
+  `LJF/OUniverse.lean` (subformula closures), `LJF/OSearch.lean` (the decider
+  round-trip), `LJF/OFuel.lean` (`interpF`, the fuel-founded retention
   interpolant). **Zero imports** throughout — not mathlib, not `Deriv`, not
   `G4c`.
 * **Whose**: ours. It is the `◯`-extension of `LaxLogic/Focusing/LJF.lean`, which is
@@ -164,8 +164,8 @@ result is really about**.
   `claude/t1-lax-logic-refutation-37c0bf`, not yet merged" was stale,
   corrected 2026-08-31). Clause-by-clause detail, with the
   four forced departures from paper practice: `docs/ljfo-fidelity.md`.
-* **Depended on by**: its own family — `LJFORows`, `LJFO`, `LJFOHeight`,
-  `LJFOUniverse`, `LJFOSearch`, `LJFOFuel`, and the four `wip/ljfo_*`
+* **Depended on by**: its own family — `LJF.ORows`, `LJF.O`, `LJF.OHeight`,
+  `LJF.OUniverse`, `LJF.OSearch`, `LJF.OFuel`, and the four `wip/ljfo_*`
   probes (`_eval`, `_attack`, `_attack_weights`, `_crosscheck`) — and,
   since 2026-08-31, by `Gbu◯` completeness: `gbuC_complete`
   (`wip/gbu_ljfo.lean`) rests on `bridge_iff`.  (The earlier claim here
@@ -222,6 +222,34 @@ result is really about**.
   route to `Gbu◯` completeness (`searchO`, Theorem 8◯) is RETIRED —
   its two supplies are jointly unsatisfiable
   (`residues_unsatisfiable`, `wip/gbu_search_circ.lean`).
+
+### `FRJ◯` and `FRJV` — the earlier modal refutation calculi
+
+* **Files**: `FRJ/Calculus.lean` (the paper family `FRJr`/`FRJi`,
+  `Provable`), `FRJ/Sound.lean` (`soundness`); `FRJ/CalculusV.lean`
+  (FRJV, the RefAt repair of the three barren joins, `ProvableV`),
+  `FRJ/SoundV.lean` (`soundnessV`).
+* **Whose**: FRJ(G) is Fiorentini–Ferrari (TOCL 2020); the `◯`
+  extension FRJ◯ and its repair FRJV are ours.
+* **Status**: soundness PROVED for both, `[propext, Quot.sound]`:
+
+      soundness  : Provable G → ¬ PLL G
+      soundnessV : ProvableV G → ¬ PLL G
+
+  Completeness of the paper calculus FRJ◯ is REFUTED, kernel-checked,
+  `[propext, Quot.sound]`:
+
+      FRJ80.not_CompletenessFRJ : ¬ Certified.CompletenessFRJ
+      Certified.CompletenessFRJ := ∀ G, ¬ PLL G → Provable G
+
+  (`wip/frj80_noprov.lean`, witness #80; a second witness,
+  `FRJ81.frj_incompleteness_81 : ¬ PLL G81 ∧ ¬ Provable G81`, is in
+  `wip/frj81_noprov.lean`).  Completeness of FRJV was never
+  established: the attempt was abandoned for FRJW, and it is not an
+  open problem.  The complete refutation calculus is FRJW (next
+  section).
+* **Do not confuse**: a miss of the FRJ◯ or FRJV engine is
+  `not-found-within-bound`, never a verdict.
 
 ### `FRJW` — the modal forward refutation calculus, and the decision chain
 
@@ -391,11 +419,12 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | the VARIABLE-FREE collapse to `{⊥, ⊤}` | `DerivUNoFall` | `LaxLogic/PLL/UI/NoFall.lean` |
 | conservativity over IPC on the `◯`-free fragment | `DerivUNoFall` | `LaxLogic/PLL/UI/NoFallNF.lean` |
 | strong normalisation | proof terms of `LaxND` | `LaxLogic/PLL/Normalisation/TopTop.lean` |
-| the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJFOCore.lean` |
-| the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
-| E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJFO.lean` |
+| the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJF/OCore.lean` |
+| the station maps and the nine aggregate equations | `LJF◯` | `LJF/ORows.lean` |
+| E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJF/O.lean` |
 | completeness of `Gbu◯` for PLL (`gbuC_complete`) | `Gbu◯`, via `LJF◯` (`bridge_iff` + `tInv`) | `wip/gbu_ljfo.lean` |
 | soundness of `Gbu◯` for natural deduction (`laxND_of_provableGbuC`) | `Gbu◯` → `LaxND` | `FRJ/Gbu/LaxND.lean` |
+| soundness of the refutation calculi FRJ◯ and FRJV PROVED (`soundness`, `soundnessV`); completeness of the paper calculus FRJ◯ REFUTED (`FRJ80.not_CompletenessFRJ`); completeness of FRJV abandoned, not an open problem; FRJW complete (`decideGbuW`) | `FRJ◯`, `FRJV`, `FRJW` | `FRJ/Sound.lean`, `FRJ/SoundV.lean`, `wip/frj80_noprov.lean`, `FRJ/Gbu/W/Saturate.lean` |
 | PLL decidable by simultaneous completeness (`decideGbuW`, `decidePLL`) | `Gbu◯` + `FRJW`, over the finite rooted poset models `FRJ.Kripke` | `FRJ/Gbu/W/Saturate.lean` |
 | `LaxND` provability decidable choice-free; the finite POSET model property (`PLL_iff_laxND`, `decideLaxND`) | `LaxND`, via `Gbu◯` → `LaxND` and `FRJ.Kripke` | `FRJ/Gbu/W/LaxND.lean` |
 | choice-free soundness for subframe models, completeness for the finite decidable ones (`CF.derivable_iff_valid`) | `LaxND` + subframe models, completeness via `FRJW` | `LaxLogic/PLL/SubTab/Semantics.lean` |
