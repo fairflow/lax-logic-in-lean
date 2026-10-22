@@ -1,4 +1,4 @@
-import tools.SubTab.Tableau
+import LaxLogic.PLL.SubTab.Tableau
 import LaxLogic.PLL.SubTab.Translate
 import LaxLogic.RN.Rho
 import F0.Weight
