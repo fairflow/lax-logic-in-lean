@@ -1,8 +1,14 @@
-import tools.SubTab.Tableau
+import tools.Decide
+import LaxLogic.PLL.SubTab.Tableau
 import LaxLogic.PLL.SubTab.Translate
 
 /-!
-# `pllfast`: the decider as a race (see `tools/SubTab/ModelEnum.lean` for the header and the enumeration)
+# `pllfast`: `pll` with the subframe tableau in front
+
+The searches are library modules: the refutation tableau
+(`LaxLogic/PLL/SubTab/Tableau.lean`) and the finite-model enumeration
+(`LaxLogic/PLL/SubTab/ModelEnum.lean`); this file is the driver and the output
+through `pll`'s layer.
 
 2026-10-22: the proofs come from the tableau too.  When the tableau closes, its
 closed tableau (`SubTab.solve`) is judged by `check` and translated into a
@@ -11,6 +17,38 @@ and into a `PLLND.Tm` by `ndToTm`, which `pll`'s output layer prints (and, with
 `--check-term`, checks in two passes).  The W-engine is a fallback only, run
 when the closed tableau is rejected (a TOOL DEFECT) or when neither search gives
 a verdict; it no longer runs alongside the tableau.
+
+## The original header of `pllfast`
+
+(Changed 2026-10-22 as above: the proof terms come from the tableau and the
+W-engine no longer runs alongside the searches.)
+
+2026-10-15, after a benchmark of `lake exe pll` on closed cells:
+the W-engine proves fast, but on some refutable cells its disproof side runs
+out of memory, while direct enumeration of small models finds the
+countermodel in milliseconds.
+
+A sequent is unprovable exactly when it has a countermodel, so the two
+searches are run together:
+
+  * the W-engine (`FRJ.Arity.decideDataByEngine`, verified `checkClosed`), in a
+    dedicated thread, exactly as `lake exe pll` runs it;
+  * in the main thread, enumeration of finite rooted subframe models
+    (W, ≤, S, V) smallest first: a root below a naturally labelled poset, every
+    S ⊆ W, every persistent valuation of the atoms of the formula; the formula
+    is evaluated on bitmasks.
+
+The first verdict wins.  A model hit is written as a `Tab` with one fallible
+top world (`Rm` reaches it exactly from the worlds outside `S`, so `◯φ` holds
+at `x` iff `φ` holds at every S-point above `x`) and CONFIRMED by
+`Tab.refutes`, the evaluator the kernel certificate runs; an unconfirmed hit
+is reported as a tool defect and ignored.  ORDER (2026-10-15, measured on the
+benchmark cells): the subframe refutation tableau first, for the verdict; then
+the enumeration, only over the sizes below the tableau's minimised model
+(`--maxN`, default 5; `--cap`, default 50,000), to shrink the certificate; the
+engine supplies proof terms (and decides alone if both searches fail).
+Output layer, exit codes and flags as `lake exe pll`, plus `--maxN=` and
+`--cap=`.
 -/
 
 open FRJ FRJ.Search FRJ.Gbu FRJ.Gbu.W PLLND
@@ -98,8 +136,8 @@ marker, NOT a verdict."
           | .refuted raw min =>
               IO.println s!"verdict   REFUTED [{t1 - t0} ms]  (engine: FRJW disproof → Kripke countermodel)"
               PLLTools.emitRefuted φ raw min a
-    -- 1. the subframe refutation tableau (tools/SubTab/Tableau.lean): fastest
-    --    on every measured cell
+    -- 1. the subframe refutation tableau (LaxLogic/PLL/SubTab/Tableau.lean):
+    --    fastest on every measured cell
     let t2 ← IO.monoMsNow
     match SubTab.refute φ with
     | some raw =>

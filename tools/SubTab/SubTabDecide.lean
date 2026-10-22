@@ -1,4 +1,5 @@
 import tools.SubTab.Settings
+import tools.Decide
 
 /-! `subtabdecide "<formula>"`: the lean-certify decider of
 `tools/SubTab/Settings.lean`.  2026-10-15. -/

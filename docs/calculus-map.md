@@ -277,12 +277,15 @@ result is really about**.
   completeness for the finite decidable ones, `FinDec`), `Sound.lean` (the
   certificates and their checkers), `Steps.lean`, `Dich.lean`,
   `Model.lean`, `Complete.lean` (completeness of the tableau),
-  `Translate.lean` (closed tableaux as `LaxND` derivations), `Gates.lean`
-  (negative tests), `Facts.lean` (29 generated facts).  The untrusted
-  producer, the engine and the deciders are in `tools/SubTab/` (library
-  `SubTabTools`; executables `pllfast`, `subtabdecide`, `refbench`;
-  `TOOLS.md` §2–3).  Moved here on 2026-10-22, declaration names
-  unchanged.
+  `Translate.lean` (closed tableaux as `LaxND` derivations), `ModelEnum.lean`
+  (the finite-model enumeration), `Tableau.lean` (the untrusted producer
+  `SubTab.solve` and refuter `SubTab.refute`), `Engine.lean` (the
+  lean-certify engine), `Gates.lean` (negative tests), `Facts.lean`
+  (29 generated facts); the import closure is free of `tools/` and `wip/`.
+  The deciders and the output layer are in `tools/SubTab/` (library
+  `SubTabTools`: the settings and the source printers; executables
+  `pllfast`, `subtabdecide`, `refbench`; `TOOLS.md` §2–3).  Moved here on
+  2026-10-22, declaration names unchanged.
 * **Semantics**: subframe models (`LaxLogic/PLL/Semantics/Subframe.lean`), an
   intuitionistic Kripke model with a set `S` of points, no fallible worlds,
   and
@@ -310,7 +313,7 @@ result is really about**.
   `check : SSeq → TCert → Bool`; `SubCM`, a finite subframe countermodel
   as tables (no fallible world), checked by `SubCM.refutes`.  Packaged as
   the lean-certify certifiers `yes`, `yes'` and `no`, and the engine
-  `PLLND.SubTab.engine` (`tools/SubTab/Engine.lean`).
+  `PLLND.SubTab.engine` (`LaxLogic/PLL/SubTab/Engine.lean`).
 * **Whose**: ours (2026-10).  The ◯-free rules are those of a
   multi-succedent signed tableau for intuitionistic logic over Kripke
   models; the `S`-point marking and the three `◯` rules are designed for
@@ -342,8 +345,8 @@ result is really about**.
   Each tableau result has its ◯-free instance proved first
   (`dich_boxFree`, `complete_boxFree`, `deriveOf_boxFree`,
   `derive_of_check_boxFree`, `completeness_fin_boxFree`).  Every declaration
-  of the library is within `[propext, Quot.sound]` except the derived
-  `Repr TCert` instance (sweep, 2026-10-22).
+  of the library is within `[propext, Quot.sound]`, with no exception
+  (sweep, 2026-10-22: 795 declarations).
 * **Do not confuse**: (i) the two yes sides.  `holds_of_check` (certifier
   `yes`) goes through `CF.completeness`, hence through FRJW
   (`FRJ.Gbu.W.decideLaxND`); `holds_of_check'` (certifier `yes'`) goes
@@ -353,7 +356,7 @@ result is really about**.
   does reach FRJW.
   (ii) `dich` and `complete` are about the search of the proof, by strong
   induction on `meas`; the compiled producer `SubTab.solve`
-  (`tools/SubTab/Tableau.lean`) is `partial` and unverified, its
+  (`LaxLogic/PLL/SubTab/Tableau.lean`) is `partial` and unverified, its
   termination is a paper argument, and every answer it gives is judged by
   `yes` or `no`.  (iii) `SubframeModel.derivable_iff_valid`
   (`LaxLogic/PLL/Semantics/Subframe.lean`) is the classical theorem for
