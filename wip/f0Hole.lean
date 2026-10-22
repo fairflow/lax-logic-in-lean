@@ -10,7 +10,9 @@ Write `f d = Dy.formula d` and `h n = f (1/2^n)` (`half n`).  The chain
 
     h 0 = ⊤,     h (n+1)  ⊣⊢  h n ∧ g(2·x(n+1, 1) + 1),     x(n+1, 1) = 2^(n+1) + 1,
 
-so `h n ⊣⊢ g 7 ∧ g 11 ∧ g 19 ∧ … ∧ g(2^(n+2) + 3)`.  It descends strictly
+so `h n ⊣⊢ g 7 ∧ g 11 ∧ g 19 ∧ … ∧ g(2^(n+2) + 3)`.  Since `h 1 ⊣⊢ g 7` and
+`t16 ⊬ g 7`, the bound of `ladder_le_formula` (`t n ⊢ f d` for `n ≤ 15`) is
+sharp (`t16_not_le_half`).  It descends strictly
 (`dyadic_embedding`) and is bounded below by `t15` (`ladder_le_formula`) and
 by every `Wit b` (`Wit_below_halves`), but it has NO greatest lower bound
 (`halves_no_glb`):
@@ -70,6 +72,11 @@ theorem half_zero : (half 0).formula = .ifThen .falsePLL .falsePLL := rfl
 
 theorem half_gap (n : Nat) : Deriv [(half (n + 1)).formula] (gap (2 * idx (n + 1) 1 + 1)) :=
   Deriv.andElim2 (half_step n).1
+
+/-- **The bound 15 of `ladder_le_formula` is sharp**: `t16 ⊬ f(1/2)`, since
+`f(1/2) ⊢ g 7` and `t16 ⊬ g 7` (`even_not_le_gap`, `wip/connect.lean`). -/
+theorem t16_not_le_half : [rnSub 16] ⊬ (half 1).formula := fun h =>
+  even_not_le_gap (k := 7) (by decide) (Deriv.cutHead h (half_gap 0))
 
 theorem lt_two_pow' : ∀ n : Nat, n < 2 ^ n
   | 0 => Nat.zero_lt_one
@@ -154,6 +161,7 @@ end PLLND
 
 #axioms_within PLLND.F0.half_step [propext, Quot.sound]
 #axioms_within PLLND.F0.half_lower_gap [propext, Quot.sound]
+#axioms_within PLLND.F0.t16_not_le_half [propext, Classical.choice, Quot.sound]
 #axioms_within PLLND.F0.L_bounded_cofinal [propext, Classical.choice, Quot.sound]
 #axioms_within PLLND.F0.Wit_below_halves [propext, Classical.choice, Quot.sound]
 #axioms_within PLLND.F0.halves_no_glb [propext, Classical.choice, Quot.sound]
