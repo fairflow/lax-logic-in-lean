@@ -259,8 +259,9 @@ globs = ["tools.Bank", "tools.Cert", "tools.Pin", "tools.Search", "tools.Derive"
 
 # clpcompare: the CLP paper's comparison with SWI-Prolog's clpq (Section 12):
 # the mortgage program, search, arithmetic and checkers compiled to native code.
-# Run the built binary .lake/build/bin/clpcompare under gtimeout, never `lake exe`
-# (scripts/clp-compare/run.py).
+# Build first (`lake build clpcompare`), then run the binary
+# .lake/build/bin/clpcompare under gtimeout (scripts/clp-compare/run.py);
+# after the build `lake exe` is allowed too, as in CLAUDE.md.
 [[lean_exe]]
 name = "clpcompare"
 root = "tools.ClpCompare"
