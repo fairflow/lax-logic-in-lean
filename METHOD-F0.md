@@ -14,15 +14,45 @@ steerable.
 
 ## 1 · The vision (Matthew)
 
-*To be written by Matthew.  Prompts, to be deleted:*
+*To be written by Matthew.  Prompts, to be deleted as needed:*
 
 - What is the F0 work for: which questions should be answerable, by whom
   (a reader, a proof, an agent), and how quickly?
+  A: All three.  A reader will go through the RN(◯,∅) explorer which needs a
+  thorough upgrade after this rebuild process is complete.  A proof will
+  use a tactic that refers to the database.  Suppose we have u ⋖ v ⋖ w in
+  the db (wrt the current state of the db).  Then we need the tactic to use
+  transitivity of < via transport from a single ⋖ step to <, in order to use
+  a kernel-checked fact that u < w in the current proof.  A tactic seems
+  the only sensible way.  An agent needs to know how to use the database for
+  those or additional purposes, so it needs to have a clear and complete
+  table of tools.
 - What does "systematic" mean here, as opposed to today's ad-hoc use?
+  B: use of tables; if some tools are better than other for some tasks, there
+  needs to be a record of this in the table of tools.  
 - Which forms are the accepted representatives of the classes, and who may
   add one?
+  C: authorised agents, or those which obtain permission.  The forms should
+  be minimal in some sense, formula length is the first proxy, ◯ nesting
+  depth is probably the most important factor in that.  A weighted size
+  function seems sensible: you can design tests provided we end up with a
+  single clear choice.
 - What must never happen?
+  D: a random choice of tool, that requires further proof effort and/or a
+  major rebuild, for no clear gain.
 - What would count as success in three months?
+  E: the explorer is updated, corrected, browsable, and links between the
+  classes can be followed to a Lean proof and/or countermodel.
+  A representative of each class will be shown on hover or in another
+  convenient way.  the classes are numbered, in an extensible and systematic
+  way, that is reflected in the way Lean searches the db. 
+  The current boundary of the db is clearly and graphically illustrated.
+  Comments and explanations in the tool are limited to how to use the tool
+  and what is needed to understand the families, the RN embedding and the
+  purpose of the tool.
+  The operation table is consistent with the db, cells can be clicked to
+  view the resulting class in a clear and consistent way.
+  The ∨-free fragment is also highlighted or displayed in a consistent way.
 
 ## 2 · Invariants
 
@@ -33,6 +63,7 @@ steerable.
 2. **Data in a database, truth in the kernel.**  Every row of RNDB carries a
    Lean certificate that the kernel checks in CI.  Any index, export or
    query layer is derived from the rows and is never the authority.
+   The same goes for the links u ⋖ v and u < w.  
 3. **Coverage is measured, never assumed.**  F0 is PROVED infinite, so no
    finite table closes.  Exhaustion over known classes refutes only
    relative to those classes, and is reported with that scope.
@@ -91,6 +122,12 @@ steerable.
   regenerate-and-diff check.
 - **Register every tool** in `TOOLS.md` with its version cell, in the same
   commit as any change in its behaviour.
+- **Every tool is adopted as a lean-certify `Engine`** (DRAFT, 2026-10-22).
+  An engine is the tool's API: an untrusted producer, plus a certifier for
+  each side, each proved sound.  Tools are invoked only through the decider
+  settings (prover/disprover pairs and fallback pairs).  A pre-registered
+  comparison (G4) sets the order of the pairs, and its result is recorded in
+  the table of tools (§1 B), so no tool is chosen at random (§1 D).
 
 ## 7 · Where things stand (2026-10-21)
 
@@ -115,10 +152,10 @@ From the survey of `origin/main` that preceded this draft:
 
 ## 8 · Questions for Matthew
 
-1. §1, in your words.
+1. §1, in your words.  *Answered 2026-10-22 (§1 A–E).*
 2. Is the scope F0 only, or F0 and the one-variable fragment F1 from the
    start?
 3. Who are the database's users: you reading it, proofs in Lean, agents
-   searching, or all three?  The answer decides how much query layer is
-   worth building.
-4. Are the gates of §3 the right ones, and are any missing?
+   searching, or all three?  *Answered: all three (§1 A).*
+4. Are the gates of §3 the right ones, and are any missing?  (§1 C lets
+   authorised agents add forms, which G3 as written reserves to Matthew.)
