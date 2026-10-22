@@ -19,6 +19,12 @@ forcing clauses against `Le`):
    `wip/f0MacNeille.lean`) is a nucleus on `DedekindCut RNClass` that extends
    `◯` on principal cuts and is the greatest monotone such map.
 
+Provenance: item 3 at F0 is an instance of Goldblatt's lifting of a nucleus
+to the MacNeille completion (J. Logic Comput. 21 (2011) 1035–1063,
+Corollary 2.6 of the 2010 preprint), which he applies to the Lindenbaum
+algebra of quantified lax logic; see the Literature paragraph of
+`wip/f0MacNeille.lean`.
+
 **Uniqueness at F0 is OPEN.**  The general refutation
 `MacNeilleNonUnique.nucleus_extension_not_unique`
 (`wip/f0MacNeilleNonUnique.lean`) is a chain with a gap: a down-set with no

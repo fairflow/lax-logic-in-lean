@@ -46,6 +46,28 @@ bounded chain `G` (a Heyting algebra), a nucleus on it, and two different
 nuclei on `DM(G)` extending it.  The nuclei extending `j` are exactly the
 interval from `leastExt` to `extNucleus` (`extends_iff_mem_Icc`); at F0
 whether that interval is a single point is OPEN.
+
+**Literature** (each checked 2026-10-22 against a fetched publisher record,
+DOI record or the paper itself).  The theorem of §2 at `L = DM(H)` is
+known: R. Goldblatt, "Cover semantics for quantified lax logic",
+J. Logic Comput. 21(6) (2011) 1035–1063, doi:10.1093/logcom/exq029,
+Corollary 2.6 of the preprint of 22 July 2010 (the upper MacNeille extension
+of a nucleus on a Heyting algebra is a nucleus; Goldblatt remarks that this
+appears to be new, and applies it to the Lindenbaum algebra of quantified lax
+logic).  Our `ext_inf_le` is his Theorem 2.5 with `f = id`.  §1 is
+J. Harding and G. Bezhanishvili, "MacNeille completions of Heyting
+algebras", Houston J. Math. 30(4) (2004) 937–952, Theorem 2.3, with the
+implication of `cutHimp` exactly their Proposition 2.4.  The lower and upper
+extensions are Definition 3.2 of M. Theunissen and Y. Venema, "MacNeille
+completions of lattice expansions", Algebra Universalis 57(2) (2007) 143–193,
+doi:10.1007/s00012-007-2033-1; their Example 3.8 shows that the upper
+extension does not preserve meets in general, so preservation of meets for a
+nucleus genuinely uses inflation and `⇨`.  Their Example 3.11 is the chain
+`ℕ ⊕ ℕᵒᵈ` of `wip/f0MacNeilleNonUnique.lean`.  Not found in these sources:
+the greatest-monotone-extension and interval statements (the nearest is
+Theunissen–Venema Proposition 5.9: the upper extension is the smallest
+extension continuous for a pair of topologies), and the failure of
+uniqueness.
 -/
 
 namespace MacNeille
