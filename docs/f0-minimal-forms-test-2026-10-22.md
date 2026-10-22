@@ -49,22 +49,45 @@ formula with the disjuncts of some `∨` in the other order.  They are
 
 One tie is structural, in the class of ρ14, at weight (2, 20):
 
-    ρ14             = ◯¬◯⊥ ∨ ¬¬◯⊥   ↠  ◯⊥ ∨ ¬◯⊥
-    a known member  = ◯(¬◯⊥ ∨ ¬¬◯⊥) ↠  ◯⊥ ∨ ¬◯⊥
+    ρ14             = ◯¬◯⊥ ∨ ¬¬◯⊥   ↠  ◯⊥ ∨ ¬◯⊥        ◯-scope  8
+    a known member  = ◯(¬◯⊥ ∨ ¬¬◯⊥) ↠  ◯⊥ ∨ ¬◯⊥        ◯-scope 15
 
 The second antecedent is `◯ρ6`, which is q12.  So `q12 ↠ ρ4` is
 interderivable with `ρ9 ↠ ρ4`, and that equivalence is kernel-checked.
 
+**Matthew's ruling on this tie (2026-10-22).**  The first formula is the
+simpler, because the scopes of ◯ are smaller; a normalisation routine
+would simplify the `◯(_ ∨ _)` bracket.  This is now a third component of
+the weight, **◯-scope**: the sum, over the ◯ nodes, of the size of the
+formula under each ◯.
+
+    weight = (◯-depth, size, ◯-scope), compared lexicographically
+
+Re-run with that weight:
+* no ρ is beaten by any known member;
+* the ρ14 tie goes to ρ14 (8 against 15);
+* every remaining tie is a reordering of `∨` only, with equal ◯-scope.
+
+The alternative, ◯-scope before size, would also replace ρ19
+(`(◯¬◯⊥ ↠ ◯⊥ ∨ ¬◯⊥) ↠ ◯¬◯⊥`, weight (2, 19, 12)) by the computed member
+`(◯¬◯⊥ ↠ ◯⊥ ∨ ¬◯⊥) ↠ ◯⊥ ∨ ¬◯⊥`, which is longer (size 21, ◯-scope 9).
+That is why ◯-scope is placed after size.
+
 ## Consequence for the tie rule
 
-Any purely syntactic tie-break re-points about 14 representatives.  The
-order used here (constructor rank, then children) re-points all 14, 13 of
-them only to reorder a disjunction.  That would be a change for no gain
+With ◯-scope in the weight, 13 ties remain, all reorderings of `∨`.  Any
+purely syntactic tie-break re-points them.  The order used here
+(constructor rank, then children) re-points all 13, each only to reorder
+a disjunction.  That would be a change for no gain
 (§1 D).  The proposal is therefore that **ties go to the incumbent**, so
 that a representative changes only for a strictly smaller member.  The
 fixed syntactic order is then needed only for a class with no incumbent.
-Under that rule, **all 22 ρ stand as the accepted forms.**  This proposal
+Under that rule, **all 22 ρ stand as the representatives.**  This proposal
 is METHOD-F0.md §8, question 5, and is for Matthew to decide.
+
+The ρ-labels name the classes for now.  They are labels in the historical
+order of discovery, not the systematic numbering of METHOD-F0 §1 E,
+which is §8 question 6.
 
 ## Reproduce
 

@@ -36,7 +36,10 @@ or §4 (L1) differs from this section, this section wins.
   made in advance.
 * **Accepted forms (D5, G3)**, by the rule of METHOD-F0 invariant 5:
   * names denote classes;
-  * the representative is the minimal known member under (◯-depth, size);
+  * the representative is the minimal known member under (◯-depth, size,
+    ◯-scope);
+  * the ρ-labels name classes for now, but are not the systematic
+    numbering, which is still to be designed;
   * it is replaced only by a strictly smaller member, append-only, with a
     certified `⊣⊢` row;
   * authorised agents apply the rule.
@@ -50,9 +53,13 @@ or §4 (L1) differs from this section, this section wins.
     This needs one new certifier.
   * `[w] ⊬ u` reuses the countermodel of `[v] ⊬ u`, by the propagation
     rule.
-* **Deadline: the explorer** (Beads `lax-183`) is due no later than
-  **2026-11-25**, and it reads the new store (METHOD-F0 §1 E).  §6 works
-  back from that date.
+* **Deadline: the explorer** (Beads `lax-183`) is due **2026-10-25**
+  (corrected the same day from 25 November).  That is too early for the
+  full store.  The explorer is therefore built from facts certified now
+  by one engine, the public subframe tableau (`yes'` / `no`, checked by
+  the kernel).  Those facts are the first rows of the store; steps 3–6
+  follow after the deadline, and the comparison may later re-certify the
+  rows in another format.
 
 ## 1 · Why the current build is unworkable
 
@@ -294,19 +301,20 @@ stay as they are and keep building.
 
 ## 6 · Steps (revised 2026-10-22)
 
-Each step names its gate.  The targets are estimates, set to leave the
-explorer two weeks.
+Each step names its gate.  The targets are estimates.  The explorer
+comes first, on 25 October.
 
 | step | work | gate | target |
 |---|---|---|---|
 | 1 | Move the subframe tableau and `pllfast` to the public repository (16 modules, port validated on 33 cells) | G6, given | PR 2026-10-22 |
-| 2 | `deriveOf` / `termOf`, the tableau → derivation translation as data; `pllfast` takes its proof terms from the tableau | G2, given | 2026-10-24 |
-| 3 | The tableau's API made self-contained: the engine and its producer in the library, with no `tools.`/`wip.` import; the `Repr TCert` choice leak removed | — | 2026-10-25 |
-| 4 | The other contestants as Engines (FinCM/G4c, LJF◯ two-sided, FRJW `checkClosed`), statements first; one public settings file; the FRJ rebuild happens here | G2 | statements 2026-10-23; engines 2026-10-30 |
-| 5 | The pre-registered comparison, run through the decider; the result recorded in TOOLS.md and the settings ordered by it | G4 | 2026-11-04 |
-| 6 | The F0 store as a lean-certify client: rows checked by `certify_all`; the database engine first in the settings; the chain certifier and the tactic of §0; import of RNDB with the parity report of §5 | G2 for the statements | 2026-11-12 |
-| 7 | The explorer, rebuilt from the store (`lax-183`) | G6 for any Pages run | **2026-11-25 at the latest** |
-| later | Supersession (G5); F1, the one-variable fragment (G1) | | |
+| E1 | Certified explorer data: the 462 ρ-cells and the operation tables (∧, ∨, ↠, ◯) certified by the tableau, kernel-checked in `F0/`, exported as JSON | — | 2026-10-24 |
+| E2 | The explorer page, a single offline HTML file rendered from that JSON (`lax-183`) | G6 for any Pages run | **2026-10-25** |
+| 2 | `deriveOf` / `termOf`, the tableau → derivation translation as data; `pllfast` takes its proof terms from the tableau | G2, given | running |
+| 3 | The tableau's API made self-contained: the engine and its producer in the library, with no `tools.`/`wip.` import; the `Repr TCert` choice leak removed | — | after E2 |
+| 4 | The other contestants as Engines (FinCM/G4c, LJF◯ two-sided, FRJW `checkClosed`); statements drafted (branch `engine-adoption`, OPEN for G2); one public settings file | G2 | after E2 |
+| 5 | The pre-registered comparison, run through the decider; the result recorded in TOOLS.md and the settings ordered by it | G4 | after 4 |
+| 6 | The F0 store as a lean-certify client: the E1 rows extended, the database engine first in the settings, the chain certifier and the tactic of §0, import of RNDB with the parity report of §5 | G2 for the statements | after 5 |
+| later | Supersession (G5); F1, the one-variable fragment (G1); the systematic numbering of the classes (METHOD-F0 §8 Q6) | | |
 
 The spikes S4 (certificate cost) and S5 (import dry run) of the first
 draft are folded into step 6: lean-certify's `Chunk` answers S4's

@@ -97,6 +97,13 @@ def depth(f):
     return d + 1 if f[0] == "box" else d
 
 
+def scope(f):
+    """◯-scope: the sum, over the ◯ nodes, of the size of the formula under
+    that ◯ (Matthew 2026-10-22: smaller ◯ scopes are simpler)."""
+    s = sum(scope(x) for x in f[1:])
+    return s + size(f[1]) if f[0] == "box" else s
+
+
 RANK = {"bot": 0, "and": 1, "or": 2, "imp": 3, "box": 4}
 
 
@@ -106,7 +113,7 @@ def syn_key(f):
 
 
 def weight(f):
-    return (depth(f), size(f), syn_key(f))
+    return (depth(f), size(f), scope(f), syn_key(f))
 
 
 # ---------- union-find ----------
@@ -162,32 +169,32 @@ def main(export, cells):
         wr = weight(parse(rf))
         better_k = sorted((x for x in k if weight(parse(x)) < wr), key=lambda x: weight(parse(x)))
         better_c = sorted((x for x in c if weight(parse(x)) < wr), key=lambda x: weight(parse(x)))
-        ties = [x for x in k | c if x != rf and weight(parse(x))[:2] == wr[:2]]
-        rows.append((i, rf, wr[:2], len(k), len(c), better_k, better_c, ties))
+        ties = [x for x in k | c if x != rf and weight(parse(x))[:3] == wr[:3]]
+        rows.append((i, rf, wr[:3], len(k), len(c), better_k, better_c, ties))
     return rows
 
 
 def report(rows):
-    print("per ρ: weight (◯-depth, size); known members K (kernel-checked) and C (computed only)")
+    print("per ρ: weight (◯-depth, size, ◯-scope); known members K (kernel-checked) and C (computed only)")
     for i, rf, w, nk, nc, bk, bc, ties in rows:
         print(f"ρ{i} {rf}\n    weight {w}; members K={nk}, C={nc}; "
-              f"before it in the full order: K={len(bk)}, C={len(bc)}; equal (depth, size): {len(ties)}")
+              f"before it in the full order: K={len(bk)}, C={len(bc)}; equal weight: {len(ties)}")
         for x in bk[:3]:
-            print(f"      K before: {x}  {weight(parse(x))[:2]}")
+            print(f"      K before: {x}  {weight(parse(x))[:3]}")
         for x in bc[:3]:
-            print(f"      C before: {x}  {weight(parse(x))[:2]}")
+            print(f"      C before: {x}  {weight(parse(x))[:3]}")
         for x in ties[:3]:
             print(f"      tie:      {x}  syntactic order {'before' if weight(parse(x)) < weight(parse(rf)) else 'after'} ρ{i}")
 
     def strictly(xs, w):
-        return [x for x in xs if weight(parse(x))[:2] < w]
+        return [x for x in xs if weight(parse(x))[:3] < w]
     beaten_k = [r[0] for r in rows if strictly(r[5], r[2])]
     beaten_c = [r[0] for r in rows if not strictly(r[5], r[2]) and strictly(r[6], r[2])]
     tied = [r[0] for r in rows if not strictly(r[5], r[2]) and not strictly(r[6], r[2]) and r[7]]
     unique = [r[0] for r in rows if not strictly(r[5], r[2]) and not strictly(r[6], r[2]) and not r[7]]
-    print(f"\nbeaten on (◯-depth, size) by a kernel-checked member: {['ρ%d' % i for i in beaten_k]}")
-    print(f"beaten on (◯-depth, size) by a computed member only:  {['ρ%d' % i for i in beaten_c]}")
-    print(f"minimal on (◯-depth, size), with another member of equal weight: {['ρ%d' % i for i in tied]}")
+    print(f"\nbeaten on (◯-depth, size, ◯-scope) by a kernel-checked member: {['ρ%d' % i for i in beaten_k]}")
+    print(f"beaten on (◯-depth, size, ◯-scope) by a computed member only:  {['ρ%d' % i for i in beaten_c]}")
+    print(f"minimal, with another member of equal weight: {['ρ%d' % i for i in tied]}")
     print(f"the unique minimum among known members: {['ρ%d' % i for i in unique]}")
 
 
@@ -210,6 +217,14 @@ def selftest():
         bad += 1
     if not size(a) < size(b):
         print("FAIL control: by size alone the order flips")
+        bad += 1
+    # ◯-scope breaks the tie Matthew settled (2026-10-22): equal depth and size, smaller scopes first
+    r14, alt = parse("◯¬◯⊥ ∨ ¬¬◯⊥ ↠ ◯⊥ ∨ ¬◯⊥"), parse("◯(¬◯⊥ ∨ ¬¬◯⊥) ↠ ◯⊥ ∨ ¬◯⊥")
+    if (depth(r14), size(r14), scope(r14)) != (2, 20, 8) or (depth(alt), size(alt), scope(alt)) != (2, 20, 15):
+        print("FAIL ◯-scope values", scope(r14), scope(alt))
+        bad += 1
+    if not weight(r14) < weight(alt):
+        print("FAIL ◯-scope order")
         bad += 1
     print("selftest:", "PASS" if bad == 0 else f"{bad} FAIL")
     return bad

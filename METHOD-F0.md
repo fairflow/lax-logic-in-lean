@@ -71,12 +71,18 @@ steerable.
 4. **Identities are append-only.**  Entry ids, q-indices and ρ-indices never
    change meaning.  A superseded row is marked as superseded, never deleted.
 5. **The accepted forms follow a rule** (§1 C; agreed 2026-10-22).
-   * A class has a stable **name**, its number, which denotes the class
-     and never a particular formula.
+   * A class has a stable **name**, which denotes the class and never a
+     particular formula.  Today the names are the ρ-labels of
+     `LaxLogic/RN/Rho.lean`.  These are labels in the historical order of
+     discovery, NOT yet the systematic, extensible numbering of §1 E,
+     which is still to be designed.
    * Its **representative** is the minimal known member under the order
-     (◯-depth, size), compared lexicographically.  Ties go to the
-     incumbent; for a new class, a fixed syntactic order decides.  The
-     tie rule is *proposed* after the 2026-10-22 test, and awaits Matthew.
+     (◯-depth, size, ◯-scope), compared lexicographically.  Here
+     ◯-scope is the sum, over the ◯ nodes, of the size of the formula
+     under each ◯; smaller ◯ scopes are simpler (Matthew, 2026-10-22).
+     Remaining ties go to the incumbent; for a new class, a fixed
+     syntactic order decides.  The tie rule is *proposed* after the
+     2026-10-22 test, and awaits Matthew.
    * A representative is replaced only by a **strictly** smaller member.
      The replacement is an append-only event backed by a certified `⊣⊢`
      row.  The old representative stays a recorded member.
@@ -170,8 +176,10 @@ From the survey of `origin/main` that preceded this draft:
 4. Are the gates of §3 the right ones, and are any missing?  (G3
    rewritten 2026-10-22 to §1 C: Matthew sets the rule, agents apply it.)
 5. The tie rule of invariant 5 (the incumbent wins on equal
-   (◯-depth, size)).  The test of 2026-10-22
+   (◯-depth, size, ◯-scope)).  The test of 2026-10-22
    (`docs/f0-minimal-forms-test-2026-10-22.md`) found 14 of the 22 ρ tied
-   with another known member.  13 of the ties are only a reordering of
-   `∨`; under a purely syntactic tie-break, all 14 would be re-pointed for
-   no gain (§1 D).
+   on (◯-depth, size).  ◯-scope breaks the one structural tie (ρ14); the
+   other 13 are only a reordering of `∨`, and a purely syntactic
+   tie-break would re-point them for no gain (§1 D).
+6. The systematic, extensible numbering of the classes (§1 E).  The
+   ρ-labels are historical, not numbers.
