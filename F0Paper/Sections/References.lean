@@ -9,6 +9,8 @@ import F0Paper.Sections.Rationals
 import F0Paper.Sections.Holes
 import F0Paper.Sections.Structure
 import F0Paper.Sections.Completion
+import F0Paper.Sections.T6
+import F0Paper.Sections.SelfSim
 import F0Paper.Sections.Open
 
 open Verso.Genre

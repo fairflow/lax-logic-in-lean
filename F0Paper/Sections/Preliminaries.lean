@@ -269,6 +269,45 @@ $`\lnot\bigcirc\bot`.
 
 {srcLink}`dichotomy_exclusive`
 
+# Pairs, intervals and threads
+
+The following vocabulary for the order of $`F_0` is used from here on.  The
+notions are defined on paper; they are not declarations of the library.
+
+* A _pair_ is $`(p, q)` with $`p < q` in $`F_0`, that is $`p \vdash q` and
+  $`q \nvdash p`.
+* The _interval_ of a pair is $`[p, q] = \{x : p \vdash x \vdash q\}`, and its
+  _open interval_ is $`(p, q) = \{x : p < x < q\}`.
+* A _thread_ in $`(p, q)` is the image of an order embedding of $`\mathbb{Q}`
+  into $`(p, q)`.  In the _dyadic version_ the dyadic rationals in $`[0, 1]`
+  are embedded into $`[p, q]` with $`0 \mapsto p` and $`1 \mapsto q`; the image
+  of the dyadic rationals in $`(0, 1)` is then a thread in $`(p, q)`, through
+  the explicit order-isomorphism of Section 5 from $`\mathbb{Q}` onto the
+  dyadic rationals in $`(0, 1)`.
+* For sets $`A, B \subseteq F_0`, $`A \parallel B` means that no element of $`A`
+  is comparable with any element of $`B`.
+
+_Ropes._  Two threads in $`(p, q)` are _connected_ if a point of one reaches a
+point of the other by a zigzag of steps, each $`x \vdash y` or $`y \vdash x`,
+inside $`(p, q)`; a _rope_ is a connected class of threads.
+
+_Remark (a pen argument, not mechanised)._  In a distributive lattice, every
+interval $`[p, q]` with more than four elements has a zigzag-connected open
+interval, any two of its points being joined in at most three steps.  Let
+$`x, y \in (p, q)`.  If $`x \lor y < q`, then $`x \le x \lor y \ge y` inside
+$`(p, q)`; if $`x \land y > p`, then $`x \ge x \land y \le y`.  Otherwise
+$`x \lor y = q` and $`x \land y = p`, so $`x` and $`y` are complements in
+$`[p, q]`, and $`z \mapsto (z \land x, z \land y)` is an isomorphism
+$`[p, q] \cong [p, x] \times [p, y]`.  As $`[p, q]` has more than four
+elements, one factor has an interior point, say $`p < w < x` (the other case
+is symmetric).  Then $`x \ge w \le w \lor y \ge y`, and $`w \lor y < q`, since
+its image $`(w, y)` differs from $`(x, y)`, the image of $`q`.  $`F_0` is a
+distributive lattice (it is a Heyting algebra; Section 8), so the definition
+as stated yields a single rope in every interval of $`F_0` with more than four
+elements.  Two refinements are under consideration: (a) width, that is,
+families of threads that are pairwise $`\parallel`, and (b) the pointwise order
+between threads.  Neither has been chosen yet.
+
 # Axioms
 
 As recorded in the files (`#print axioms` under `#guard_msgs`, or

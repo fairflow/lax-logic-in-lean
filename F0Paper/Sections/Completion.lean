@@ -225,7 +225,7 @@ their upper parts have least elements has not been examined.
 _Remark (not mechanised)._  $`\mathrm{DM}(F_0)` with $`\overline{\bigcirc}` is a
 complete Heyting algebra with a nucleus, so it is a complete algebraic model of
 PLL.  It has the cardinality of the continuum and contains $`\aleph_0` mutually
-incomparable order-embedded copies of $`\mathbb{R}`, completing the copies of
+incomparable order-embedded copies of $`\mathbb{R}`, completing the threads of
 Section 7.  Only the extension is mechanised; the soundness of PLL for Heyting
 algebras with a nucleus, the cardinality and the copies of $`\mathbb{R}` are a
 pen argument here, and as mechanised statements they are OPEN.

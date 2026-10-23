@@ -5,7 +5,8 @@ code are those of `CLPPaper/Math.lean` (docs/verso-paper-workflow.md §3); the
 notation table is new, for propositional lax logic and the objects of the F0
 development (`wip/f0Covers.lean`, `wip/f0Indep.lean`, `wip/f0Dyadic.lean`,
 `wip/f0Rat.lean`, `wip/f0Minkowski.lean`, `wip/gapWidth.lean`,
-`wip/embedNeg.lean`, `wip/floor.lean`).
+`wip/embedNeg.lean`, `wip/floor.lean`, and for v0.2 `wip/f0T6.lean` and
+`wip/f0SelfSim.lean`).
 
 * Binders become quantifiers without type annotations; hypotheses, and
   derivations `p : Γ ⊢ A` taken as arguments, become premises; instance
@@ -38,6 +39,7 @@ import wip.f0Nuclear
 import wip.f0MacNeilleNonUnique
 import wip.f0Structure
 import wip.f0Hole
+import wip.f0SelfSim
 import wip.gapWidth
 import wip.embedNeg
 import wip.ladder8
@@ -251,7 +253,11 @@ def namedForms : List (Name × String × Nat) :=
   [(``PLLND.F0.bot, "t_{0}", 9), (``PLLND.F0.e, "t_{1}", 9), (``PLLND.F0.ne, "t_{2}", 9),
    (``PLLND.F0.t3, "t_{3}", 9), (``PLLND.F0.t4, "t_{4}", 9), (``PLLND.F0.t5, "t_{5}", 9),
    (``PLLND.RNEmbed.oBot, "\\bigcirc\\bot", 4), (``PLLND.RNEmbed.notOBot, "\\lnot\\bigcirc\\bot", 4),
-   (``PLLFormula.truePLL, "\\top", 9)]
+   (``PLLFormula.truePLL, "\\top", 9),
+   -- `wip/f0T6.lean`: `t6 = t5 ↠ t3`, `u = ◯¬◯⊥`, and regularity of `◯⊥`
+   (``PLLND.F0.T6.t6F, "t_{6}", 9), (``PLLND.F0.T6.uF, "u", 9),
+   (``PLLND.F0.T6.nne, "\\lnot\\lnot\\bigcirc\\bot", 4),
+   (``PLLND.F0.T6.regE, "\\lnot\\lnot\\bigcirc\\bot \\twoheadrightarrow \\bigcirc\\bot", 1)]
 
 /-- The tables' lists of `wip/f0Covers.lean` are read as the sets they list. -/
 def tableLists : List Name :=
@@ -295,6 +301,8 @@ partial def form (st : St) (p : Nat) : Expr → MetaM String
 partial def ctx (st : St) (e : Expr) : MetaM String := do
   let e := e.consumeMData
   if let some fs := listLit? e then
+    -- the empty context is an empty atom, so `⟹ ⊢ χ` keeps its spacing
+    if fs.isEmpty then return "{}"
     return ",\\ ".intercalate (← fs.mapM (form st 1))
   match e.getAppFnArgs with
   | (``List.cons, #[_, a, l]) => return s!"{← form st 1 a},\\ {← ctx st l}"
@@ -305,7 +313,13 @@ partial def ctx (st : St) (e : Expr) : MetaM String := do
         let x ← xs.mapM fun x => do pure (ident (← x.fvarId!.getDecl).userName.toString)
         return "\\{" ++ (← form st 1 b) ++ " : " ++ " ".intercalate x.toList ++ " \\in " ++
           (← generic st 6 l) ++ "\\}"
-    else generic st 9 e
+    else
+      -- a translation applied to every member of a context: `Γᵃ`, `Γ[⊥ := a]`
+      match f.consumeMData.getAppFnArgs with
+      | (``PLLND.F0.Sig.aTr, #[a]) => return (← generic st 9 l) ++ "^{" ++ (← form st 0 a) ++ "}"
+      | (``PLLND.F0.Sig.subBot, #[a]) =>
+        return (← generic st 9 l) ++ "[\\bot := " ++ (← form st 1 a) ++ "]"
+      | _ => generic st 9 e
   | _ => generic st 9 e
 
 /-- `⋀`/`⋁` over a list: `List.map (λ i. A) S` gives a bound index. -/
@@ -326,6 +340,23 @@ partial def oddIndex (st : St) (k : Expr) : MetaM String := do
   if let some n := natLit? k then return toString (2 * n + 1)
   if isAtomic k then return "2" ++ (← generic st 9 k) ++ " + 1"
   return "2(" ++ (← generic st 0 k) ++ ") + 1"
+
+/-- `2k+2` for the index `k`. -/
+partial def evenIndex (st : St) (k : Expr) : MetaM String := do
+  if let some n := natLit? k then return toString (2 * n + 2)
+  if isAtomic k then return "2" ++ (← generic st 9 k) ++ " + 2"
+  return "2(" ++ (← generic st 0 k) ++ ") + 2"
+
+/-- The rung pair `rnP k = (r_{2k+1}, r_{2k+2})`, projected: `some (k, odd?)`. -/
+partial def rungProj? (e : Expr) : Option (Expr × Bool) :=
+  match e.consumeMData.getAppFnArgs with
+  | (``Prod.fst, #[_, _, pr]) => match pr.consumeMData.getAppFnArgs with
+    | (``PLLND.RNEmbed.rnP, #[k]) => some (k, true)
+    | _ => none
+  | (``Prod.snd, #[_, _, pr]) => match pr.consumeMData.getAppFnArgs with
+    | (``PLLND.RNEmbed.rnP, #[k]) => some (k, false)
+    | _ => none
+  | _ => none
 
 /-- A world of a lifted model: `some x` is the skeleton world `x`. -/
 partial def world (st : St) (w : Expr) : MetaM String := do
@@ -429,7 +460,36 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   | (``PLLND.RNEmbed.gap, #[k]) => return "g_{" ++ (← generic st 0 k) ++ "}"
   | (``PLLND.RNEmbed.chainF, #[k]) => return wrap 4 ("\\bigcirc t_{" ++ (← oddIndex st k) ++ "}")
   | (``PLLND.RNEmbed.Wit, #[b]) => return "W_{" ++ (← generic st 0 b) ++ "}"
-  | (``PLLND.RNEmbed.embed, #[a]) => return (← form st 9 a) ++ "[p := \\bigcirc\\bot]"
+  | (``PLLND.RNEmbed.embed, #[a]) =>
+    -- `embed (rnP k).1` is the substituted rung `t_{2k+1}` (`rnSub` by definition)
+    match rungProj? a with
+    | Option.some (k, true) => return "t_{" ++ (← oddIndex st k) ++ "}"
+    | Option.some (k, false) => return "t_{" ++ (← evenIndex st k) ++ "}"
+    | Option.none => return (← form st 9 a) ++ "[p := \\bigcirc\\bot]"
+  | (``Prod.fst, #[_, _, _]) | (``Prod.snd, #[_, _, _]) =>
+    match rungProj? e with
+    | Option.some (k, true) => return "r_{" ++ (← oddIndex st k) ++ "}"
+    | Option.some (k, false) => return "r_{" ++ (← evenIndex st k) ++ "}"
+    | Option.none =>
+      let s ← ppExpr e
+      pure ("\\texttt{" ++ esc (toString s) ++ "}")
+  -- `wip/f0T6.lean` and `wip/f0SelfSim.lean`: relativisation, `⊥ ↦ a`, the A-translation
+  | (``PLLND.F0.T6.rel, #[a]) => return "\\mathrm{rel}(" ++ (← form st 0 a) ++ ")"
+  | (``PLLND.F0.T6.xc, #[k]) => return "x_{" ++ (← generic st 0 k) ++ "}"
+  | (``PLLND.F0.Sig.sig, #[a]) => return "\\sigma(" ++ (← form st 0 a) ++ ")"
+  | (``PLLND.F0.Sig.sigN, #[n, a]) =>
+    return "\\sigma^{" ++ (← generic st 0 n) ++ "}(" ++ (← form st 0 a) ++ ")"
+  | (``PLLND.F0.Sig.subBot, #[a, b]) =>
+    return (← form st 9 b) ++ "[\\bot := " ++ (← form st 1 a) ++ "]"
+  | (``PLLND.F0.Sig.aTr, #[a, b]) => return (← form st 9 b) ++ "^{" ++ (← form st 0 a) ++ "}"
+  -- subframe models, and the extension by two top worlds
+  | (``PLLND.SubframeModel.force, #[m, w, a]) =>
+    return wrap 5 s!"{← generic st 9 m},\\ {← generic st 9 w} \\Vdash {← form st 1 a}"
+  | (``PLLND.F0.Sig.ext, #[m]) => return "\\widehat{" ++ (← generic st 9 m) ++ "}"
+  | (``PLLND.F0.Sig.XW.orig, #[_, x]) => generic st p x
+  | (``PLLND.F0.Sig.XW.nT, #[_]) => pure "n_{T}"
+  | (``PLLND.F0.Sig.XW.eT, #[_]) => pure "e_{T}"
+  | (``PLLND.F0.Sig.isTopX, #[_, w]) => return wrap 5 ((← generic st 6 w) ++ " \\in \\{n_{T}, e_{T}\\}")
   | (``PLLND.SemUI.bigAnd, #[l]) => bigOp st p "\\bigwedge" l
   | (``PLLND.bigOr, #[l]) => bigOp st p "\\bigvee" l
   | (``PLLND.RNEmbed.ladder, #[]) => pure "\\mathcal{L}"
