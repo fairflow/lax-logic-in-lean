@@ -36,8 +36,11 @@ initial one (Section 2), and it is infinite.  The question asked about it was:
 * Does the open interval $`(u, v)` of every pair $`u < v` contain a _thread_,
   the image of an order embedding of $`\mathbb{Q}`?
 
-Section 2 fixes this vocabulary: pairs, intervals, threads, and the relation
-$`A \parallel B` of sets no two elements of which are comparable.
+Section 2 fixes this vocabulary: pairs, intervals, threads, the relation
+$`A \parallel B` of sets no element of one of which is comparable with an
+element of the other, and four levels of an interval: finite, containing a
+thread, containing a free distributive lattice on countably many generators,
+and containing a faithful copy of $`F_0`.
 
 # The answers
 

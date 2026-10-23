@@ -197,6 +197,10 @@ $`\sigma^{n+1}(F_0)`.  As $`\sigma^{n+1}(\varphi) = \sigma^{n}(\sigma(\varphi))`
 by definition, the copies are nested,
 $`\sigma^{n+1}(F_0) \subseteq \sigma^{n}(F_0)`, and strictly decreasing: an
 infinite descending sequence of faithful copies of $`F_0` inside $`F_0`.  PROVED.
+In the classification of Section 2 every interval $`[\sigma^{n}(\bot), \top]` is
+therefore at level 4, through the identification
+$`h_{\sigma^{n}(\bot), \top}(\varphi) \dashv\vdash \sigma^{n}(\varphi)`, which is a pen
+argument.
 
 {stmt}`Sig.sigN_bot_le`
 

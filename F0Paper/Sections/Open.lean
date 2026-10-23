@@ -43,16 +43,15 @@ evidence.
 * _Is the nuclear extension of $`\bigcirc` to $`\mathrm{DM}(F_0)` unique?_
   OPEN.  Uniqueness fails for some Heyting algebras: REFUTED in general
   (Section 8).
-* _Which pairs have a thread?_  For every pair of lattice polynomials in the
-  odd gaps the open interval contains $`\aleph_0` threads, pairwise
-  $`\parallel`: PROVED (Section 7).  A cover has none.  Whether the open
-  interval of an arbitrary pair $`(u, v)` that is not a cover contains a
-  thread: OPEN.
-* _Ropes._  As defined in Section 2, connectedness by zigzags gives a single
-  rope in every interval with more than four elements (a pen argument, not
-  mechanised).  Two refinements are under consideration, (a) width, by
-  pairwise $`\parallel` families of threads, and (b) the pointwise order
-  between threads; the choice between them is open.
+* _Which intervals sit at which level_ (Section 2)?  OPEN in general.  Known:
+  covers and $`[\bot, t_n]` for $`n \le 5` are at level 1 (Section 3); the
+  interval of every pair of lattice polynomials in the odd gaps has
+  $`\aleph_0` threads, pairwise $`\parallel` (PROVED, Section 7); the intervals
+  $`[\sigma^{n}(\bot), \top]` are at level 4 (Section 10, with the pen steps of
+  Section 2).  The level of $`[\bot, t_6]`, which is infinite (Section 9), is
+  not known, and neither is whether every infinite interval contains a thread.
+* _Are the levels distinct?_  OPEN: is there an interval at level 2 but not
+  at level 3, or at level 3 but not at level 4?
 * _Is the interval of some pair dense, that is, free of covers?_  OPEN.  A
   candidate is $`[g_i \land g_j, g_i]` with $`i < j`.
 * _$`\mathrm{DM}(F_0)` as a model._  That it is a complete algebraic model of

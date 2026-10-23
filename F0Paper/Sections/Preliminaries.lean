@@ -287,13 +287,52 @@ notions are defined on paper; they are not declarations of the library.
 * For sets $`A, B \subseteq F_0`, $`A \parallel B` means that no element of $`A`
   is comparable with any element of $`B`.
 
-_Ropes._  Two threads in $`(p, q)` are _connected_ if a point of one reaches a
-point of the other by a zigzag of steps, each $`x \vdash y` or $`y \vdash x`,
-inside $`(p, q)`; a _rope_ is a connected class of threads.
+_Levels of an interval._  An interval $`[p, q]` with $`p < q` is at
+
+* _level 1_ if it is finite, for example $`{\downarrow}t_5 = [\bot, t_5]`, which
+  has six elements (Section 3);
+* _level 2_ if it contains a thread, a copy of $`\mathbb{Q}`;
+* _level 3_ if it contains a free distributive lattice on countably many
+  generators, with $`p` and $`q` as its bottom and top;
+* _level 4_ if it contains a faithful copy of $`F_0` with $`p` and $`q` as
+  bottom and top.
+
+Level 4 is meant with the operations relativised to $`[p, q]`: meet and join
+as in $`F_0`, implication $`(x \twoheadrightarrow y) \land q`, modality
+$`\bigcirc x \land q`, and bottom $`p`.  It says that the map
+
+$$`h_{p,q}(\varphi) = \varphi[\bot := p] \land q`
+
+is one-to-one on $`F_0`.  That $`h_{p,q}` is well defined on classes and a
+homomorphism for the relativised operations follows from the preservation
+theorem `subBot_deriv` (Section 10) and the reduction lemmas of Section 3, and
+a one-to-one lattice homomorphism is an order embedding; these steps are a pen
+argument, not declarations of the library.  The levels are related as follows.
+
+* _Level 4 implies level 3_ (pen).  The odd gaps generate a free distributive
+  lattice inside $`F_0` (`indep`, Section 4; `lpoly_deriv_iff`, Section 7), and
+  $`h_{p,q}` carries it one-to-one into $`[p, q]`, with $`h_{p,q}(\bot) = p` and
+  $`h_{p,q}(\top) \dashv\vdash q`.
+* _Level 3 implies level 2_, by the dyadic construction of Section 5, which uses
+  only lattice polynomials in free generators.  It is mechanised for the odd
+  gaps; for an arbitrary free distributive lattice it is a pen argument.
+* _Level 3 gives countably many threads_, pairwise $`\parallel`, by the
+  construction of Section 7, which again uses only free generators; its
+  instance for the odd gaps is `incomparable_copies`, and the general case is
+  a pen argument.
+* A finite interval contains no thread: level 1 excludes level 2.
+* _The self-similar intervals are at level 4:_ for every $`n`, so is
+  $`[\sigma^{n}(\bot), \top]` (Section 10).  Here $`h_{\sigma^{n}(\bot), \top}(\varphi) \dashv\vdash \sigma^{n}(\varphi)`,
+  because $`\sigma^{n}(\varphi) = \varphi[\bot := \sigma^{n}(\bot)]`, a
+  syntactic identity by induction on $`n` that is a pen argument, not a
+  declaration of the library; and $`\sigma^{n}` is one-to-one on $`F_0` by
+  `sigN_faithful`.  For $`n = 0` and $`n = 1` the intervals are
+  $`[\bot, \top]` and $`[t_3, \top]`.
 
 _Remark (a pen argument, not mechanised)._  In a distributive lattice, every
 interval $`[p, q]` with more than four elements has a zigzag-connected open
-interval, any two of its points being joined in at most three steps.  Let
+interval: any two of its points are joined by a zigzag of at most three steps,
+each $`x \vdash y` or $`y \vdash x`, inside $`(p, q)`.  Let
 $`x, y \in (p, q)`.  If $`x \lor y < q`, then $`x \le x \lor y \ge y` inside
 $`(p, q)`; if $`x \land y > p`, then $`x \ge x \land y \le y`.  Otherwise
 $`x \lor y = q` and $`x \land y = p`, so $`x` and $`y` are complements in
@@ -302,11 +341,9 @@ $`[p, q] \cong [p, x] \times [p, y]`.  As $`[p, q]` has more than four
 elements, one factor has an interior point, say $`p < w < x` (the other case
 is symmetric).  Then $`x \ge w \le w \lor y \ge y`, and $`w \lor y < q`, since
 its image $`(w, y)` differs from $`(x, y)`, the image of $`q`.  $`F_0` is a
-distributive lattice (it is a Heyting algebra; Section 8), so the definition
-as stated yields a single rope in every interval of $`F_0` with more than four
-elements.  Two refinements are under consideration: (a) width, that is,
-families of threads that are pairwise $`\parallel`, and (b) the pointwise order
-between threads.  Neither has been chosen yet.
+distributive lattice (it is a Heyting algebra; Section 8), so zigzag
+connectivity does not separate the threads of an interval of $`F_0` with more
+than four elements.
 
 # Axioms
 
