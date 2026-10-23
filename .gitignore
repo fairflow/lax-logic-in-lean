@@ -39,6 +39,9 @@ _out/
 # Built papers (scripts/clp-paper.sh): HTML + PDF are build artefacts
 docs/clp-paper/
 docs/clp-paper.pdf
+# (scripts/f0-paper.sh)
+docs/f0-paper/
+docs/f0-paper.pdf
 
 # extract.py's benchmark corpora are DERIVED data carrying absolute paths to
 # whichever worktree generated them; regenerate, never commit.  (Cherry-picked

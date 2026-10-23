@@ -190,7 +190,9 @@ module's compiled outputs before `lake build`, so it is recomputed on every
 build; the other modules stay incremental.  Build after committing and the
 stamp names the commit without a `+`.  The stamp also defines
 `\versoBuildStamp`, which the TeX step centres above the running heads on
-every page (two-line header, `headheight=26pt`).
+every page (two-line header, `headheight=26pt`).  Since 2026-10-22 (the F0
+paper) the TeX step also copies that definition into the preamble, so the
+title and contents pages, which come before it, carry the stamp too.
 
 ## 4. Build
 
