@@ -34,6 +34,8 @@ for p in \
   docs/rn-catalogue.html \
   Meta/Audit.lean \
   scripts/semui_fibres.py \
+  scripts/f0-figures.py \
+  tools/F0/FigureData.lean \
 ; do
   printf '%-36s %s\n' "$p" "$(git log -1 --format='%h · %ad' --date=short -- "$p")"
 done

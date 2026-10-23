@@ -246,6 +246,8 @@ def fillRows (first : String) (items : List String) (width : Nat := rowMeasure) 
 structure St where
   /-- below the root: a quantified formula here is printed on one line -/
   nested : Bool := false
+  /-- one line throughout, without brackets around the whole (the tables) -/
+  flat : Bool := false
 
 /-- Named variable-free formulas: the six formulas of `wip/f0Covers.lean` are
 the rungs `t₀ … t₅` (`rnSub_0` … `rnSub_5`, all `rfl`). -/
@@ -702,13 +704,15 @@ partial def quant (st0 : St) (p : Nat) (e : Expr) : MetaM String :=
     if p > 0 || st0.nested then
       if prems.isEmpty then return paren (binder ++ concl)
       else return paren (binder ++ " \\Longrightarrow ".intercalate (prems.toList ++ [concl]))
+    else if st0.flat then
+      return binder ++ " \\Longrightarrow ".intercalate (prems.toList ++ [concl])
     else
       return fillRows binder ((prems.toList.map (· ++ " \\Longrightarrow")) ++ [concl])
 end
 
 /-- A definition is printed by its defining equation when its value is a
 proposition or a formula and it is not defined by recursion. -/
-def defEquation? (n : Name) : MetaM (Option String) := do
+def defEquation? (n : Name) (flat : Bool := false) : MetaM (Option String) := do
   let env ← getEnv
   let some (.defnInfo dv) := env.find? n | return none
   let recursive := (dv.value.find? fun s => match s with
@@ -722,11 +726,12 @@ def defEquation? (n : Name) : MetaM (Option String) := do
     let isP := ty.isProp
     let isF := ty.isConstOf ``PLLFormula
     unless isP || isF do return none
-    let lhs ← generic {} 0 lhsE
-    let rhs ← generic {} 0 body
+    let lhs ← generic {flat := flat} 0 lhsE
+    let rhs ← generic {flat := flat} 0 body
     if lhs == rhs then return none
     let rel := if isP then " \\mathrel{:\\Longleftrightarrow} " else " \\mathrel{:=} "
     let s := lhs ++ rel ++ rhs
+    if flat then return some s
     if s.startsWith "\\begin{aligned}" || (rhs.startsWith "\\begin{aligned}") then
       return some s
     if visLen s > rowMeasure then return some (rows (breakRow s))
@@ -741,6 +746,13 @@ def stmtOf (n : Name) : MetaM (Option String) := do
   if visLen s > rowMeasure && !s.startsWith "\\begin{aligned}" then
     return some (rows (breakRow s))
   return some s
+
+/-- The statement of `n` on one line (the tables of supporting declarations). -/
+def stmtFlat (n : Name) : MetaM (Option String) := do
+  let some ci := (← getEnv).find? n | throwError "unknown constant {n}"
+  let judgement ← forallTelescope ci.type fun _ b => pure (isJudgement b)
+  unless (← isProp ci.type) || judgement do return ← defEquation? n (flat := true)
+  generic {flat := true} 0 ci.type
 
 structure StmtConfig where
   ok : Unit := ()

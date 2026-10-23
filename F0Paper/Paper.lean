@@ -25,21 +25,13 @@ open CLPPaper
 
 {texSetup}
 
-This document reports what is machine-checked about the order of $`F_0`, the
-Lindenbaum algebra of the variable-free formulas of propositional lax logic:
-that it has covers at the bottom and so is not dense, that the odd gaps are
-independent, that the rationals order-embed in it, explicitly and without
-choice, that it has cuts it does not fill, how the covers and the threads fit
-together, that its modality extends to its Dedekind–MacNeille completion, that
-the downset of the sixth rung is infinite, and that $`F_0` contains an infinite
-descending sequence of nested copies of itself.
-
-Every result shown is PROVED in Lean, sorry-free, or REFUTED by a
-kernel-checked counterexample, with the axioms it depends on stated at the end
-of its section; what is neither is labelled OPEN.  Each result is stated in
-words, then as a displayed formula generated from the Lean statement, then as
-the Lean declaration printed from the compiled library, then as a link to its
-line in the repository at the commit that was built.
+What is machine-checked about the order of $`F_0`, the Lindenbaum algebra of
+the variable-free formulas of propositional lax logic: covers at the bottom,
+independence of the odd gaps, an explicit choice-free embedding of the
+rationals, unfilled cuts, the completion, the infinite downset of the sixth
+rung, and nested copies of $`F_0` inside itself.  Every result shown is PROVED
+in Lean, sorry-free, or REFUTED by a kernel-checked counterexample; what is
+neither is OPEN.
 
 {include 0 F0Paper.Sections.Introduction}
 {include 0 F0Paper.Sections.Preliminaries}
