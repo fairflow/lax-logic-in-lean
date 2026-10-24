@@ -20,6 +20,12 @@ Nothing is drawn that the data does not give: every edge is a covering pair
 decided by `rungCovers`, a cover theorem, or a sigma theorem named in the
 figure or its caption; the regions of the self-similarity figure are
 schematic (positions not to scale).  Written 2026-10-23 for v0.3 of the paper.
+
+v0.4 (2026-10-24): the PDF includes each figure at its natural size, so a
+label prints at the size set here, FS points, the size of the body text.  A
+figure wider than the text block (MAXW) stops the script: content is reduced
+(fewer rungs, the key moved to the caption, the copies panel placed below the
+ladders when the two do not fit side by side), never the type.
 """
 import json
 import os
@@ -29,6 +35,9 @@ import sys
 
 OUT = "docs/f0-paper-figures"
 FONT = "STIX Two Math"
+FS = 10          # label size in points, as printed (the body text is 10 pt)
+CIRC = 7         # the modality's circle, set smaller to sit at letter height
+MAXW = 455       # the text block: A4 less 2 x 24 mm is 459 pt
 SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
 GREY, BLUE, GREEN, BROWN = "#888888", "#3060a0", "#2a8a5a", "#a05a20"
 
@@ -101,7 +110,7 @@ def lab(text, colour=None, size=None):
     """A graphviz HTML-like label: the circle of the modality (U+25EF, a large
     circle in STIX) set smaller, so that it sits at letter height."""
     s = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    s = s.replace("◯", '<FONT POINT-SIZE="8">◯</FONT>')
+    s = s.replace("◯", f'<FONT POINT-SIZE="{CIRC}">◯</FONT>')
     if colour:
         s = f'<FONT COLOR="{colour}">{s}</FONT>'
     if size:
@@ -110,9 +119,9 @@ def lab(text, colour=None, size=None):
 
 
 def header(name, extra=""):
-    return (f'graph {name} {{\n  rankdir=BT; nodesep=0.35; ranksep=0.42; {extra}\n'
-            f'  node [shape=plaintext, fontname="{FONT}", fontsize=13];\n'
-            f'  edge [fontname="{FONT}", fontsize=11];\n')
+    return (f'graph {name} {{\n  rankdir=BT; nodesep=0.3; ranksep=0.32; margin=0; pad=0.06; {extra}\n'
+            f'  node [shape=plaintext, fontname="{FONT}", fontsize={FS}, margin="0.04,0.03", width=0.1, height=0.1];\n'
+            f'  edge [fontname="{FONT}", fontsize={FS}];\n')
 
 
 def bottom(d):
@@ -170,34 +179,41 @@ def ladder_layout(pairs, n):
     return pos
 
 
-def box(name, x0, y0, x1, y1, colour, text, text_colour=None, size=11):
+def text_width(text, size=FS):
+    """A label's width in points, estimated (STIX averages about 0.55 em)."""
+    return 0.55 * size * len(text)
+
+
+def box(name, x0, y0, x1, y1, colour, text, text_colour=None, size=FS):
     """A region: a rectangle node at fixed position, its name at the lower left."""
     w, h = (x1 - x0) / 72, (y1 - y0) / 72
     s = (f'  {name} [shape=box, label="", fixedsize=true, width={w:.3f}, height={h:.3f}, '
          f'color="{colour}", pos="{(x0 + x1) / 2:.1f},{(y0 + y1) / 2:.1f}!"];\n')
-    tw = 6.5 * len(text)
+    tw = text_width(text, size)
     s += (f'  {name}_l [label={lab(text, text_colour or colour, size)}, '
-          f'pos="{x0 + 6 + tw / 2:.1f},{y0 + 10:.1f}!"];\n')
+          f'pos="{x0 + 5 + tw / 2:.1f},{y0 + size:.1f}!"];\n')
     return s
 
 
 def selfsim(d):
     assert d["sigBotIsT3"] and d["sigT3IsC1OrG1"]
-    pairs = d["rungs8"]
-    pos = ladder_layout(pairs, 8)
+    # six rungs: t₀ … t₅ hold the two decided images, σ(t₀) and σ(t₃)
+    n = 6
+    pairs = d["rungs6"]
+    pos = ladder_layout(pairs, n)
     xs = [x for (x, _, _) in pos.values()]
     ys = [y for (_, y, _) in pos.values()]
     half = max(w for (_, _, w) in pos.values()) / 2
-    x0, x1 = min(xs) - half - 10, max(xs) + half + 10
-    y0, y1 = min(ys) - 34, max(ys) + 20
-    gap = 56
+    x0, x1 = min(xs) - half - 8, max(xs) + half + 8
+    y0, y1 = min(ys) - 2.6 * FS, max(ys) + 1.6 * FS
+    gap = 44
     dx = (x1 - x0) + gap
-    s = (f'graph selfsim {{\n  splines=line; outputorder=nodesfirst;\n'
-         f'  node [shape=plaintext, fontname="{FONT}", fontsize=13];\n'
-         f'  edge [fontname="{FONT}", fontsize=11];\n')
-    # panel 1: the first ladder in F0 and its image under sigma in [t3, top]
-    s += box("boxA", x0, y0, x1, y1, GREY, "F₀", size=13)
-    s += box("boxB", x0 + dx, y0, x1 + dx, y1, BLUE, "σ(F₀) ⊆ [t₃, ⊤]", size=13)
+    s = (f'graph selfsim {{\n  splines=line; outputorder=nodesfirst; margin=0; pad=0.06;\n'
+         f'  node [shape=plaintext, fontname="{FONT}", fontsize={FS}, margin="0.04,0.03", width=0.1, height=0.1];\n'
+         f'  edge [fontname="{FONT}", fontsize={FS}];\n')
+    # panel 1: the ladder in F0 and its image under sigma in [t3, top]
+    s += box("boxA", x0, y0, x1, y1, GREY, "F₀")
+    s += box("boxB", x0 + dx, y0, x1 + dx, y1, BLUE, "σ(F₀) ⊆ [t₃, ⊤]")
     for k, (x, y, _) in pos.items():
         s += f'  a{k} [label={lab(t(k))}, pos="{x:.1f},{y:.1f}!"];\n'
         s += f'  b{k} [label={lab(sigma_label(k), BLUE)}, pos="{x + dx:.1f},{y:.1f}!"];\n'
@@ -206,36 +222,43 @@ def selfsim(d):
         s += f'  b{i} -- b{j} [color="{BLUE}"];\n'
     # sigma, drawn once, as the map from the first ladder to the second
     ym = (y0 + y1) / 2
-    s += f'  p1 [shape=point, width=0.01, style=invis, pos="{x1 + 6:.1f},{ym:.1f}!"];\n'
-    s += f'  p2 [shape=point, width=0.01, style=invis, pos="{x0 + dx - 6:.1f},{ym:.1f}!"];\n'
-    s += (f'  p1 -- p2 [dir=forward, color="{BLUE}", penwidth=1.4, arrowsize=0.9];\n'
-          f'  sigl [label={lab("σ", BLUE, 18)}, pos="{(x1 + x0 + dx) / 2:.1f},{ym + 14:.1f}!"];\n')
-    # panel 2: the nested copies sigma^n(F0) and their bases
-    cx = x1 + dx + 130
-    step = 58
-    bases = ["⊥", "t₃ = σ(⊥)", "σ²(⊥) = σ(t₃)", "σ³(⊥)"]
-    regions = ["F₀", "σ(F₀)", "σ²(F₀)", "σ³(F₀)"]
-    colours = [GREY, BLUE, GREEN, BROWN]
-    by = [y0 + 30 + step * i for i in range(5)]
-    top = by[4] + 26
-    for i in range(4):
-        w = 200 - 24 * i
-        s += box(f"r{i}", cx - w / 2, by[i] - 22, cx + w / 2, top + 8 * (3 - i), colours[i], regions[i])
+    s += f'  p1 [shape=point, width=0.01, style=invis, pos="{x1 + 4:.1f},{ym:.1f}!"];\n'
+    s += f'  p2 [shape=point, width=0.01, style=invis, pos="{x0 + dx - 4:.1f},{ym:.1f}!"];\n'
+    s += (f'  p1 -- p2 [dir=forward, color="{BLUE}", penwidth=1.2, arrowsize=0.8];\n'
+          f'  sigl [label={lab("σ", BLUE, FS + 3)}, pos="{(x1 + x0 + dx) / 2:.1f},{ym + FS:.1f}!"];\n')
+    right1 = x1 + dx
+    # panel 2: the nested copies sigma^n(F0) and their bases; the theorems
+    # behind it are named in the caption
+    bases = ["⊥", "σ(⊥) = t₃", "σ²(⊥)"]
+    regions = ["F₀", "σ(F₀)", "σ²(F₀)"]
+    colours = [GREY, BLUE, GREEN]
+    inset, step = 16, 3.8 * FS
+    # the innermost box holds its name at the left and its base in the middle
+    w_in = 2 * (text_width(regions[-1]) + 8) + text_width(bases[1]) + 8
+    widths = [w_in + 2 * inset * (len(regions) - 1 - i) for i in range(len(regions))]
+    w2 = widths[0]
+    # beside the ladders when the whole fits the text block, else below them
+    side = (right1 - x0) + 30 + w2 <= MAXW
+    # local heights: the bases from 0 up, the tops of the boxes above the last
+    loc = [step * i for i in range(len(regions) + 1)]
+    loc_top = loc[-1] + 1.4 * FS + 6 * (len(regions) - 1)
+    loc_bot = -1.6 * FS
+    if side:
+        cx = right1 + 30 + w2 / 2
+        oy = (y0 + y1) / 2 - (loc_top + loc_bot) / 2
+    else:
+        cx = (x0 + right1) / 2
+        oy = y0 - 20 - loc_top
+    by = [oy + v for v in loc]
+    top = by[-1] + 1.4 * FS
+    for i in range(len(regions)):
+        w = widths[i]
+        s += box(f"r{i}", cx - w / 2, by[i] - 1.6 * FS, cx + w / 2, top + 6 * (len(regions) - 1 - i),
+                 colours[i], regions[i])
         s += f'  c{i} [label={lab(bases[i], colours[i])}, pos="{cx:.1f},{by[i]:.1f}!"];\n'
-    s += f'  c4 [label="⋮", pos="{cx:.1f},{by[4]:.1f}!"];\n'
-    for i in range(3):
+    s += f'  c{len(regions)} [label="⋮", pos="{cx:.1f},{by[-1]:.1f}!"];\n'
+    for i in range(len(regions)):
         s += f'  c{i} -- c{i + 1};\n'
-    # the theorems behind panel 2
-    rows = [("σⁿ(F₀) is a faithful copy of F₀", "sigN_faithful"),
-            ("σⁿ(F₀) ⊆ [σⁿ(⊥), ⊤]", "sigN_bot_le"),
-            ("σⁿ(⊥) < σⁿ⁺¹(⊥)", "sigN_bot_strict"),
-            ("σⁿ(⊥) ∉ σⁿ⁺¹(F₀)", "copies_strict")]
-    cells = "".join(
-        f'<TR><TD ALIGN="LEFT">{lab(a)[1:-1]}</TD><TD ALIGN="LEFT">'
-        f'<FONT FACE="Menlo" POINT-SIZE="9">{b}</FONT></TD></TR>'
-        for a, b in rows)
-    s += (f'  legend [label=<<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="2">{cells}</TABLE>>, '
-          f'fontsize=11, pos="{cx:.1f},{top + 70:.1f}!"];\n')
     s += "}\n"
     names = ["PLLND.F0.Sig.sig", "PLLND.F0.Sig.sigN", "PLLND.F0.Sig.sig_t3",
              "PLLND.F0.Sig.sigN_faithful", "PLLND.F0.Sig.sigN_bot_le",
@@ -259,6 +282,18 @@ def draw(name, src, engine):
     svg = os.path.join(OUT, name + ".svg")
     with open(svg) as f:
         s = f.read()
+    # the PDF is printed at its natural size: one wider than the text block is
+    # an error (graphviz's default PDF margin of 36 pt is set to 0 above)
+    p = subprocess.run(["pdfinfo", os.path.join(OUT, name + ".pdf")],
+                       capture_output=True, text=True, errors="replace")
+    m = re.search(r'Page size:\s*([0-9.]+) x ([0-9.]+) pts', p.stdout)
+    if not m:
+        sys.exit(f"f0-figures: pdfinfo gives no page size for {name}.pdf\n" + p.stdout + p.stderr)
+    w, h = float(m.group(1)), float(m.group(2))
+    if w > MAXW:
+        sys.exit(f"f0-figures: {name} is {w:.0f} pt wide, more than the text block "
+                 f"({MAXW} pt); reduce its content")
+    print(f"  f0-figures: {name}: {w:.0f} x {h:.0f} pt, labels at {FS} pt")
     s = re.sub(r'id="([^"]+)"', lambda m: f'id="{name}-{m.group(1)}"', s)
     s = re.sub(r'href="#([^"]+)"', lambda m: f'href="#{name}-{m.group(1)}"', s)
     s = re.sub(r'url\(#([^)]+)\)', lambda m: f'url(#{name}-{m.group(1)})', s)

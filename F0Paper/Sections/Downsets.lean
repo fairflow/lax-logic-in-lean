@@ -16,7 +16,7 @@ open PLLND.LaxInfinite (atomFree)
 The downsets of $`t_1, \ldots, t_5` are computed exactly, and seven covers read
 off them: $`F_0` is not dense.  The results are in `wip/f0Covers.lean`.
 
-:::f0Figure "bottom" (width := "0.42")
+:::f0Figure "bottom"
 The bottom of $`F_0`: the six elements of $`{\downarrow}t_5`, each labelled by its
 defining formula ($`t_4` is $`\lnot\lnot\bigcirc\bot` up to $`\dashv\vdash`), and
 the seven covers $`u \lessdot v`, each PROVED (`cover_0_1`, …, `cover_4_5`,

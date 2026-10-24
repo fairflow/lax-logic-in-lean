@@ -1,5 +1,5 @@
 /-
-The presentation blocks of the F0 paper (v0.3, 2026-10-23):
+The presentation blocks of the F0 paper (v0.3, 2026-10-23; v0.4, 2026-10-24):
 
 * `{leanStmt Name}`: the checked Lean statement of a declaration, beneath its
   displayed formula.  It is Lean's pretty-printing of the compiled declaration
@@ -7,16 +7,22 @@ The presentation blocks of the F0 paper (v0.3, 2026-10-23):
   PDF: one small line; HTML: a collapsed panel that opens on click.
 * `{lemmaTable n₁ n₂ …}`: the supporting declarations of a section, one row
   each: name, the formula on one line (`F0Paper.Math.stmtFlat`), source link.
+  A row whose formula prints as empty is an error (v0.4: thirty-six rows of
+  v0.3 printed nothing, among them every recursive definition).
 * `:::f0table (widths := "…")`: a table written as Verso's list of lists, set
   with paragraph columns of the given fractions of the line.
 * `{axiomsOf}`n₁ n₂``: the axioms the named declarations depend on, computed
   by `collectAxioms` when the document is built (the at-a-glance table).
 * `{listElems}`L`` and `{listSize}`L``: a list of formulas of the
   development as a set, and its length (the downset table).
-* `:::f0Figure "name" (width := "…")`: a generated figure with its caption.
-  The figure is `docs/f0-paper-figures/name.svg` (inlined in the HTML) and
-  `name.pdf` (included in the PDF), written by `scripts/f0-figures.py` from
-  data that Lean computed (`tools/F0/FigureData.lean`).
+* `:::f0Figure "name"`: a generated figure with its caption.  The figure is
+  `docs/f0-paper-figures/name.svg` (inlined in the HTML, enlarged by 8/5) and
+  `name.pdf` (included in the PDF at its natural size, so that its labels
+  print at the 10 pt they are set in; v0.4), written by
+  `scripts/f0-figures.py` from data that Lean computed
+  (`tools/F0/FigureData.lean`).
+* The Lean statement line is `\footnotesize` in the PDF and 90% in the HTML
+  (v0.4; v0.3 had `\scriptsize` and 80%).
 -/
 import Lean
 import Lean.DocString.Syntax
@@ -86,7 +92,7 @@ block_extension Block.f0Lean where
     | .error e => do reportError s!"leanStmt: bad data: {e}"; pure .empty
     | .ok (flat, _, label, path, line) =>
       let url ← (srcUrl path line : IO String)
-      pure <| .raw ("\\par\\nopagebreak\\vspace{-2pt}{\\scriptsize\\raggedright\\noindent" ++
+      pure <| .raw ("\\par\\nopagebreak\\vspace{-2pt}{\\footnotesize\\raggedright\\noindent" ++
         "\\texttt{" ++ texEsc flat ++ "}\\hfill\\mbox{\\oldhref{" ++ texUrl url ++ "}{\\texttt{" ++
         texEsc label ++ "}}}\\par}\\medskip ")
   toHtml := some <| fun _ _ _ data _ => do
@@ -96,7 +102,7 @@ block_extension Block.f0Lean where
       let url ← (srcUrl path line : IO String)
       pure {{ <details class="f0-lean"><summary>"Lean statement · "<a href={{url}}><code>{{label}}</code></a></summary><pre>{{wide}}</pre></details> }}
   extraCss := [r#"
-.f0-lean { margin: -0.4em 0 1em 0; font-size: 80%; color: #555; }
+.f0-lean { margin: -0.4em 0 1em 0; font-size: 90%; color: #555; }
 .f0-lean summary { cursor: pointer; }
 .f0-lean summary a { text-decoration: none; }
 .f0-lean pre { font-size: 95%; margin: 0.3em 0 0.3em 1em; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -127,8 +133,10 @@ def leanStmt : BlockCommandOf NameConfig
 
 /-! ## The table of supporting declarations -/
 
-/-- (name, one-line formula or "", label, path, line) per row -/
-abbrev LemmaRow := String × String × String × String × Nat
+/-- (name, the formula as items set one after another, label, path, line)
+per row: a definition by cases has an item per case, a line break allowed
+between items (`F0Paper.Math.stmtFlat`). -/
+abbrev LemmaRow := String × List String × String × String × Nat
 
 block_extension Block.f0Lemmas where
   traverse _ _ _ := pure none
@@ -140,7 +148,8 @@ block_extension Block.f0Lemmas where
       for (nm, f, label, path, line) in rows do
         let url ← (srcUrl path line : IO String)
         body := body ++ "\\texttt{" ++ texName nm ++ "} & " ++
-          (if f.isEmpty then "" else "$" ++ f ++ "$") ++
+          -- items apart by a stretchable space, where a line may break
+          "\\hskip 0.7em plus 0.4em\\relax ".intercalate (f.map fun s => "$" ++ s ++ "$") ++
           " & \\oldhref{" ++ texUrl url ++ "}{\\texttt{" ++ texName label ++ "}}\\\\\n"
       pure <| .raw ("\\par\\begingroup\\footnotesize\\setlength{\\LTpre}{4pt}\\setlength{\\LTpost}{4pt}" ++
         "\\def\\arraystretch{1.2}" ++
@@ -154,7 +163,11 @@ block_extension Block.f0Lemmas where
       let mut trs : Array Html := #[]
       for (nm, f, label, path, line) in rows do
         let url ← (srcUrl path line : IO String)
-        trs := trs.push {{ <tr><td><code>{{nm}}</code></td><td><code class="math inline">{{f}}</code></td><td><a href={{url}}><code>{{label}}</code></a></td></tr> }}
+        let mut cells : Array Html := #[]
+        for s in f do
+          cells := cells.push {{ <code class="math inline">{{s}}</code> }}
+          cells := cells.push (Html.text true " ")
+        trs := trs.push {{ <tr><td><code>{{nm}}</code></td><td>{{cells}}</td><td><a href={{url}}><code>{{label}}</code></a></td></tr> }}
       pure {{ <table class="f0-lemmas"><tbody>{{trs}}</tbody></table> }}
   extraCss := [r#"
 table.f0-lemmas { border-collapse: collapse; font-size: 85%; margin: 0.6em 0 1.2em 0; width: 100%; }
@@ -162,6 +175,7 @@ table.f0-lemmas td { border-top: 1px solid #ddd; padding: 0.2em 0.5em; vertical-
 table.f0-lemmas td:first-child { white-space: nowrap; }
 table.f0-lemmas td:last-child { text-align: right; white-space: nowrap; }
 table.f0-lemmas a { text-decoration: none; }
+table.f0-lemmas td code.math { margin-right: 0.6em; }
 "#]
 
 structure NamesConfig where
@@ -176,9 +190,11 @@ def lemmaTable : BlockCommandOf NamesConfig
   | ⟨names⟩ => do
     let mut rows : Array LemmaRow := #[]
     for (_, n) in names do
-      let f ← (F0Paper.Math.stmtFlat n : MetaM (Option String))
+      let f ← (F0Paper.Math.stmtFlat n : MetaM (List String))
+      if f.isEmpty || f.any (·.trimAscii.isEmpty) then
+        throwError "lemmaTable: {n} prints as empty"
       let (path, line, label) ← srcInfo n
-      rows := rows.push (← shortName n, f.getD "", label, path, line)
+      rows := rows.push (← shortName n, f, label, path, line)
     let js := (ToJson.toJson rows).compress
     `(Verso.Doc.Block.other {Block.f0Lemmas with data := (Json.parse $(quote js)).toOption.getD Json.null} #[])
 
@@ -315,29 +331,49 @@ def listSize : RoleExpanderOf RoleCfg
 /-- Where `scripts/f0-figures.py` writes the figures (gitignored). -/
 def figDir : String := "docs/f0-paper-figures"
 
-block_extension Block.f0Figure (name : String) (width : String) where
-  data := ToJson.toJson (name, width)
+/-- Scale the integer `width="…"` and `height="…"` of the opening `<svg …>`
+tag (the first occurrence of each) by `num/den`; its `viewBox` keeps the
+drawing.  The figures are drawn with labels at the PDF's text size, 10 pt,
+smaller than a browser's body text, so the HTML enlarges them by 8/5. -/
+def scaleSvg (svg : String) (num den : Nat) : String := Id.run do
+  let mut s := svg
+  for attr in ["width", "height"] do
+    let key := " " ++ attr ++ "=\""
+    match s.splitOn key with
+    | pre :: post :: more =>
+      let digits := String.ofList (post.toList.takeWhile Char.isDigit)
+      let after := String.ofList (post.toList.drop digits.length)
+      if let some v := digits.toNat? then
+        s := pre ++ key ++ toString (v * num / den) ++ key.intercalate (after :: more)
+    | _ => pure ()
+  return s
+
+block_extension Block.f0Figure (name : String) where
+  data := ToJson.toJson name
   traverse _ _ _ := pure none
   toTeX := some <| fun _ goB _ data blocks => do
-    match FromJson.fromJson? (α := String × String) data with
+    match FromJson.fromJson? (α := String) data with
     | .error e => do reportError s!"f0Figure: bad data: {e}"; pure .empty
-    | .ok (name, width) =>
+    | .ok name =>
       let cwd ← (IO.currentDir : IO System.FilePath)
       let dir := (cwd / figDir).toString
       let caption ← blocks.mapM goB
+      -- at its natural size, so that the labels print at the size they are set
+      -- in (`scripts/f0-figures.py` keeps every figure within the text block)
       pure <| .seq (#[.raw ("\\par\\begin{center}{\\graphicspath{{" ++ dir ++ "/}}" ++
-          "\\includegraphics[width=" ++ width ++ "\\linewidth]{" ++ name ++ ".pdf}}\\end{center}" ++
+          "\\includegraphics{" ++ name ++ ".pdf}}\\end{center}" ++
           "\\vspace{-6pt}{\\small ")] ++ caption ++ #[.raw "\\par}\\medskip "])
   toHtml := some <| fun _ goB _ data blocks => do
-    match FromJson.fromJson? (α := String × String) data with
+    match FromJson.fromJson? (α := String) data with
     | .error e => do reportError s!"f0Figure: bad data: {e}"; pure .empty
-    | .ok (name, _) =>
+    | .ok name =>
       let path : System.FilePath := figDir / (name ++ ".svg")
       let svg ← (IO.FS.readFile path : IO String)
       -- the SVG element only (graphviz writes an XML prologue and a doctype first)
       let svg := match svg.splitOn "<svg" with
         | _ :: rest => "<svg" ++ "<svg".intercalate rest
         | [] => svg
+      let svg := scaleSvg svg 8 5
       let caption ← blocks.mapM goB
       pure {{ <figure class="f0-fig">{{Html.text false svg}}<figcaption>{{caption}}</figcaption></figure> }}
   extraCss := [r#"
@@ -348,16 +384,15 @@ figure.f0-fig figcaption { text-align: left; font-size: 90%; }
 
 structure FigCfg where
   name : String
-  width : String
 
 instance : FromArgs FigCfg DocElabM :=
-  ⟨FigCfg.mk <$> .positional `name .string <*> .namedD `width .string "0.8"⟩
+  ⟨FigCfg.mk <$> .positional `name .string⟩
 
 /-- A generated figure, with its caption as the directive's contents. -/
 @[directive]
 def f0Figure : DirectiveExpanderOf FigCfg
   | cfg, contents => do
     let blocks ← contents.mapM Verso.Doc.Elab.elabBlock
-    ``(Verso.Doc.Block.other (Block.f0Figure $(quote cfg.name) $(quote cfg.width)) #[$blocks,*])
+    ``(Verso.Doc.Block.other (Block.f0Figure $(quote cfg.name)) #[$blocks,*])
 
 end F0Paper.Blocks
