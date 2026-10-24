@@ -117,3 +117,45 @@ Mathlib (pinned version in this worktree's `.lake/packages/mathlib`):
   lattice or Heyting algebra as a Priestley space; Priestley duality and
   Esakia duality (objects and morphisms); nuclear subsets; anything on
   duals of nuclei.
+
+## 2026-10-24 20:48 BST: finite statements and cells built
+
+`wip/esakiaNuclearFin.lean` (statements F1–F10, F10a, NaiveHom; no Mathlib,
+no `Fin`, no `Finset`) and `wip/esakiaNuclearCells.lean` (cells), both in the
+`wipshared` globs. `lake build wip.esakiaNuclearCells`: green, 9.6 s.
+
+Every cell is a closed instance decided by `decide +kernel`; every pin is
+`#axioms_within … [propext]` (measured: `[propext]` or `[]`); the pin gate
+(`c3_F6` at `[]`) watched failing with the expected message.
+
+Cells (all PASS):
+- C0 boundary: 1-element algebra, empty poset (F1, F2, F3, F4, F5, F6).
+- C1 3-chain / 2-chain: exactly 4 of 27 self-maps are nuclei; F1–F9 for
+  every nucleus, pair of nuclei, subset and element.
+- C2 2² / 2-antichain: exactly 4 of 256 self-maps are nuclei, all closed
+  (`j x = j ⊥ ∨ x`, control); F1–F9 likewise.
+- C3 RN₈ / 4-point ladder: computed dual of RN₈ = the ladder
+  (`rn8.mprimes = [2,4,5,6]` = ¬p, ¬¬p, ¬¬p ∨ ¬p, ¬¬p → p); designed nuclei
+  u_p, v_p, w_p, w_⊥ = ¬¬, u_p ∧ ¬¬ (F4); F9 at all 8 elements; F6 at all 16
+  subsets (so all 16 nuclei of RN₈); F7 and F8 at all 256 pairs; F3, F5 at
+  all 16 subsets of the ladder.
+- M morphisms 2 ↪ C₃ and C₃ ↠ 2: F10a (◯-free) at both; F10 at all 8 nucleus
+  pairs of each (3 resp. 4 pairs nuclear; (∗) agrees in all 16).
+
+REFUTED (kernel-checked, `m_naive_refuted`): the naive transfer of
+[BBCGGJ] Remark 4.6 to Heyting homomorphisms ("h nuclear iff
+h_*⁻¹(S_j) = S_k"). Witness: 2 ↪ C₃ with id on 2 and ¬¬ on C₃ is nuclear,
+but h_*⁻¹(S_id) = X_{C₃} ≠ S_{¬¬} = {top point}. The Köhler simplification
+uses strict order preservation, which p-morphisms lack.
+
+Negative gates (watched failing): G1 `j_S` with ↑ for ↓ breaks F4 at C₃;
+G2 [BG] Thm 34(3) without `max` breaks at RN₈; G3 a non-idempotent map is
+rejected; G4 a corrupted presentation of 2² is rejected by `isHA`.
+
+Non-vacuity inspected (`_out/esakiaInspect.lean`, untracked): duals
+nonempty, the S_j of the 4 + 4 + 16 nuclei pairwise distinct, both nuclear
+and non-nuclear morphism pairs present.
+
+Scope note on "exhaustive": the C1/C2 cells range over nuclei given as
+tables of length n; reading them as "every j : Nat → Nat" uses only that the
+predicates read j on the carrier (not yet written as a lemma).
