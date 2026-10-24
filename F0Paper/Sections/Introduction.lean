@@ -93,9 +93,9 @@ interval of itself, and much of its order is now known.
   * {axiomsOf}`SigOnto.sig_not_onto`
   * 10
 * * $`[t_3, \top]` is order-isomorphic to $`F_0`
-  * OPEN
-  * –
-  * 11
+  * REFUTED
+  * {axiomsOf}`NotIso.t3_filter_not_iso`
+  * 10
 :::
 
 The axioms are computed by `collectAxioms` when the document is built.

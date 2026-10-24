@@ -117,14 +117,28 @@ $`\bot \lessdot t_2`.  PROVED.
 Pen remark, not mechanised: $`F_0` is initial among Heyting algebras with a
 nucleus, so $`\sigma` is the only homomorphism of Heyting algebras with a nucleus
 from $`F_0` to $`[t_3, \top]` (with bottom $`t_3`); since $`\sigma` is not onto,
-$`[t_3, \top]` is not isomorphic to $`F_0` in that structure.  Whether
-$`[t_3, \top]` is order-isomorphic to $`F_0` is OPEN.
+$`[t_3, \top]` is not isomorphic to $`F_0` in that structure.
+
+Nor is $`[t_3, \top]` even order-isomorphic to $`F_0`.  Call two elements above
+the bottom a _disjoint pair_ when their only common lower bound is the bottom.
+In $`F_0` every disjoint pair contains $`\lnot\bigcirc\bot`
+(`disjoint_pair_has_negOBot`, from `low_trichotomy`), while in $`[t_3, \top]`
+the pairs $`(c_1, g_1)`, where $`c_1 = \bigcirc t_3`, and $`(t_5, t_6)` are
+disjoint and share no member (`two_disjoint_pairs_above_t3`).  A member lying
+in every disjoint pair (`HasCore`) is carried across an order isomorphism
+(`hasCore_of_iso`); $`F_0` has one (`rnclass_core`), $`[t_3, \top]` has none
+(`ici_no_core`).  PROVED, so the order isomorphism is REFUTED.
+
+{stmt}`NotIso.t3_filter_not_iso`
+
+{leanStmt NotIso.t3_filter_not_iso}
 
 # Supporting declarations
 
-{lemmaTable Sig.aTr Sig.subBot Sig.sig Sig.sigN Sig.aTr_top Sig.subBot_deriv Sig.subBot_top Sig.cell_corr Sig.sig_reflects Sig.sig_reflects_ctx Sig.sigN_reflects Sig.sigN_bot_le Sig.sigN_bot_strict Sig.sig_t3 Sig.box_fixed_not_injective SubTab.complete Sig.top_sig Sig.orig_sig SigOnto.sig_t2 SigOnto.t3_lt_t5_lt_g1}
+{lemmaTable Sig.aTr Sig.subBot Sig.sig Sig.sigN Sig.aTr_top Sig.subBot_deriv Sig.subBot_top Sig.cell_corr Sig.sig_reflects Sig.sig_reflects_ctx Sig.sigN_reflects Sig.sigN_bot_le Sig.sigN_bot_strict Sig.sig_t3 Sig.box_fixed_not_injective SubTab.complete Sig.top_sig Sig.orig_sig SigOnto.sig_t2 SigOnto.t3_lt_t5_lt_g1 NotIso.disjoint_pair_has_negOBot NotIso.two_disjoint_pairs_above_t3 NotIso.Disj NotIso.Core NotIso.HasCore NotIso.hasCore_of_iso NotIso.rnclass_core NotIso.ici_no_core}
 
-Pins: every declaration of `wip/f0SelfSim.lean` and `wip/f0SigOnto.lean` here
-within `propext`, `Quot.sound` (`#axioms_within`, confirmed by `#print axioms`);
+Pins: every declaration of `wip/f0SelfSim.lean`, `wip/f0SigOnto.lean` and
+`wip/f0NotIso.lean` here within `propext`, `Quot.sound` (`#axioms_within`,
+confirmed by `#print axioms`; `t3_filter_not_iso` included);
 `sig_t3` holds by `rfl` and uses no axioms (no pin recorded); `SubTab.complete`
 and subframe soundness are pinned to `propext`, `Quot.sound` in the library.
