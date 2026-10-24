@@ -73,7 +73,7 @@ The J-sort of a variable lives in the JUDGEMENT, not in the variable:
 Rules: the IPC rules of `PLLND.LaxND` (membership `iden`, no structural rules),
 and
 
-    allIntro  (L : Finset String) (∀ s, s ∉ L → JND J Θ Γ (ψ.opn (fvar s))) : JND J Θ Γ (all ψ)
+    allIntro  (L : List String) (∀ s, s ∉ L → JND J Θ Γ (ψ.opn (fvar s))) : JND J Θ Γ (all ψ)
     allElim   (LC χ) (JND J Θ Γ (all ψ)) (θ = ψ.opn χ) : JND J Θ Γ θ
     allJIntro (L) (∀ s, s ∉ L → JND J (s :: Θ) Γ (ψ.opn (fvar s))) : JND J Θ Γ (allJ ψ)
     allJElim  (LC χ) (J Θ χ) (JND J Θ Γ (allJ ψ)) (θ = ψ.opn χ) : JND J Θ Γ θ
@@ -146,3 +146,25 @@ Not attempted: cut elimination, Girard candidates (plan §4, §6.5).
 
 * 2026-10-24: design fixed; first worktree lost at a restart; this note
   recreated and committed before any Lean file.
+* 2026-10-24 (later): all five modules build by name (`lake build
+  wip.p2llStatements` covers Syntax, ND, JND, Statements; `wip.p2llOrCell`
+  separately).  Every pin was first run at `[]` and watched failing, then bounded.
+  PROVED (kernel-checked): F1 `IPC2ND.rp_intro`, `IPC2ND.rp_elim`;
+  F2 `JND.circJ_collapse_unguarded`; C1 `JND.circJ_intro`; C2 `JND.circJ_bind`;
+  C3 `JND.circJ_collapse`, `JND.circJ_bot_collapse`, `IsJ.not_bot`, `IsJ.not_or`;
+  C5 `IPC2NoLC.inconsistent`; C6 `or_not_fixed` (PLL level); C7
+  `LaxND2.circ_to_circNuc`, `LaxND2.circNuc_to_circ`; the derived laws
+  `JND.OI`, `JND.OM`, `JND.OS`, `JND.Obind`.
+  Pins: `[propext]` wherever `simp`, `rw` or `rcases` is used; `[]` for
+  `circFree_toJ`, `allJFree_rel`, `IsJ.not_bot`, `IsJ.not_or` and the seven OPEN
+  statements of §4; `[propext, Classical.choice, Quot.sound]` for `or_not_fixed`,
+  the ledger's profile of its sibling `PLLND.not_provable_somehow_or_dist`.
+  Finding: with `Finset String` for the excluded names of the cofinite rules,
+  EVERY declaration mentioning a calculus carried `propext, Quot.sound` (Finset
+  membership is a quotient), the Prop-valued statements included; `List String`
+  (as QLL's `Prv.allI`) removes both axioms and the Mathlib import.  Switched.
+  Two defects caught by the build, both mine, neither in a statement: an
+  underdetermined antecedent in C7's `.iden (by simp)`, and a circular
+  instantiation `q := s` in C5's derivation of A (now `q := ⊤`).
+  §4 unchanged: OPEN.  Design points for Matthew: one formula type with inert
+  constructors (vs two types); Aczel's J is the identity in IPC2 (F1).
