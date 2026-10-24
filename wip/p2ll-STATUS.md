@@ -227,3 +227,57 @@ Lean name `rp` stays; J is the class of J-formulas and the guarded calculus.
 * 2026-10-24 (GO received): rules revised as in §6 before any theorem was
   built; everything rebuilt and re-pinned (`LaxND2.lc`, `JND.lc` new); report
   to the manager, then wait, per rule 7.
+
+## 7. Phase 2, step 1 (2026-10-24): I₁, Fix, I₂ PROVED (`wip/p2llInterp.lean`)
+
+Theorems (each a `theorem x : X` for the unchanged `def X : Prop` of §4; the
+proof is a function on derivations, then packaged as the proposition):
+
+    interpToJ    : InterpToJ      by toJD   (recursion on LaxND2)         [propext]
+    fixOfIsJ     : FixOfIsJ       by fixD   (recursion on IsJ)            [propext]
+    interpToP2LL : InterpToP2LL   by relD   (recursion on JND IsJ)        [propext]
+
+Each pin was first run at `[]` and failed with `propext, Quot.sound`.
+`Quot.sound` came from core's `List.mem_map` (`#print axioms`:
+`[propext, Quot.sound]`, as `List.mem_map_of_mem`; `List.mem_append_left`,
+`List.mem_append_right`, `List.mem_cons_self`, `List.mem_cons_of_mem` are
+axiom-free): replaced by `mem_map_of_mem`, induction on `List.Mem`, `[]`
+(`mem_append_cons`, the context step of `∀°I`/`→I` in I₂, likewise `[]`).
+`propext` is `Fm.lc_opn`'s, through `LaxND2.lc`/`JND.lc` (the `LC` proofs at
+the `◯` nodes of I₁) and the binder cases.
+
+**Representation change, not a statement change.**  `IsJ` and `IPC2ND` are
+now `Type`-valued (data), `JND`'s parameter is `J : List String → Fm → Type`,
+`JMono`/`JVars` likewise; §2.2–2.4 record the earlier `Prop` wording.  Reason:
+Fix is proved by recursion on the J-derivation producing a `LaxND2`
+derivation; the cofinite clauses `all`/`allJ` supply one J-derivation per fresh
+name and `LaxND2.allIntro` needs one derivation per name, which `Nonempty`
+hypotheses give only through choice.  The text of the seven statements is
+unchanged: `IsJ Θ χ → …` and `JND IsJ Θ Γ φ → …` are propositions as before.
+The ◯-free instance of I₁ (rule 8), IPC2 ⊆ the guarded calculus for every `J`
+(`JND.ofIPC2`, `[]`, with `toJ` the identity on ◯-free formulas,
+`toJ_eq_self_of_circFree`), needed `IPC2ND` as data for the same reason.
+
+Proof shapes.  I₁: `laxIntro`/`laxElim` are C1/C2 with the `LC` hypotheses
+from `LaxND2.lc`; `∀I` rewrites by `toJ_opn_fvar`, `∀E` by `toJ_opn` (`LC χ`
+from the rule).  Fix: `var` is the guard `◯s → s ∈ guards Θ`; `top` is
+`◯⊤ → ⊤`; `imp` is `◯(φ* → ψ*) → φ* → ψ*` by bind and the IH; `and` by two
+binds and both IHs; `all` is `◯∀ψ* → ∀ψ*` by cofinite `∀I` at `s`, `∀E` at `s`
+inside a bind, and the IH at `ψ^s` via `rel_opn_fvar`; `allJ` the same with
+`→I` on the new guard `◯s → s`, the IH living under `guards (s :: Θ)`, which is
+`(◯s → s) :: guards Θ` definitionally.  I₂: `∀°I` is `∀I` plus `→I` on the new
+guard; `∀°E` is `∀E` at `χ*` (`rel_opn`), its guard premise discharged by
+`fixD` weakened into the context.  Two syntax corollaries added:
+`rel_opn_fvar`, `toJ_opn_fvar`.
+
+Files: `wip/p2llInterp.lean` new (in the `wipshared` globs); docstrings of I₁,
+Fix, I₂ in `wip/p2llStatements.lean` now say PROVED with the theorem names,
+the other four OPEN, statement text byte-identical.  Builds: `lake build
+wip.p2llInterp` (covers the chain), 1–2 s per module.  df: 138218 MB free
+before, 138205 after.
+
+## 5. Log (continued)
+
+* 2026-10-24 (phase 2, step 1): I₁, Fix, I₂ PROVED, `[propext]`; `IsJ`,
+  `IPC2ND` moved to `Type` (§7); checkpoint report to the manager, then RTP,
+  substitution of equivalents, RTJ, MP, MJ.

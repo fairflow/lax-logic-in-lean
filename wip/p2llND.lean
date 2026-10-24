@@ -9,7 +9,7 @@ File 2 of the P2LL definability campaign (`wip/p2ll-STATUS.md`).
   `iden`, no structural rules, `orElim` with its major premise) plus the
   cofinite `∀I` and the `∀E` with an `LC` side condition, in the slime-free
   equation form of `LaxLogic/QLL`'s `Prv.allE`.
-* `IPC2ND`: the same without the lax rules, as a `Prop`: the ◯-free fragment,
+* `IPC2ND`: the same without the lax rules (data, as `LaxND2`): the ◯-free fragment,
   IPC2 (CLAUDE.md rule 8: the ◯-free instance first).
 * `IPC2NoLC`: the `∀`-fragment WITHOUT the `LC` side condition on `∀E`, a design
   variant: it is inconsistent (cell C5).
@@ -122,9 +122,9 @@ theorem LaxND2.lc {Γ : List Fm} {φ : Fm} : LaxND2 Γ φ → LC φ
 
 /-! ## The ◯-free fragment: IPC2 -/
 
-/-- Natural deduction for IPC2 (no lax rules), as a `Prop`-valued judgment:
+/-- Natural deduction for IPC2 (no lax rules), as data like `LaxND2`:
 the ◯-free fragment of `LaxND2`, and the target of the plan's erasure (M3). -/
-inductive IPC2ND : List Fm → Fm → Prop
+inductive IPC2ND : List Fm → Fm → Type
   | iden {Γ : List Fm} {φ : Fm} (hφ : LC φ) (h : φ ∈ Γ) : IPC2ND Γ φ
   | falsoElim {Γ : List Fm} (φ : Fm) (hφ : LC φ) (p : IPC2ND Γ .bot) : IPC2ND Γ φ
   | impIntro {Γ : List Fm} {φ ψ : Fm} (hφ : LC φ) (p : IPC2ND (φ :: Γ) ψ) : IPC2ND Γ (.imp φ ψ)
@@ -149,14 +149,14 @@ The second derivation instantiates `q := φ` (full comprehension), which is what
 the restriction to J-formulas forbids in the guarded calculus. -/
 
 /-- F1, `φ ⊢ RP(φ)`. -/
-theorem IPC2ND.rp_intro {Γ : List Fm} {φ : Fm} (hφ : LC φ) : IPC2ND (φ :: Γ) (rp φ) := by
+def IPC2ND.rp_intro {Γ : List Fm} {φ : Fm} (hφ : LC φ) : IPC2ND (φ :: Γ) (rp φ) := by
   refine .allIntro [] (lc_rpBody hφ) fun s _ => ?_
   rw [rpBody_opn hφ]
   exact .impIntro ⟨hφ, trivial⟩ (.impElim (.iden ⟨hφ, trivial⟩ (List.mem_cons_self ..))
     (.iden hφ (List.mem_cons_of_mem _ (List.mem_cons_self ..))))
 
 /-- F1, `RP(φ) ⊢ φ`, by instantiating at `φ` itself. -/
-theorem IPC2ND.rp_elim {Γ : List Fm} {φ : Fm} (hφ : LC φ) : IPC2ND (rp φ :: Γ) φ :=
+def IPC2ND.rp_elim {Γ : List Fm} {φ : Fm} (hφ : LC φ) : IPC2ND (rp φ :: Γ) φ :=
   .impElim
     (.allElim (χ := φ) (θ := .imp (.imp φ φ) φ) hφ (.iden (lc_rp hφ) (List.mem_cons_self ..))
       (rpBody_opn hφ φ).symm)

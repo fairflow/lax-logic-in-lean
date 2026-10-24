@@ -14,14 +14,19 @@ J-formula.  The judgement
 
 carries the declarations `Θ : List String`; the parameter `J` is the class of
 admissible instances, and the calculus proper is `JND IsJ`.  The relativisation
-into P2LL (`wip/p2llStatements.lean`) sends `Θ` to the guards `◯s → s`.  The
-well-formedness side conditions are those of `LaxND2` (`wip/p2llND.lean`), so
-every derivable formula is locally closed (`JND.lc`).
+into P2LL (`wip/p2llStatements.lean`, proofs in `wip/p2llInterp.lean`) sends
+`Θ` to the guards `◯s → s`.  The well-formedness side conditions are those of
+`LaxND2` (`wip/p2llND.lean`), so every derivable formula is locally closed
+(`JND.lc`).
 
 `IsJ Θ` is the syntactic J-grammar: J-variables, `⊤`, `φ → J`, `J ∧ J`, `∀.J`,
 `∀°.J`.  Each clause is a closure property of the fixed-point set of a nucleus
 (`wip/f0MacNeille.lean`: closed under arbitrary meets and `x ↠ (−)`); `⊥` and
-`∨` are excluded, see C3 and C6.
+`∨` are excluded, see C3 and C6.  `IsJ` is `Type`-valued (a J-derivation is
+data), as the calculi are: the interpretation into P2LL turns a J-derivation
+into a derivation of the fixpoint law `◯χ* → χ*` by recursion, and a derivation
+with cofinite premises cannot be built from `Nonempty` hypotheses without
+choice.
 
 The defined modality is `◯°φ := ∀°q.((φ → q) → q)` (`Fm.circJ`).  Cells:
 
@@ -32,8 +37,11 @@ The defined modality is `◯°φ := ∀°q.((φ → q) → q)` (`Fm.circJ`).  Ce
 * C3 guard drop:  `J Θ χ  ⟹  ◯°χ ⊢ χ`               (`JND.circJ_collapse`)
   Admitting `χ` to the instances makes `χ` a fixpoint of `◯°`.  At `χ := ⊥`
   this is `◯°⊥ ⊢ ⊥`, which PLL refutes (`PLLND.not_provable_not_somehow_false`);
-  with every formula admitted (`J := fun _ _ => True`, the ◯-free instance) `◯°`
+  with every formula admitted (`J := fun _ _ => Unit`, the ◯-free instance) `◯°`
   is the identity, as `rp` is in IPC2 (`wip/p2llND.lean`, F1).
+* The ◯-free instance of I₁ (rule 8): IPC2 is included in the guarded calculus
+  for every `J` (`JND.ofIPC2`); on ◯-free formulas `(−)°` is the identity
+  (`Fm.toJ_eq_self_of_circFree`).
 -/
 
 namespace P2LL
@@ -41,8 +49,9 @@ namespace P2LL
 open Fm
 
 /-- The J-formulas under the declarations `Θ`: the syntactic grammar of the
-fixed points.  `⊤ := ⊥ → ⊥` has its own clause because `⊥` is not a J-formula. -/
-inductive IsJ : List String → Fm → Prop
+fixed points, as data.  `⊤ := ⊥ → ⊥` has its own clause because `⊥` is not a
+J-formula. -/
+inductive IsJ : List String → Fm → Type
   | var {Θ : List String} {s : String} (h : s ∈ Θ) : IsJ Θ (.fvar s)
   | top {Θ : List String} : IsJ Θ Fm.top
   | imp {Θ : List String} {φ ψ : Fm} (h : IsJ Θ ψ) : IsJ Θ (.imp φ ψ)
@@ -53,37 +62,35 @@ inductive IsJ : List String → Fm → Prop
       (h : ∀ s, s ∉ L → IsJ (s :: Θ) (ψ.opn (.fvar s))) : IsJ Θ (.allJ ψ)
 
 /-- J-ness is monotone in the declarations. -/
-theorem IsJ.mono {Θ Θ' : List String} {χ : Fm} (h : IsJ Θ χ) (H : ∀ t, t ∈ Θ → t ∈ Θ') :
-    IsJ Θ' χ := by
-  induction h generalizing Θ' with
-  | var hs => exact .var (H _ hs)
-  | top => exact .top
-  | imp _ ih => exact .imp (ih H)
-  | and _ _ ih₁ ih₂ => exact .and (ih₁ H) (ih₂ H)
-  | all L _ ih => exact .all L fun s hs => ih s hs H
-  | allJ L _ ih => exact .allJ L fun s hs => ih s hs (consMono H)
+def IsJ.mono {Θ Θ' : List String} {χ : Fm} (H : ∀ t, t ∈ Θ → t ∈ Θ') : IsJ Θ χ → IsJ Θ' χ
+  | .var hs => .var (H _ hs)
+  | .top => .top
+  | .imp h => .imp (h.mono H)
+  | .and h₁ h₂ => .and (h₁.mono H) (h₂.mono H)
+  | .all L h => .all L fun s hs => (h s hs).mono H
+  | .allJ L h => .allJ L fun s hs => (h s hs).mono (consMono H)
 
 /-- `⊥` is not a J-formula (it is not a fixpoint: `◯⊥ → ⊥` fails in PLL). -/
-theorem IsJ.not_bot (Θ : List String) : ¬ IsJ Θ .bot := fun h => nomatch h
+theorem IsJ.not_bot (Θ : List String) : IsJ Θ .bot → False := fun h => nomatch h
 
 /-- No disjunction is a J-formula (fixpoints are not closed under joins: C6). -/
-theorem IsJ.not_or (Θ : List String) (φ ψ : Fm) : ¬ IsJ Θ (.or φ ψ) := fun h => nomatch h
+theorem IsJ.not_or (Θ : List String) (φ ψ : Fm) : IsJ Θ (.or φ ψ) → False := fun h => nomatch h
 
 /-- An undeclared variable is not a J-formula. -/
-theorem IsJ.not_fvar {Θ : List String} {s : String} (hs : s ∉ Θ) : ¬ IsJ Θ (.fvar s) := by
+theorem IsJ.not_fvar {Θ : List String} {s : String} (hs : s ∉ Θ) : IsJ Θ (.fvar s) → False := by
   intro h
   cases h with
   | var h' => exact hs h'
 
 /-- The class of admissible instances is monotone in the declarations. -/
-def JMono (J : List String → Fm → Prop) : Prop :=
+def JMono (J : List String → Fm → Type) : Type :=
   ∀ Θ Θ' χ, J Θ χ → (∀ t, t ∈ Θ → t ∈ Θ') → J Θ' χ
 
 /-- The class of admissible instances contains the declared variables. -/
-def JVars (J : List String → Fm → Prop) : Prop := ∀ Θ s, s ∈ Θ → J Θ (.fvar s)
+def JVars (J : List String → Fm → Type) : Type := ∀ Θ s, s ∈ Θ → J Θ (.fvar s)
 
-theorem IsJ.jmono : JMono IsJ := fun _ _ _ h H => h.mono H
-theorem IsJ.jvars : JVars IsJ := fun _ _ h => .var h
+def IsJ.jmono : JMono IsJ := fun _ _ _ h H => h.mono H
+def IsJ.jvars : JVars IsJ := fun _ _ h => .var h
 
 /-- The guarded calculus: IPC2 with a second binder `∀°` whose instances are
 restricted to `J Θ`.  `∀°I` declares its eigenvariable (`s :: Θ`); the
@@ -91,7 +98,7 @@ elimination rules are in the slime-free equation form with an `LC` side
 condition; `iden`, `falsoElim`, `impIntro`, `orIntro1`, `orIntro2`, `allIntro`
 and `allJIntro` carry the well-formedness conditions of `LaxND2`.  No rule
 mentions `circ`. -/
-inductive JND (J : List String → Fm → Prop) : List String → List Fm → Fm → Type
+inductive JND (J : List String → Fm → Type) : List String → List Fm → Fm → Type
   | iden {Θ : List String} {Γ : List Fm} {φ : Fm} (hφ : LC φ) (h : φ ∈ Γ) : JND J Θ Γ φ
   | falsoElim {Θ : List String} {Γ : List Fm} (φ : Fm) (hφ : LC φ) (p : JND J Θ Γ .bot) :
       JND J Θ Γ φ
@@ -122,7 +129,7 @@ inductive JND (J : List String → Fm → Prop) : List String → List Fm → Fm
   | allJElim {Θ : List String} {Γ : List Fm} {ψ χ θ : Fm} (hχ : LC χ) (hJ : J Θ χ)
       (p : JND J Θ Γ (.allJ ψ)) (e : θ = ψ.opn χ) : JND J Θ Γ θ
 
-variable {J : List String → Fm → Prop}
+variable {J : List String → Fm → Type}
 
 /-- A context inclusion transports derivations (weakening, exchange, contraction). -/
 def JND.rename {Θ : List String} {Γ Γ' : List Fm} {φ : Fm} (H : ∀ ψ, ψ ∈ Γ → ψ ∈ Γ') :
@@ -182,6 +189,23 @@ theorem JND.lc {Θ : List String} {Γ : List Fm} {φ : Fm} : JND J Θ Γ φ → 
   | .allJIntro _ hψ _ => hψ
   | .allJElim hχ _ p e => e ▸ lc_opn _ hχ p.lc
 
+/-- **The ◯-free instance of I₁ (rule 8):** IPC2 is included in the guarded
+calculus, for any class of instances; on ◯-free formulas `(−)°` is the identity
+(`Fm.toJ_eq_self_of_circFree`), so this is I₁ on the ◯-free fragment. -/
+def JND.ofIPC2 {Γ : List Fm} {φ : Fm} (Θ : List String) : IPC2ND Γ φ → JND J Θ Γ φ
+  | .iden hφ h => .iden hφ h
+  | .falsoElim φ hφ p => .falsoElim φ hφ (JND.ofIPC2 Θ p)
+  | .impIntro hφ p => .impIntro hφ (JND.ofIPC2 Θ p)
+  | .impElim p₁ p₂ => .impElim (JND.ofIPC2 Θ p₁) (JND.ofIPC2 Θ p₂)
+  | .andIntro p₁ p₂ => .andIntro (JND.ofIPC2 Θ p₁) (JND.ofIPC2 Θ p₂)
+  | .andElim1 p => .andElim1 (JND.ofIPC2 Θ p)
+  | .andElim2 p => .andElim2 (JND.ofIPC2 Θ p)
+  | .orIntro1 hψ p => .orIntro1 hψ (JND.ofIPC2 Θ p)
+  | .orIntro2 hφ p => .orIntro2 hφ (JND.ofIPC2 Θ p)
+  | .orElim p₀ p₁ p₂ => .orElim (JND.ofIPC2 Θ p₀) (JND.ofIPC2 Θ p₁) (JND.ofIPC2 Θ p₂)
+  | .allIntro L hψ p => .allIntro L hψ fun s hs => JND.ofIPC2 Θ (p s hs)
+  | .allElim hχ p e => .allElim hχ (JND.ofIPC2 Θ p) e
+
 /-! ## C3: the guard cannot be dropped
 
     J Θ χ  ⟹  ◯°χ ⊢ χ
@@ -203,8 +227,8 @@ def JND.circJ_bot_collapse {Θ : List String} {Γ : List Fm} (hJ : J Θ .bot) :
 
 /-- F2, the ◯-free instance: with every formula admitted, `◯°` is the identity. -/
 def JND.circJ_collapse_unguarded {Θ : List String} {Γ : List Fm} {χ : Fm} (hχ : LC χ) :
-    JND (fun _ _ => True) Θ (circJ χ :: Γ) χ :=
-  JND.circJ_collapse trivial hχ
+    JND (fun _ _ => Unit) Θ (circJ χ :: Γ) χ :=
+  JND.circJ_collapse () hχ
 
 /-! ## C1 and C2: the defined modality satisfies the PLL rules
 
@@ -300,6 +324,7 @@ end P2LL
 #axioms_within P2LL.JND.rename [propext]
 #axioms_within P2LL.JND.weakenΘ [propext]
 #axioms_within P2LL.JND.lc [propext]
+#axioms_within P2LL.JND.ofIPC2 []
 #axioms_within P2LL.JND.circJ_collapse [propext]
 #axioms_within P2LL.JND.circJ_collapse_unguarded [propext]
 #axioms_within P2LL.JND.circJ_intro [propext]

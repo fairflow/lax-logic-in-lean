@@ -2,14 +2,17 @@ import wip.p2llND
 import wip.p2llJND
 
 /-!
-# The definability campaign: the statements that are OPEN
+# The definability campaign: the seven statements
 
 File 4 of the P2LL definability campaign (`wip/p2ll-STATUS.md`).  Each
-statement below is a `def … : Prop` with NO proof (the `FRJO` pattern for OPEN
-claims, `TOOLS.md`): a `sorry` would assert, and an open case is data, never a
-sorried theorem (CLAUDE.md rule 1).  The cells already PROVED are in
-`wip/p2llND.lean` (F1, C5, C7) and `wip/p2llJND.lean` (C1, C2, C3, F2); the
-PLL-level refuter C6 is `wip/p2llOrCell.lean`.
+statement below is a `def … : Prop`, its text fixed before any proof (the
+`FRJO` pattern for OPEN claims, `TOOLS.md`): a `sorry` would assert, and an
+open case is data, never a sorried theorem (CLAUDE.md rule 1).  The proofs live
+in `wip/p2llInterp.lean` (I₁, Fix, I₂: `interpToJ`, `fixOfIsJ`,
+`interpToP2LL`, 2026-10-24); each docstring records PROVED (with the theorem
+name) or OPEN.  The cells already PROVED are in `wip/p2llND.lean` (F1, C5, C7)
+and `wip/p2llJND.lean` (C1, C2, C3, F2); the PLL-level refuter C6 is
+`wip/p2llOrCell.lean`.
 
 Notation of the statements (plan §1.6, `wip/p2llSyntax.lean`):
 
@@ -20,6 +23,9 @@ Notation of the statements (plan §1.6, `wip/p2llSyntax.lean`):
 The two interpretation theorems are the "derivability-preserving both ways";
 the two round trips are the faithfulness of each translation; the two
 biconditionals follow from them.  Proof routes are in `wip/p2ll-STATUS.md` §4.
+All seven statements are about locally closed formulas: every formula a
+derivation of either calculus concludes is locally closed (`LaxND2.lc`,
+`JND.lc`), and the round trips and biconditionals assume `LC` explicitly.
 -/
 
 namespace P2LL
@@ -32,7 +38,8 @@ open Fm
 
 Route: induction on the derivation; `laxIntro`/`laxElim` are C1/C2; `∀E`
 needs `toJ (ψ.opn χ) = (toJ ψ).opn (toJ χ)` for locally closed `χ`, through
-`shiftAt`.  OPEN. -/
+`shiftAt`.  PROVED: `interpToJ` (`wip/p2llInterp.lean`, by `toJD`), pin
+`[propext]`. -/
 def InterpToJ : Prop :=
   ∀ (Γ : List Fm) (φ : Fm), LaxND2 Γ φ →
     ∀ Θ : List String, Nonempty (JND IsJ Θ (Γ.map toJ) (toJ φ))
@@ -43,7 +50,8 @@ def InterpToJ : Prop :=
 
 Route: induction on `IsJ`; the variable case is the guard, `⊤` is trivial,
 `φ → J` and `J ∧ J` are PLL derivations, the binder cases use monotonicity of
-`◯` and the cofinite `∀I`.  OPEN. -/
+`◯` and the cofinite `∀I`.  PROVED: `fixOfIsJ` (`wip/p2llInterp.lean`, by
+`fixD`), pin `[propext]`. -/
 def FixOfIsJ : Prop :=
   ∀ (Θ : List String) (χ : Fm), IsJ Θ χ → LC χ →
     Nonempty (LaxND2 (guards Θ) (.imp (.circ (rel χ)) (rel χ)))
@@ -53,7 +61,8 @@ def FixOfIsJ : Prop :=
     Θ ; Γ ⊢_J φ   ⟹   G(Θ), Γ* ⊢_P2LL φ*.
 
 Route: induction on the derivation; `∀°I` is `∀I` plus `→I` on the new guard;
-`∀°E` is `∀E` at `χ*` discharged by (Fix).  OPEN. -/
+`∀°E` is `∀E` at `χ*` discharged by (Fix).  PROVED: `interpToP2LL`
+(`wip/p2llInterp.lean`, by `relD`), pin `[propext]`. -/
 def InterpToP2LL : Prop :=
   ∀ (Θ : List String) (Γ : List Fm) (φ : Fm), JND IsJ Θ Γ φ →
     Nonempty (LaxND2 (guards Θ ++ Γ.map rel) (rel φ))
@@ -102,7 +111,8 @@ def MutualJ : Prop :=
 end P2LL
 
 /-! The statements are definitions of propositions and carry no axioms; the
-pins record that none of them is sorried. -/
+pins record that none of them is sorried.  The pins of the PROOFS are in
+`wip/p2llInterp.lean`. -/
 
 #axioms_within P2LL.InterpToJ []
 #axioms_within P2LL.FixOfIsJ []

@@ -498,6 +498,14 @@ theorem toJ_openRec : ∀ (k : Nat) (u ψ : Fm), LC u →
 theorem toJ_opn {u : Fm} (ψ : Fm) (hu : LC u) : toJ (ψ.opn u) = (toJ ψ).opn (toJ u) :=
   toJ_openRec 0 u ψ hu
 
+/-- `(ψ^s)* = ψ*^s` for an atom `s`. -/
+theorem rel_opn_fvar (ψ : Fm) (s : String) : rel (ψ.opn (.fvar s)) = (rel ψ).opn (.fvar s) :=
+  rel_opn ψ (.fvar s)
+
+/-- `(ψ^s)° = ψ°^s` for an atom `s`. -/
+theorem toJ_opn_fvar (ψ : Fm) (s : String) : toJ (ψ.opn (.fvar s)) = (toJ ψ).opn (.fvar s) :=
+  toJ_opn ψ trivial
+
 end Fm
 
 end P2LL
