@@ -5,8 +5,8 @@ code are those of `CLPPaper/Math.lean` (docs/verso-paper-workflow.md §3); the
 notation table is new, for propositional lax logic and the objects of the F0
 development (`wip/f0Covers.lean`, `wip/f0Indep.lean`, `wip/f0Dyadic.lean`,
 `wip/f0Rat.lean`, `wip/f0Minkowski.lean`, `wip/gapWidth.lean`,
-`wip/embedNeg.lean`, `wip/floor.lean`, and for v0.2 `wip/f0T6.lean` and
-`wip/f0SelfSim.lean`).
+`wip/embedNeg.lean`, `wip/floor.lean`, for v0.2 `wip/f0T6.lean` and
+`wip/f0SelfSim.lean`, for v0.4 `wip/f0SigOnto.lean`).
 
 * Binders become quantifiers without type annotations; hypotheses, and
   derivations `p : Γ ⊢ A` taken as arguments, become premises; instance
@@ -19,10 +19,13 @@ development (`wip/f0Covers.lean`, `wip/f0Indep.lean`, `wip/f0Dyadic.lean`,
   over a list `⋀_{i ∈ S}`, `⋁_{j ∈ T}`; the models of the independence proof.
 * Meta-level `∧`, `∨` are the words "and", "or", so that they are not read as
   the object-level connectives.
-* A definition whose value is a proposition or a formula, and is not defined
-  by recursion, prints its defining equation `lhs := rhs` (`:⟺` for a
-  proposition); other definitions, structures and inductive types print
-  nothing.
+* A definition prints its defining equation `lhs := rhs` (`:⟺` for a
+  proposition or a Boolean test); a recursive definition prints its equation
+  lemmas (`getEqnsFor?`), one per case; a structure-valued definition prints
+  its type and its data fields; a value chosen by `Classical.choice` prints
+  its type.  An inductive type prints its constructors: the rules of a
+  derivation type, a grammar otherwise; a structure prints its fields
+  (v0.4: before, all of these printed nothing).
 
 Nothing is written by hand: the same declaration always gives the same
 mathematics.
@@ -40,6 +43,7 @@ import wip.f0MacNeilleNonUnique
 import wip.f0Structure
 import wip.f0Hole
 import wip.f0SelfSim
+import wip.f0SigOnto
 import wip.gapWidth
 import wip.embedNeg
 import wip.ladder8
@@ -75,6 +79,8 @@ subscript digits become subscripts, primes stay, multi-letter names are set
 upright-italic. -/
 def ident (s : String) : String := Id.run do
   let s := s.replace "✝" ""
+  -- a hygienic name `x._@.M._hyg.8` is `x`
+  let s := (s.splitOn "._@.").headD s
   let chars := s.toList
   let isSub (c : Char) := subscriptDigits.any (·.1 == c)
   let body := chars.reverse.dropWhile (fun c => c.isDigit || isSub c || c == '\'') |>.reverse
@@ -248,6 +254,11 @@ structure St where
   nested : Bool := false
   /-- one line throughout, without brackets around the whole (the tables) -/
   flat : Bool := false
+  /-- the rung pairs `(rnP k).1`, `(rnP k).2` as projections, not `r_{2k+1}`,
+  `r_{2k+2}` (the equations of `rn` itself, where the notation is circular) -/
+  raw : Bool := false
+  /-- rule schemata: no leading `∀` (the constructors of a derivation type) -/
+  schematic : Bool := false
 
 /-- Named variable-free formulas: the six formulas of `wip/f0Covers.lean` are
 the rungs `t₀ … t₅` (`rnSub_0` … `rnSub_5`, all `rfl`). -/
@@ -265,6 +276,27 @@ def namedForms : List (Name × String × Nat) :=
 def tableLists : List Name :=
   [``PLLND.F0.D1_list, ``PLLND.F0.D2_list, ``PLLND.F0.D3_list, ``PLLND.F0.D4_list,
    ``PLLND.F0.D5_list]
+
+/-- A name for a variable of type `ty` not among `used`: `q` for an atom's
+name (a `String`), `φ ψ χ` for formulas, `a b c` for numbers, else `x y z`. -/
+def varName (ty : Expr) (used : List String) : Name :=
+  let cands :=
+    if ty.isConstOf ``String then ["q", "q'", "q''"]
+    else if ty.isConstOf ``PLLFormula then ["φ", "ψ", "χ", "φ'", "ψ'"]
+    else if ty.isConstOf ``Nat then ["a", "b", "c", "a'", "b'"]
+    else ["x", "y", "z", "x'", "y'"]
+  Name.mkSimple ((cands.find? (!used.contains ·)).getD (cands.head! ++ "'''"))
+
+/-- `f` as a `λ` over named variables (`varName`), so that two arguments of
+the same type do not print with the same name. -/
+partial def etaNamed (f : Expr) : MetaM Expr := do
+  let rec go (e ty : Expr) (xs : Array Expr) (used : List String) : MetaM Expr := do
+    match ← whnf ty with
+    | .forallE _ d b bi =>
+      let nm := varName d used
+      withLocalDecl nm bi d fun x => go (mkApp e x) (b.instantiate1 x) (xs.push x) (nm.toString :: used)
+    | _ => mkLambdaFVars xs e
+  go f (← inferType f) #[] []
 
 /-- `2k+1` for an index `k`: a numeral is computed, a compound bracketed. -/
 def isAtomic (e : Expr) : Bool :=
@@ -337,16 +369,25 @@ partial def bigOp (st : St) (p : Nat) (op : String) (l : Expr) : MetaM String :=
     else return wrap 4 (op ++ " " ++ (← generic st 9 l))
   | _ => return wrap 4 (op ++ " " ++ (← generic st 9 l))
 
+/-- `k'` when `k` is `k' + 1` (or `Nat.succ k'`) with `k'` atomic. -/
+partial def succOf? (k : Expr) : Option Expr :=
+  match k.consumeMData.getAppFnArgs with
+  | (``Nat.succ, #[a]) => if isAtomic a then some a else none
+  | (``HAdd.hAdd, #[_, _, _, _, a, b]) => if natLit? b == some 1 && isAtomic a then some a else none
+  | _ => none
+
 /-- `2k+1` for the index `k`. -/
 partial def oddIndex (st : St) (k : Expr) : MetaM String := do
   if let some n := natLit? k then return toString (2 * n + 1)
   if isAtomic k then return "2" ++ (← generic st 9 k) ++ " + 1"
+  if let some a := succOf? k then return "2" ++ (← generic st 9 a) ++ " + 3"
   return "2(" ++ (← generic st 0 k) ++ ") + 1"
 
 /-- `2k+2` for the index `k`. -/
 partial def evenIndex (st : St) (k : Expr) : MetaM String := do
   if let some n := natLit? k then return toString (2 * n + 2)
   if isAtomic k then return "2" ++ (← generic st 9 k) ++ " + 2"
+  if let some a := succOf? k then return "2" ++ (← generic st 9 a) ++ " + 4"
   return "2(" ++ (← generic st 0 k) ++ ") + 2"
 
 /-- The rung pair `rnP k = (r_{2k+1}, r_{2k+2})`, projected: `some (k, odd?)`. -/
@@ -426,8 +467,11 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
     else quant st0 p e
   | .lam .. =>
     lambdaTelescope e fun xs b => do
-      let names ← xs.mapM fun x => do pure (ident (← x.fvarId!.getDecl).userName.toString)
-      return wrap 0 s!"\\lambda {" ".intercalate names.toList}.\\, {← generic st 0 b}"
+      -- a variable the body does not use is written `_`
+      let names ← xs.mapM fun x => do
+        if b.containsFVar x.fvarId! then pure (ident (← x.fvarId!.getDecl).userName.toString)
+        else pure "\\_"
+      return wrap 0 s!"\\lambda {"\\ ".intercalate names.toList}.\\, {← generic st 0 b}"
   | _ =>
   match e.getAppFnArgs with
   -- judgements
@@ -468,13 +512,12 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
     | Option.some (k, true) => return "t_{" ++ (← oddIndex st k) ++ "}"
     | Option.some (k, false) => return "t_{" ++ (← evenIndex st k) ++ "}"
     | Option.none => return (← form st 9 a) ++ "[p := \\bigcirc\\bot]"
-  | (``Prod.fst, #[_, _, _]) | (``Prod.snd, #[_, _, _]) =>
-    match rungProj? e with
+  | (``Prod.fst, #[_, _, pr]) | (``Prod.snd, #[_, _, pr]) =>
+    let proj := if e.isAppOfArity ``Prod.fst 3 then "\\pi_1" else "\\pi_2"
+    match (if st.raw then Option.none else rungProj? e) with
     | Option.some (k, true) => return "r_{" ++ (← oddIndex st k) ++ "}"
     | Option.some (k, false) => return "r_{" ++ (← evenIndex st k) ++ "}"
-    | Option.none =>
-      let s ← ppExpr e
-      pure ("\\texttt{" ++ esc (toString s) ++ "}")
+    | Option.none => return proj ++ "(" ++ (← generic st 0 pr) ++ ")"
   -- `wip/f0T6.lean` and `wip/f0SelfSim.lean`: relativisation, `⊥ ↦ a`, the A-translation
   | (``PLLND.F0.T6.rel, #[a]) => return "\\mathrm{rel}(" ++ (← form st 0 a) ++ ")"
   | (``PLLND.F0.T6.xc, #[k]) => return "x_{" ++ (← generic st 0 k) ++ "}"
@@ -499,7 +542,11 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   | (``PLLND.F0.LPoly.den, #[q]) => return "[\\![ " ++ (← generic st 0 q) ++ " ]\\!]"
   | (``PLLND.F0.LPoly.eval, #[σ, q]) => return (← generic st 9 σ) ++ "(" ++ (← generic st 0 q) ++ ")"
   | (``PLLND.F0.LPoly.vars, #[q]) => return "\\mathrm{var}(" ++ (← generic st 0 q) ++ ")"
-  | (``PLLND.F0.LPoly.var, #[n]) => return "x_{" ++ (← generic st 0 n) ++ "}"
+  | (``PLLND.F0.LPoly.var, #[n]) =>
+    -- the variable of index `idx n m` is `x_{n,m}`, as `idx n m` itself
+    match n.consumeMData.getAppFnArgs with
+    | (``PLLND.F0.idx, #[_, _]) => generic st p n
+    | _ => return "x_{" ++ (← generic st 0 n) ++ "}"
   | (``PLLND.F0.F, #[n, m]) => return "F_{" ++ (← generic st 0 n) ++ "}(" ++ (← generic st 0 m) ++ ")"
   | (``PLLND.F0.thr, #[c, n]) => return "\\theta_{" ++ (← generic st 0 c) ++ "," ++ (← generic st 0 n) ++ "}"
   | (``PLLND.F0.thr, #[c, n, i]) =>
@@ -509,19 +556,54 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   | (``PLLND.F0.Dy.mk, #[n, x, _]) =>
     -- m/2^0 is printed m
     if natLit? x == some 0 then generic st p n
-    else return (← generic st 7 n) ++ "/2^{" ++ (← generic st 0 x) ++ "}"
+    else if natLit? x == some 1 then return wrap 7 ((← generic st 7 n) ++ "/2")
+    else return wrap 7 ((← generic st 7 n) ++ "/2^{" ++ (← generic st 0 x) ++ "}")
   | (``PLLND.F0.ratFormula, #[q]) => return "f_{\\mathbb{Q}}(" ++ (← generic st 0 q) ++ ")"
   -- Minkowski's question-mark function (`wip/f0Minkowski.lean`)
   | (``PLLND.F0.ratFormulaCF, #[q]) => return "f'(" ++ (← generic st 0 q) ++ ")"
   | (``PLLND.F0.Mink.mink, #[q]) => return "\\mathord{?}(" ++ (← generic st 0 q) ++ ")"
   | (``PLLND.F0.Mink.qmP, #[a, b]) =>
     return "\\mathord{?}(" ++ (← generic st 7 a) ++ "/" ++ (← generic st 8 b) ++ ")"
-  | (``PLLND.F0.Mink.sq, #[q]) => return "\\sigma(" ++ (← generic st 0 q) ++ ")"
+  -- `sq`, not `σ`: `σ` is the map of the self-similarity section
+  | (``PLLND.F0.Mink.sq, #[q]) => return "\\mathit{sq}(" ++ (← generic st 0 q) ++ ")"
   | (``PLLND.F0.Mink.eqv, #[a, b]) => return wrap 5 s!"{← generic st 6 a} \\equiv {← generic st 6 b}"
   | (``PLLND.F0.Mink.rq, #[n, d, _, _]) => return wrap 7 ((← generic st 7 n) ++ "/" ++ (← generic st 8 d))
   | (``PLLND.F0.levels, #[t]) => return "\\mathrm{lev}(" ++ (← generic st 0 t) ++ ")"
   | (``PLLND.F0.root, #[t]) => return "\\mathrm{root}(" ++ (← generic st 0 t) ++ ")"
   | (``Decidable.decide, #[q, _]) => return "[" ++ (← generic st 0 q) ++ "]"
+  -- the bodies of the definitions (v0.4): conditionals, Boolean tests, sets
+  | (``ite, #[_, c, _, a, b]) =>
+    return wrap 0 ((← generic st 1 a) ++ " \\;\\text{if}\\; " ++ (← generic st 1 c) ++
+      ",\\; \\text{else}\\; " ++ (← generic st 0 b))
+  | (``Bool.and, #[_, _]) | (``Bool.or, #[_, _]) | (``Bool.not, #[_])
+  | (``List.all, #[_, _, _]) | (``List.any, #[_, _, _]) => boolProp st p e
+  | (``Nat.succ, #[a]) => return wrap 6 ((← generic st 6 a) ++ " + 1")
+  | (``HMod.hMod, #[_, _, _, _, a, b]) => return wrap 7 ((← generic st 7 a) ++ " \\bmod " ++ (← generic st 8 b))
+  | (``Nat.log2, #[a]) => return "\\lfloor \\log_2 " ++ (← generic st 9 a) ++ " \\rfloor"
+  | (``List.foldr, #[_, _, f, z, l]) =>
+    if f.consumeMData.isAppOfArity ``Max.max 2 && natLit? z == some 0 then
+      return "\\max(\\{0\\} \\cup " ++ (← generic st 6 l) ++ ")"
+    else return "\\mathit{foldr}(" ++ (← generic st 0 f) ++ ", " ++ (← generic st 0 z) ++ ", " ++
+      (← generic st 0 l) ++ ")"
+  | (``setOf, #[_, f]) =>
+    lambdaTelescope f fun xs b => do
+      let x ← xs.mapM fun x => do pure (ident (← x.fvarId!.getDecl).userName.toString)
+      return "\\{" ++ ",\\ ".intercalate x.toList ++ " \\mid " ++ (← generic st 0 b) ++ "\\}"
+  | (``Subtype, #[ty, f]) =>
+    lambdaTelescope f fun xs b => do
+      let x ← xs.mapM fun x => do pure (ident (← x.fvarId!.getDecl).userName.toString)
+      return "\\{" ++ ",\\ ".intercalate x.toList ++ " \\in " ++ (← generic st 6 ty) ++ " \\mid " ++
+        (← generic st 0 b) ++ "\\}"
+  | (``OrderIso, #[a, b, _, _]) => return wrap 5 ((← generic st 6 a) ++ " \\simeq_{o} " ++ (← generic st 6 b))
+  | (``Option, #[a]) => return "\\mathsf{Option}\\," ++ (← generic st 9 a)
+  | (``Set, #[a]) => return "\\mathsf{Set}\\," ++ (← generic st 9 a)
+  -- lattice polynomials (`wip/f0Dyadic.lean`): `⊓`, `⊔`, and their constants
+  | (``PLLND.F0.LPoly.bot, #[]) => pure "\\bot"
+  | (``PLLND.F0.LPoly.top, #[]) => pure "\\top"
+  -- (a nested meet or join is bracketed on either side, as for formulas)
+  | (``PLLND.F0.LPoly.and, #[a, b]) => return wrap 3 ((← generic st 4 a) ++ " \\sqcap " ++ (← generic st 4 b))
+  | (``PLLND.F0.LPoly.or, #[a, b]) => return wrap 2 ((← generic st 4 a) ++ " \\sqcup " ++ (← generic st 4 b))
+  | (``Prod, #[a, b]) => return wrap 7 ((← generic st 8 a) ++ " \\times " ++ (← generic st 8 b))
   -- a bundled map applied to an argument (Mathlib's `⇑f x`): `f(x)`
   | (``DFunLike.coe, #[_, _, _, _, f, x]) => return s!"{← funHead st f}({← generic st 0 x})"
   -- the order of F0 as an algebra, and its MacNeille completion
@@ -624,7 +706,11 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
        b.consumeMData.isAppOfArity ``HSub.hSub 6)
     if jux then return wrap 7 ((← generic st 7 a) ++ (← generic st 8 b))
     return wrap 7 s!"{← generic st 7 a} \\cdot {← generic st 8 b}"
-  | (``HDiv.hDiv, #[_, _, _, _, a, b]) => return wrap 7 s!"{← generic st 7 a} / {← generic st 8 b}"
+  | (``HDiv.hDiv, #[ty, _, _, _, a, b]) =>
+    -- division of naturals rounds down
+    if ty.consumeMData.isConstOf ``Nat then
+      return "\\lfloor " ++ (← generic st 7 a) ++ " / " ++ (← generic st 8 b) ++ " \\rfloor"
+    return wrap 7 s!"{← generic st 7 a} / {← generic st 8 b}"
   | (``HPow.hPow, #[_, _, _, _, a, b]) =>
     return wrap 8 ((← generic st 9 a) ++ "^{" ++ (← generic st 0 b) ++ "}")
   | (``HAppend.hAppend, #[_, _, _, _, a, b]) =>
@@ -657,13 +743,110 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
         let s ← ppExpr e
         pure ("\\texttt{" ++ esc (toString s) ++ "}")
     else
+      let env ← getEnv
+      -- a named constant: an atom's name (`pv := "p"`) or a dyadic (`mid := 1/2`)
+      if args.isEmpty then
+        if let some (.defnInfo dv) := env.find? f then
+          if let some s := strLit? dv.value then return ident s
+          if dv.value.consumeMData.isAppOfArity ``PLLND.F0.Dy.mk 3 then return ← generic st0 p dv.value
+      -- a structure instance: its data fields
+      if let some (.ctorInfo cv) := env.find? f then
+        if isStructure env cv.induct then return ← structInst st e
+      -- the projection to a parent structure is not written
+      if let some info := env.getProjectionFnInfo? f then
+        if let some (.ctorInfo cv) := env.find? info.ctorName then
+          if let some fld := (getStructureFields env cv.induct)[info.i]? then
+            if (isSubobjectField? env cv.induct fld).isSome && args.size == info.numParams + 1 then
+              return ← generic st0 p args[info.numParams]!
       let args ← explicitArgs (mkConst f e.getAppFn.constLevels!) args
-      let isType := match (← getEnv).find? f with
+      -- proofs are not printed
+      let args ← args.filterM fun a => do return !(← isProof a)
+      let isType := match env.find? f with
         | Option.some (.inductInfo _) => true
         | _ => false
       let head := (if isType then "\\mathsf{" else "\\mathit{") ++ esc (lastName f) ++ "}"
       if args.isEmpty then pure head
-      else return head ++ "(" ++ ", ".intercalate (← args.toList.mapM (generic st 0)) ++ ")"
+      else return head ++ "(" ++ ", ".intercalate (← args.toList.mapM (argument st)) ++ ")"
+
+/-- An argument: a function constant, partially applied, is written as a
+`λ` when that shows its notation (`box` as `λx. ◯x`), else by name. -/
+partial def argument (st : St) (a : Expr) : MetaM String := do
+  let a := a.consumeMData
+  let plain ← generic st 0 a
+  let .const f _ := a.getAppFn | return plain
+  let ty ← whnf (← inferType a)
+  unless ty.isForall do return plain
+  if (← isProp ty) || (← isProof a) then return plain
+  let expanded ← generic st 0 (← etaNamed a)
+  if expanded.contains ("\\mathit{" ++ esc (lastName f) ++ "}") then return plain
+  return expanded
+
+/-- A structure instance `⟨f₁ = v₁, …⟩`: its data fields, the fields of a
+parent structure spliced in; proofs and instances are left out. -/
+partial def structInst (st : St) (e : Expr) : MetaM String := do
+  let fields ← structFields st e
+  return "\\langle " ++ ",\\ ".intercalate fields.toList ++ " \\rangle"
+
+/-- The printed data fields of a structure instance. -/
+partial def structFields (st : St) (e : Expr) : MetaM (Array String) := do
+  let env ← getEnv
+  let .const c _ := e.getAppFn | return #[← generic st 0 e]
+  let some (.ctorInfo cv) := env.find? c | return #[← generic st 0 e]
+  let S := cv.induct
+  let names := getStructureFields env S
+  let vals := e.getAppArgs.extract cv.numParams e.getAppNumArgs
+  let mut out := #[]
+  for i in [0:names.size] do
+    let some v := vals[i]? | continue
+    if ← isProof v then continue
+    -- a parent structure given by its constructor: its fields, spliced in
+    if (isSubobjectField? env S names[i]!).isSome then
+      let v' ← whnfR v
+      if v'.getAppFn.isConst && (env.find? v'.getAppFn.constName!).any (·.isCtor) then
+        out := out ++ (← structFields st v')
+        continue
+    let vty ← inferType v
+    if (← isClass? vty).isSome then continue
+    out := out.push ("\\mathit{" ++ esc (lastName names[i]!) ++ "} = " ++ (← argument st v))
+  return out
+
+/-- A Boolean test read as a proposition: `&&`, `||`, `!` are "and", "or",
+`¬`; `List.all`, `List.any` are bounded quantifiers; `atomFree x` is
+`x ∈ Fm₀`; any other test `b` is read as `b = true`. -/
+partial def boolProp (st : St) (p : Nat) (e : Expr) : MetaM String := do
+  let e := e.consumeMData
+  let wrap (q : Nat) (s : String) := if q < p then paren s else s
+  match e.getAppFnArgs with
+  | (``Bool.true, _) => pure "\\mathsf{True}"
+  | (``Bool.false, _) => pure "\\mathsf{False}"
+  -- `&&` and `||` are associative: a chain is written without brackets
+  | (``Bool.and, #[a, b]) => return wrap 3 ((← boolProp st 3 a) ++ metaAnd ++ (← boolProp st 3 b))
+  | (``Bool.or, #[a, b]) => return wrap 2 ((← boolProp st 2 a) ++ metaOr ++ (← boolProp st 2 b))
+  | (``Bool.not, #[a]) =>
+    match a.consumeMData.getAppFnArgs with
+    | (``PLLND.LaxInfinite.atomFree, #[x]) => return wrap 5 ((← form st 4 x) ++ " \\notin \\mathrm{Fm}_0")
+    | _ => return wrap 4 ("\\lnot " ++ (← boolProp st 5 a))
+  | (``Decidable.decide, #[q, _]) => generic st p q
+  | (``ite, #[_, c, _, a, b]) =>
+    return wrap 0 ((← boolProp st 1 a) ++ " \\;\\text{if}\\; " ++ (← generic st 1 c) ++
+      ",\\; \\text{else}\\; " ++ (← boolProp st 0 b))
+  | (``PLLND.LaxInfinite.atomFree, #[x]) => return wrap 5 ((← form st 4 x) ++ " \\in \\mathrm{Fm}_0")
+  | (``List.all, #[_, l, f]) => boundedQ st p "\\forall" l f
+  | (``List.any, #[_, l, f]) => boundedQ st p "\\exists" l f
+  | _ => generic st p e
+
+/-- `List.all l f`, `List.any l f`: `∀ x ∈ l. f x`, `∃ x ∈ l. f x`, and
+`∀ x < n` over `List.range n`. -/
+partial def boundedQ (st : St) (p : Nat) (q : String) (l f : Expr) : MetaM String := do
+  let wrap (q : Nat) (s : String) := if q < p then paren s else s
+  let f := f.consumeMData
+  let f ← if f.isLambda then pure f else etaNamed f
+  lambdaTelescope f fun xs b => do
+    let x := ident (← xs[0]!.fvarId!.getDecl).userName.toString
+    let dom ← match l.consumeMData.getAppFnArgs with
+      | (``List.range, #[n]) => pure (x ++ " < " ++ (← generic st 6 n))
+      | _ => pure (x ++ " \\in " ++ (← generic st 6 l))
+    return wrap 0 (q ++ "\\, " ++ dom ++ ".\\; " ++ (← boolProp st 0 b))
 
 /-- A derivation type `Γ ⊢ A` (`LaxND Γ A`), as a binder: a premise. -/
 partial def isJudgement (e : Expr) : Bool :=
@@ -673,7 +856,7 @@ partial def isJudgement (e : Expr) : Bool :=
 premises, instance arguments vanish, `x` followed by `x ∈ C` is `x ∈ C`. -/
 partial def quant (st0 : St) (p : Nat) (e : Expr) : MetaM String :=
   forallTelescope e fun xs body => do
-    let st := {st0 with nested := true}
+    let st := {st0 with nested := true, schematic := false}
     let mut vars : Array String := #[]
     let mut prems : Array String := #[]
     let mut skip : Option FVarId := none
@@ -689,15 +872,16 @@ partial def quant (st0 : St) (p : Nat) (e : Expr) : MetaM String :=
         let nm := ident d.userName.toString
         -- a bounded variable: the next binder is the hypothesis `x ∈ C`
         let mut done := false
-        if h : i + 1 < xs.size then
-          let hy ← xs[i + 1].fvarId!.getDecl
+        -- (not in a rule schema, which writes no binders: `x ∈ C` stays a premise)
+        if h : i + 1 < xs.size ∧ !st0.schematic then
+          let hy ← (xs[i + 1]'h.1).fvarId!.getDecl
           if let (``Membership.mem, #[_, _, _, coll, y]) := hy.type.consumeMData.getAppFnArgs then
             if y.consumeMData == x then
               vars := vars.push (nm ++ " \\in " ++ (← generic st 6 coll))
-              skip := some xs[i + 1].fvarId!
+              skip := some (xs[i + 1]'h.1).fvarId!
               done := true
         if !done then vars := vars.push nm
-    let binder := if vars.isEmpty then "" else
+    let binder := if vars.isEmpty || st0.schematic then "" else
       "\\forall\\, " ++ ",\\ ".intercalate vars.toList ++ ".\\; "
     let isIff := body.consumeMData.isAppOfArity ``Iff 2
     let concl ← generic st (if prems.isEmpty || !isIff then 0 else 2) body
@@ -737,22 +921,186 @@ def defEquation? (n : Name) (flat : Bool := false) : MetaM (Option String) := do
     if visLen s > rowMeasure then return some (rows (breakRow s))
     return some s
 
+/-! ### Definitions and types that have no single defining equation (v0.4) -/
+
+/-- The names of the `∀`-binders of `ty` that are written in the source. -/
+partial def binderNames (ty : Expr) : List String :=
+  match ty with
+  | .forallE nm _ b _ => (if nm.hasMacroScopes then [] else [nm.toString]) ++ binderNames b
+  | _ => []
+
+/-- `∀`-binders as local variables, renamed for print (`varName`): a `String`
+variable, the name of an atom, is `q` (Lean's equation lemmas name it after
+the field, `constantName`), and a variable named by a macro is given a name
+by its type. -/
+partial def atomTelescope {α : Type} (ty : Expr) (xs : Array Expr)
+    (k : Array Expr → Expr → MetaM α) (used : List String := binderNames ty) : MetaM α := do
+  match ty with
+  | .forallE nm d b bi =>
+    let rename := nm.hasMacroScopes || (d.isConstOf ``String && nm.toString.length > 2)
+    let nm := if rename then varName d used else nm
+    withLocalDecl nm bi d fun x =>
+      atomTelescope (b.instantiate1 x) (xs.push x) k (nm.toString :: used)
+  | _ => k xs ty
+
+/-- Each item but the last followed by `;`. -/
+def punctuate (items : List String) : List String :=
+  match items.reverse with
+  | [] => []
+  | last :: rest => (rest.reverse.map (· ++ ";")) ++ [last]
+
+/-- One case `lhs = rhs` of a definition: `lhs := rhs`, or `lhs :⟺ rhs` for a
+proposition, and for a Boolean test read as a proposition (`boolProp`). -/
+def eqnLine (st rhsSt : St) (lhs rhs : Expr) : MetaM String := do
+  let ty ← whnf (← inferType lhs)
+  if ty.isConstOf ``Bool then
+    return ← match rhs.consumeMData.getAppFnArgs with
+    | (``Bool.true, _) => boolProp st 0 lhs
+    | (``Bool.false, _) => boolProp st 0 (mkApp (mkConst ``Bool.not) lhs)
+    | _ => return (← boolProp st 0 lhs) ++ " \\mathrel{:\\Longleftrightarrow} " ++ (← boolProp rhsSt 0 rhs)
+  if ty.isProp then
+    return (← generic st 0 lhs) ++ " \\mathrel{:\\Longleftrightarrow} " ++ (← generic rhsSt 0 rhs)
+  return (← generic st 0 lhs) ++ " \\mathrel{:=} " ++ (← generic rhsSt 0 rhs)
+
+/-- Whether a definition is defined by recursion (structural or well-founded). -/
+def isRecursiveDef (n : Name) : MetaM Bool := do
+  let env ← getEnv
+  let some (.defnInfo dv) := env.find? n | return false
+  return (dv.value.find? fun s => match s with
+    | .const c _ => isAuxRecursor env c || Lean.Meta.isMatcherCore env c || isRecCore env c ||
+        c == ``WellFounded.fix
+    | _ => false).isSome
+
+/-- A definition, as one or more items to set on one line each:
+* by recursion: its equation lemmas, one per case;
+* a value chosen by `Classical.choice`: its type;
+* structure-valued: `lhs : T := ⟨fields⟩`;
+* otherwise `lhs := rhs`, a function-valued definition applied to fresh
+  arguments first (`σ := subBot t₃` is `σ(φ) := φ[⊥ := t₃]`). -/
+def defChunks (n : Name) : MetaM (List String) := do
+  let env ← getEnv
+  let some (.defnInfo dv) := env.find? n | return []
+  let st : St := {flat := true}
+  -- in the equations of `rn` the rung notation would be circular
+  let rhsSt : St := {flat := true, raw := n == ``PLLND.RNEmbed.rn}
+  if ← isRecursiveDef n then
+    let some eqs ← getEqnsFor? n | return []
+    let lines ← eqs.toList.mapM fun eqn => do
+      let t := (← getConstInfo eqn).type
+      atomTelescope t #[] fun _ body => do
+        let some (_, l, r) := body.consumeMData.eq? | generic st 0 body
+        eqnLine st rhsSt l r
+    return punctuate lines
+  let value ← zetaReduce dv.value
+  lambdaTelescope value fun xs body => do
+    let lhs0 := mkAppN (mkConst n (dv.levelParams.map mkLevelParam)) xs
+    atomTelescope (← inferType lhs0) #[] fun ys _ => do
+      let lhs := mkAppN lhs0 ys
+      let rhs := (mkAppN body ys).headBeta
+      let ty ← whnf (← inferType lhs)
+      let ls ← generic st 0 lhs
+      if rhs.consumeMData.isAppOfArity ``Classical.choice 2 then
+        return [ls ++ " : " ++ (← generic st 0 (← inferType lhs)) ++
+          ",\\ \\text{chosen by}\\ \\mathsf{Classical.choice}"]
+      if ty.isProp then
+        let rs ← generic rhsSt 0 rhs
+        -- `Deriv Γ φ := Nonempty (Γ ⊢ φ)`: both sides print `Γ ⊢ φ`
+        let rs ← if rs != ls then pure rs else
+          match rhs.consumeMData.getAppFnArgs with
+          | (``Nonempty, #[j]) => pure ("\\mathsf{Nonempty}(" ++ (← generic rhsSt 0 j) ++ ")")
+          | _ => pure rs
+        return [ls ++ " \\mathrel{:\\Longleftrightarrow} " ++ rs]
+      if ty.isConstOf ``Bool then
+        return [(← boolProp st 0 lhs) ++ " \\mathrel{:\\Longleftrightarrow} " ++ (← boolProp rhsSt 0 rhs)]
+      let tyHead := (← instantiateMVars (← inferType lhs)).getAppFn
+      if tyHead.isConst && isStructure env tyHead.constName! then
+        let T ← generic st 0 (← inferType lhs)
+        return [ls ++ " : " ++ T ++ " \\mathrel{:=} " ++ (← argument rhsSt rhs)]
+      return [ls ++ " \\mathrel{:=} " ++ (← argument rhsSt rhs)]
+
+/-- An inductive type: a structure by its fields (a propositional structure as
+the conjunction of its fields), a derivation type (an indexed family) by its
+rules, any other type by the grammar of its constructors. -/
+def typeChunks (n : Name) : MetaM (List String) := do
+  let env ← getEnv
+  let some (.inductInfo iv) := env.find? n | return []
+  let st : St := {flat := true}
+  let lvls := iv.levelParams.map mkLevelParam
+  if isStructure env n then
+    let some ctor := iv.ctors.head? | return []
+    return ← forallTelescope (← getConstInfo ctor).type fun xs _ => do
+      let params := xs.extract 0 iv.numParams
+      let fields := xs.extract iv.numParams xs.size
+      let self := mkAppN (mkConst n lvls) params
+      let lhs ← generic st 0 self
+      let mut data : Array String := #[]
+      let mut propTys : Array Expr := #[]
+      for f in fields do
+        let d ← f.fvarId!.getDecl
+        if ← isProp d.type then propTys := propTys.push d.type
+        else data := data.push (ident d.userName.toString ++ " : " ++ (← generic st 0 d.type))
+      -- bracketed when joined by "and", not when listed
+      let isP ← isProp self
+      let props ← propTys.mapM (generic st (if isP then 3 else 0))
+      if isP then
+        let ps := props.toList
+        return match ps.reverse with
+          | [] => [lhs]
+          | last :: rest =>
+            match rest.reverse with
+            | [] => [lhs ++ " \\mathrel{:\\Longleftrightarrow} " ++ last]
+            | first :: mid =>
+              [lhs ++ " \\mathrel{:\\Longleftrightarrow} " ++ first ++ metaAnd.trimAsciiEnd.copy] ++
+                (mid.map (· ++ metaAnd.trimAsciiEnd.copy)) ++ [last]
+      -- `S := {(d₁ : T₁, …) | P₁; …}`: the data fields, then the conditions
+      let tuple := lhs ++ " \\mathrel{:=} \\{(" ++ ",\\ ".intercalate data.toList ++ ")"
+      if props.isEmpty then return [tuple ++ "\\}"]
+      let conds := punctuate props.toList
+      return [tuple ++ " \\mid"] ++ conds.dropLast ++ [conds.getLast! ++ "\\}"]
+  if iv.numIndices > 0 then
+    -- the rules: premises above, conclusion below, written `P₁ ⟹ … ⟹ C`
+    let rules ← iv.ctors.mapM fun c => do
+      quant {flat := true, schematic := true} 0 (← getConstInfo c).type
+    return punctuate rules
+  let alts ← iv.ctors.mapM fun c => do
+    forallTelescope (← getConstInfo c).type fun xs _ => do
+      generic st 0 (mkAppN (mkConst c lvls) xs)
+  let lhs ← generic st 0 (mkConst n lvls)
+  return match alts with
+    | [] => [lhs]
+    | a :: rest => (lhs ++ " ::= " ++ a) :: rest.map ("\\mid " ++ ·)
+
+/-- The items of `n` for the tables: a statement, a defining equation, or the
+cases of a definition or type (`defChunks`, `typeChunks`); never empty for a
+definition or a type. -/
+def stmtItems (n : Name) : MetaM (List String) := do
+  let some ci := (← getEnv).find? n | throwError "unknown constant {n}"
+  let judgement ← forallTelescope ci.type fun _ b => pure (isJudgement b)
+  if (← isProp ci.type) || judgement then return [← generic {flat := true} 0 ci.type]
+  match ci with
+  | .defnInfo _ =>
+    match ← defEquation? n (flat := true) with
+    | Option.some s => return [s]
+    | Option.none => defChunks n
+  | .inductInfo _ => typeChunks n
+  | _ => return []
+
 /-- The statement of `n` as TeX, or `none` when there is nothing to print. -/
 def stmtOf (n : Name) : MetaM (Option String) := do
   let some ci := (← getEnv).find? n | throwError "unknown constant {n}"
   let judgement ← forallTelescope ci.type fun _ b => pure (isJudgement b)
-  unless (← isProp ci.type) || judgement do return ← defEquation? n
+  unless (← isProp ci.type) || judgement do
+    if let some s ← defEquation? n then return some s
+    let items ← stmtItems n
+    return if items.isEmpty then none else some (rows items)
   let s ← generic {} 0 ci.type
   if visLen s > rowMeasure && !s.startsWith "\\begin{aligned}" then
     return some (rows (breakRow s))
   return some s
 
-/-- The statement of `n` on one line (the tables of supporting declarations). -/
-def stmtFlat (n : Name) : MetaM (Option String) := do
-  let some ci := (← getEnv).find? n | throwError "unknown constant {n}"
-  let judgement ← forallTelescope ci.type fun _ b => pure (isJudgement b)
-  unless (← isProp ci.type) || judgement do return ← defEquation? n (flat := true)
-  generic {flat := true} 0 ci.type
+/-- The statement of `n` on one line (the tables of supporting declarations),
+as items set one after another, a line break allowed between them. -/
+def stmtFlat (n : Name) : MetaM (List String) := stmtItems n
 
 structure StmtConfig where
   ok : Unit := ()

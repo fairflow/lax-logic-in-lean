@@ -35,8 +35,9 @@ if [ "${1:-}" != "--serve-only" ]; then
   F0_SRC_REPO=${F0_SRC_REPO/git@github.com:/https://github.com/}
   export F0_SRC_SHA F0_SRC_REPO
   # no blank recto pages in print (the rest of the layout is CLPPaper/Layout.lean);
-  # graphicx for the figures, longtable for the tables (F0Paper/Blocks.lean)
-  VERSO_TEX_EXTRA='\let\cleardoublepage\clearpage\usepackage{graphicx}\usepackage{longtable}' \
+  # graphicx for the figures, longtable for the tables (F0Paper/Blocks.lean);
+  # ragged bottoms, so that the page before a large figure is not stretched
+  VERSO_TEX_EXTRA='\let\cleardoublepage\clearpage\usepackage{graphicx}\usepackage{longtable}\raggedbottom' \
     scripts/verso-paper.sh F0Paper F0PaperMain.lean docs/f0-paper docs/f0-paper.pdf
 fi
 case "${1:-}" in

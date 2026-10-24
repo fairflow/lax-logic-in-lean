@@ -89,6 +89,10 @@ interval of itself, and much of its order is now known.
   * {axiomsOf}`Sig.copies_strict`
   * 10
 * * $`\sigma` is onto $`[t_3, \top]`
+  * REFUTED
+  * {axiomsOf}`SigOnto.sig_not_onto`
+  * 10
+* * $`[t_3, \top]` is order-isomorphic to $`F_0`
   * OPEN
   * –
   * 11

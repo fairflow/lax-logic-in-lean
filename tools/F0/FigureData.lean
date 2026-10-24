@@ -7,7 +7,9 @@ prints one line `F0FIGURES <json>` that `scripts/f0-figures.py` turns into
 the figures.  Nothing in a figure is typed by hand:
 
 * `rungs`: the covering pairs of the rung order on `t₀ … t₁₁` (and on
-  `t₀ … t₇`), decided by `rungCovers`, which is `rungLe` (`wip/ladder8.lean`);
+  `t₀ … t₇`, `t₀ … t₅`; v0.4 draws the self-similarity ladders on six
+  rungs, so that the figure fits the text block with labels at text size),
+  decided by `rungCovers`, which is `rungLe` (`wip/ladder8.lean`);
   `rnSub_order` proves `rungLe i j = true ↔ t_i ⊢ t_j`;
 * `bottom`: the elements of `↓t₅` (the list `D5_list` of `wip/f0Covers.lean`,
   each matched to its rung) and the cover theorems of that file, read off
@@ -76,6 +78,7 @@ def coverTheorems : CommandElabM (Array (Name × Nat × Nat)) := do
   let data := Json.mkObj [
     ("rungs12", pairs 12),
     ("rungs8", pairs 8),
+    ("rungs6", pairs 6),
     ("bottomNodes", toJson bottomNodes),
     ("bottomListLength", toJson D5_list.length),
     ("covers", Json.arr coverJson),

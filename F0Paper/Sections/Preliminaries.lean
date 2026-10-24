@@ -53,7 +53,7 @@ the Rieger–Nishimura ladder, checked by `rungLe`.  PROVED.
 
 {leanStmt rnSub_order}
 
-:::f0Figure "rungs" (width := "0.75")
+:::f0Figure "rungs"
 The rungs $`t_0, \ldots, t_{11}`, increasing to the right.  A line joins $`t_i` to $`t_j` when
 $`t_i < t_j` with no rung strictly between, as decided by `rungCovers` through
 `rnSub_order`; these are covers of the rungs among themselves, not covers in
@@ -126,7 +126,7 @@ point, say $`p < w < x`, and $`x \ge w \le w \lor y \ge y` with $`w \lor y < q`.
 
 # Supporting declarations
 
-{lemmaTable LaxND Deriv Interd OI OM OSR box_mono ConstraintModel soundness consequence_iff_derivable atomFree LaxInfinite.closed_lax_infinite rn rnSub rungLe rungCovers sat_rn_odd sat_rn_even rnSub_deriv_iff rn_pairwise_pll gap width_infinite dichotomy_exclusive}
+{lemmaTable LaxND Deriv Interd OI OM OSR box_mono ConstraintModel soundness consequence_iff_derivable atomFree LaxInfinite.closed_lax_infinite rn rnP rnSub rungMem rungLe rungCovers sat_rn_odd sat_rn_even rnSub_deriv_iff rn_pairwise_pll gap width_infinite dichotomy_exclusive}
 
 Pins, as recorded in the files and confirmed by `#print axioms` (no pin
 recorded for `OI`, `OM`, `OSR`, `soundness`, `consequence_iff_derivable`,
