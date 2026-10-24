@@ -100,6 +100,19 @@ theorem rn8_dual_iso_ladder4 :
       rn8.dual.le i k = ladder4.le ([0, 1, 3, 2].getD i 0) ([0, 1, 3, 2].getD k 0) := by
   decide +kernel
 
+/-- The computed dual of `C₃` is the 2-chain, by `0 ↦ 1, 1 ↦ 0`. -/
+theorem chain3_dual_iso_chain2 :
+    chain3.mprimes = [0, 1] ∧
+    ∀ i ∈ List.range 2, ∀ k ∈ List.range 2,
+      chain3.dual.le i k = chain2.le ([1, 0].getD i 0) ([1, 0].getD k 0) := by
+  decide +kernel
+
+/-- The computed dual of `2²` is the 2-antichain, by the identity. -/
+theorem bool4_dual_iso_anti2 :
+    bool4.mprimes = [1, 2] ∧
+    ∀ i ∈ List.range 2, ∀ k ∈ List.range 2, bool4.dual.le i k = anti2.le i k := by
+  decide +kernel
+
 /-! ## C0: the boundary cell, the one-element algebra and the empty poset -/
 
 /-- The one-element (degenerate) Heyting algebra, `⊤ = ⊥`. -/
@@ -226,6 +239,126 @@ theorem m_naive_cell_nuclear :
     (two.pts.all fun a => incl (tab [0, 1] a) == tab [0, 2, 2] (incl a)) = true ∧
     starCond two chain3 (tab [0, 1]) (tab [0, 2, 2]) incl = true := by decide +kernel
 
+/-! ## R: a screen of the bridge statement R3 (`wip/esakiaNuclearGen.lean`)
+
+R3 is stated for the library's `ConstraintModel` (sets, not decidable).  This
+section screens it in the finite encoding: a finite constraint model as
+tables, its complex algebra `(H_C, j_C)` as a `FinHA` with a nucleus, and
+the claims R2, R3a, R3b, R3c checked on two designed models.  These are
+tests of the statement's content, not instances of the `Set`-level
+statement. -/
+
+/-- A finite constraint model as tables (worlds `0, …, n-1`). -/
+structure FinCons where
+  n : Nat
+  ri : Nat → Nat → Bool
+  rm : Nat → Nat → Bool
+  fall : Bits
+
+namespace FinCons
+
+variable (C : FinCons)
+
+def pts : List Nat := List.range C.n
+
+/-- `Rᵢ`, `Rₘ` preorders, `Rₘ ⊆ Rᵢ`, `F` hereditary. -/
+def wf : Bool :=
+  (C.pts.all fun x => C.ri x x && C.rm x x) &&
+  (C.pts.all fun x => C.pts.all fun y => C.pts.all fun z =>
+    (!(C.ri x y && C.ri y z) || C.ri x z) && (!(C.rm x y && C.rm y z) || C.rm x z)) &&
+  (C.pts.all fun x => C.pts.all fun y =>
+    (!(C.rm x y) || C.ri x y) && (!(C.ri x y && mem C.fall x) || mem C.fall y))
+
+/-- `Rᵢ` is antisymmetric. -/
+def antisymm : Bool := C.pts.all fun x => C.pts.all fun y => !(C.ri x y && C.ri y x) || x == y
+
+/-- `U ∈ H_C`: hereditary along `Rᵢ` and containing `F`. -/
+def isHC (U : Bits) : Bool :=
+  (C.pts.all fun x => C.pts.all fun y => !(mem U x && C.ri x y) || mem U y) &&
+  (C.pts.all fun x => !(mem C.fall x) || mem U x)
+
+def hcs : List Bits := (allSubs C.n).filter C.isHC
+
+def hcIdx (U : Bits) : Nat :=
+  ((List.range C.hcs.length).find? fun i => C.hcs.getD i [] == U).getD 0
+
+/-- `j_C(U) = {w | ∀ v, w Rᵢ v → ∃ u, v Rₘ u ∧ u ∈ U}`. -/
+def jC (U : Bits) : Bits :=
+  C.pts.map fun w => C.pts.all fun v => !(C.ri w v) || C.pts.any fun u => C.rm v u && mem U u
+
+/-- `(H_C, ⊆)` as a finite Heyting algebra: `∩`, `∪`, Kripke `→`, `⊤ = W`,
+`⊥ = F`. -/
+def hcHA : FinHA :=
+  let U (i : Nat) : Bits := C.hcs.getD i []
+  let I := List.range C.hcs.length
+  let imp (A B : Bits) : Bits :=
+    C.pts.map fun x => C.pts.all fun y => !(C.ri x y && mem A y) || mem B y
+  { ord := ⟨C.hcs.length, fun i k => C.pts.all fun x => !(mem (U i) x) || mem (U k) x⟩
+    meetT := I.map fun i => I.map fun k => C.hcIdx (List.zipWith (· && ·) (U i) (U k))
+    joinT := I.map fun i => I.map fun k => C.hcIdx (List.zipWith (· || ·) (U i) (U k))
+    himpT := I.map fun i => I.map fun k => C.hcIdx (imp (U i) (U k))
+    top := C.hcIdx (C.pts.map fun _ => true)
+    bot := C.hcIdx C.fall }
+
+def jCIdx (i : Nat) : Nat := C.hcIdx (C.jC (C.hcs.getD i []))
+
+/-- `W ∖ ↓w`. -/
+def mPt (w : Nat) : Bits := C.pts.map fun u => !(C.ri u w)
+
+/-- `w` is `Rₘ`-final (the library's `ConstraintModel.RmFinal`). -/
+def rmFinal (w : Nat) : Bool := C.pts.all fun u => !(C.rm w u) || C.rm u w
+
+/-- R2 (finite encoding): `H_C` is a Heyting algebra and `j_C` a nucleus on it. -/
+def R2screen : Bool := C.hcHA.isHA && C.hcHA.isNucleus C.jCIdx
+
+/-- R3a (finite encoding): `j_C(W ∖ ↓w) = W ∖ ↓w ↔ w` is `Rₘ`-final. -/
+def R3aScreen : Bool := C.pts.all fun w => (C.jC (C.mPt w) == C.mPt w) == C.rmFinal w
+
+/-- R3b (finite encoding): every meet-prime of `H_C` is some `W ∖ ↓w`,
+`w ∉ F`. -/
+def R3bScreen : Bool :=
+  C.hcHA.mprimes.all fun m => C.pts.any fun w => !(mem C.fall w) && C.hcs.getD m [] == C.mPt w
+
+/-- R3c (finite encoding): each `W ∖ ↓w`, `w ∉ F`, is a meet-prime, ordered
+dually to `Rᵢ`. -/
+def R3cScreen : Bool :=
+  (C.pts.all fun w => mem C.fall w || C.hcHA.isMeetPrime (C.hcIdx (C.mPt w))) &&
+  (C.pts.all fun v => C.pts.all fun w =>
+    (C.pts.all fun x => !(mem (C.mPt v) x) || mem (C.mPt w) x) == C.ri w v)
+
+end FinCons
+
+/-- Designed model `C_R`: `0 ≤ 1`, `0 ≤ 2`, all `≤ 3`; `3` fallible;
+`Rₘ`: `0 Rₘ 1` and `2 Rₘ 3` (with reflexivity).  `Rₘ`-final non-fallible
+worlds: `1` only. -/
+def cR : FinCons :=
+  { n := 4
+    ri := fun x y => x == y || y == 3 || (x == 0 && (y == 1 || y == 2))
+    rm := fun x y => x == y || (x == 0 && y == 1) || (x == 2 && y == 3)
+    fall := [false, false, false, true] }
+
+theorem cR_wf : cR.wf = true ∧ cR.antisymm = true := by decide +kernel
+/-- R2, R3a, R3b, R3c pass at `C_R`; the dual `S` is `{W ∖ ↓1}`. -/
+theorem cR_R3 : cR.R2screen = true ∧ cR.R3aScreen = true ∧ cR.R3bScreen = true ∧
+    cR.R3cScreen = true := by decide +kernel
+/-- Non-vacuity: `j_C` is neither the identity nor `⊤` on `H_C`, and exactly
+one point (`w = 1`) is `Rₘ`-final among the non-fallible worlds. -/
+theorem cR_nonvacuous : cR.hcs.length = 5 ∧
+    (cR.hcHA.pts.any fun i => cR.jCIdx i != i) = true ∧
+    (cR.hcHA.pts.any fun i => cR.jCIdx i != cR.hcHA.top) = true ∧
+    ([0, 1, 2].map cR.rmFinal) = [false, true, false] := by decide +kernel
+
+/-- Designed counter-cell for the HYPOTHESIS of R3a: `Rᵢ` a preorder with
+`0 ≡ 1`, `Rₘ` adds `0 Rₘ 1` only, no fallible worlds. -/
+def cPre : FinCons :=
+  { n := 2, ri := fun _ _ => true, rm := fun x y => x == y || (x == 0 && y == 1),
+    fall := [false, false] }
+
+/-- **R3a needs antisymmetry**: at `cPre` (well-formed, not antisymmetric),
+`W ∖ ↓0 = ∅` is fixed by `j_C` but `0` is not `Rₘ`-final. -/
+theorem cPre_R3a_fails : cPre.wf = true ∧ cPre.antisymm = false ∧
+    cPre.R3aScreen = false := by decide +kernel
+
 /-! ## Negative gates (watched failing) -/
 
 /-- G1: `j_S` with the orientation reversed, `X ∖ ↑(S ∖ U)`. -/
@@ -270,6 +403,8 @@ end EsakiaNuclear.Cells
 #axioms_within EsakiaNuclear.Cells.anti2_isPoset [propext]
 #axioms_within EsakiaNuclear.Cells.ladder4_isPoset [propext]
 #axioms_within EsakiaNuclear.Cells.rn8_dual_iso_ladder4 [propext]
+#axioms_within EsakiaNuclear.Cells.chain3_dual_iso_chain2 [propext]
+#axioms_within EsakiaNuclear.Cells.bool4_dual_iso_anti2 [propext]
 #axioms_within EsakiaNuclear.Cells.c1_F1 [propext]
 #axioms_within EsakiaNuclear.Cells.c1_F2 [propext]
 #axioms_within EsakiaNuclear.Cells.c1_nuclei [propext]
@@ -313,6 +448,10 @@ end EsakiaNuclear.Cells
 #axioms_within EsakiaNuclear.Cells.gate_G2 [propext]
 #axioms_within EsakiaNuclear.Cells.gate_G3 [propext]
 #axioms_within EsakiaNuclear.Cells.gate_G4 [propext]
+#axioms_within EsakiaNuclear.Cells.cR_wf [propext]
+#axioms_within EsakiaNuclear.Cells.cR_R3 [propext]
+#axioms_within EsakiaNuclear.Cells.cR_nonvacuous [propext]
+#axioms_within EsakiaNuclear.Cells.cPre_R3a_fails [propext]
 
 -- The pin gate, watched failing: `c3_F6` does use `propext`, so the empty
 -- bound is rejected, and the rejection is the expected message.

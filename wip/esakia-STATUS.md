@@ -159,3 +159,50 @@ and non-nuclear morphism pairs present.
 Scope note on "exhaustive": the C1/C2 cells range over nuclei given as
 tables of length n; reading them as "every j : Nat → Nat" uses only that the
 predicates read j on the carrier (not yet written as a lemma).
+
+## 2026-10-24 21:04 BST: general and bridge statements; R3 screen; round 1 closed for review
+
+`wip/esakiaNuclearGen.lean` (in `wipshared`; `lake build
+wip.esakiaNuclearGen` green, 14 s): statements only, all OPEN.
+- G1 (Esakia 1974; [ABMZ] Thm 3.5 objects), G2 ([BG] Thm 30 = [ABMZ]
+  Thm 4.3), G3 ([BG] Cor 31), G4 ([BG] Thm 34 = [ABMZ] Thm 4.4), over a
+  hand-written prime-filter spectrum `Spec A` with the inclusion order and
+  the patch topology. Divergences D1–D5 recorded in the file header.
+- Statement-level axioms measured: G1, G2, G4 `[propext, Quot.sound]`, G3
+  `[]`. Two Mathlib choice leaks avoided at statement level, both found with
+  `#axiom_path`: `PartialOrder (Set A)` (via `Set.instCompleteAtomicBoolean
+  Algebra`), replaced by a written-out order on `Spec`; `Nucleus.instBot` and
+  `Nucleus.instMin` (via `Nucleus.le_apply`), avoided by naming nuclei by
+  their values (D5). Pin gate on G2 watched failing.
+- R1–R5 (OURS) relate the dual to `PLLND.SubframeModel` and
+  `PLLND.ConstraintModel`; statement-level axioms `[]`. Hypotheses trimmed to
+  what the (paper) argument uses: R1's and R2's clauses carry heredity only
+  where inflationarity or the meet law needs it; R3a has no `w ∉ F`; R3 split
+  into R3a (antisymmetric Rᵢ, any size), R3b (finite), R3c (any).
+
+R3 screen in the finite encoding (`wip/esakiaNuclearCells.lean`, section R):
+- `cR_R3`: at a designed 4-world model (one fallible top, Rₘ-edges 0→1 and
+  2→3) R2, R3a, R3b, R3c all PASS; non-vacuous (`j_C` neither id nor ⊤; the
+  only Rₘ-final non-fallible world is 1).
+- `cPre_R3a_fails`: R3a FAILS without antisymmetry of Rᵢ (2-world preorder
+  0 ≡ 1 with 0 Rₘ 1): the antisymmetry hypothesis is needed.
+
+Also added: `chain3_dual_iso_chain2`, `bool4_dual_iso_anti2` (each cell's
+poset is the computed dual of its algebra). All cell pins `[propext]`.
+
+`python3 scripts/check-imports.py`: 3037 imports in 1230 modules, every one
+resolves. `df -m /System/Volumes/Data`: 138 524 MB free at start, 138 206 MB
+at close.
+
+Termination condition of round 1: STATEMENTS AND CELLS DONE, HANDED BACK for
+Matthew's inspection (no proofs built, per the brief). No literature
+statement refuted at any cell; one plausible statement of ours refuted
+(`m_naive_refuted`); one hypothesis shown necessary (`cPre_R3a_fails`).
+
+Next round (only after review), in dependency order:
+1. Finite layer proofs F1–F10 (choice-free; plain fragment F1, F2, F10a
+   first), plus the congruence lemma that makes the table cells cover every
+   `j : Nat → Nat`.
+2. R1, R2, R4 (short), R3a/R3b/R3c, R5 (the ω-cell, by hand).
+3. General G1 (Esakia duality, objects) then G2–G4; Classical.choice enters
+   at the prime filter theorem and Alexander's subbasis theorem.
