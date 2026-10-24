@@ -869,7 +869,7 @@ Ordered by cost, cheapest first.
    algebras.*
 2. **[cheap]** Resolve the A2 discrepancy of §3.7(a): is the extra `∃p(Γ)` hypothesis needed?
 3. **[medium]** Extend `LaxLogic/Focusing/LJF.lean` to `LJF◯` and check the ◯-clause conjecture of §3.5:
-   `∃p(Γ, ◯φ) ≡ ∃p Γ ∧ ◯∃p(Γ, φ)`.
+   `∃p(Γ, ◯φ) ≡ ∃p Γ ∧ ◯∃p(Γ, φ)`; settled 2026-10-24: ⊢ PROVED, ⊣ REFUTED (§3.5, `wip/p2llSubConj.lean`).
 4. **[medium]** Write out PLL2's ND rules and the second-order constraint semantics of §3.3;
    prove soundness. Confirm `∀p.p ≡ ⊥`.
 5. **[larger]** Pitts-projection for PLL (§3.5): transport Pitts' argument, with the ◯-case new.
