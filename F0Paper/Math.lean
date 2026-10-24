@@ -6,7 +6,8 @@ notation table is new, for propositional lax logic and the objects of the F0
 development (`wip/f0Covers.lean`, `wip/f0Indep.lean`, `wip/f0Dyadic.lean`,
 `wip/f0Rat.lean`, `wip/f0Minkowski.lean`, `wip/gapWidth.lean`,
 `wip/embedNeg.lean`, `wip/floor.lean`, for v0.2 `wip/f0T6.lean` and
-`wip/f0SelfSim.lean`, for v0.4 `wip/f0SigOnto.lean`).
+`wip/f0SelfSim.lean`, for v0.4 `wip/f0SigOnto.lean`, for v0.4.1
+`wip/f0NotIso.lean`).
 
 * Binders become quantifiers without type annotations; hypotheses, and
   derivations `p : Γ ⊢ A` taken as arguments, become premises; instance
@@ -44,6 +45,7 @@ import wip.f0Structure
 import wip.f0Hole
 import wip.f0SelfSim
 import wip.f0SigOnto
+import wip.f0NotIso
 import wip.gapWidth
 import wip.embedNeg
 import wip.ladder8
@@ -270,7 +272,10 @@ def namedForms : List (Name × String × Nat) :=
    -- `wip/f0T6.lean`: `t6 = t5 ↠ t3`, `u = ◯¬◯⊥`, and regularity of `◯⊥`
    (``PLLND.F0.T6.t6F, "t_{6}", 9), (``PLLND.F0.T6.uF, "u", 9),
    (``PLLND.F0.T6.nne, "\\lnot\\lnot\\bigcirc\\bot", 4),
-   (``PLLND.F0.T6.regE, "\\lnot\\lnot\\bigcirc\\bot \\twoheadrightarrow \\bigcirc\\bot", 1)]
+   (``PLLND.F0.T6.regE, "\\lnot\\lnot\\bigcirc\\bot \\twoheadrightarrow \\bigcirc\\bot", 1),
+   -- `wip/f0NotIso.lean`: `c₁ = ◯t₃`, `g₁ = c₁ ↠ t₃`, and `t₆` again
+   (``PLLND.F0.NotIso.c1F, "c_{1}", 9), (``PLLND.F0.NotIso.g1F, "g_{1}", 9),
+   (``PLLND.F0.NotIso.t6F, "t_{6}", 9)]
 
 /-- The tables' lists of `wip/f0Covers.lean` are read as the sets they list. -/
 def tableLists : List Name :=
@@ -479,6 +484,8 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   | (``PLLND.SemUI.Deriv, #[Γ, a]) => return wrap 5 s!"{← ctx st Γ} \\vdash {← form st 1 a}"
   | (``Nonempty, #[j]) =>
     if isJudgement j then generic st0 p j
+    -- an order isomorphism exists: `A ≃o B` read as a relation
+    else if j.consumeMData.isAppOfArity ``OrderIso 4 then generic st0 p j
     else return "\\mathsf{Nonempty}(" ++ (← generic st 0 j) ++ ")"
   | (``PLLND.SemUI.Interd, #[a, b]) => return wrap 5 s!"{← form st 1 a} \\dashv\\vdash {← form st 1 b}"
   | (``PLLND.Consequence, #[Γ, a]) => return wrap 5 s!"{← ctx st Γ} \\models {← form st 1 a}"
@@ -596,6 +603,12 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
         (← generic st 0 b) ++ "\\}"
   | (``OrderIso, #[a, b, _, _]) => return wrap 5 ((← generic st 6 a) ++ " \\simeq_{o} " ++ (← generic st 6 b))
   | (``Option, #[a]) => return "\\mathsf{Option}\\," ++ (← generic st 9 a)
+  -- the principal filter `[a, ⊤]`, a set used as a type, and the class `⟦t₃⟧`
+  -- (`wip/f0NotIso.lean`), written by its representative as elsewhere
+  | (``Set.Ici, #[_, _, a]) => return "[" ++ (← generic st 0 a) ++ ", \\top]"
+  | (``Set.Elem, #[_, s]) => generic st0 p s
+  | (``PLLND.F0.NotIso.T3, #[]) => pure "t_{3}"
+  | (``PLLND.F0.NotIso.cls, #[φ, _]) => form st p φ
   | (``Set, #[a]) => return "\\mathsf{Set}\\," ++ (← generic st 9 a)
   -- lattice polynomials (`wip/f0Dyadic.lean`): `⊓`, `⊔`, and their constants
   | (``PLLND.F0.LPoly.bot, #[]) => pure "\\bot"
@@ -656,6 +669,8 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
     | (``Nonempty, #[j]) =>
       match j.consumeMData.getAppFnArgs with
       | (``PLLND.LaxND, #[Γ, a]) => return wrap 5 s!"{← ctx st Γ} \\nvdash {← form st 1 a}"
+      | (``OrderIso, #[a, b, _, _]) =>
+        return wrap 5 ((← generic st 6 a) ++ " \\not\\simeq_{o} " ++ (← generic st 6 b))
       | _ => return wrap 4 s!"\\lnot {← generic st 6 q}"
     | (``PLLND.SemUI.Deriv, #[Γ, a]) => return wrap 5 s!"{← ctx st Γ} \\nvdash {← form st 1 a}"
     | (``PLLND.ConstraintModel.force, #[m, w, a]) =>
@@ -866,7 +881,11 @@ partial def quant (st0 : St) (p : Nat) (e : Expr) : MetaM String :=
       let d ← x.fvarId!.getDecl
       if d.binderInfo.isInstImplicit then continue
       let ty := d.type
-      if (← isProp ty) || isJudgement ty then
+      -- an order isomorphism `f : A ≃o B` used nowhere after is the premise `A ≃o B`
+      let mut unused := !body.containsFVar x.fvarId!
+      for j in [i+1:xs.size] do
+        if (← xs[j]!.fvarId!.getDecl).type.containsFVar x.fvarId! then unused := false
+      if (← isProp ty) || isJudgement ty || (ty.consumeMData.isAppOfArity ``OrderIso 4 && unused) then
         prems := prems.push (← generic st 3 ty)
       else
         let nm := ident d.userName.toString

@@ -8,9 +8,9 @@ open Verso.Genre.Manual
 
 Each question below is OPEN.
 
-* _Is $`[t_3, \top]` order-isomorphic to $`F_0`?_  Not by $`\sigma`, which misses
-  $`t_5` (Section 10), and not by any isomorphism of Heyting algebras with a
-  nucleus (pen remark, Section 10).
+* _Is any proper filter $`[p, \top]`, $`p \ne \bot`, order-isomorphic to $`F_0`?_
+  A necessary condition: $`[p, \top]` contains a member lying in every disjoint
+  pair (Section 10).
 * _Are the bases $`\sigma^{n}(\bot)` cofinal in $`F_0`, or do they stop below an
   unfilled cut?_
 * _Which bases $`a` give a faithful copy?_  $`\bigcirc a \ne a` is necessary;
