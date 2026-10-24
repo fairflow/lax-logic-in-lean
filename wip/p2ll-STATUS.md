@@ -55,7 +55,7 @@ so that a switch to two types is cheap if Matthew asks for it.
   a binder by a binder and needs no shift.
 * `rpBody φ := imp (imp (shiftAt 0 φ) (bvar 0)) (bvar 0)`;
   `circJ φ := allJ (rpBody φ)`   the DEFINED ◯ of the guarded calculus;
-  `rp φ    := all  (rpBody φ)`   Aczel's J (plain ∀);
+  `rp φ    := all  (rpBody φ)`   Aczel's RP (plain ∀);
   `allNuc ψ := all (imp (imp (circ (bvar 0)) (bvar 0)) ψ)`   P2LL's ∀°p.ψ;
   `circNuc φ := allNuc (rpBody φ)`   P2LL's ∀°p.((φ → p) → p).
   For `LC φ`: `(rpBody φ).opn u = imp (imp φ u) u`.
@@ -110,7 +110,7 @@ algebra.
 
 ## 3. Cells (rule 8: fragment first), files `wip/p2ll*.lean`
 
-F1  IPC2ND, LC φ:  `[φ] ⊢ rp φ` and `[rp φ] ⊢ φ`.  Aczel's J is the IDENTITY
+F1  IPC2ND, LC φ:  `[φ] ⊢ rp φ` and `[rp φ] ⊢ φ`.  Aczel's RP is the IDENTITY
     nucleus in IPC2; the plan's Props A and B reduce to the unit law and to
     `◯φ ⊬ φ`.  (The identity is the ◯-free instance of the defined ◯.)
 F2  `JND (fun _ _ => True) Θ [circJ φ] φ`: with the guard dropped entirely the
@@ -167,4 +167,63 @@ Not attempted: cut elimination, Girard candidates (plan §4, §6.5).
   underdetermined antecedent in C7's `.iden (by simp)`, and a circular
   instantiation `q := s` in C5's derivation of A (now `q := ⊤`).
   §4 unchanged: OPEN.  Design points for Matthew: one formula type with inert
-  constructors (vs two types); Aczel's J is the identity in IPC2 (F1).
+  constructors (vs two types); Aczel's RP is the identity in IPC2 (F1).
+
+## 6. Revision 2 of the rules (2026-10-24, after Matthew's GO): well-formedness
+
+Found while planning I₁, before any proof was built on it (rule 7).
+
+**I₁ was FALSE for the rules of §2.2/§2.4.**  The statements quantify over
+all formulas, dangling indices included, and the rules derived ill-formed
+sequents: `[bvar 0] ⊢_P2LL ◯(bvar 0)` by `iden`, `laxIntro`.  Its translation
+`[bvar 0] ⊢_J ∀°q.((bvar 1 → q) → q)` (the body shifts under the new binder) is
+not derivable: the two-element Boolean algebra with ∀ and ∀° as meets over
+{0, 1}, `bvar 0 ↦ 1`, `bvar 1 ↦ 0`, satisfies the hypothesis and refutes the
+conclusion, and `JND IsJ` is sound for it.  (Derivability half: two rule
+applications; refutation half: a paper argument, not mechanised, since no
+semantics for `JND` is built.)  The inductive proof of I₁ needs `LC` at every
+`laxIntro`/`laxElim` node (C1/C2 need it: for non-closed `φ` the body of `◯°φ`
+is `(shiftAt 0 φ → q) → q`, not `(φ → q) → q`), and with the old rules an
+inner node could be ill-formed even under a well-formed end-sequent (`impIntro`
+on a dangling hypothesis, then a cut through it).
+
+**Repair, uniform principle:** every rule whose conclusion is not locally closed
+by virtue of its premises carries the missing closure as a side condition:
+
+    iden      (LC φ)        falsoElim (LC φ)        impIntro (LC φ)   [the discharged hypothesis]
+    orIntro1  (LC ψ)        orIntro2  (LC φ)        allIntro, allJIntro (lcAt 1 ψ)   [the body]
+    allElim, allJElim (LC χ)   [as before]
+
+in `LaxND2`, `IPC2ND`, `JND` (and `IPC2NoLC`, which keeps all of them except
+the one on `∀E`; C5 still derives ⊥, so the cell is sharper).  Consequence,
+PROVED: `LaxND2.lc : LaxND2 Γ φ → LC φ` and `JND.lc : JND J Θ Γ φ → LC φ`,
+`[propext]` (through `lc_opn`).  The seven statements of §4 are unchanged in
+text; their calculi now enforce well-formedness, so they are about locally
+closed formulas, as intended.  The cells of §3 all re-prove with `LC` proofs at
+the leaves; the `LC` hypotheses of C1–C3 and C7 are now also derivable from
+the premises (`lc`) but kept as reported.
+
+**Why `lcAt 1 ψ` on `∀I` rather than a fresh name.**  The condition is
+redundant given one fresh name (`lcAt_of_openRec`: an opened body closed at 0
+was closed at 1), but a fresh-name supply over `String` is classical in core:
+`String.length_push`/`length_append` go through the UTF-8 decoder and
+`Classical.propDecidable`, so `freshStr L := (String.join L).push 'x'` with
+`freshStr ∉ L` was `[propext, Classical.choice, Quot.sound]` (built and
+traced with `#axiom_path`, then dropped).  No fresh name is chosen anywhere in
+the development.
+
+**Also found:** plain `simp` decides `0 = k + 1` by `Nat.right_eq_add`, whose
+proof is classical; `rel_openRec` and `toJ_openRec` use `simp only` with an
+explicit `if_neg`.  Syntax lemmas added for the proofs: `lcAt_shiftAt`,
+`shiftAt_openRec`, `lcAt_of_openRec`, `lcAt_toJ`/`lc_toJ`, `lcAt_rel`/`lc_rel`,
+`rel_openRec`/`rel_opn` (`(ψ^χ)* = ψ*^χ*`), `toJ_openRec`/`toJ_opn`
+(`(ψ^χ)° = ψ°^χ°` for `LC χ`), all `[]` or `[propext]`.
+
+Naming (Matthew): Aczel's operator is RP, `RP(φ) := ∀p.((φ → p) → p)`; the
+Lean name `rp` stays; J is the class of J-formulas and the guarded calculus.
+
+## 5. Log (continued)
+
+* 2026-10-24 (GO received): rules revised as in §6 before any theorem was
+  built; everything rebuilt and re-pinned (`LaxND2.lc`, `JND.lc` new); report
+  to the manager, then wait, per rule 7.

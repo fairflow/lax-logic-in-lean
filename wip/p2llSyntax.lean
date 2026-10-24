@@ -19,7 +19,12 @@ this module is kept small so that a switch to two types is cheap.
 Binders are locally nameless (plan §6.1): `fvar s` is a named free variable,
 `bvar n` a de Bruijn index, and `ψ.opn u` opens the outermost binder of the body
 `ψ` with `u`.  Local closure is the bounded `lcAt k` of `LaxLogic/QLL/Lc.lean`
-(no loose index at or above `k`), so `openRec_lcAt` needs no fresh-name supply.
+(no loose index at or above `k`), so `openRec_lcAt` needs no fresh-name supply;
+nor does anything else here: the calculi carry local closure as a side condition
+wherever a rule's conclusion does not inherit it from the premises
+(`wip/p2llND.lean`), so no fresh name is ever chosen.  (A fresh-name supply over
+`String` would be classical: core's `String.length_*` lemmas go through the
+UTF-8 decoder and `Classical.propDecidable`.)
 
 The one place a binder is ADDED to an existing formula is the defined modality
 `◯°φ := ∀°q.((φ → q) → q)`: the body `φ` moves under a new binder, so its loose
@@ -159,6 +164,61 @@ theorem shiftAt_lcAt : ∀ (d : Nat) (φ : Fm), lcAt d φ → shiftAt d φ = φ
   | d, .all ψ, h => by simp only [shiftAt, shiftAt_lcAt (d + 1) ψ h]
   | d, .allJ ψ, h => by simp only [shiftAt, shiftAt_lcAt (d + 1) ψ h]
 
+/-- Shifting raises the bound by one. -/
+theorem lcAt_shiftAt : ∀ (d k : Nat) (φ : Fm), lcAt k φ → lcAt (k + 1) (shiftAt d φ)
+  | _, _, .fvar _, _ => trivial
+  | d, k, .bvar n, h => by
+      have hn : n < k := h
+      show lcAt (k + 1) (if d ≤ n then Fm.bvar (n + 1) else Fm.bvar n)
+      split
+      · exact Nat.succ_lt_succ hn
+      · exact Nat.lt_succ_of_lt hn
+  | _, _, .bot, _ => trivial
+  | d, k, .and φ ψ, h => ⟨lcAt_shiftAt d k φ h.1, lcAt_shiftAt d k ψ h.2⟩
+  | d, k, .or φ ψ, h => ⟨lcAt_shiftAt d k φ h.1, lcAt_shiftAt d k ψ h.2⟩
+  | d, k, .imp φ ψ, h => ⟨lcAt_shiftAt d k φ h.1, lcAt_shiftAt d k ψ h.2⟩
+  | d, k, .circ φ, h => lcAt_shiftAt d k φ h
+  | d, k, .all ψ, h => lcAt_shiftAt (d + 1) (k + 1) ψ h
+  | d, k, .allJ ψ, h => lcAt_shiftAt (d + 1) (k + 1) ψ h
+
+/-- Opening then shifting is shifting then opening one index higher, for a `u`
+with no loose index the shift could move. -/
+theorem shiftAt_openRec : ∀ (d k : Nat) (u φ : Fm), d ≤ k → lcAt d u →
+    shiftAt d (openRec k u φ) = openRec (k + 1) u (shiftAt d φ)
+  | _, _, _, .fvar _, _, _ => rfl
+  | d, k, u, .bvar n, hdk, hu => by
+      by_cases hn : n = k
+      · subst hn
+        have h1 : openRec n u (Fm.bvar n) = u := by simp [openRec]
+        have h2 : shiftAt d (Fm.bvar n) = Fm.bvar (n + 1) := by simp [shiftAt, hdk]
+        rw [h1, h2, shiftAt_lcAt d u hu]
+        simp [openRec]
+      · have h1 : openRec k u (Fm.bvar n) = Fm.bvar n := by simp [openRec, hn]
+        rw [h1]
+        by_cases hd : d ≤ n
+        · have h2 : shiftAt d (Fm.bvar n) = Fm.bvar (n + 1) := by simp [shiftAt, hd]
+          rw [h2]
+          simp [openRec, hn]
+        · have h2 : shiftAt d (Fm.bvar n) = Fm.bvar n := by simp [shiftAt, hd]
+          have hn' : n ≠ k + 1 := fun h => hd (h ▸ Nat.le_succ_of_le hdk)
+          rw [h2]
+          simp [openRec, hn']
+  | _, _, _, .bot, _, _ => rfl
+  | d, k, u, .and φ ψ, hdk, hu => by
+      simp only [openRec, shiftAt, shiftAt_openRec d k u φ hdk hu, shiftAt_openRec d k u ψ hdk hu]
+  | d, k, u, .or φ ψ, hdk, hu => by
+      simp only [openRec, shiftAt, shiftAt_openRec d k u φ hdk hu, shiftAt_openRec d k u ψ hdk hu]
+  | d, k, u, .imp φ ψ, hdk, hu => by
+      simp only [openRec, shiftAt, shiftAt_openRec d k u φ hdk hu, shiftAt_openRec d k u ψ hdk hu]
+  | d, k, u, .circ φ, hdk, hu => by
+      simp only [openRec, shiftAt, shiftAt_openRec d k u φ hdk hu]
+  | d, k, u, .all ψ, hdk, hu => by
+      simp only [openRec, shiftAt,
+        shiftAt_openRec (d + 1) (k + 1) u ψ (Nat.succ_le_succ hdk) (lcAt_mono (Nat.le_succ d) u hu)]
+  | d, k, u, .allJ ψ, hdk, hu => by
+      simp only [openRec, shiftAt,
+        shiftAt_openRec (d + 1) (k + 1) u ψ (Nat.succ_le_succ hdk) (lcAt_mono (Nat.le_succ d) u hu)]
+
 /-- Opening lowers the bound by one. -/
 theorem lcAt_openRec : ∀ (φ : Fm) (k : Nat) (u : Fm), lcAt k u → lcAt (k + 1) φ →
     lcAt k (openRec k u φ)
@@ -182,11 +242,31 @@ theorem lcAt_openRec : ∀ (φ : Fm) (k : Nat) (u : Fm), lcAt k u → lcAt (k + 
 theorem lc_opn {ψ : Fm} (u : Fm) (hu : LC u) (h : lcAt 1 ψ) : LC (ψ.opn u) :=
   lcAt_openRec ψ 0 u hu h
 
+/-- The converse: a body whose opening is closed at `k` was closed at `k + 1`
+(for any `u`; the opened occurrences were exactly the index `k`).  This is why
+the side condition `lcAt 1 ψ` on `∀I` is redundant given any one fresh name. -/
+theorem lcAt_of_openRec : ∀ (k : Nat) (u φ : Fm), lcAt k (openRec k u φ) → lcAt (k + 1) φ
+  | _, _, .fvar _, _ => trivial
+  | k, u, .bvar n, h => by
+      by_cases hn : n = k
+      · subst hn
+        exact Nat.lt_succ_self n
+      · have h' : lcAt k (Fm.bvar n) := by simpa [openRec, hn] using h
+        exact Nat.lt_succ_of_lt h'
+  | _, _, .bot, _ => trivial
+  | k, u, .and φ ψ, h => ⟨lcAt_of_openRec k u φ h.1, lcAt_of_openRec k u ψ h.2⟩
+  | k, u, .or φ ψ, h => ⟨lcAt_of_openRec k u φ h.1, lcAt_of_openRec k u ψ h.2⟩
+  | k, u, .imp φ ψ, h => ⟨lcAt_of_openRec k u φ h.1, lcAt_of_openRec k u ψ h.2⟩
+  | k, u, .circ φ, h => lcAt_of_openRec k u φ h
+  | k, u, .all ψ, h => lcAt_of_openRec (k + 1) u ψ h
+  | k, u, .allJ ψ, h => lcAt_of_openRec (k + 1) u ψ h
+
 /-! ## The modalities and the relativised quantifier
 
 Written with the plan's names: `◯°` is the modality the guarded calculus
-DEFINES, `J` is Aczel's Russell–Prawitz modality (plain `∀`), `∀°` is the
-relativised quantifier of P2LL (plan §1.6). -/
+DEFINES, `RP` is Aczel's Russell–Prawitz modality (plain `∀`), `∀°` is the
+relativised quantifier of P2LL (plan §1.6).  The letter J is reserved for the
+J-formulas and the guarded calculus. -/
 
 /-- `(φ → q) → q` as the body of a binder on `q`; `φ` moves under the binder. -/
 def rpBody (φ : Fm) : Fm := .imp (.imp (shiftAt 0 φ) (.bvar 0)) (.bvar 0)
@@ -194,7 +274,7 @@ def rpBody (φ : Fm) : Fm := .imp (.imp (shiftAt 0 φ) (.bvar 0)) (.bvar 0)
 /-- The defined modality of the guarded calculus: `◯°φ := ∀°q.((φ → q) → q)`. -/
 def circJ (φ : Fm) : Fm := .allJ (rpBody φ)
 
-/-- Aczel's Russell–Prawitz modality, `Jφ := ∀q.((φ → q) → q)` with the plain
+/-- Aczel's Russell–Prawitz modality, `RP(φ) := ∀q.((φ → q) → q)` with the plain
 quantifier (survey §2.5(ii), plan §1.6). -/
 def rp (φ : Fm) : Fm := .all (rpBody φ)
 
@@ -339,6 +419,85 @@ theorem rel_eq_self_of_allJFree : ∀ φ : Fm, allJFree φ → rel φ = φ
   | .all ψ, h => by simp only [rel, rel_eq_self_of_allJFree ψ h]
   | .allJ _, h => h.elim
 
+/-! ## The translations preserve local closure and commute with opening
+
+These are the four facts the interpretation theorems need at the quantifier
+cases (`wip/p2llStatements.lean`): `(ψ^χ)* = ψ*^χ*` unconditionally, and
+`(ψ^χ)° = ψ°^χ°` for locally closed `χ` (the `◯` case shifts, `shiftAt_openRec`).
+The equalities are proved with `simp only`: plain `simp` decides `0 = k + 1` by
+`Nat.right_eq_add`, whose proof is classical. -/
+
+theorem lcAt_toJ : ∀ (k : Nat) (φ : Fm), lcAt k φ → lcAt k (toJ φ)
+  | _, .fvar _, _ => trivial
+  | _, .bvar _, h => h
+  | _, .bot, _ => trivial
+  | k, .and φ ψ, h => ⟨lcAt_toJ k φ h.1, lcAt_toJ k ψ h.2⟩
+  | k, .or φ ψ, h => ⟨lcAt_toJ k φ h.1, lcAt_toJ k ψ h.2⟩
+  | k, .imp φ ψ, h => ⟨lcAt_toJ k φ h.1, lcAt_toJ k ψ h.2⟩
+  | k, .circ φ, h =>
+      ⟨⟨lcAt_shiftAt 0 k (toJ φ) (lcAt_toJ k φ h), Nat.succ_pos k⟩, Nat.succ_pos k⟩
+  | k, .all ψ, h => lcAt_toJ (k + 1) ψ h
+  | k, .allJ ψ, h => lcAt_toJ (k + 1) ψ h
+
+theorem lc_toJ {φ : Fm} (h : LC φ) : LC (toJ φ) := lcAt_toJ 0 φ h
+
+theorem lcAt_rel : ∀ (k : Nat) (φ : Fm), lcAt k φ → lcAt k (rel φ)
+  | _, .fvar _, _ => trivial
+  | _, .bvar _, h => h
+  | _, .bot, _ => trivial
+  | k, .and φ ψ, h => ⟨lcAt_rel k φ h.1, lcAt_rel k ψ h.2⟩
+  | k, .or φ ψ, h => ⟨lcAt_rel k φ h.1, lcAt_rel k ψ h.2⟩
+  | k, .imp φ ψ, h => ⟨lcAt_rel k φ h.1, lcAt_rel k ψ h.2⟩
+  | k, .circ φ, h => lcAt_rel k φ h
+  | k, .all ψ, h => lcAt_rel (k + 1) ψ h
+  | k, .allJ ψ, h => ⟨⟨Nat.succ_pos k, Nat.succ_pos k⟩, lcAt_rel (k + 1) ψ h⟩
+
+theorem lc_rel {φ : Fm} (h : LC φ) : LC (rel φ) := lcAt_rel 0 φ h
+
+theorem rel_openRec : ∀ (k : Nat) (u ψ : Fm), rel (openRec k u ψ) = openRec k (rel u) (rel ψ)
+  | _, _, .fvar _ => rfl
+  | k, u, .bvar n => by
+      by_cases hn : n = k
+      · subst hn
+        simp [openRec, rel]
+      · simp [openRec, rel, hn]
+  | _, _, .bot => rfl
+  | k, u, .and φ ψ => by simp only [openRec, rel, rel_openRec k u φ, rel_openRec k u ψ]
+  | k, u, .or φ ψ => by simp only [openRec, rel, rel_openRec k u φ, rel_openRec k u ψ]
+  | k, u, .imp φ ψ => by simp only [openRec, rel, rel_openRec k u φ, rel_openRec k u ψ]
+  | k, u, .circ φ => by simp only [openRec, rel, rel_openRec k u φ]
+  | k, u, .all ψ => by simp only [openRec, rel, rel_openRec (k + 1) u ψ]
+  | k, u, .allJ ψ => by
+      have h0 : (0 : Nat) ≠ k + 1 := (Nat.succ_ne_zero k).symm
+      simp only [openRec, rel, allNuc, rel_openRec (k + 1) u ψ, if_neg h0]
+
+theorem rel_opn (ψ u : Fm) : rel (ψ.opn u) = (rel ψ).opn (rel u) := rel_openRec 0 u ψ
+
+theorem toJ_openRec : ∀ (k : Nat) (u ψ : Fm), LC u →
+    toJ (openRec k u ψ) = openRec k (toJ u) (toJ ψ)
+  | _, _, .fvar _, _ => rfl
+  | k, u, .bvar n, _ => by
+      by_cases hn : n = k
+      · subst hn
+        simp [openRec, toJ]
+      · simp [openRec, toJ, hn]
+  | _, _, .bot, _ => rfl
+  | k, u, .and φ ψ, hu => by
+      simp only [openRec, toJ, toJ_openRec k u φ hu, toJ_openRec k u ψ hu]
+  | k, u, .or φ ψ, hu => by
+      simp only [openRec, toJ, toJ_openRec k u φ hu, toJ_openRec k u ψ hu]
+  | k, u, .imp φ ψ, hu => by
+      simp only [openRec, toJ, toJ_openRec k u φ hu, toJ_openRec k u ψ hu]
+  | k, u, .circ φ, hu => by
+      have h0 : (0 : Nat) ≠ k + 1 := (Nat.succ_ne_zero k).symm
+      simp only [openRec, toJ, toJ_openRec k u φ hu, circJ, rpBody, if_neg h0,
+        shiftAt_openRec 0 k (toJ u) (toJ φ) (Nat.zero_le k) (lc_toJ hu)]
+  | k, u, .all ψ, hu => by simp only [openRec, toJ, toJ_openRec (k + 1) u ψ hu]
+  | k, u, .allJ ψ, hu => by simp only [openRec, toJ, toJ_openRec (k + 1) u ψ hu]
+
+theorem toJ_opn {u : Fm} (ψ : Fm) (hu : LC u) : toJ (ψ.opn u) = (toJ ψ).opn (toJ u) :=
+  toJ_openRec 0 u ψ hu
+
 end Fm
 
 end P2LL
@@ -355,3 +514,10 @@ end P2LL
 #axioms_within P2LL.Fm.allJFree_rel []
 #axioms_within P2LL.Fm.toJ_eq_self_of_circFree [propext]
 #axioms_within P2LL.Fm.rel_eq_self_of_allJFree [propext]
+#axioms_within P2LL.Fm.lcAt_shiftAt []
+#axioms_within P2LL.Fm.shiftAt_openRec [propext]
+#axioms_within P2LL.Fm.lcAt_of_openRec [propext]
+#axioms_within P2LL.Fm.lcAt_toJ []
+#axioms_within P2LL.Fm.lcAt_rel []
+#axioms_within P2LL.Fm.rel_openRec [propext]
+#axioms_within P2LL.Fm.toJ_openRec [propext]
