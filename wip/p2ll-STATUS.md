@@ -281,3 +281,86 @@ before, 138205 after.
 * 2026-10-24 (phase 2, step 1): I₁, Fix, I₂ PROVED, `[propext]`; `IsJ`,
   `IPC2ND` moved to `Type` (§7); checkpoint report to the manager, then RTP,
   substitution of equivalents, RTJ, MP, MJ.
+
+## 8. Phase 2, step 3 (2026-10-24): RTP, RTJ, MP, MJ are REFUTED as stated (`wip/p2llBoolSem.lean`)
+
+Found at the start of step 3, before any proof was built on them (rule 7);
+reported to the manager, work stopped there pending the repaired statements.
+
+**The fault is in the statements, not the calculi.**  The four statements
+quantify over the whole shared type `Fm` (§2.1: one formula type, each
+calculus without rules for the other's connective).  A P2LL formula may
+contain `allJ`, inert in `LaxND2`; `(−)°` is the identity on it and `(−)*`
+turns it into a relativised `∀` that P2LL CAN use.  Dually for `circ` in the
+guarded calculus.  So each round trip fails on formulas outside its fragment:
+
+    RTP   ∀°q.q ⊬_P2LL ∀p.((◯p → p) → p)                         (rtp_fails₁)
+          ∀p.((◯p → p) → (p → p)) ⊬_P2LL ∀°q.(q → q)             (rtp_fails₂)
+    MP    Γ = [], φ = ∀°q.(q → q):   ⊢_J φ (jd_allJ_refl),  ⊬_P2LL φ (mp_fails)
+    RTJ   ◯⊥ ⊬_J ∀°q.((⊥ → q) → q)                                (rtj_fails₁)
+          ∀°q.((⊤ → q) → q) ⊬_J ◯⊤                                (rtj_fails₂)
+    MJ    Θ = [], Γ = [], φ = ◯⊤:   ⊢_P2LL ◯⊤ (pd_circ_top),  ⊬_J ◯⊤ (mj_fails)
+
+REFUTED, kernel-checked:
+
+    roundTripP2LL_false : ¬ RoundTripP2LL        roundTripJ_false : ¬ RoundTripJ
+    mutualP2LL_false    : ¬ MutualP2LL           mutualJ_false    : ¬ MutualJ
+
+**The countermodels.**  A two-valued semantics on the whole type,
+`beval : BSem → (String → Bool) → Fm → (Nat → Bool) → Bool`: atoms by a
+valuation, indices by an environment, connectives Boolean, `∀` the meet over
+`Bool`, and the two connectives inert in one calculus by the parameters of
+`BSem`: `SP c` (`circ` the identity, `allJ` the constant `c`) for P2LL, `SJ c`
+(`circ` the constant `c`, `allJ` the meet) for the guarded calculus.
+Soundness `LaxND2.bsound` (every `S` with `circ = id`) and `JND.bsound` (every
+`S` with `allJ` the meet, every class `J`: `∀°E` has full comprehension on
+this model), by recursion on the derivation; substitution lemma `beval_opn`
+(`beval_openRec` + `insE_zero`); the cofinite `∀I` needs one name outside a
+finite list (`fresh`).  I₁, Fix, I₂ hold on the whole type (§7), so nothing of
+§7 is touched.
+
+**Pins.**  The environment and evaluation lemmas and the two witness
+derivations are `[]`.  `fresh_not_mem`, both soundness theorems and the
+refutations are `[propext, Classical.choice, Quot.sound]`, the C6 profile:
+core's infinitude of `String` is classical (`String.toList_ofList`,
+`String.ext`, `String.length_pushn`, `Nat.repr_inj`, each
+`[propext, Classical.choice, Quot.sound]`; `String` is a UTF-8 `ByteArray`
+in v4.31), and `collectAxioms` charges every constant mentioned, so even the
+statements of `sumLen` and `fresh` carry it (watched: `len_le_sumLen`, a
+pure `Nat` argument, failed at `[]` with the full profile).  With `Nat`
+variables the refutations would be `[propext]`.  The positive theorems of the
+campaign choose no names and stay at `[propext]`.
+
+**Proposed repaired statements (NOT adopted; await the manager, rule 7):**
+
+    RTP'  ∀ φ, LC φ → allJFree φ →
+            Nonempty (LaxND2 [φ] (rel (toJ φ))) ∧ Nonempty (LaxND2 [rel (toJ φ)] φ)
+    RTJ'  ∀ Θ φ, LC φ → circFree φ →
+            Nonempty (JND IsJ Θ [φ] (toJ (rel φ))) ∧ Nonempty (JND IsJ Θ [toJ (rel φ)] φ)
+    MP'   ∀ Γ φ, (∀ ψ ∈ Γ, LC ψ ∧ allJFree ψ) → LC φ → allJFree φ →
+            (Nonempty (LaxND2 Γ φ) ↔ Nonempty (JND IsJ [] (Γ.map toJ) (toJ φ)))
+    MJ'   ∀ Θ Γ φ, (∀ ψ ∈ Γ, LC ψ ∧ circFree ψ) → LC φ → circFree φ →
+            (Nonempty (JND IsJ Θ Γ φ) ↔ Nonempty (LaxND2 (guards Θ ++ Γ.map rel) (rel φ)))
+
+`allJFree`/`circFree` are the fragment predicates of §2.1
+(`wip/p2llSyntax.lean`).  The hypothesis on `Γ` is needed as well: at
+`Γ = [∀°q.(q → q) → ⊥]`, `φ = ⊥` (allJ-free) the right side of MP holds and
+the left fails, by the same model.
+
+**Planned proofs of the repaired statements (OPEN, not started).**  RTP' by
+simultaneous induction on the size of `φ` (size is invariant under opening at
+an atom), cut by `→I`/`→E`, the `◯` case from C7 with
+`rel (circJ χ) = circNuc (rel χ)` (needs `rel_shiftAt`).  RTJ' likewise; its
+`∀°` case instantiates at `◯°s` (a J-formula by the `allJ` and `imp` clauses)
+and needs the congruence `Γ ⊢ A ↔ B  ⟹  Γ ⊢ openRec k A ψ ↔ openRec k B ψ`,
+to be proved for ALL `k` at once so that the binder case opens with the rule's
+own eigenvariable and commutes the two openings: no fresh name is chosen, and
+the pins stay `[propext]`.  MP', MJ' from I₁, I₂, RTP'/RTJ' and a multi-cut
+(substitution of derivations for hypotheses); MJ' also discharges the
+translated guards `◯°s → s` by C3 at the declared `s`.
+
+## 5. Log (continued)
+
+* 2026-10-24 (phase 2, step 3): RTP, RTJ, MP, MJ REFUTED as stated (§8),
+  kernel-checked on a two-valued semantics; repaired statements proposed;
+  STOP, report to the manager, nothing built on the repair.

@@ -7,12 +7,15 @@ import wip.p2llJND
 File 4 of the P2LL definability campaign (`wip/p2ll-STATUS.md`).  Each
 statement below is a `def … : Prop`, its text fixed before any proof (the
 `FRJO` pattern for OPEN claims, `TOOLS.md`): a `sorry` would assert, and an
-open case is data, never a sorried theorem (CLAUDE.md rule 1).  The proofs live
-in `wip/p2llInterp.lean` (I₁, Fix, I₂: `interpToJ`, `fixOfIsJ`,
-`interpToP2LL`, 2026-10-24); each docstring records PROVED (with the theorem
-name) or OPEN.  The cells already PROVED are in `wip/p2llND.lean` (F1, C5, C7)
-and `wip/p2llJND.lean` (C1, C2, C3, F2); the PLL-level refuter C6 is
-`wip/p2llOrCell.lean`.
+open case is data, never a sorried theorem (CLAUDE.md rule 1).  Each docstring
+records the status, PROVED (with the theorem name) or REFUTED (with the
+refuting cell); the proofs live in `wip/p2llInterp.lean` (I₁, Fix, I₂:
+`interpToJ`, `fixOfIsJ`, `interpToP2LL`, 2026-10-24) and the refutations in
+`wip/p2llBoolSem.lean` (RTP, RTJ, MP, MJ as stated, 2026-10-24: each fails
+only on formulas outside the fragment its calculus owns, see §8 of the status
+note; the restricted statements are proposed there).  The cells already PROVED
+are in `wip/p2llND.lean` (F1, C5, C7) and `wip/p2llJND.lean` (C1, C2, C3, F2);
+the PLL-level refuter C6 is `wip/p2llOrCell.lean`.
 
 Notation of the statements (plan §1.6, `wip/p2llSyntax.lean`):
 
@@ -73,7 +76,12 @@ formula by congruence:
     LC φ   ⟹   φ ⊢_P2LL (φ°)*   and   (φ°)* ⊢_P2LL φ.
 
 The one-◯ instance is PROVED (C7, `LaxND2.circ_to_circNuc`,
-`LaxND2.circNuc_to_circ`).  OPEN in general. -/
+`LaxND2.circNuc_to_circ`).  REFUTED AS STATED (`roundTripP2LL_false`,
+`wip/p2llBoolSem.lean`): `φ` ranges over the whole shared formula type, and
+at `φ := ∀°q.q` (`allJ (bvar 0)`), inert in P2LL, the first half fails
+(`rtp_fails₁`); at `∀°q.(q → q)` the second half fails (`rtp_fails₂`).  The
+intended statement restricts `φ` to `allJFree`; proposed in the status note
+§8, not yet adopted. -/
 def RoundTripP2LL : Prop :=
   ∀ φ : Fm, LC φ →
     Nonempty (LaxND2 [φ] (rel (toJ φ))) ∧ Nonempty (LaxND2 [rel (toJ φ)] φ)
@@ -84,7 +92,11 @@ def RoundTripP2LL : Prop :=
 
 Route: the `∀°` case instantiates at `◯°s` for a fresh plain `s` (a J-formula
 by the `allJ` and `imp` clauses) and uses `◯°s ⊣⊢ s` under the hypothesis
-`◯°s → s`; needs substitution of equivalents.  OPEN. -/
+`◯°s → s`; needs substitution of equivalents.  REFUTED AS STATED
+(`roundTripJ_false`, `wip/p2llBoolSem.lean`): at `φ := ◯⊥`, inert in the
+guarded calculus, the first half fails (`rtj_fails₁`); at `◯⊤` the second
+(`rtj_fails₂`).  The intended statement restricts `φ` to `circFree`; proposed
+in the status note §8, not yet adopted. -/
 def RoundTripJ : Prop :=
   ∀ (Θ : List String) (φ : Fm), LC φ →
     Nonempty (JND IsJ Θ [φ] (toJ (rel φ))) ∧ Nonempty (JND IsJ Θ [toJ (rel φ)] φ)
@@ -93,7 +105,10 @@ def RoundTripJ : Prop :=
 
     Γ ⊢_P2LL φ   ⟺   [] ; Γ° ⊢_J φ°      (Γ, φ locally closed).
 
-From (I₁), (I₂) and (RTP).  OPEN. -/
+From (I₁), (I₂) and (RTP).  REFUTED AS STATED (`mutualP2LL_false`,
+`wip/p2llBoolSem.lean`): at `Γ := []`, `φ := ∀°q.(q → q)` the right side holds
+(`jd_allJ_refl`) and the left fails (`mp_fails`).  The intended statement
+restricts `Γ` and `φ` to `allJFree`; proposed in the status note §8. -/
 def MutualP2LL : Prop :=
   ∀ (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ) → LC φ →
     (Nonempty (LaxND2 Γ φ) ↔ Nonempty (JND IsJ [] (Γ.map toJ) (toJ φ)))
@@ -103,7 +118,10 @@ def MutualP2LL : Prop :=
     Θ ; Γ ⊢_J φ   ⟺   G(Θ), Γ* ⊢_P2LL φ*      (Γ, φ locally closed).
 
 From (I₂), (I₁) and (RTJ), discharging the translated guards `◯°s → s` by
-`∀°E` at the declared `s`.  OPEN. -/
+`∀°E` at the declared `s`.  REFUTED AS STATED (`mutualJ_false`,
+`wip/p2llBoolSem.lean`): at `Θ := []`, `Γ := []`, `φ := ◯⊤` the right side
+holds (`pd_circ_top`) and the left fails (`mj_fails`).  The intended statement
+restricts `Γ` and `φ` to `circFree`; proposed in the status note §8. -/
 def MutualJ : Prop :=
   ∀ (Θ : List String) (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ) → LC φ →
     (Nonempty (JND IsJ Θ Γ φ) ↔ Nonempty (LaxND2 (guards Θ ++ Γ.map rel) (rel φ)))
@@ -112,7 +130,7 @@ end P2LL
 
 /-! The statements are definitions of propositions and carry no axioms; the
 pins record that none of them is sorried.  The pins of the PROOFS are in
-`wip/p2llInterp.lean`. -/
+`wip/p2llInterp.lean`, those of the REFUTATIONS in `wip/p2llBoolSem.lean`. -/
 
 #axioms_within P2LL.InterpToJ []
 #axioms_within P2LL.FixOfIsJ []
