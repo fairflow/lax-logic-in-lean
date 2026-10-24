@@ -22,8 +22,21 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 PORT=${PORT:-8097}
 if [ "${1:-}" != "--serve-only" ]; then
-  # no blank recto pages in print (the rest of the layout is CLPPaper/Layout.lean)
-  VERSO_TEX_EXTRA='\let\cleardoublepage\clearpage' \
+  # the figures (docs/f0-paper-figures/, gitignored), regenerated on every
+  # build from data Lean computes (tools/F0/FigureData.lean): the paper inlines
+  # the SVGs in the HTML and includes the PDFs in the TeX
+  lake build wip.f0Covers wip.ladder8 wip.f0SelfSim
+  scripts/f0-figures.py
+  # the source links of the Lean statements and tables (F0Paper/Blocks.lean)
+  # are made when the output is written, from these two variables
+  F0_SRC_SHA=$(git rev-parse HEAD)
+  F0_SRC_REPO=$(git remote get-url origin)
+  F0_SRC_REPO=${F0_SRC_REPO%.git}
+  F0_SRC_REPO=${F0_SRC_REPO/git@github.com:/https://github.com/}
+  export F0_SRC_SHA F0_SRC_REPO
+  # no blank recto pages in print (the rest of the layout is CLPPaper/Layout.lean);
+  # graphicx for the figures, longtable for the tables (F0Paper/Blocks.lean)
+  VERSO_TEX_EXTRA='\let\cleardoublepage\clearpage\usepackage{graphicx}\usepackage{longtable}' \
     scripts/verso-paper.sh F0Paper F0PaperMain.lean docs/f0-paper docs/f0-paper.pdf
 fi
 case "${1:-}" in

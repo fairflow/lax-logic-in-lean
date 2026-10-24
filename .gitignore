@@ -42,6 +42,7 @@ docs/clp-paper.pdf
 # (scripts/f0-paper.sh)
 docs/f0-paper/
 docs/f0-paper.pdf
+docs/f0-paper-figures/
 
 # extract.py's benchmark corpora are DERIVED data carrying absolute paths to
 # whichever worktree generated them; regenerate, never commit.  (Cherry-picked
