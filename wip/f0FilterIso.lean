@@ -1398,6 +1398,276 @@ theorem case_a_shape (h : box p = (f E).1) : BigAtom (⟨box p, le_box p⟩ : Se
 
 end Cases
 
+/-! ## 12. Cells for the four cases
+
+`iso_cases` leaves four shapes for a counterexample `p`, each a property of
+`◯p` (`case_d_shape`, `case_d4_shape`, `case_a_shape`):
+
+* (i)   `◯p = p`;
+* (ii)  `◯p = d`: `◯p` covers `p` and is meet-prime;
+* (iii) `◯p = d₄`: the gap `◯p ⇨ p` covers `p`;
+* (iv)  `◯p = a`, `◯d₄ = d₄`: `◯p` is a big atom of `[p, ⊤]` (F0 itself, `p = ⊥`).
+
+The cells: (i) is realised by the dense, `◯`-fixed `σⁿ(c1)`, every `n`, and
+each is still refuted (three pairwise disjoint elements); (ii)–(iv) fail
+at the designed dense cells `t3` and `t5` for the stated local reason; `t5`
+is refuted outright as well. -/
+
+/-! ### The A-translation is monotone on the semantic order -/
+
+namespace RelF
+
+variable (M : ConstraintModel) (q : PLLFormula)
+
+/-- `M` with the `q`-worlds made fallible. -/
+def ext : ConstraintModel where
+  W := M.W
+  Ri := M.Ri
+  Rm := M.Rm
+  F := {w | M.force w q}
+  V a := {w | w ∈ M.V a ∨ M.force w q}
+  refl_i := M.refl_i
+  trans_i := M.trans_i
+  refl_m := M.refl_m
+  trans_m := M.trans_m
+  sub_mi := M.sub_mi
+  hered_F := fun h hw => M.force_hered h hw
+  hered_V := fun h hw =>
+    hw.elim (fun h' => Or.inl (M.hered_V h h')) (fun h' => Or.inr (M.force_hered h h'))
+  full_F := fun hw => Or.inr hw
+
+/-- On closed formulas, forcing in `ext M q` is forcing of `φ[⊥ := q]` in `M`. -/
+theorem force_ext : ∀ (φ : PLLFormula), atomFree φ = true → ∀ w : M.W,
+    (ext M q).force w φ ↔ M.force w (Sig.subBot q φ)
+  | .prop _, h, _ => nomatch h
+  | .falsePLL, _, _ => Iff.rfl
+  | .and A B, h, w => by
+      have h' : (atomFree A && atomFree B) = true := h
+      obtain ⟨hA, hB⟩ := (Bool.and_eq_true _ _).mp h'
+      exact and_congr (force_ext A hA w) (force_ext B hB w)
+  | .or A B, h, w => by
+      have h' : (atomFree A && atomFree B) = true := h
+      obtain ⟨hA, hB⟩ := (Bool.and_eq_true _ _).mp h'
+      exact or_congr (force_ext A hA w) (force_ext B hB w)
+  | .ifThen A B, h, w => by
+      have h' : (atomFree A && atomFree B) = true := h
+      obtain ⟨hA, hB⟩ := (Bool.and_eq_true _ _).mp h'
+      exact ⟨fun k v hv ha => (force_ext B hB v).mp (k v hv ((force_ext A hA v).mpr ha)),
+        fun k v hv ha => (force_ext B hB v).mpr (k v hv ((force_ext A hA v).mp ha))⟩
+  | .somehow A, h, w =>
+      ⟨fun k v hv => (k v hv).imp fun u hu => ⟨hu.1, (force_ext A h u).mp hu.2⟩,
+       fun k v hv => (k v hv).imp fun u hu => ⟨hu.1, (force_ext A h u).mpr hu.2⟩⟩
+
+end RelF
+
+/-- **`φ ↦ φ[⊥ := q]` is monotone on the semantic order** of closed formulas. -/
+theorem subBot_le (q : PLLFormula) {a b : PLLFormula} (ha : atomFree a = true)
+    (hb : atomFree b = true) (h : LaxInfinite.Le a b) :
+    LaxInfinite.Le (Sig.subBot q a) (Sig.subBot q b) := fun M w hw =>
+  (RelF.force_ext M q b hb w).mp (h (RelF.ext M q) w ((RelF.force_ext M q a ha w).mpr hw))
+
+theorem sigN_le : ∀ (n : Nat) {a b : PLLFormula}, atomFree a = true → atomFree b = true →
+    LaxInfinite.Le a b → LaxInfinite.Le (Sig.sigN n a) (Sig.sigN n b)
+  | 0, _, _, _, _, h => h
+  | n + 1, _, _, ha, hb, h =>
+      sigN_le n (Sig.sig_vf ha) (Sig.sig_vf hb) (subBot_le t3 ha hb h)
+
+theorem sigN_somehow : ∀ (n : Nat) (φ : PLLFormula),
+    Sig.sigN n (.somehow φ) = .somehow (Sig.sigN n φ)
+  | 0, _ => rfl
+  | n + 1, φ => sigN_somehow n (Sig.sig φ)
+
+/-! ### Case (i), `◯p = p`: realised by `σⁿ(c1)`, refuted -/
+
+theorem rf_al_c1 : Refutes alF NotIso.c1F :=
+  refutes_of_check (M := K_al) (w := 0) (by decide)
+theorem rf_be_c1 : Refutes beF NotIso.c1F :=
+  refutes_of_check (M := K_be) (w := 0) (by decide)
+theorem rf_ga_c1 : Refutes gaF NotIso.c1F :=
+  refutes_of_check (M := K_ga) (w := 0) (by decide)
+
+/-- `⟦σⁿ(c1)⟧`. -/
+def C1n (n : Nat) : RNClass := cls (Sig.sigN n NotIso.c1F) (Sig.sigN_vf n rfl)
+
+/-- `σⁿ(c1)` is `◯`-fixed. -/
+theorem C1n_box (n : Nat) : box (C1n n) = C1n n := by
+  refine le_antisymm ?_ (le_box _)
+  show LaxInfinite.Le (.somehow (Sig.sigN n (.somehow t3))) (Sig.sigN n (.somehow t3))
+  rw [sigN_somehow]
+  intro M w h v hv
+  obtain ⟨u, hvu, hu⟩ := h v hv
+  obtain ⟨u', huu', hu'⟩ := hu u (M.refl_i u)
+  exact ⟨u', M.trans_m hvu huu', hu'⟩
+
+theorem t3_le_sigN_bot : ∀ n : Nat, Deriv [t3] (Sig.sigN (n + 1) .falsePLL)
+  | 0 => Deriv.iden (.head _)
+  | n + 1 => Deriv.cutHead (t3_le_sigN_bot n) (Sig.sigN_bot_strict (n + 1)).1
+
+/-- `σⁿ(c1)` is dense. -/
+theorem C1n_dense : ∀ n : Nat, T3 ≤ C1n n
+  | 0 => le_of_deriv NotIso.t3_le_c1
+  | n + 1 => le_of_deriv (Deriv.cutHead (t3_le_sigN_bot n) (Sig.sigN_bot_le (n + 1) NotIso.c1F rfl))
+
+theorem C1n_ici_no_core (n : Nat) : ¬ HasCore (Set.Ici (C1n n)) := by
+  have hm : ∀ a b : PLLFormula, atomFree a = true → atomFree b = true →
+      LaxInfinite.Le (a.and b) NotIso.c1F →
+      LaxInfinite.Le ((Sig.sigN n a).and (Sig.sigN n b)) (Sig.sigN n NotIso.c1F) :=
+    fun a b ha hb h => by
+      have := sigN_le n (a := a.and b) (by simp [atomFree, ha, hb]) rfl h
+      rwa [sigN_and] at this
+  have hl : ∀ φ : PLLFormula, atomFree φ = true → Deriv [NotIso.c1F] φ →
+      Deriv [Sig.sigN n NotIso.c1F] (Sig.sigN n φ) := fun φ hφ h => Sig.sigN_mono n rfl hφ h
+  have i1 : Deriv [NotIso.c1F] alF := Deriv.orIntro1 (Deriv.iden (.head _))
+  have i2 : Deriv [NotIso.c1F] beF := Deriv.orIntro1 (Deriv.iden (.head _))
+  have i3 : Deriv [NotIso.c1F] gaF := Deriv.orIntro1 (Deriv.iden (.head _))
+  exact no_core_of_three
+    (ptq_not_bot (q := Sig.sigN n NotIso.c1F) (hq := Sig.sigN_vf n rfl)
+      (h := Sig.sigN_vf n (φ := alF) rfl) (hle := hl alF rfl i1)
+      (not_le_of_refutes (refutes_sigN n rf_al_c1)))
+    (ptq_not_bot (q := Sig.sigN n NotIso.c1F) (hq := Sig.sigN_vf n rfl)
+      (h := Sig.sigN_vf n (φ := beF) rfl) (hle := hl beF rfl i2)
+      (not_le_of_refutes (refutes_sigN n rf_be_c1)))
+    (ptq_not_bot (q := Sig.sigN n NotIso.c1F) (hq := Sig.sigN_vf n rfl)
+      (h := Sig.sigN_vf n (φ := gaF) rfl) (hle := hl gaF rfl i3)
+      (not_le_of_refutes (refutes_sigN n rf_ga_c1)))
+    (ptq_disj_le (hm alF beF rfl rfl meet_al_be))
+    (ptq_disj_le (hm alF gaF rfl rfl meet_al_ga))
+    (ptq_disj_le (hm beF gaF rfl rfl meet_be_ga))
+
+/-- **Case (i) cell, every `n`: `[σⁿ(c1), ⊤] ≇ F0`**, though `σⁿ(c1)` is
+dense and `◯`-fixed (`C1n_dense`, `C1n_box`). -/
+theorem C1n_filter_not_iso (n : Nat) : ¬ Nonempty (Set.Ici (C1n n) ≃o RNClass) :=
+  fun ⟨f⟩ => C1n_ici_no_core n (hasCore_of_iso f NotIso.rnclass_core)
+
+/-! ### The cell `t5`: three pairwise disjoint elements
+
+`t5` covers `t3` (`cover_3_5`).  Above `t5`:
+
+    α₅ = t5 ∨ c1,    β₅ = t5 ∨ (g1 ∧ t6),    γ₅ = t8 = (t5 ∨ t6) ↠ t5.
+
+The meets use `c1 ⊢ t6` (from `c1 ∧ t4 ⊢ ◯⊥`, PROVED here semantically). -/
+
+/-- `t7 = t5 ∨ t6`. -/
+def t7F : PLLFormula := t5.or NotIso.t6F
+/-- `t8 = t7 ↠ t5`. -/
+def t8F : PLLFormula := t7F.ifThen t5
+def al5F : PLLFormula := t5.or NotIso.c1F
+def be5F : PLLFormula := t5.or (NotIso.g1F.and NotIso.t6F)
+
+/-- `c1 ∧ t4 ⊢ ◯⊥`. -/
+theorem c1_t4_e {M : ConstraintModel} {w : M.W} (hc : M.force w NotIso.c1F)
+    (h4 : M.force w t4) : M.force w e := by
+  intro v hv
+  obtain ⟨u, hvu, h3⟩ := hc v hv
+  have h4u : M.force u t4 := M.force_hered (M.trans_i hv (M.sub_mi hvu)) h4
+  obtain ⟨u', huu', hf⟩ := h4u u (M.refl_i u) h3 u (M.refl_i u)
+  exact ⟨u', M.trans_m hvu huu', hf⟩
+
+/-- `c1 ⊢ t6`. -/
+theorem c1_t6 {M : ConstraintModel} {w : M.W} (hc : M.force w NotIso.c1F) :
+    M.force w NotIso.t6F := fun _ hv h5 =>
+  h5.elim id fun h4 => Or.inl (c1_t4_e (M.force_hered hv hc) h4)
+
+theorem meet_al5_be5 : LaxInfinite.Le (al5F.and be5F) t5 := fun M w h =>
+  h.1.elim id fun hc => h.2.elim id fun hgt => Or.inl (hgt.1 w (M.refl_i w) hc)
+
+theorem meet_al5_ga5 : LaxInfinite.Le (al5F.and t8F) t5 := fun M w h =>
+  h.1.elim id fun hc => h.2 w (M.refl_i w) (Or.inr (c1_t6 hc))
+
+theorem meet_be5_ga5 : LaxInfinite.Le (be5F.and t8F) t5 := fun M w h =>
+  h.1.elim id fun hgt => h.2 w (M.refl_i w) (Or.inr hgt.2)
+
+/-- `(∉S, {(∈S, {e}), n})` under a fallible top. -/
+def K_F : FinCM :=
+  ⟨5, [(0, 1), (0, 2), (0, 3), (0, 4), (1, 2), (1, 4), (2, 4)], [(0, 4), (2, 4)], [4], []⟩
+
+theorem nle_gt_t5 : ¬ LaxInfinite.Le (NotIso.g1F.and NotIso.t6F) t5 :=
+  not_le_of_check (M := K_be) (w := 0) (by decide)
+theorem nle_t8_t5 : ¬ LaxInfinite.Le t8F t5 := not_le_of_check (M := K_F) (w := 0) (by decide)
+theorem nle_bt5_al5 : ¬ LaxInfinite.Le (.somehow t5) al5F :=
+  not_le_of_check (M := K_F) (w := 0) (by decide)
+theorem nle_bt5_be5 : ¬ LaxInfinite.Le (.somehow t5) be5F :=
+  not_le_of_check (M := K_F) (w := 0) (by decide)
+
+theorem nle_al5_t5 : ¬ LaxInfinite.Le al5F t5 := fun h =>
+  NotIso.nle_c1_t5 fun M w hc => h M w (Or.inr hc)
+theorem nle_be5_t5 : ¬ LaxInfinite.Le be5F t5 := fun h =>
+  nle_gt_t5 fun M w hg => h M w (Or.inr hg)
+
+theorem t5_ici_no_core : ¬ HasCore (Set.Ici T5c) :=
+  no_core_of_three
+    (ptq_not_bot (q := t5) (hq := rfl) (h := rfl)
+      (hle := Deriv.orIntro1 (Deriv.iden (.head _))) nle_al5_t5)
+    (ptq_not_bot (q := t5) (hq := rfl) (h := rfl)
+      (hle := Deriv.orIntro1 (Deriv.iden (.head _))) nle_be5_t5)
+    (ptq_not_bot (q := t5) (hq := rfl) (h := rfl)
+      (hle := Deriv.impIntro (Deriv.iden (.tail _ (.head _)))) nle_t8_t5)
+    (ptq_disj_le meet_al5_be5) (ptq_disj_le meet_al5_ga5) (ptq_disj_le meet_be5_ga5)
+
+/-- **Cell `t5`: `[t5, ⊤] ≇ F0`.** -/
+theorem t5_filter_not_iso : ¬ Nonempty (Set.Ici T5c ≃o RNClass) :=
+  fun ⟨f⟩ => t5_ici_no_core (hasCore_of_iso f NotIso.rnclass_core)
+
+/-! ### Case (ii), `◯p` a meet-prime cover of `p`: fails at `t3` and at `t5` -/
+
+/-- **`◯t3 = c1` is not meet-prime**: `α, β ⊬ c1`, `α ∧ β ⊢ c1`. -/
+theorem box_t3_not_meetPrime : ¬ MeetPrime (box T3) := fun h =>
+  h (cls alF rfl) (cls beF rfl) nle_al_c1 nle_be_c1 meet_al_be
+
+theorem T3_le_T5c : T3 ≤ T5c := le_of_deriv D5_below_3
+
+/-- **`◯t5` does not cover `t5`**: `t5 < t5 ∨ c1 < ◯t5`. -/
+theorem box_t5_not_cover : ¬ CoversC T5c (box T5c) := by
+  rintro ⟨_, h⟩
+  rcases h (T5c ⊔ box T3) le_sup_left (sup_le (le_box _) (box_mono T3_le_T5c)) with k | k
+  · exact NotIso.nle_c1_t5 (le_trans le_sup_right (le_of_eq k))
+  · exact nle_bt5_al5 (le_of_eq k.symm)
+
+/-! ### Case (iii), the gap `◯p ⇨ p` covers `p`: fails at `t3` -/
+
+/-- **`g1 = ◯t3 ⇨ t3` does not cover `t3`**: `t3 < t5 < g1` (`t3_lt_t5_lt_g1`). -/
+theorem gap_t3_not_cover : ¬ CoversC T3 (box T3 ⇨ T3) := by
+  rintro ⟨_, h⟩
+  rcases h T5c T3_le_T5c (le_of_deriv SigOnto.t5_le_g1F) with k | k
+  · exact NotIso.nle_t5_t3 (le_of_eq k)
+  · exact NotIso.nle_g1_t5 (le_of_eq k.symm)
+
+/-! ### Case (iv), `◯p` a big atom of `[p, ⊤]`: fails at `t3` and at `t5` -/
+
+theorem dne_of_disj {P : Type} [Preorder P] {u v : P} (hu : ¬ IsBot u) (h : Disj u v) :
+    u ≠ v := fun e => hu (h _ le_rfl (le_of_eq e))
+
+/-- **`◯t3 = c1` is not a big atom of `[t3, ⊤]`**: `t5` and `g1` are distinct,
+non-least, and not above `c1`. -/
+theorem box_t3_not_bigAtom :
+    ¬ BigAtom (⟨box T3, le_box T3⟩ : Set.Ici T3) := by
+  rintro ⟨_, d, hd⟩
+  rcases hd ⟨T5c, T3_le_T5c⟩ with h | h | h1
+  · exact NotIso.nle_c1_t5 h
+  · exact NotIso.nle_t5_t3 (h ⟨T3, le_refl T3⟩)
+  rcases hd ⟨cls NotIso.g1F rfl, le_of_deriv NotIso.t3_le_g1⟩ with h | h | h2
+  · exact NotIso.nle_c1_t3 (fun M w hc => (h : LaxInfinite.Le NotIso.c1F NotIso.g1F) M w hc w
+      (M.refl_i w) hc)
+  · exact NotIso.nle_g1_t3 (h ⟨T3, le_refl T3⟩)
+  · exact NotIso.nle_g1_t5 (le_of_eq (congrArg Subtype.val (h2.trans h1.symm)))
+
+/-- **`◯t5` is not a big atom of `[t5, ⊤]`**: `α₅` and `β₅` are distinct,
+non-least, and not above `◯t5`. -/
+theorem box_t5_not_bigAtom :
+    ¬ BigAtom (⟨box T5c, le_box T5c⟩ : Set.Ici T5c) := by
+  rintro ⟨_, d, hd⟩
+  have hna : ¬ IsBot (ptq t5 rfl al5F rfl (Deriv.orIntro1 (Deriv.iden (.head _)))) :=
+    ptq_not_bot nle_al5_t5
+  have hnb : ¬ IsBot (ptq t5 rfl be5F rfl (Deriv.orIntro1 (Deriv.iden (.head _)))) :=
+    ptq_not_bot nle_be5_t5
+  rcases hd (ptq t5 rfl al5F rfl (Deriv.orIntro1 (Deriv.iden (.head _)))) with h | h | h1
+  · exact nle_bt5_al5 h
+  · exact hna h
+  rcases hd (ptq t5 rfl be5F rfl (Deriv.orIntro1 (Deriv.iden (.head _)))) with h | h | h2
+  · exact nle_bt5_be5 h
+  · exact hnb h
+  exact dne_of_disj hna (ptq_disj_le meet_al5_be5) (h1.trans h2.symm)
+
 end FilterIso
 end F0
 end PLLND
@@ -1445,3 +1715,16 @@ end PLLND
 #axioms_within PLLND.F0.FilterIso.case_d_shape [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.case_d4_shape [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.case_a_shape [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.RelF.force_ext [propext]
+#axioms_within PLLND.F0.FilterIso.subBot_le [propext]
+#axioms_within PLLND.F0.FilterIso.sigN_le [propext]
+#axioms_within PLLND.F0.FilterIso.C1n_box [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.C1n_dense [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.C1n_filter_not_iso [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.c1_t6 []
+#axioms_within PLLND.F0.FilterIso.t5_filter_not_iso [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.box_t3_not_meetPrime [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.box_t5_not_cover [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.gap_t3_not_cover [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.box_t3_not_bigAtom [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.box_t5_not_bigAtom [propext, Quot.sound]
