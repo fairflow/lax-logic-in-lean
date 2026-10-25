@@ -771,6 +771,110 @@ theorem sig2_filter_not_iso :
     ¬ Nonempty (Set.Ici (cls (Sig.sig t3) (Sig.sig_vf rfl)) ≃o RNClass) :=
   sigN_filter_not_iso 1
 
+/-! ## 7. A dense cell off the σ-bases: `c1 = ◯t3 = σ(t1)`
+
+The dense analogue of the cell `t1`: `◯`-fixed (`◯c1 ⊣⊢ c1`) and the σ-image
+of `t1`, but not a σ-base.  `[c1, ⊤]` has three pairwise disjoint elements
+above `c1`,
+
+    α = c1 ∨ t4,    β = c1 ∨ (g1 ∧ t6),    γ = c1 ∨ (t6 ∧ (g1 ↠ c1)),
+
+so no element lies in every disjoint pair.  The meets are semantic one-liners
+(`t4 ∧ t6 ⊢ ◯⊥ ⊢ c1`, and modus ponens); the three non-entailments
+`α, β, γ ⊬ c1` are hand-built constraint models on 3, 4 and 5 worlds (the
+points `(∈S, {e})`, `(∈S, {n, e})` and `(∈S, {(∉S, {n, e})})` under a fallible
+top), checked by the kernel. -/
+
+/-- Three pairwise disjoint non-least elements: no core. -/
+theorem no_core_of_three {P : Type} [Preorder P] {x y z : P}
+    (hx : ¬ IsBot x) (hy : ¬ IsBot y) (hz : ¬ IsBot z)
+    (hxy : Disj x y) (hxz : Disj x z) (hyz : Disj y z) : ¬ HasCore P := by
+  have dne : ∀ {u v : P}, ¬ IsBot u → Disj u v → u ≠ v :=
+    fun hu h e => hu (h _ le_rfl (le_of_eq e))
+  rintro ⟨d, hd⟩
+  rcases hd x y hx hy hxy with h1 | h1
+  · rcases hd y z hy hz hyz with h3 | h3
+    · exact dne hx hxy (h1.trans h3.symm)
+    · exact dne hx hxz (h1.trans h3.symm)
+  · rcases hd x z hx hz hxz with h2 | h2
+    · exact dne hx hxy (h2.trans h1.symm)
+    · exact dne hy hyz (h1.trans h2.symm)
+
+/-- `ptq_disj` from the semantic order. -/
+theorem ptq_disj_le {q a b : PLLFormula} {hq : atomFree q = true} {ha : atomFree a = true}
+    {hb : atomFree b = true} {hla : Deriv [q] a} {hlb : Deriv [q] b}
+    (hab : LaxInfinite.Le (a.and b) q) : Disj (ptq q hq a ha hla) (ptq q hq b hb hlb) := by
+  intro z hza hzb
+  obtain ⟨zq, hzq⟩ := z
+  induction zq using Quotient.ind
+  rename_i c
+  have hct : LaxInfinite.Le c.1 q := fun M w hc =>
+    hab M w ⟨(hza : LaxInfinite.Le c.1 a) M w hc, (hzb : LaxInfinite.Le c.1 b) M w hc⟩
+  intro w
+  show (Quotient.mk LaxInfinite.closedSetoid c : RNClass) ≤ w.1
+  exact le_trans (hct : (Quotient.mk LaxInfinite.closedSetoid c : RNClass) ≤ cls q hq)
+    (Set.mem_Ici.mp w.2)
+
+/-- `α = c1 ∨ t4`. -/
+def alF : PLLFormula := NotIso.c1F.or t4
+/-- `β = c1 ∨ (g1 ∧ t6)`. -/
+def beF : PLLFormula := NotIso.c1F.or (NotIso.g1F.and NotIso.t6F)
+/-- `γ = c1 ∨ (t6 ∧ (g1 ↠ c1))`. -/
+def gaF : PLLFormula := NotIso.c1F.or (NotIso.t6F.and (NotIso.g1F.ifThen NotIso.c1F))
+
+theorem e_le_c1 : Deriv [e] NotIso.c1F :=
+  Deriv.somehowMono (Deriv.falsoElim _ (Deriv.iden (.head _)))
+
+/-- `t4 ∧ t6 ⊢ c1`, semantically: `t4 ⊢ t5`, so `t6 = t5 ↠ t3` gives `t3`, and
+`t3 ∧ t4 ⊣⊢ ◯⊥ ⊢ c1`. -/
+theorem key46 {M : ConstraintModel} {w : M.W} (h4 : M.force w t4)
+    (h6 : M.force w NotIso.t6F) : M.force w NotIso.c1F := by
+  have h5 : M.force w t5 := Or.inr h4
+  have h3 : M.force w t3 := h6 w (M.refl_i w) h5
+  exact le_of_deriv e_le_c1 M w (le_of_deriv D5_and_3_4.1 M w ⟨h3, h4⟩)
+
+theorem meet_al_be : LaxInfinite.Le (alF.and beF) NotIso.c1F := fun _ _ h =>
+  h.1.elim id fun h4 => h.2.elim id fun hgt => key46 h4 hgt.2
+
+theorem meet_al_ga : LaxInfinite.Le (alF.and gaF) NotIso.c1F := fun _ _ h =>
+  h.1.elim id fun h4 => h.2.elim id fun hti => key46 h4 hti.1
+
+theorem meet_be_ga : LaxInfinite.Le (beF.and gaF) NotIso.c1F := fun M w h =>
+  h.1.elim id fun hgt => h.2.elim id fun hti => hti.2 w (M.refl_i w) hgt.1
+
+/-- `(∈S, {e})` under a fallible top: `α ⊬ c1` at world 0. -/
+def K_al : FinCM := ⟨3, [(0, 1), (0, 2), (1, 2)], [(1, 2)], [2], []⟩
+/-- `(∈S, {n, e})` under a fallible top: `β ⊬ c1` at world 0. -/
+def K_be : FinCM := ⟨4, [(0, 1), (0, 2), (0, 3), (2, 3)], [(2, 3)], [3], []⟩
+/-- `(∈S, {(∉S, {n, e})})` under a fallible top: `γ ⊬ c1` at world 0. -/
+def K_ga : FinCM :=
+  ⟨5, [(0, 1), (0, 2), (0, 3), (0, 4), (1, 2), (1, 3), (1, 4), (3, 4)], [(1, 4), (3, 4)], [4], []⟩
+
+theorem nle_al_c1 : ¬ LaxInfinite.Le alF NotIso.c1F :=
+  not_le_of_check (M := K_al) (w := 0) (by decide)
+theorem nle_be_c1 : ¬ LaxInfinite.Le beF NotIso.c1F :=
+  not_le_of_check (M := K_be) (w := 0) (by decide)
+theorem nle_ga_c1 : ¬ LaxInfinite.Le gaF NotIso.c1F :=
+  not_le_of_check (M := K_ga) (w := 0) (by decide)
+
+/-- `⟦◯t3⟧`. -/
+def C1 : RNClass := cls NotIso.c1F rfl
+
+/-- **`[◯t3, ⊤]` has no core.** -/
+theorem c1_ici_no_core : ¬ HasCore (Set.Ici C1) :=
+  no_core_of_three
+    (ptq_not_bot (q := NotIso.c1F) (hq := rfl) (h := rfl)
+      (hle := Deriv.orIntro1 (Deriv.iden (.head _))) nle_al_c1)
+    (ptq_not_bot (q := NotIso.c1F) (hq := rfl) (h := rfl)
+      (hle := Deriv.orIntro1 (Deriv.iden (.head _))) nle_be_c1)
+    (ptq_not_bot (q := NotIso.c1F) (hq := rfl) (h := rfl)
+      (hle := Deriv.orIntro1 (Deriv.iden (.head _))) nle_ga_c1)
+    (ptq_disj_le meet_al_be) (ptq_disj_le meet_al_ga) (ptq_disj_le meet_be_ga)
+
+/-- **Cell `c1 = ◯t3`: `[◯t3, ⊤] ≇ F0`.** -/
+theorem c1_filter_not_iso : ¬ Nonempty (Set.Ici C1 ≃o RNClass) :=
+  fun ⟨f⟩ => c1_ici_no_core (hasCore_of_iso f NotIso.rnclass_core)
+
 end FilterIso
 end F0
 end PLLND
@@ -797,3 +901,7 @@ end PLLND
 #axioms_within PLLND.F0.FilterIso.twoPairs_t3 [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.sigN_filter_not_iso [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.sig2_filter_not_iso [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.no_core_of_three []
+#axioms_within PLLND.F0.FilterIso.meet_al_be [propext]
+#axioms_within PLLND.F0.FilterIso.c1_ici_no_core [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.c1_filter_not_iso [propext, Quot.sound]
