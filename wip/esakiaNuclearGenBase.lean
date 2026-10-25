@@ -117,6 +117,24 @@ theorem exists_spec_himp (x : Spec A) {a b : A} (h : a ⇨ b ∉ x.carrier) :
     (fun c ⟨e, he, hc⟩ hcb => h (x.mem_of_le' (le_himp_iff.mpr (le_trans hc hcb)) he))
   exact ⟨y, fun c hc => h1 ⟨c, hc, inf_le_left⟩, h1 ⟨⊤, x.top_mem', inf_le_right⟩, h2 b (le_refl b)⟩
 
+/-! ### Three nucleus facts, choice-free
+
+Mathlib's `Nucleus.le_apply`, `Nucleus.idempotent` and `Nucleus.monotone`
+reach `Classical.choice` (through `Nucleus.toClosureOperator` and
+`OrderHomClass`, measured with `#axiom_path`); these replacements read the
+structure's own fields and `map_inf`. -/
+
+theorem nle {j : Nucleus A} {x : A} : x ≤ j x := NucleusClass.le_apply x j
+
+theorem nidem {j : Nucleus A} (x : A) : j (j x) = j x :=
+  le_antisymm (NucleusClass.idempotent x j) nle
+
+theorem nmono {j : Nucleus A} {x y : A} (h : x ≤ y) : j x ≤ j y := by
+  have e : j (x ⊓ y) = j x ⊓ j y := Nucleus.map_inf
+  rw [inf_eq_left.mpr h] at e
+  rw [e]
+  exact inf_le_right
+
 /-! ### The fixed points of a nucleus form a bounded distributive lattice -/
 
 /-- `A_j`, the fixed points of `j`. -/
@@ -131,12 +149,12 @@ instance (j : Nucleus A) : Lattice (Fix j) where
   inf_le_left c d := (inf_le_left : c.1 ⊓ d.1 ≤ c.1)
   inf_le_right c d := (inf_le_right : c.1 ⊓ d.1 ≤ d.1)
   le_inf _ _ _ h₁ h₂ := le_inf h₁ h₂
-  sup c d := ⟨j (c.1 ⊔ d.1), Nucleus.idempotent _⟩
-  le_sup_left c d := le_trans (le_sup_left : c.1 ≤ c.1 ⊔ d.1) Nucleus.le_apply
-  le_sup_right c d := le_trans (le_sup_right : d.1 ≤ c.1 ⊔ d.1) Nucleus.le_apply
+  sup c d := ⟨j (c.1 ⊔ d.1), nidem _⟩
+  le_sup_left c d := le_trans (le_sup_left : c.1 ≤ c.1 ⊔ d.1) nle
+  le_sup_right c d := le_trans (le_sup_right : d.1 ≤ c.1 ⊔ d.1) nle
   sup_le c d e h₁ h₂ := by
     show j (c.1 ⊔ d.1) ≤ e.1
-    calc j (c.1 ⊔ d.1) ≤ j e.1 := Nucleus.monotone (sup_le h₁ h₂)
+    calc j (c.1 ⊔ d.1) ≤ j e.1 := nmono (sup_le h₁ h₂)
       _ = e.1 := e.2
 
 theorem Fix.le_iff {j : Nucleus A} {c d : Fix j} : c ≤ d ↔ c.1 ≤ d.1 := Iff.rfl
@@ -150,15 +168,15 @@ instance (j : Nucleus A) : DistribLattice (Fix j) :=
     le_sup_inf := fun x y z => by
       show j (x.1 ⊔ y.1) ⊓ j (x.1 ⊔ z.1) ≤ j (x.1 ⊔ y.1 ⊓ z.1)
       rw [← Nucleus.map_inf]
-      exact Nucleus.monotone le_sup_inf }
+      exact nmono le_sup_inf }
 
 instance (j : Nucleus A) : BoundedOrder (Fix j) where
-  top := ⟨⊤, le_antisymm le_top Nucleus.le_apply⟩
+  top := ⟨⊤, le_antisymm le_top nle⟩
   le_top c := (le_top : c.1 ≤ ⊤)
-  bot := ⟨j ⊥, Nucleus.idempotent _⟩
+  bot := ⟨j ⊥, nidem _⟩
   bot_le c := by
     show j ⊥ ≤ c.1
-    calc j ⊥ ≤ j c.1 := Nucleus.monotone bot_le
+    calc j ⊥ ≤ j c.1 := nmono bot_le
       _ = c.1 := c.2
 
 theorem Fix.top_val (j : Nucleus A) : (⊤ : Fix j).1 = ⊤ := rfl
@@ -176,7 +194,7 @@ theorem mem_Nj {j : Nucleus A} {x : Spec A} :
   · intro h
     show ⇑j ⁻¹' x.carrier = x.carrier
     ext c
-    exact ⟨fun hc => h c hc, fun hc => x.mem_of_le' Nucleus.le_apply hc⟩
+    exact ⟨fun hc => h c hc, fun hc => x.mem_of_le' nle hc⟩
 
 /-- **The prime filter theorem relative to a nucleus**: if `a → j b ∉ x`
 there is a prime `y ⊇ x` in `N_j` with `a ∈ y`, `b ∉ y`.  Proved by the
@@ -191,21 +209,21 @@ theorem exists_spec_nuclear (j : Nucleus A) (x : Spec A) {a b : A}
     (fun ⟨e₁, he₁, h₁⟩ ⟨e₂, he₂, h₂⟩ => ⟨e₁ ⊓ e₂, x.inf_mem' he₁ he₂,
       le_inf (le_trans (inf_le_inf_right a inf_le_left) h₁)
         (le_trans (inf_le_inf_right a inf_le_right) h₂)⟩)
-    ⟨⊥, Nucleus.monotone bot_le⟩ (fun hcd hd => le_trans hcd hd)
+    ⟨⊥, nmono bot_le⟩ (fun hcd hd => le_trans hcd hd)
     (fun {c d} hc hd => by
       show j (c.1 ⊔ d.1) ≤ j b
-      calc j (c.1 ⊔ d.1) ≤ j (j b) := Nucleus.monotone (sup_le hc hd)
-        _ = j b := Nucleus.idempotent _)
+      calc j (c.1 ⊔ d.1) ≤ j (j b) := nmono (sup_le hc hd)
+        _ = j b := nidem _)
     (fun c ⟨e, he, hc⟩ hcb => h (x.mem_of_le' (le_himp_iff.mpr (le_trans hc hcb)) he))
-  let fx : A → Fix j := fun c => ⟨j c, Nucleus.idempotent c⟩
-  have hjj : ∀ c, fx (j c) = fx c := fun c => Subtype.ext (Nucleus.idempotent c)
+  let fx : A → Fix j := fun c => ⟨j c, nidem c⟩
+  have hjj : ∀ c, fx (j c) = fx c := fun c => Subtype.ext (nidem c)
   let y : Spec A := Spec.ofSet {c | fx c ∈ P}
     (by
-      have : fx ⊤ = ⊤ := Subtype.ext (le_antisymm le_top Nucleus.le_apply)
+      have : fx ⊤ = ⊤ := Subtype.ext (le_antisymm le_top nle)
       show fx ⊤ ∈ P
       rw [this]; exact htop)
     (fun hb => hbot hb)
-    (fun hcd hc => hle (Nucleus.monotone hcd) hc)
+    (fun hcd hc => hle (nmono hcd) hc)
     (fun {c d} hc hd => by
       have : fx (c ⊓ d) = fx c ⊓ fx d := Subtype.ext Nucleus.map_inf
       show fx (c ⊓ d) ∈ P
@@ -215,20 +233,20 @@ theorem exists_spec_nuclear (j : Nucleus A) (x : Spec A) {a b : A}
         apply Subtype.ext
         show j (c ⊔ d) = j (j c ⊔ j d)
         apply le_antisymm
-        · exact Nucleus.monotone (sup_le_sup Nucleus.le_apply Nucleus.le_apply)
+        · exact nmono (sup_le_sup nle nle)
         · calc j (j c ⊔ j d) ≤ j (j (c ⊔ d)) :=
-                Nucleus.monotone (sup_le (Nucleus.monotone le_sup_left)
-                  (Nucleus.monotone le_sup_right))
-            _ = j (c ⊔ d) := Nucleus.idempotent _
+                nmono (sup_le (nmono le_sup_left)
+                  (nmono le_sup_right))
+            _ = j (c ⊔ d) := nidem _
       have h' : fx (c ⊔ d) ∈ P := hcd
       rw [this] at h'
       exact hor h')
-  refine ⟨y, fun c hc => hGP ⟨c, hc, le_trans inf_le_left Nucleus.le_apply⟩, ?_, ?_, ?_⟩
+  refine ⟨y, fun c hc => hGP ⟨c, hc, le_trans inf_le_left nle⟩, ?_, ?_, ?_⟩
   · refine mem_Nj.mpr fun c hc => ?_
     have h' : fx (j c) ∈ P := hc
     rw [hjj] at h'
     exact h'
-  · exact hGP ⟨⊤, x.top_mem', le_trans inf_le_right Nucleus.le_apply⟩
+  · exact hGP ⟨⊤, x.top_mem', le_trans inf_le_right nle⟩
   · intro hb
     exact hPI (fx b) hb (le_refl _)
 
@@ -325,14 +343,13 @@ theorem isBasis : TopologicalSpace.IsTopologicalBasis (basic (A := A)) := by
   refine TopologicalSpace.IsTopologicalBasis.mk ?_ ?_ ?_
   · rintro _ ⟨a₁, b₁, rfl⟩ _ ⟨a₂, b₂, rfl⟩ x hx
     refine ⟨phi (a₁ ⊓ a₂) ∩ (phi (b₁ ⊔ b₂))ᶜ, ⟨_, _, rfl⟩, ?_, ?_⟩
-    · rw [phi_inf, phi_sup, compl_union]
-      exact ⟨⟨hx.1.1, hx.2.1⟩, hx.1.2, hx.2.2⟩
-    · rw [phi_inf, phi_sup, compl_union]
-      rintro y ⟨⟨h1, h2⟩, h3, h4⟩
-      exact ⟨⟨h1, h3⟩, h2, h4⟩
-  · refine sUnion_eq_univ_iff.mpr fun x => ⟨phi ⊤ ∩ (phi ⊥)ᶜ, ⟨⊤, ⊥, rfl⟩, ?_⟩
-    rw [phi_top, phi_bot, compl_empty, inter_univ]
-    exact mem_univ x
+    · rw [phi_inf, phi_sup]
+      exact ⟨⟨hx.1.1, hx.2.1⟩, fun h => h.elim hx.1.2 hx.2.2⟩
+    · rw [phi_inf, phi_sup]
+      rintro y ⟨⟨h1, h2⟩, h3⟩
+      exact ⟨⟨h1, fun h => h3 (Or.inl h)⟩, h2, fun h => h3 (Or.inr h)⟩
+  · exact eq_univ_of_forall fun x => ⟨phi ⊤ ∩ (phi ⊥)ᶜ, ⟨⊤, ⊥, rfl⟩, x.top_mem',
+      fun h => x.isPrime.bot_not_mem h⟩
   · apply le_antisymm
     · rw [TopologicalSpace.le_generateFrom_iff_subset_isOpen]
       rintro _ ⟨a, b, rfl⟩
@@ -341,15 +358,13 @@ theorem isBasis : TopologicalSpace.IsTopologicalBasis (basic (A := A)) := by
       rw [TopologicalSpace.le_generateFrom_iff_subset_isOpen]
       rintro _ (⟨a, rfl⟩ | ⟨b, rfl⟩)
       · apply TopologicalSpace.isOpen_generateFrom_of_mem
-        refine ⟨a, ⊥, ?_⟩
-        rw [phi_bot, compl_empty, inter_univ]
+        exact ⟨a, ⊥, Set.ext fun x => ⟨fun h => ⟨h, x.isPrime.bot_not_mem⟩, fun h => h.1⟩⟩
       · apply TopologicalSpace.isOpen_generateFrom_of_mem
-        refine ⟨⊤, b, ?_⟩
-        rw [phi_top, univ_inter]
+        exact ⟨⊤, b, Set.ext fun x => ⟨fun h => ⟨x.top_mem', h⟩, fun h => h.2⟩⟩
 
 /-- **Compactness** of the spectrum: Alexander's subbasis theorem
 (`isCompact_generateFrom`) and the prime filter theorem. -/
-instance : CompactSpace (Spec A) := by
+instance compactSpace_spec : CompactSpace (Spec A) := by
   classical
   refine ⟨isCompact_generateFrom topology_eq fun P hP hcov => ?_⟩
   by_contra hno
@@ -465,13 +480,51 @@ theorem exists_phi_of_clopen_upper {U : Set (Spec A)} (hU : IsClopen U) (hup : I
   · obtain ⟨i, hi, hzi⟩ := mem_iUnion₂.mp (ht hz)
     exact z.mem_of_le' (Finset.le_sup (f := fun i : {b : A // phi b ⊆ U} => i.1) hi) hzi
 
-instance : PriestleySpace (Spec A) where
+instance priestleySpace_spec : PriestleySpace (Spec A) where
   priestley {x y} h := by
     obtain ⟨a, hax, hay⟩ := not_subset.mp (fun hs => h (Spec.le_def.mpr hs))
     exact ⟨phi a, isClopen_phi a, phi_upper a, hax, hay⟩
 
 end EsakiaNuclear.Gen
 
+/-! ## Axiom audit of the kit
+
+Choice-free (no `Classical.choice`): the algebra of `φ`, the nucleus facts,
+the lattice `A_j`, the basis. -/
+
+#axioms_within EsakiaNuclear.Gen.Spec.ofSet []
+#axioms_within EsakiaNuclear.Gen.nle []
+#axioms_within EsakiaNuclear.Gen.nidem []
+#axioms_within EsakiaNuclear.Gen.nmono [propext]
+#axioms_within EsakiaNuclear.Gen.instLatticeFix [propext]
+#axioms_within EsakiaNuclear.Gen.instDistribLatticeFix [propext]
+#axioms_within EsakiaNuclear.Gen.instBoundedOrderFix [propext]
+#axioms_within EsakiaNuclear.Gen.mem_Nj [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.phi_inf [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.phi_sup [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.phi_top [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.phi_bot [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.phi_upper [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.finset_inf_mem [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.finset_sup_mem [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.isOpen_phi []
+#axioms_within EsakiaNuclear.Gen.isClopen_phi []
+#axioms_within EsakiaNuclear.Gen.isBasis [propext, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.lowerClosure_biUnion [propext, Quot.sound]
+
+/-! Classical: the prime filter theorem and everything resting on it or on
+compactness. -/
+
 #axioms_within EsakiaNuclear.Gen.exists_prime_set [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.exists_spec [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.exists_spec_not_le [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.exists_spec_himp [propext, Classical.choice, Quot.sound]
 #axioms_within EsakiaNuclear.Gen.exists_spec_nuclear [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.phi_subset_iff [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.phi_injective [propext, Classical.choice, Quot.sound]
 #axioms_within EsakiaNuclear.Gen.phi_himp [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.compactSpace_spec [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.clopen_eq_union [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.isClopen_lowerClosure [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.exists_phi_of_clopen_upper [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.priestleySpace_spec [propext, Classical.choice, Quot.sound]

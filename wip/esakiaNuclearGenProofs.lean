@@ -175,8 +175,8 @@ theorem bgCor31 (A : Type*) [HeytingAlgebra A] : BGCor31 A := by
       obtain ⟨⟨c, hjc, hc⟩, ⟨d, hkd, hd⟩⟩ := hn
       have hm' : m (c ⊔ d) ∈ x.carrier := by
         rw [hm]
-        exact x.inf_mem' (x.mem_of_le' (Nucleus.monotone (n := j) le_sup_left) hjc)
-          (x.mem_of_le' (Nucleus.monotone (n := k) le_sup_right) hkd)
+        exact x.inf_mem' (x.mem_of_le' (nmono (j := j) le_sup_left) hjc)
+          (x.mem_of_le' (nmono (j := k) le_sup_right) hkd)
       rcases x.isPrime.mem_or_mem (h _ hm') with h' | h'
       · exact hc h'
       · exact hd h'
@@ -316,3 +316,15 @@ end EsakiaNuclear.Bridge
 #axioms_within EsakiaNuclear.Gen.g3 [propext, Classical.choice, Quot.sound]
 #axioms_within EsakiaNuclear.Gen.g4 [propext, Classical.choice, Quot.sound]
 #axioms_within EsakiaNuclear.Bridge.r5 [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.phi_nucleus [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.lower_basic_nuclear [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.isClosed_Nj [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Gen.isNuclear_Nj [propext, Classical.choice, Quot.sound]
+#axioms_within EsakiaNuclear.Bridge.omega_HC_gt []
+
+-- The pin gate, watched failing: G1 needs `Classical.choice`.
+/-- error: 'EsakiaNuclear.Gen.g1' depends on Classical.choice, which the bound does not allow.
+  declared: [propext, Quot.sound]
+Locate the entry with:  #axiom_path Classical.choice EsakiaNuclear.Gen.g1 -/
+#guard_msgs in
+#axioms_within EsakiaNuclear.Gen.g1 [propext, Quot.sound]
