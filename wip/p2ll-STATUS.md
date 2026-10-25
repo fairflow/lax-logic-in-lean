@@ -449,3 +449,18 @@ generalised).  Pins watched at `[]`: `lcAt_openRec_swap`, `isJ_circJ_fvar`,
 ## 5. Log (continued)
 
 * 2026-10-25: RTJ PROVED (§11); next MP, MJ in `wip/p2llMutual.lean`.
+
+## 12. Phase 2, step 4 (2026-10-25): MP PROVED (`wip/p2llMutual.lean`)
+
+    mutualP2LL : MutualP2LL     [propext]
+
+Left to right is I₁ (`toJD`).  Right to left: I₂ (`relD`) brings the
+derivation back to P2LL with hypotheses `(ψ°)*`, `ψ ∈ Γ`, and conclusion
+`(φ°)*`; `ctxBackP` translates the context back one hypothesis at a time
+(`→I`, RTP on `ψ`, `→E`), recursing on the list, so that no membership proof
+is decoded into data; RTP on `φ` gives `φ`.  Pins watched at `[]`:
+`ctxBackP`, `mutualP2LL` are `[propext]`.
+
+## 5. Log (continued)
+
+* 2026-10-25: MP PROVED (§12); MJ next (same file).
