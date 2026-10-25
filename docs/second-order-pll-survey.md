@@ -742,15 +742,21 @@ Status of the pieces:
 **A concrete sub-conjecture the engine can settle.** With `Γ` a context and `∃p Γ` its strongest
 `p`-free consequence:
 
-    ∃p (Γ, ◯φ)  ≡  ∃p Γ  ∧  ◯ ( ∃p (Γ, φ) )        [CONJECTURED]
+    ∃p (Γ, ◯φ)  ≡  ∃p Γ  ∧  ◯ ( ∃p (Γ, φ) )
+
+**Status (2026-10-24): ⊢ PROVED (`subconj_forward`); ⊣ REFUTED (`subconj_false`), for any
+operator with the uniform-interpolant specification** (`wip/p2llSubConj.lean`,
+`[propext, Quot.sound]`). Counterexample: at `Γ = ◯p ↠ q`, `φ = p`, `∃p(Γ, ◯p) ⊢ q`, while a
+two-world constraint model with `F = ∅` forces `∃p Γ ∧ ◯∃p(Γ, p)` and refutes `q`.
 
 The ⊢ direction of the ◯-conjunct is **DERIVABLE**: by `eSound`, `Γ, φ ⊢ ∃p(Γ,φ)`; by `◯R`,
 `Γ, φ ⊢ ◯∃p(Γ,φ)`; by `L◯`, `Γ, ◯φ ⊢ ◯∃p(Γ,φ)`; and this is `p`-free, so `eMin` gives
 `∃p(Γ,◯φ) ⊢ ◯∃p(Γ,φ)`. Note also that **L◯ is invertible** in PLL: `Γ,◯φ ⊢ ◯ψ` implies
 `Γ,φ ⊢ ◯ψ` by cutting the unit `φ ⊢ ◯φ`. So the ◯-goals of `Γ,◯φ` are exactly those of `Γ,φ`,
-which is what makes the shape above plausible. What is not automatic is that `∃p Γ` and
-`◯∃p(Γ,φ)` *generate* all `p`-free consequences — that is the content of the conjecture, and it
-is exactly the clause the PLL extension of `LaxLogic/Focusing/LJF.lean` will have to write down.
+which is what makes the shape above plausible. What was not automatic was that `∃p Γ` and
+`◯∃p(Γ,φ)` *generate* all `p`-free consequences. That was the content of the conjecture, and it
+fails: the ◯-clause of a Pitts-style construction, which the PLL extension of
+`LaxLogic/Focusing/LJF.lean` will have to write down, must be more than this.
 
 ### 3.6 Names
 
@@ -863,7 +869,7 @@ Ordered by cost, cheapest first.
    algebras.*
 2. **[cheap]** Resolve the A2 discrepancy of §3.7(a): is the extra `∃p(Γ)` hypothesis needed?
 3. **[medium]** Extend `LaxLogic/Focusing/LJF.lean` to `LJF◯` and check the ◯-clause conjecture of §3.5:
-   `∃p(Γ, ◯φ) ≡ ∃p Γ ∧ ◯∃p(Γ, φ)`.
+   `∃p(Γ, ◯φ) ≡ ∃p Γ ∧ ◯∃p(Γ, φ)`; settled 2026-10-24: ⊢ PROVED, ⊣ REFUTED (§3.5, `wip/p2llSubConj.lean`).
 4. **[medium]** Write out PLL2's ND rules and the second-order constraint semantics of §3.3;
    prove soundness. Confirm `∀p.p ≡ ⊥`.
 5. **[larger]** Pitts-projection for PLL (§3.5): transport Pitts' argument, with the ◯-case new.
