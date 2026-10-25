@@ -49,7 +49,7 @@ $`(\emptyset, \mathbb{Q})` and $`(\mathbb{Q}, \emptyset)`); $`F_0` has a least
 and a greatest element, so $`F^{*}` adds no new end points.  Point by point:
 
 :::f0table (widths := "0.17 0.38 0.41")
-* *
+* * Feature
   * $`\mathbb{Q}` in $`\mathbb{R}`
   * $`F_0` in $`F^{*}`
 * * A cut
@@ -159,7 +159,14 @@ choice is used by the counterexample itself.  And the points of $`F^{*}` below
 reach choice also through `L_no_greatest` (excluded middle in
 `plain_trace_dichotomy`, `wip/floor.lean`), through the completeness theorem
 that reads $`\le` on $`F_0` as $`\vdash`, and, for the cardinality, through
-$`\mathbb{R}`.
+$`\mathbb{R}`.  That completeness theorem, for constraint models
+(`consequence_iff_derivable`, behind `le_iff_nonempty`), carries
+`Classical.choice`, and so does the transfer from subframe to constraint models,
+`SubframeModel.toConstraint_force` (a case split on membership of $`S`).  The
+non-normal filter $`F_7` below avoids all three: it goes through completeness
+for finite subframe models with decidable $`S` (`SubframeModel.CF.completeness`,
+proved through the FRJW calculus), which is choice-free, and a transfer
+re-proved for decidable $`S`.
 
 _A choice-free $`F^{*}`:_ OPEN.  Cuts as pairs of predicates on $`F_0`, with
 the order $`L \subseteq L'`, the meets and joins above and the implication
@@ -294,7 +301,9 @@ section is pen argument, on the definitions, except where marked.
   $`{\uparrow}t_3` and has $`t_3` as a lower bound.  Over a principal point
   $`{\downarrow}a` in general, the fibre has a second member exactly when $`a`
   is the meet in $`F_0` of a strictly decreasing sequence that avoids it.
-  Over $`{\downarrow}t_3` and $`{\downarrow}t_5`: OPEN (Section 13).
+  Over $`{\downarrow}t_7` there are at least two, $`{\uparrow}t_7` and
+  $`F_7` (PROVED, below).  Over $`{\downarrow}t_3` and $`{\downarrow}t_5`: OPEN
+  (Section 13).
 
 _Not every filter is normal._  Write
 $`\rho_k = \mathrm{rel}(r_{2k+1})` for the relativised odd rungs of Section 8
@@ -305,44 +314,110 @@ $$`d_k = \rho_k \twoheadrightarrow t_7, \qquad F_7 = \bigcup_{k \ge 2} {\uparrow
 
 Then $`F_7` is a non-principal filter with meet $`t_7` in $`F_0`, so it is not
 normal: it lies over the principal point $`{\downarrow}t_7` and
-$`F_7 \subsetneq {\uparrow}t_7`.  Pen argument, resting on PROVED facts of
-Sections 8 and 9; OPEN in Lean (its certification is in progress).
+$`F_7 \subsetneq {\uparrow}t_7`.  PROVED, without `Classical.choice`
+(`wip/f0Normal.lean`, where $`F_7 = \{y : \exists k.\ d_{k+2} \le y\}`).
 
-1. _Descending:_ $`d_{k+1} \le d_k`, as $`\rho_k \le \rho_{k+1}` and
-   $`\twoheadrightarrow` is antitone in its first argument.
-2. _Strictly, for_ $`k \ge 2`: $`d_k \nvdash d_{k+1}`.  The countermodel of
-   Section 8 (the Rieger–Nishimura ladder under three top worlds) with two
-   worlds added: $`z`, below the two tops where $`\bigcirc\bot` holds, and $`x`,
-   below $`z`, the ladder worlds $`0, \ldots, k-1` and the three tops, with no
-   new modal steps.  On it $`x` forces $`\rho_{k+1}` and every successor of $`x`
-   that forces $`\rho_k` forces $`t_7`, so $`x \Vdash d_k`, while $`x` does not
-   force $`t_7`.
-3. _Lower bound:_ $`t_7 \le d_k`, as $`b \le a \twoheadrightarrow b`.
-4. _Greatest lower bound:_ if $`y \le d_k` for all $`k` then $`y \le t_7`.  In
-   every finite subframe model every world forces some $`\rho_k`, by induction
-   on the successors: if all proper successors of $`w` force $`\rho_J`, then
-   $`w` forces $`\rho_{J+2} = \rho_{J+1} \lor (\rho_{J+1} \twoheadrightarrow \rho_J)`,
+{stmt}`PLLND.F0.Normal.NotAllNormal`
+
+{leanStmt PLLND.F0.Normal.notAllNormal}
+
+{leanDef PLLND.F0.Normal.NotAllNormal}
+
+The proof, in five steps, each PROVED.
+
+1. _Descending:_ $`\rho_k \le \rho_{k+1}`, and $`\twoheadrightarrow` is
+   antitone in its first argument.
+
+   {stmt}`PLLND.F0.Normal.Descending`
+
+   {leanStmt PLLND.F0.Normal.descending}
+
+2. _Strictly, from_ $`k = 2` _on:_ the countermodel of Section 8 (the
+   Rieger–Nishimura ladder under three top worlds) with two worlds added: $`z`,
+   below the two tops where $`\bigcirc\bot` holds, and $`x`, below $`z`, the
+   ladder worlds $`0, \ldots, k-1` and the three tops, with no new modal steps.
+   There $`x` forces $`\rho_{k+1}`, and every successor of $`x` that forces
+   $`\rho_k` forces $`t_7`, so $`x \Vdash d_k`, while $`x` does not force
+   $`t_7`.  At $`k = 1` the same model fails ($`x` forces $`\rho_3` but not
+   $`\rho_2`), as was watched.
+
+   {stmt}`PLLND.F0.Normal.StrictlyDescending`
+
+   {leanStmt PLLND.F0.Normal.strictlyDescending}
+
+3. _Lower bound:_ $`b \le a \twoheadrightarrow b`.
+
+   {stmt}`PLLND.F0.Normal.LowerBound`
+
+   {leanStmt PLLND.F0.Normal.lowerBound}
+
+4. _Greatest lower bound._  In every finite subframe model with decidable
+   $`S` every world forces some $`\rho_k`, by induction on the number of proper
+   successors: if all proper successors of $`w` force $`\rho_J`, then $`w`
+   forces $`\rho_{J+2} = \rho_{J+1} \lor (\rho_{J+1} \twoheadrightarrow \rho_J)`,
    since either $`w \Vdash \rho_{J+1}`, or every successor forcing
-   $`\rho_{J+1}` is proper and so forces $`\rho_J`.  If
-   $`y \nvdash t_7`, the subframe tableau gives a finite countermodel
-   (`SubTab.complete`) with $`w \Vdash y`, $`w \nVdash t_7`; then
-   $`w \Vdash \rho_k` for some $`k` and $`w \Vdash \rho_k \twoheadrightarrow t_7`,
-   so $`w \Vdash t_7`.  Equivalently $`\bigvee_k \rho_k = \top` in $`F_0`, and
-   $`\bigwedge_k (\rho_k \twoheadrightarrow t_7) = (\bigvee_k \rho_k) \twoheadrightarrow t_7 = t_7`.
+   $`\rho_{J+1}` is proper and so forces $`\rho_J`.  The same induction, with
+   $`\bigcirc\bot` for $`u`, gives it for the odd rungs.
+
+   {stmt}`PLLND.F0.Normal.Star`
+
+   {leanStmt PLLND.F0.Normal.star}
+
+   {stmt}`PLLND.F0.Normal.StarOdd`
+
+   {leanStmt PLLND.F0.Normal.starOdd}
+
+   Now if $`y \le d_{k+2}` for all $`k`, then at a world forcing $`y` some
+   $`\rho_k` holds, hence $`\rho_{k+2}`, and $`y \le d_{k+2}` puts $`t_7` there;
+   completeness for these models turns this into $`y \le t_7`.
+
+   {stmt}`PLLND.F0.Normal.GreatestLowerBound`
+
+   {leanStmt PLLND.F0.Normal.greatestLowerBound}
+
+   The same argument shows that the only upper bound of all $`\rho_k`, or of
+   all odd rungs, is $`\top`, so $`\bigwedge_k (\rho_k \twoheadrightarrow t_7) = (\bigvee_k \rho_k) \twoheadrightarrow t_7 = t_7`.
+
+   {stmt}`PLLND.F0.Normal.SupRho`
+
+   {leanStmt PLLND.F0.Normal.supRho}
+
+   {stmt}`PLLND.F0.Normal.SupOddRungs`
+
+   {leanStmt PLLND.F0.Normal.supOddRungs}
+
+   In infinite models the induction fails: a world above the whole ladder of
+   the $`\rho_k` forces every $`d_k` and not $`t_7`, so the meet is reached in
+   the algebra only.
+
 5. _Conclusion:_ $`F_7` is a union of a chain of principal filters, so a
-   filter; non-principal, by 2; $`F_7^{l} = {\downarrow}t_7` by 3 and 4; and
-   $`t_7 \notin F_7`, else $`d_k = t_7 = d_{k+1}`.
+   filter, with meet $`t_7` by 3 and 4, not principal by 2, and
+   $`t_7 \notin F_7`, else $`d_k = t_7 = d_{k+1}`; so
+   $`F_7^{lu} = {\uparrow}t_7 \ne F_7`.
+
+   {stmt}`PLLND.F0.Normal.F7Meet`
+
+   {leanStmt PLLND.F0.Normal.F7_meet}
+
+   {stmt}`PLLND.F0.Normal.F7NonPrincipal`
+
+   {leanStmt PLLND.F0.Normal.F7_nonPrincipal}
+
+   {stmt}`PLLND.F0.Normal.F7NotNormal`
+
+   {leanStmt PLLND.F0.Normal.F7_not_normal}
 
 The construction needs an infinite principal downset, which $`F_0` has from
 $`t_6` on (Section 8).  In the $`\bigcirc`-free analogue, the Rieger–Nishimura
 lattice, every $`{\downarrow}t_n` is finite, so every filter is principal and
-normal (pen): the phenomenon is modal.
+normal (pen): the phenomenon is modal.  Whether a non-normal filter lies over a
+limit point (the gap filter is the candidate) is OPEN (Section 13).
 
 # Supporting declarations
 
-{lemmaTable instHeyting le_himp_iff_rn circNucleus box_inf MacNeille.instFrame cutHimp mem_left_cutHimp principalHom extNucleus extNucleus_apply extNucleus_comm le_extNucleus leastExt dmNucleus dmNucleus_principal le_dmNucleus PLLND.F0.Points.gaps PLLND.F0.Points.exists_nonprincipal PLLND.F0.Points.CF PLLND.F0.Points.CF.onto PLLND.F0.Points.fq_lt PLLND.F0.Points.X PLLND.F0.Points.X_injective}
+{lemmaTable instHeyting le_himp_iff_rn circNucleus box_inf MacNeille.instFrame cutHimp mem_left_cutHimp principalHom extNucleus extNucleus_apply extNucleus_comm le_extNucleus leastExt dmNucleus dmNucleus_principal le_dmNucleus PLLND.F0.Points.gaps PLLND.F0.Points.exists_nonprincipal PLLND.F0.Points.CF PLLND.F0.Points.CF.onto PLLND.F0.Points.fq_lt PLLND.F0.Points.X PLLND.F0.Points.X_injective PLLND.F0.Normal.ρF PLLND.F0.Normal.dF PLLND.F0.Normal.F7 PLLND.F0.Normal.IsFilter PLLND.F0.Normal.F7_isFilter PLLND.F0.Normal.lowerBounds_F7 PLLND.F0.Normal.upperBounds_lowerBounds_F7 PLLND.F0.Normal.t7_not_mem_F7 PLLND.F0.Normal.bot_not_mem_F7 PLLND.F0.Normal.force_d_x PLLND.F0.Normal.force_ρ_succ_x PLLND.F0.Normal.exists_force_chain PLLND.F0.Normal.toConstraint_force_fd PLLND.SubframeModel.CF.completeness}
 
 Pins (`#axioms_within`, each watched failing at a tighter set): `propext`,
-`Quot.sound` for `instHeyting`, `le_himp_iff_rn`, `circNucleus`, `box_inf`;
-`propext`, `Classical.choice`, `Quot.sound` for the rest, by the routes traced
-above.
+`Quot.sound` for `instHeyting`, `le_himp_iff_rn`, `circNucleus`, `box_inf` and
+every declaration of `wip/f0Normal.lean`; `propext`, `Classical.choice`,
+`Quot.sound` for the rest, by the routes traced above.

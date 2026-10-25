@@ -29,9 +29,10 @@ _New in v0.5._  Section 10 asks which filters $`[p, \top]` are isomorphic to
 $`F_0`, and reduces the question to the filters above $`t_3`.  Section 11, on
 the Dedekind–MacNeille completion $`F^{*}`, is rewritten: the construction by
 cuts beside Dedekind's construction of $`\mathbb{R}`, where `Classical.choice`
-enters, the extension of $`\bigcirc`, and the points of $`F^{*}`, with two new
-theorems ($`F^{*}` has a point that is not principal, and
-$`|F^{*}| = 2^{\aleph_0}`).  Section 12 tables what is established, with its
+enters, the extension of $`\bigcirc`, and the points of $`F^{*}`, with three new
+theorems: $`F^{*}` has a point that is not principal,
+$`|F^{*}| = 2^{\aleph_0}`, and $`F_0` has a filter that is not normal.
+Section 12 tables what is established, with its
 axioms, and Section 13 lists the open problems, with sketches where there are
 any.  Sections 8 and 9 were Sections 9 and 10.
 
@@ -96,8 +97,11 @@ any.  Sections 8 and 9 were Sections 9 and 10.
   * PROVED
   * 11
 * * Some filter of $`F_0` is not normal ($`F_7`)
-  * pen argument
+  * PROVED
   * 11
+* * Some filter over a limit point of $`F^{*}` is not normal
+  * OPEN
+  * 13
 * * $`F^{*}` can be built without `Classical.choice`
   * OPEN
   * 13

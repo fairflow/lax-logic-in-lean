@@ -19,7 +19,9 @@ proof sketch is given where one exists.
   every $`\sigma^{n}(c_1)`, each refuted; (ii) to (iv) fail at the cells
   $`t_3`, $`t_5`.  No sketch.  Every filter above $`t_3` refuted so far lacks a
   core, so one route is to show that no $`[p, \top]` with $`t_3 \le p` has one.
-* _Is the gap filter normal?_  $`G = \bigcup_n {\uparrow}(g_1 \land \cdots \land g_n)`
+* _Is there a non-normal filter over a limit point?  Is the gap filter normal?_
+  $`F_7` lies over a principal point.  The candidate over a limit point is
+  $`G = \bigcup_n {\uparrow}(g_1 \land \cdots \land g_n)`, which
   lies over the limit point $`x_{\mathrm{gap}}` (Section 11), and is normal
   exactly when every upper bound of the common lower bounds of the gaps lies
   above a finite meet of gaps.  OPEN, with no witness either way.  The model
@@ -32,7 +34,8 @@ proof sketch is given where one exists.
   (or $`t_5`) the meet in $`F_0` of a strictly decreasing sequence, so that a
   non-principal filter lies over it (Section 11)?  OPEN.  The construction of
   $`F_7` does not adapt: at $`t_6` the added world $`z` of its step 2 fails the
-  bound, and $`t_5` already fails on the ladder.
+  bound, and $`t_5` already fails on the ladder.  Over $`{\downarrow}t_7` there
+  are at least two filters ($`F_7`, PROVED); how many is OPEN.
 * _Uniqueness of the extension of $`\bigcirc` at $`F_0`_: is the interval of
   nuclear extensions a single point?  OPEN (REFUTED for a chain with a gap,
   Section 11).  The natural test point is $`x_{\mathrm{gap}}`, where
@@ -48,13 +51,14 @@ proof sketch is given where one exists.
   increase strictly (`sigN_bot_strict`); their join in $`F^{*}` is $`\top`, a
   principal point $`{\downarrow}c < \top`, or a limit point, and it is $`\top`
   exactly when the bases are cofinal in $`F_0`.  OPEN.  A possible route to
-  $`\top`, not checked: as for $`\bigvee_k \rho_k = \top` (Section 11, step 4),
-  show that every world of a finite subframe model forces some
-  $`\sigma^{n}(\bot)`.  At a maximal world $`t_3 = \sigma(\bot)` holds, and
+  $`\top`, not checked: as for the PROVED $`\bigvee_k \rho_k = \top`
+  (Section 11, step 4), show that every world of a finite subframe model with
+  decidable $`S` forces some $`\sigma^{n}(\bot)`.  At a maximal world
+  $`t_3 = \sigma(\bot)` holds, and
   $`\sigma^{n+1}(\bot) = \sigma^{n}(\bot)[\bot := t_3]` should hold one level
-  further down; an upper bound of every base is then $`\top`, by the subframe
-  tableau.
-* _How many filters are not normal?_  At least one ($`F_7`, pen argument);
+  further down; an upper bound of every base is then $`\top`, by completeness
+  for those models.
+* _How many filters are not normal?_  At least one ($`F_7`, PROVED);
   $`2^{\aleph_0}` is plausible, by varying $`F_7` with independent gaps.  OPEN.
 * _Which bases $`a` give a faithful copy $`\varphi \mapsto \varphi[\bot := a]`?_
   $`\bigcirc a \ne a` is necessary, and $`a = t_3` works (Section 9).  OPEN.
@@ -72,8 +76,6 @@ proof sketch is given where one exists.
 
 # Pen arguments awaiting Lean
 
-* _$`F_7` is a non-normal filter_ (Section 11, steps 1 to 5).  Its
-  certification in Lean is in progress.
 * _The normal filters are exactly the points of $`F^{*}`_, and every filter lies
   over the point $`(F^{l}, F^{lu})` (Section 11); on the definitions.
 * _The limit points are exactly the joins of strictly increasing sequences of
@@ -82,9 +84,6 @@ proof sketch is given where one exists.
   $`{\downarrow}t_2`, $`{\downarrow}t_4` are single filters_ (Section 11).
 * _The meet of the halves is a limit point_, from `halves_no_glb_vf` as for the
   gaps (Section 11).
-* _$`\bigvee_k \rho_k = \top` and $`\bigvee_k t_{2k+1} = \top` in $`F_0`_, by the
-  induction of Section 11, step 4 (for the plain rungs with $`\bigcirc\bot` in
-  place of $`u`).
 * _$`F^{*}` with $`\overline{\bigcirc}` is a complete algebraic model of PLL_,
   by the usual soundness of PLL for Heyting algebras with a nucleus, with
   $`\aleph_0` mutually incomparable copies of $`\mathbb{R}` completing the
@@ -97,6 +96,8 @@ proof sketch is given where one exists.
 # Closed since v0.4.1
 
 $`|F^{*}| = 2^{\aleph_0}` and the existence of a point of $`F^{*}` that is not
-principal are PROVED (`wip/f0MacNeillePoints.lean`).  Question 1 of v0.4.1 is
+principal are PROVED (`wip/f0MacNeillePoints.lean`), and so are the non-normal
+filter $`F_7` and the joins $`\bigvee_k \rho_k = \bigvee_k t_{2k+1} = \top`
+(`wip/f0Normal.lean`).  Question 1 of v0.4.1 is
 reduced to the residue above $`t_3` and refuted at the cells of Section 10,
 with Obstruction A and the four cases PROVED.

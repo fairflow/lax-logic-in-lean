@@ -192,6 +192,21 @@ cuts, and "Mathlib's nuclei" is `InfHomClass.toOrderHomClass`, through
   * {axiomsOf}`Points.card_eq_continuum Points.X_injective`
   * Mathlib's sets; $`\mathbb{R}` (`Real.linearOrder`), cardinals, `Countable`
   * 11
+* * $`F_0` has a filter that is not normal: $`F_7`, non-principal, with meet $`t_7`
+  * PROVED
+  * {axiomsOf}`Normal.notAllNormal Normal.F7_meet Normal.F7_nonPrincipal Normal.F7_not_normal Normal.descending Normal.strictlyDescending Normal.lowerBound Normal.greatestLowerBound`
+  * –
+  * 11
+* * In every finite subframe model with decidable $`S` every world forces some $`\rho_k`, and some odd rung
+  * PROVED
+  * {axiomsOf}`Normal.star Normal.starOdd`
+  * –
+  * 11
+* * $`\bigvee_k \rho_k = \top` and $`\bigvee_k t_{2k+1} = \top` in $`F_0`
+  * PROVED
+  * {axiomsOf}`Normal.supRho Normal.supOddRungs`
+  * –
+  * 11
 :::
 
 Every other declaration in the paper is in the supporting tables at the ends

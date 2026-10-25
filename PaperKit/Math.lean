@@ -599,6 +599,34 @@ partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
     return some (wrap 5 ((← generic st 6 u) ++ " \\lessdot " ++ (← generic st 6 v)))
   | (`PLLND.F0.FilterIso.MeetPrime, #[x]) =>
     return some (wrap 5 ((← generic st 6 x) ++ "\\ \\text{meet-prime}"))
+  -- `wip/f0Normal.lean`: the non-normal filter `F₇` and the suprema
+  | (`PLLND.F0.Normal.ρ, #[k]) | (`PLLND.F0.Normal.ρF, #[k]) =>
+    return some ("\\rho_{" ++ (← generic st 0 k) ++ "}")
+  | (`PLLND.F0.Normal.ρ, #[]) => return some "\\rho"
+  | (`PLLND.F0.Normal.d, #[k]) | (`PLLND.F0.Normal.dF, #[k]) =>
+    return some ("d_{" ++ (← generic st 0 k) ++ "}")
+  | (`PLLND.F0.Normal.odd, #[k]) | (`PLLND.F0.Normal.oddF, #[k]) =>
+    return some ("t_{" ++ (← oddIndex st k) ++ "}")
+  | (`PLLND.F0.Normal.t7, #[]) | (`PLLND.F0.Normal.t7F, #[]) => return some "t_{7}"
+  | (`PLLND.F0.Normal.F7, #[]) => return some "F_{7}"
+  | (`PLLND.F0.Normal.cls, #[φ, _]) => return some (← form st p φ)
+  | (`PLLND.F0.Normal.IsFilter, #[s]) =>
+    return some (wrap 5 ((← generic st 6 s) ++ "\\ \\text{a filter}"))
+  | (`upperBounds, #[_, _, s]) =>
+    match s.consumeMData.getAppFnArgs with
+    | (`lowerBounds, #[_, _, t]) => return some ("{" ++ (← generic st 9 t) ++ "}^{lu}")
+    | _ => return some ("{" ++ (← generic st 9 s) ++ "}^{u}")
+  | (`lowerBounds, #[_, _, s]) => return some ("{" ++ (← generic st 9 s) ++ "}^{l}")
+  | (`IsGLB, #[_, _, s, a]) =>
+    return some (wrap 5 ((← generic st 6 a) ++ " = \\bigwedge " ++ (← generic st 9 s)))
+  | (`IsLUB, #[_, _, s, a]) =>
+    return some (wrap 5 ((← generic st 6 a) ++ " = \\bigvee " ++ (← generic st 9 s)))
+  | (`Set.range, #[_, _, f]) =>
+    let f := f.consumeMData
+    if f.isConstOf `PLLND.F0.Normal.ρ then return some "\\{\\rho_{k} : k \\in \\mathbb{N}\\}"
+    if f.isConstOf `PLLND.F0.Normal.odd then return some "\\{t_{2k+1} : k \\in \\mathbb{N}\\}"
+    return none
+  | (`Set.Iic, #[_, _, a]) => return some ("{\\downarrow}" ++ (← generic st 9 a))
   | _ => return none
 
 /-- Propositions, terms and everything else. -/
