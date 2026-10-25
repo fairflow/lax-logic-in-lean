@@ -34,3 +34,31 @@ Not attempted: the general dense case (see the plan in the checkpoint report).
 Note: the Edit/Write tools refuse this worktree (a PreToolUse hook takes the
 manager's worktree `verso-paper-9a382c` as this session's root); files here are
 written from the shell, inside this worktree only.
+
+## 2026-10-25 17:26 GMT: checkpoint (refutation stage done)
+
+Built: `lake build wip.f0FilterIso` (about 12 s for the module), clean, no
+warnings.  Every pin passes and was watched failing at a strictly tighter set
+(scratch `_out/pinwatch.lean`, 23 failures as expected; `_out/pinwatch2.lean`).
+
+PROVED (pins in the file):
+
+* `classify_low`: `F0 = {⊥, t1, t2, t4} ∪ ↑t3`, constructive.
+* `filterIsoQ_iff_dense : FilterIsoQ ↔ DenseResidue`.
+* Cells, each `¬ Nonempty (Set.Ici p ≃o RNClass)`:
+  `t2` (`ne_filter_not_iso`, no disjoint pair), `t4` (`t4_filter_not_iso`),
+  `t1` (`e_filter_not_iso`, big-atom descent to `t3_filter_not_iso`),
+  `σⁿ(t3) = σⁿ⁺¹(⊥)` for every `n` (`sigN_filter_not_iso`; `refutes_sig`, σ
+  reflects refutation on constraint models with decidable fallibility, pin
+  `[propext]`), `c1 = ◯t3` (`c1_filter_not_iso`, three pairwise disjoint
+  elements, countermodels `K_al`, `K_be`, `K_ga` built by hand).
+* `obstructionA_F0_case`: F0 itself satisfies the second alternative of
+  `ObstructionA`, as it must.
+
+OPEN: `DenseResidue` for the remaining dense `p`.  Stated, not proved:
+`ObstructionA` (one model construction: a new root below a `d`-world whose
+only `Rₘ`-successor is itself).  The residual cases after it are recorded in
+the checkpoint report.
+
+Not done: the ◯-free instance (Rieger–Nishimura: `[p, ⊤] ≅ RN` by the shift
+`tₙ ↦ tₙ₊₂`, a YES answer) is a pen remark only.

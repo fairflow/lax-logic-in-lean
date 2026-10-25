@@ -40,7 +40,19 @@ refutation on constraint models with decidable fallibility (`refutes_sig`:
 add the tops `nT`, `eT`, and a fallible `fT` above `eT`), so the eight
 countermodels of `wip/f0NotIso.lean` serve every `n`; no completeness theorem.
 
-Pins `[propext, Quot.sound]` throughout.
+## A dense cell off the σ-bases (PROVED)
+
+`p = c1 = ◯t3 = σ(t1)`, `◯`-fixed like `t1`: `[c1, ⊤]` has three pairwise
+disjoint elements (`c1_filter_not_iso`).
+
+## What remains (OPEN)
+
+`DenseResidue` for the other dense `p`.  The proposed next statement is
+`ObstructionA` (§8, a `Prop`, not proved here): if `d` covers `p` and is
+meet-prime, then `◯d ⊢ d` or `◯(d ↠ p) ⊢ d ↠ p`.
+
+Pins: `[propext, Quot.sound]` for the cells and the reduction; tighter where
+the declaration needs less (each pin watched failing at a tighter set).
 -/
 
 open PLLFormula
@@ -875,6 +887,42 @@ theorem c1_ici_no_core : ¬ HasCore (Set.Ici C1) :=
 theorem c1_filter_not_iso : ¬ Nonempty (Set.Ici C1 ≃o RNClass) :=
   fun ⟨f⟩ => c1_ici_no_core (hasCore_of_iso f NotIso.rnclass_core)
 
+/-! ## 8. The proposed next statement (OPEN, not proved here)
+
+If `[p, ⊤] ≅ F0` by `f`, put `a = f(◯⊥)`, `d = f(¬◯⊥)`, `d₄ = f(t4) = d ↠ p`.
+Transported from F0: `[p, ⊤] = {p, d} ∪ ↑a`, so `d` covers `p` and is
+meet-prime (two elements not below `d` join with `p` above `a`).  The
+statement below then gives `◯d ⊢ d` or `◯d₄ ⊢ d₄`.  In F0 itself (`p = ⊥`)
+the second holds: `◯¬¬◯⊥ ⊢ ¬¬◯⊥` (`pen_nn_closed`), and `◯¬◯⊥ ⊬ ¬◯⊥`. -/
+
+/-- **Obstruction A** (OPEN; proposed).  For `d` covering `p`, meet-prime
+(stated negatively, as it is obtained), with `d₄ = d ↠ p`:
+
+    ¬ (◯d ⊢ d)  and  ¬ (◯d₄ ⊢ d₄)   is impossible.
+
+Planned proof, one model construction: for `w ⊨ d`, add a root `r` below `w`
+whose only `Rₘ`-successor is itself.  Then `r ⊨ ◯d ↠ d`; meet-primality puts
+`◯d ↠ d` below `d`, so `r ⊨ d`; covering gives `d ⊢ p ∨ ◯d₄`, so
+`r ⊨ p ∨ d₄`, hence `w ⊨ d ∧ d₄ ⊢ p`; so `d ⊢ p`, a contradiction. -/
+def ObstructionA : Prop :=
+  ∀ p d : PLLFormula, atomFree p = true → atomFree d = true →
+    LaxInfinite.Le p d → ¬ LaxInfinite.Le d p →
+    (∀ x : PLLFormula, atomFree x = true → LaxInfinite.Le p x → LaxInfinite.Le x d →
+      ¬ LaxInfinite.Le x p → LaxInfinite.Le d x) →
+    (∀ x y : PLLFormula, atomFree x = true → atomFree y = true →
+      ¬ LaxInfinite.Le x d → ¬ LaxInfinite.Le y d → ¬ LaxInfinite.Le (x.and y) d) →
+    ¬ LaxInfinite.Le (.somehow d) d →
+    ¬ LaxInfinite.Le (.somehow (d.ifThen p)) (d.ifThen p) → False
+
+/-- **Consistency check of `ObstructionA` against F0 itself** (`p = ⊥`,
+`d = ¬◯⊥`, `d ↠ ⊥ = ¬¬◯⊥`): the first alternative fails, the second holds,
+as it must, since `F0 ≅ F0`. -/
+theorem obstructionA_F0_case :
+    ¬ LaxInfinite.Le (.somehow ne) ne ∧
+      LaxInfinite.Le (.somehow (ne.ifThen .falsePLL)) (ne.ifThen .falsePLL) :=
+  ⟨fun h => nle_t3_ne (LaxInfinite.Le.trans (le_of_deriv T6.t3_le_u) h),
+   le_of_deriv pen_nn_closed⟩
+
 end FilterIso
 end F0
 end PLLND
@@ -905,3 +953,4 @@ end PLLND
 #axioms_within PLLND.F0.FilterIso.meet_al_be [propext]
 #axioms_within PLLND.F0.FilterIso.c1_ici_no_core [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.c1_filter_not_iso [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.obstructionA_F0_case [propext, Quot.sound]
