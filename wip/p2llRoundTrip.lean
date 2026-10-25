@@ -277,6 +277,266 @@ theorem roundTripP2LL : RoundTripP2LL := fun φ hlc hf =>
   let d := rtpD (size φ + 1) φ (Nat.lt_succ_self _) hlc hf
   ⟨⟨d.1⟩, ⟨d.2⟩⟩
 
+
+/-! ## Commutation of openings; closure under a change of instance -/
+
+/-- Two openings at different indices, with locally closed instances, commute. -/
+theorem openRec_comm {u v : Fm} (hu : LC u) (hv : LC v) :
+    ∀ (ψ : Fm) (j k : Nat), j ≠ k →
+      openRec j u (openRec k v ψ) = openRec k v (openRec j u ψ)
+  | .fvar _, _, _, _ => rfl
+  | .bot, _, _, _ => rfl
+  | .bvar n, j, k, hjk => by
+    show openRec j u (if n = k then v else .bvar n) = openRec k v (if n = j then u else .bvar n)
+    by_cases hk : n = k
+    · subst hk
+      rw [if_pos rfl, if_neg (Ne.symm hjk)]
+      show openRec j u v = (if n = n then v else Fm.bvar n)
+      rw [openRec_lcAt u j v (lcAt_mono (Nat.zero_le j) v hv), if_pos rfl]
+    · rw [if_neg hk]
+      by_cases hj : n = j
+      · subst hj
+        rw [if_pos rfl]
+        show (if n = n then u else Fm.bvar n) = openRec k v u
+        rw [if_pos rfl, openRec_lcAt v k u (lcAt_mono (Nat.zero_le k) u hu)]
+      · rw [if_neg hj]
+        show (if n = j then u else Fm.bvar n) = (if n = k then v else Fm.bvar n)
+        rw [if_neg hj, if_neg hk]
+  | .and φ ψ, j, k, h => by
+    show Fm.and (openRec j u (openRec k v φ)) (openRec j u (openRec k v ψ)) =
+      Fm.and (openRec k v (openRec j u φ)) (openRec k v (openRec j u ψ))
+    rw [openRec_comm hu hv φ j k h, openRec_comm hu hv ψ j k h]
+  | .or φ ψ, j, k, h => by
+    show Fm.or (openRec j u (openRec k v φ)) (openRec j u (openRec k v ψ)) =
+      Fm.or (openRec k v (openRec j u φ)) (openRec k v (openRec j u ψ))
+    rw [openRec_comm hu hv φ j k h, openRec_comm hu hv ψ j k h]
+  | .imp φ ψ, j, k, h => by
+    show Fm.imp (openRec j u (openRec k v φ)) (openRec j u (openRec k v ψ)) =
+      Fm.imp (openRec k v (openRec j u φ)) (openRec k v (openRec j u ψ))
+    rw [openRec_comm hu hv φ j k h, openRec_comm hu hv ψ j k h]
+  | .circ φ, j, k, h => by
+    show Fm.circ (openRec j u (openRec k v φ)) = Fm.circ (openRec k v (openRec j u φ))
+    rw [openRec_comm hu hv φ j k h]
+  | .all ψ, j, k, h => by
+    show Fm.all (openRec (j + 1) u (openRec (k + 1) v ψ)) =
+      Fm.all (openRec (k + 1) v (openRec (j + 1) u ψ))
+    rw [openRec_comm hu hv ψ (j + 1) (k + 1) (fun e => h (Nat.succ.inj e))]
+  | .allJ ψ, j, k, h => by
+    show Fm.allJ (openRec (j + 1) u (openRec (k + 1) v ψ)) =
+      Fm.allJ (openRec (k + 1) v (openRec (j + 1) u ψ))
+    rw [openRec_comm hu hv ψ (j + 1) (k + 1) (fun e => h (Nat.succ.inj e))]
+
+/-- The closure of an opening depends only on the closure of the instance. -/
+theorem lcAt_openRec_swap {u v : Fm} (hv : LC v) :
+    ∀ (ψ : Fm) (j k : Nat), lcAt j (openRec k u ψ) → lcAt j (openRec k v ψ)
+  | .fvar _, _, _, _ => trivial
+  | .bot, _, _, _ => trivial
+  | .bvar n, j, k, h => by
+    show lcAt j (if n = k then v else Fm.bvar n)
+    by_cases hk : n = k
+    · rw [if_pos hk]
+      exact lcAt_mono (Nat.zero_le j) v hv
+    · rw [if_neg hk]
+      have h' : lcAt j (if n = k then u else Fm.bvar n) := h
+      rw [if_neg hk] at h'
+      exact h'
+  | .and φ ψ, j, k, h => ⟨lcAt_openRec_swap hv φ j k h.1, lcAt_openRec_swap hv ψ j k h.2⟩
+  | .or φ ψ, j, k, h => ⟨lcAt_openRec_swap hv φ j k h.1, lcAt_openRec_swap hv ψ j k h.2⟩
+  | .imp φ ψ, j, k, h => ⟨lcAt_openRec_swap hv φ j k h.1, lcAt_openRec_swap hv ψ j k h.2⟩
+  | .circ φ, j, k, h => lcAt_openRec_swap hv φ j k h
+  | .all ψ, j, k, h => lcAt_openRec_swap hv ψ (j + 1) (k + 1) h
+  | .allJ ψ, j, k, h => lcAt_openRec_swap hv ψ (j + 1) (k + 1) h
+
+/-! ## Substitution of equivalents in the guarded calculus -/
+
+/-- If `A ↔ B` under `Γ`, then `ψ[A/k] → ψ[B/k]` under `Γ`, for every
+`◯`-free `ψ` whose only loose index is `k` (`LC (openRec k A ψ)`).  Stated for
+every `k` so that the binder cases need no fresh name: the eigenvariable of the
+rule's own cofinite premise opens the body, and the two openings commute
+(`openRec_comm`).  The converse is the same lemma with `A`, `B` swapped, which
+the `→` case uses on the antecedent. -/
+def JND.congrD : ∀ (n : Nat) {Θ : List String} {Γ : List Fm} (A B : Fm), LC A → LC B →
+    JND IsJ Θ Γ (.imp A B) → JND IsJ Θ Γ (.imp B A) →
+    ∀ (k : Nat) (ψ : Fm), size ψ < n → circFree ψ → LC (openRec k A ψ) →
+      JND IsJ Θ Γ (.imp (openRec k A ψ) (openRec k B ψ))
+  | 0, _, _, _, _, _, _, _, _, _, _, h, _, _ => absurd h (Nat.not_lt_zero _)
+  | _ + 1, _, _, _, _, _, _, _, _, _, .fvar _, _, _, _ =>
+    .impIntro trivial (.iden trivial (List.mem_cons_self ..))
+  | _ + 1, _, _, _, _, _, _, _, _, _, .bot, _, _, _ =>
+    .impIntro trivial (.iden trivial (List.mem_cons_self ..))
+  | _ + 1, _, _, A, B, _, _, hAB, _, k, .bvar m, _, _, hlc => by
+    by_cases h : m = k
+    · subst h
+      show JND IsJ _ _ (.imp (if m = m then A else .bvar m) (if m = m then B else .bvar m))
+      rw [if_pos rfl, if_pos rfl]
+      exact hAB
+    · have hlc' : lcAt 0 (if m = k then A else Fm.bvar m) := hlc
+      rw [if_neg h] at hlc'
+      exact absurd hlc' (Nat.not_lt_zero m)
+  | n + 1, _, _, A, B, hA, hB, hAB, hBA, k, .and φ ψ, h, hf, hlc =>
+    let dφ := JND.congrD n A B hA hB hAB hBA k φ (lt_of_bin_left h) hf.1 hlc.1
+    let dψ := JND.congrD n A B hA hB hAB hBA k ψ (lt_of_bin_right h) hf.2 hlc.2
+    .impIntro hlc (.andIntro
+      (.impElim (dφ.weaken _) (.andElim1 (.iden hlc (List.mem_cons_self ..))))
+      (.impElim (dψ.weaken _) (.andElim2 (.iden hlc (List.mem_cons_self ..)))))
+  | n + 1, _, _, A, B, hA, hB, hAB, hBA, k, .or φ ψ, h, hf, hlc =>
+    let dφ := JND.congrD n A B hA hB hAB hBA k φ (lt_of_bin_left h) hf.1 hlc.1
+    let dψ := JND.congrD n A B hA hB hAB hBA k ψ (lt_of_bin_right h) hf.2 hlc.2
+    .impIntro hlc (.orElim (.iden hlc (List.mem_cons_self ..))
+      (.orIntro1 (lcAt_openRec_swap hB ψ 0 k hlc.2)
+        (.impElim ((dφ.weaken _).weaken _) (.iden hlc.1 (List.mem_cons_self ..))))
+      (.orIntro2 (lcAt_openRec_swap hB φ 0 k hlc.1)
+        (.impElim ((dψ.weaken _).weaken _) (.iden hlc.2 (List.mem_cons_self ..)))))
+  | n + 1, _, _, A, B, hA, hB, hAB, hBA, k, .imp φ ψ, h, hf, hlc =>
+    let hφB : LC (openRec k B φ) := lcAt_openRec_swap hB φ 0 k hlc.1
+    let dφ' := JND.congrD n B A hB hA hBA hAB k φ (lt_of_bin_left h) hf.1 hφB
+    let dψ := JND.congrD n A B hA hB hAB hBA k ψ (lt_of_bin_right h) hf.2 hlc.2
+    .impIntro hlc (.impIntro hφB
+      (.impElim ((dψ.weaken _).weaken _)
+        (.impElim (.iden hlc (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+          (.impElim ((dφ'.weaken _).weaken _) (.iden hφB (List.mem_cons_self ..))))))
+  | _ + 1, _, _, _, _, _, _, _, _, _, .circ _, _, hf, _ => hf.elim
+  | n + 1, _, _, A, B, hA, hB, hAB, hBA, k, .all ψ, h, hf, hlc =>
+    let hlcA : lcAt 1 (openRec (k + 1) A ψ) := hlc
+    let hlcB : lcAt 1 (openRec (k + 1) B ψ) := lcAt_openRec_swap hB ψ 1 (k + 1) hlcA
+    .impIntro hlc (.allIntro [] hlcB fun t _ =>
+      .castF (openRec_comm (u := .fvar t) trivial hB ψ 0 (k + 1) (Nat.succ_ne_zero k).symm).symm
+        (.impElim
+          (JND.congrD n A B hA hB (hAB.weaken _) (hBA.weaken _) (k + 1) (openRec 0 (.fvar t) ψ)
+            (by rw [size_openRec_fvar]; exact lt_of_un h) (circFree_openRec_fvar t 0 ψ hf)
+            ((congrArg LC (openRec_comm (u := .fvar t) trivial hA ψ 0 (k + 1) (Nat.succ_ne_zero k).symm)).mp
+              (lcAt_openRec _ 0 _ trivial hlcA)))
+          (.allElim (χ := .fvar t) trivial (.iden hlc (List.mem_cons_self ..))
+            (openRec_comm (u := .fvar t) trivial hA ψ 0 (k + 1) (Nat.succ_ne_zero k).symm).symm)))
+  | n + 1, _, _, A, B, hA, hB, hAB, hBA, k, .allJ ψ, h, hf, hlc =>
+    let hlcA : lcAt 1 (openRec (k + 1) A ψ) := hlc
+    let hlcB : lcAt 1 (openRec (k + 1) B ψ) := lcAt_openRec_swap hB ψ 1 (k + 1) hlcA
+    .impIntro hlc (.allJIntro [] hlcB fun t _ =>
+      .castF (openRec_comm (u := .fvar t) trivial hB ψ 0 (k + 1) (Nat.succ_ne_zero k).symm).symm
+        (.impElim
+          (JND.congrD n A B hA hB
+            ((hAB.weakenΘ IsJ.jmono fun _ hx => List.mem_cons_of_mem _ hx).weaken _)
+            ((hBA.weakenΘ IsJ.jmono fun _ hx => List.mem_cons_of_mem _ hx).weaken _)
+            (k + 1) (openRec 0 (.fvar t) ψ)
+            (by rw [size_openRec_fvar]; exact lt_of_un h) (circFree_openRec_fvar t 0 ψ hf)
+            ((congrArg LC (openRec_comm (u := .fvar t) trivial hA ψ 0 (k + 1) (Nat.succ_ne_zero k).symm)).mp
+              (lcAt_openRec _ 0 _ trivial hlcA)))
+          (.allJElim (χ := .fvar t) trivial (.var (List.mem_cons_self ..))
+            (.iden hlc (List.mem_cons_self ..))
+            (openRec_comm (u := .fvar t) trivial hA ψ 0 (k + 1) (Nat.succ_ne_zero k).symm).symm)))
+
+/-! ## RTJ -/
+
+/-- `◯°s` is a J-formula under any declarations (the `allJ` and `imp` clauses). -/
+def isJ_circJ_fvar (Θ : List String) (s : String) : IsJ Θ (circJ (.fvar s)) :=
+  .allJ [] fun t _ =>
+    show IsJ (t :: Θ) (.imp (.imp (.fvar s) (.fvar t)) (.fvar t)) from
+    .imp (.var (List.mem_cons_self ..))
+
+theorem lc_guardJ (s : String) : LC (Fm.imp (circJ (.fvar s)) (.fvar s)) := ⟨lc_circJ trivial, trivial⟩
+
+/-- `(∀°.ψ)*° = ∀p.((◯°p → p) → ψ*°)` is locally closed when its body is. -/
+theorem lc_trAllJ {ψ : Fm} (h : lcAt 1 (toJ (rel ψ))) : LC (toJ (rel (.allJ ψ))) :=
+  ⟨⟨(by decide : lcAt 1 (circJ (.bvar 0))), Nat.zero_lt_one⟩, h⟩
+
+/-- The round trip on the guarded side, both directions, by induction on the
+size of `φ`; `Θ` is generalised because `∀°I` declares its eigenvariable. -/
+def rtjD : ∀ (n : Nat) (Θ : List String) (φ : Fm), size φ < n → LC φ → circFree φ →
+    JND IsJ Θ [φ] (toJ (rel φ)) × JND IsJ Θ [toJ (rel φ)] φ
+  | 0, _, _, h, _, _ => absurd h (Nat.not_lt_zero _)
+  | _ + 1, _, .fvar _, _, _, _ =>
+    (.iden trivial (List.mem_cons_self ..), .iden trivial (List.mem_cons_self ..))
+  | _ + 1, _, .bvar k, _, hlc, _ => absurd hlc (Nat.not_lt_zero k)
+  | _ + 1, _, .bot, _, _, _ =>
+    (.iden trivial (List.mem_cons_self ..), .iden trivial (List.mem_cons_self ..))
+  | n + 1, Θ, .and φ ψ, h, hlc, hf =>
+    let dφ := rtjD n Θ φ (lt_of_bin_left h) hlc.1 hf.1
+    let dψ := rtjD n Θ ψ (lt_of_bin_right h) hlc.2 hf.2
+    (.andIntro
+        (.cut1 dφ.1 hlc.1 (.andElim1 (.iden hlc (List.mem_cons_self ..))))
+        (.cut1 dψ.1 hlc.2 (.andElim2 (.iden hlc (List.mem_cons_self ..)))),
+     .andIntro
+        (.cut1 dφ.2 (lc_tr hlc.1)
+          (.andElim1 (.iden (⟨lc_tr hlc.1, lc_tr hlc.2⟩ : LC (toJ (rel (.and φ ψ))))
+            (List.mem_cons_self ..))))
+        (.cut1 dψ.2 (lc_tr hlc.2)
+          (.andElim2 (.iden (⟨lc_tr hlc.1, lc_tr hlc.2⟩ : LC (toJ (rel (.and φ ψ))))
+            (List.mem_cons_self ..)))))
+  | n + 1, Θ, .or φ ψ, h, hlc, hf =>
+    let dφ := rtjD n Θ φ (lt_of_bin_left h) hlc.1 hf.1
+    let dψ := rtjD n Θ ψ (lt_of_bin_right h) hlc.2 hf.2
+    (.orElim (.iden hlc (List.mem_cons_self ..))
+        (.orIntro1 (lc_tr hlc.2) (.cut1 dφ.1 hlc.1 (.iden hlc.1 (List.mem_cons_self ..))))
+        (.orIntro2 (lc_tr hlc.1) (.cut1 dψ.1 hlc.2 (.iden hlc.2 (List.mem_cons_self ..)))),
+     .orElim (.iden (⟨lc_tr hlc.1, lc_tr hlc.2⟩ : LC (toJ (rel (.or φ ψ)))) (List.mem_cons_self ..))
+        (.orIntro1 hlc.2 (.cut1 dφ.2 (lc_tr hlc.1) (.iden (lc_tr hlc.1) (List.mem_cons_self ..))))
+        (.orIntro2 hlc.1 (.cut1 dψ.2 (lc_tr hlc.2) (.iden (lc_tr hlc.2) (List.mem_cons_self ..)))))
+  | n + 1, Θ, .imp φ ψ, h, hlc, hf =>
+    let dφ := rtjD n Θ φ (lt_of_bin_left h) hlc.1 hf.1
+    let dψ := rtjD n Θ ψ (lt_of_bin_right h) hlc.2 hf.2
+    (.impIntro (lc_tr hlc.1)
+        (.cut1 dψ.1 hlc.2
+          (.impElim (.iden hlc (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+            (.cut1 dφ.2 (lc_tr hlc.1) (.iden (lc_tr hlc.1) (List.mem_cons_self ..))))),
+     .impIntro hlc.1
+        (.cut1 dψ.2 (lc_tr hlc.2)
+          (.impElim
+            (.iden (⟨lc_tr hlc.1, lc_tr hlc.2⟩ : LC (toJ (rel (.imp φ ψ))))
+              (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+            (.cut1 dφ.1 hlc.1 (.iden hlc.1 (List.mem_cons_self ..))))))
+  | _ + 1, _, .circ _, _, _, hf => hf.elim
+  | n + 1, Θ, .all ψ, h, hlc, hf =>
+    let hψ : lcAt 1 ψ := hlc
+    let hψ' : lcAt 1 (toJ (rel ψ)) := lcAt_toJ 1 _ (lcAt_rel 1 ψ hψ)
+    (.allIntro [] hψ' fun s _ =>
+        .castF (tr_opn_fvar ψ s)
+          (.cut1 (rtjD n Θ (ψ.opn (.fvar s)) (by rw [size_opn_fvar]; exact lt_of_un h)
+                (lc_opn _ trivial hψ) (circFree_opn_fvar s hf)).1
+            (lc_opn _ trivial hψ)
+            (.allElim (χ := .fvar s) trivial (.iden hlc (List.mem_cons_self ..)) rfl)),
+     .allIntro [] hψ fun s _ =>
+        .cut1 (rtjD n Θ (ψ.opn (.fvar s)) (by rw [size_opn_fvar]; exact lt_of_un h)
+              (lc_opn _ trivial hψ) (circFree_opn_fvar s hf)).2
+          (lc_tr (lc_opn _ trivial hψ))
+          (.allElim (χ := .fvar s) trivial
+            (.iden (hψ' : LC (toJ (rel (.all ψ)))) (List.mem_cons_self ..))
+            (tr_opn_fvar ψ s)))
+  | n + 1, Θ, .allJ ψ, h, hlc, hf =>
+    let hψ : lcAt 1 ψ := hlc
+    let hψ' : lcAt 1 (toJ (rel ψ)) := lcAt_toJ 1 _ (lcAt_rel 1 ψ hψ)
+    (.allIntro [] (lc_trAllJ hψ') fun s _ =>
+        show JND IsJ Θ [.allJ ψ]
+          (.imp (.imp (circJ (.fvar s)) (.fvar s)) ((toJ (rel ψ)).opn (.fvar s))) from
+        .impIntro (lc_guardJ s) <|
+          .castF (tr_opn_fvar ψ s)
+            (.cut1 (rtjD n Θ (ψ.opn (.fvar s)) (by rw [size_opn_fvar]; exact lt_of_un h)
+                  (lc_opn _ trivial hψ) (circFree_opn_fvar s hf)).1
+              (lc_opn _ trivial hψ)
+              (.impElim
+                (JND.congrD (size ψ + 1) (circJ (.fvar s)) (.fvar s) (lc_circJ trivial) trivial
+                  (.iden (lc_guardJ s) (List.mem_cons_self ..))
+                  (JND.OI IsJ.jmono _ trivial)
+                  0 ψ (Nat.lt_succ_self _) hf (lc_opn _ (lc_circJ trivial) hψ))
+                (.allJElim (χ := circJ (.fvar s)) (lc_circJ trivial) (isJ_circJ_fvar Θ s)
+                  (.iden hlc (List.mem_cons_of_mem _ (List.mem_cons_self ..))) rfl))),
+     .allJIntro [] hψ fun s _ =>
+        .cut1 (rtjD n (s :: Θ) (ψ.opn (.fvar s)) (by rw [size_opn_fvar]; exact lt_of_un h)
+              (lc_opn _ trivial hψ) (circFree_opn_fvar s hf)).2
+          (lc_tr (lc_opn _ trivial hψ))
+          (.castF (tr_opn_fvar ψ s).symm
+            (.impElim
+              (.allElim (χ := .fvar s)
+                (θ := .imp (.imp (circJ (.fvar s)) (.fvar s)) ((toJ (rel ψ)).opn (.fvar s)))
+                trivial
+                (.iden (lc_trAllJ hψ') (List.mem_cons_self ..)) rfl)
+              (.impIntro (lc_circJ trivial)
+                (JND.circJ_collapse (.var (List.mem_cons_self ..)) trivial)))))
+
+/-- **RTJ.** -/
+theorem roundTripJ : RoundTripJ := fun Θ φ hlc hf =>
+  let d := rtjD (size φ + 1) Θ φ (Nat.lt_succ_self _) hlc hf
+  ⟨⟨d.1⟩, ⟨d.2⟩⟩
+
 end P2LL
 
 /-! ## Pins (upper bounds; first run at `[]`, see `wip/p2ll-STATUS.md` §9) -/
@@ -292,3 +552,10 @@ end P2LL
 #axioms_within P2LL.JND.cut1 [propext]
 #axioms_within P2LL.rtpD [propext]
 #axioms_within P2LL.roundTripP2LL [propext]
+#axioms_within P2LL.openRec_comm [propext]
+#axioms_within P2LL.lcAt_openRec_swap []
+#axioms_within P2LL.JND.congrD [propext]
+#axioms_within P2LL.isJ_circJ_fvar []
+#axioms_within P2LL.lc_trAllJ []
+#axioms_within P2LL.rtjD [propext]
+#axioms_within P2LL.roundTripJ [propext]

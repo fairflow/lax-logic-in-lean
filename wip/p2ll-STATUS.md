@@ -423,3 +423,29 @@ Pins watched at `[]`: `size_openRec_fvar`, `allJFree_openRec_fvar`,
 
 * 2026-10-25: RTP PROVED (§10); next RTJ (substitution of equivalents
   `JND.congrD`, then `rtjD`), then MP, MJ in `wip/p2llMutual.lean`.
+
+## 11. Phase 2, step 4 (2026-10-25): RTJ PROVED (`wip/p2llRoundTrip.lean`)
+
+    roundTripJ : RoundTripJ     by rtjD   (induction on size φ, Θ generalised, both directions)   [propext]
+
+Substitution of equivalents, the infrastructure item of the plan:
+
+    JND.congrD : A ↔ B under Γ  ⟹  Γ ⊢ ψ[A/k] → ψ[B/k]     (ψ ◯-free, LC (ψ[A/k]))      [propext]
+
+by recursion on a size bound, for EVERY index `k` at once, so that the binder
+cases open the body with the eigenvariable `t` of the rule's own cofinite
+premise and commute the two openings (`openRec_comm`, `[propext]`;
+`lcAt_openRec_swap`, `[]`): no fresh name is chosen.  The `→` case uses the
+lemma with `A`, `B` swapped on the antecedent.  `rtjD`'s `∀°` case: forward,
+`∀I` at `s`, `→I` on `◯°s → s`, `∀°E` of the hypothesis at `◯°s` (a J-formula,
+`isJ_circJ_fvar`, `[]`), then `congrD` with `A := ◯°s`, `B := s` (`◯°s → s` the
+hypothesis, `s → ◯°s` the unit law `JND.OI`), then the hypothesis on `ψ^s`;
+converse, `∀°I` at `s`, `∀E` at `s`, the guard `◯°s → s` from C3 at the
+declared `s`, then the hypothesis on `ψ^s` under `s :: Θ` (hence `Θ`
+generalised).  Pins watched at `[]`: `lcAt_openRec_swap`, `isJ_circJ_fvar`,
+`lc_trAllJ` hold at `[]`; `openRec_comm` (by_cases), `congrD`, `rtjD`,
+`roundTripJ` are `[propext]`.
+
+## 5. Log (continued)
+
+* 2026-10-25: RTJ PROVED (§11); next MP, MJ in `wip/p2llMutual.lean`.
