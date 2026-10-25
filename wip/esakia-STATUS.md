@@ -285,3 +285,73 @@ cells' coverage no longer carries any claim.
 resolves. `df -m /System/Volumes/Data`: 137 927 MB free at the last build.
 
 Next: Phase B (G1–G4, R5; classical), on the coordinator's resume.
+
+## 2026-10-25 11:25 GMT: Phase B (general case) PROVED; G1–G4 and R5
+
+Coordinator: checkpoint accepted (3339fb4 pushed by the manager as
+`esakia-nuclear`, PR #91; nothing up to 3339fb4 rewritten). No statement
+text changed, no hypothesis added, no statement refuted.
+
+Modules (in `wipshared`):
+- `wip/esakiaNuclearGenBase.lean` (kit): prime filter theorem in set form
+  (`exists_prime_set`, the one use of
+  `DistribLattice.prime_ideal_of_disjoint_filter_ideal`) and its instances in
+  `A` (`exists_spec`, `exists_spec_not_le`, `exists_spec_himp`) and in the
+  fixed-point lattice `A_j` of a nucleus (`Fix j`, a bounded distributive
+  lattice; `exists_spec_nuclear`); `φ` preserves `⊓ ⊔ ⊤ ⊥` and `→`
+  (`phi_himp`) and is an order embedding (`phi_subset_iff`); the basis
+  `φ(a) ∩ φ(b)ᶜ` (`isBasis`); compactness (`compactSpace_spec`, Alexander's
+  subbasis theorem `isCompact_generateFrom`); clopens are finite unions of
+  basic sets (`clopen_eq_union`); the Esakia condition
+  (`isClopen_lowerClosure`); clopen up-sets are `φ(a)`
+  (`exists_phi_of_clopen_upper`); `PriestleySpace` (`priestleySpace_spec`).
+- `wip/esakiaNuclearGenProofs.lean`: `g1 : G1`, `g2 : G2`, `g3 : G3`,
+  `g4 : G4`, `Bridge.r5 : R5`; key lemmas `phi_nucleus`
+  (`φ(j a) = X ∖ ↓(N_j ∖ φ a)`), `lower_basic_nuclear`
+  (`↓(φ a ∩ φ(b)ᶜ ∩ N_j) = X ∖ φ(a → j b)`), `isClosed_Nj`, `isNuclear_Nj`.
+
+Pins: g1, g2, g3, g4, r5 and every lemma resting on the prime filter theorem
+or compactness `[propext, Classical.choice, Quot.sound]`. Choice-free and
+pinned: `Spec.ofSet` `[]`, `nle` `[]`, `nidem` `[]`, `nmono` `[propext]`, the
+`Fix j` lattice instances `[propext]`, `mem_Nj`, `phi_inf`, `phi_sup`,
+`phi_top`, `phi_bot`, `phi_upper`, `finset_inf_mem`, `finset_sup_mem`,
+`isBasis`, `lowerClosure_biUnion` `[propext, Quot.sound]`, `isOpen_phi`,
+`isClopen_phi`, `omega_HC_gt` `[]`.
+
+Where `Classical.choice` enters (measured with `#axiom_path`):
+1. the prime filter theorem (`exists_prime_set`, Zorn inside Mathlib);
+2. Alexander's subbasis theorem (`compactSpace_spec`);
+3. besides these, NOT expected by the brief:
+   (a) excluded middle in the proofs, through `Classical.propDecidable`:
+       `phi_subset_iff`, `phi_himp`, `compactSpace_spec`,
+       `exists_phi_of_clopen_upper`, `priestleySpace_spec` (`Set.not_subset`),
+       `mem_compl_lower`, `isClosed_Nj` (`not_forall`), `bgThm30` (G2 iii),
+       `bgCor31` (G3), `bgThm34` (G4), `r5` (`Set.eq_empty_or_nonempty`);
+   (b) a choice function in G2 (ii): `choose` picks `j_N(a)` with
+       `φ(j_N a) = X ∖ ↓(N ∖ φ a)`; the value is unique (φ injective), but
+       Lean has no unique choice for `Prop`-valued `∃` without
+       `Classical.choice`;
+   (c) Mathlib's `IsCompact.elim_finite_subcover` (classical), used after
+       compactness in `clopen_eq_union` and `exists_phi_of_clopen_upper`.
+   Two library leaks met and REMOVED: Mathlib's `Nucleus.le_apply`,
+   `Nucleus.idempotent`, `Nucleus.monotone` (through
+   `Nucleus.toClosureOperator` and `OrderHomClass`, grind's
+   `of_eq_eq_true`), replaced by `nle`, `nidem`, `nmono`; `Set.compl_union`
+   (through Set's Boolean-algebra instance) in `isBasis`.
+
+Gates. Every non-empty pin watched failing once (`_out/esakiaPinsFailB.lean`,
+untracked; 46 tightened pins, 46 rejections): classical pins tightened to
+`[propext, Quot.sound]` fail on `Classical.choice`; `[propext]` pins
+tightened to `[]` fail on `propext`; `[propext, Quot.sound]` pins fail on
+each axiom dropped. Tracked negative gate in the module: `g1` is rejected at
+`[propext, Quot.sound]` (`#guard_msgs`). No `sorry`, `admit` or
+`native_decide`.
+
+`python3 scripts/check-imports.py`: 3051 imports in 1241 modules, every one
+resolves. `df -m /System/Volumes/Data`: 137 886 MB free at the last build.
+
+Termination: Phase A and Phase B complete; every statement of
+`wip/esakiaNuclearFin.lean` (F1–F10, F10a) and `wip/esakiaNuclearGen.lean`
+(G1–G4, R1–R5) PROVED. Open: whether R3a (⇒) and R3b are constructively
+provable; whether the excluded-middle uses in 3(a) can be removed (R1, R3c,
+R4 provably cannot: `r1_dne`, `r3c_dne`, `r4_dne`).
