@@ -402,3 +402,24 @@ one commit per theorem, no fresh name anywhere, pins aimed at `[propext]`.
 * 2026-10-25: repair adopted; RTP, RTJ, MP, MJ replaced by the fragment-
   restricted wording (§9); old wording moved to `wip/p2llBoolSem.lean`;
   committed before any proof.
+
+## 10. Phase 2, step 4 (2026-10-25): RTP PROVED (`wip/p2llRoundTrip.lean`)
+
+    roundTripP2LL : RoundTripP2LL     by rtpD   (induction on size φ, both directions at once)   [propext]
+
+`rtpD n φ : size φ < n → LC φ → allJFree φ → LaxND2 [φ] (φ°)* × LaxND2 [(φ°)*] φ`
+by recursion on the bound `n` (no well-founded recursion); the binder case
+uses the hypothesis on `ψ^s` for the eigenvariable `s` of the rule's own
+cofinite premise (`size_opn_fvar`, `allJFree_opn_fvar`, `lc_opn`), so no name
+is chosen; the `◯` case is C7 (`circ_to_circNuc`, `circNuc_to_circ`) at
+`(φ°)*` composed with the hypothesis, through `((◯φ)°)* = ∀°p.(((φ°)* → p) → p)`
+(`rel_toJ_circ`, from `rel_shiftAt`); cut is `→I`/`→E` (`LaxND2.cut1`).
+Pins watched at `[]`: `size_openRec_fvar`, `allJFree_openRec_fvar`,
+`circFree_openRec_fvar`, `rel_shiftAt`, `rel_circJ` hold at `[]`;
+`rt_opn_fvar`, `tr_opn_fvar`, the cuts, `rtpD`, `roundTripP2LL` are
+`[propext]` (through `toJ_openRec`/`rel_openRec` and `rename`).
+
+## 5. Log (continued)
+
+* 2026-10-25: RTP PROVED (§10); next RTJ (substitution of equivalents
+  `JND.congrD`, then `rtjD`), then MP, MJ in `wip/p2llMutual.lean`.
