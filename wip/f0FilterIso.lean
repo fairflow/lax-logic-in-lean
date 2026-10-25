@@ -1,4 +1,5 @@
 import wip.f0NotIso
+import wip.f0Nuclear
 import Meta.Audit
 
 /-!
@@ -923,6 +924,480 @@ theorem obstructionA_F0_case :
   ⟨fun h => nle_t3_ne (LaxInfinite.Le.trans (le_of_deriv T6.t3_le_u) h),
    le_of_deriv pen_nn_closed⟩
 
+/-! ## 9. Transport of the bottom of F0 along `F0 ≅ [p, ⊤]`
+
+For `f : F0 ≃o [p, ⊤]` the images `a = f(◯⊥)`, `d = f(¬◯⊥)`, `d₄ = f(t4)`,
+`a₃ = f(t3)` carry the bottom of F0 into `[p, ⊤]`:
+
+    [p, ⊤] = {p, d} ∪ ↑a,     ↑a = {a, d₄} ∪ ↑a₃,     d₄ = d ⇨ p,     d = d₄ ⇨ p,
+
+so `d` covers `p` and is meet-prime.  Order-only arguments: an order
+isomorphism preserves `⊥` and the Heyting implication, both being order-defined. -/
+
+open F0Nuclear (box le_box)
+
+/-- `F0 = {⊥, ¬◯⊥} ∪ ↑◯⊥`. -/
+theorem f0_split (y : RNClass) : y = ⊥ ∨ y = NE ∨ E ≤ y := by
+  rcases classify_low y with h | h | h | h | h
+  · exact Or.inr (Or.inr (le_trans E_le_T3 h))
+  · exact Or.inl h
+  · exact Or.inr (Or.inr (le_of_eq h.symm))
+  · exact Or.inr (Or.inl h)
+  · refine Or.inr (Or.inr ?_)
+    rw [h]
+    exact le_of_deriv D4_below_1
+
+/-- `↑◯⊥ = {◯⊥, t4} ∪ ↑t3`. -/
+theorem f0_split_e {y : RNClass} (hy : E ≤ y) : y = E ∨ y = T4c ∨ T3 ≤ y := by
+  rcases classify_low y with h | h | h | h | h
+  · exact Or.inr (Or.inr h)
+  · rw [h] at hy
+    exact absurd hy nle_e_bot
+  · exact Or.inl h
+  · rw [h] at hy
+    exact absurd hy nle_e_ne
+  · exact Or.inr (Or.inl h)
+
+/-- `¬¬¬◯⊥ ⊣⊢ ¬◯⊥` read as `¬t2 = t4`: `t2 ⇨ ⊥ = t4`. -/
+theorem ne_himp_bot : NE ⇨ ⊥ = T4c := by
+  show F0Nuclear.himp NE ⊥ = T4c
+  exact Quotient.sound (show LaxInfinite.LaxEquiv (ne.ifThen .falsePLL) t4 from
+    ⟨fun M _ h v hv h3 => h3.elim id fun hn => M.force_of_fallible (h v hv hn),
+     fun M _ h v hv hn => hn v (M.refl_i v) (h v hv (Or.inr hn))⟩)
+
+/-- `t4 ⇨ ⊥ = t2`. -/
+theorem t4_himp_bot : T4c ⇨ ⊥ = NE := by
+  show F0Nuclear.himp T4c ⊥ = NE
+  exact Quotient.sound (show LaxInfinite.LaxEquiv (t4.ifThen .falsePLL) ne from
+    ⟨fun M _ h v hv he => h v hv (fun u hu _ => M.force_hered hu he),
+     fun M _ h v hv h4 => h v hv (h4 v (M.refl_i v)
+       (Or.inr fun u hu he => h u (M.trans_i hv hu) he))⟩)
+
+section Transport
+
+variable {p : RNClass} (f : RNClass ≃o Set.Ici p)
+
+/-- The least element of `[p, ⊤]`. -/
+def botI (p : RNClass) : Set.Ici p := ⟨p, Set.self_mem_Ici⟩
+
+theorem iso_bot : f ⊥ = botI p :=
+  le_antisymm (f.le_symm_apply.mp bot_le) (f ⊥).2
+
+theorem iso_le {x y : RNClass} : (f x).1 ≤ (f y).1 ↔ x ≤ y := f.le_iff_le
+
+/-- **An order isomorphism onto `[p, ⊤]` carries the Heyting implication.** -/
+theorem iso_himp (x y : RNClass) : (f (x ⇨ y)).1 = (f x).1 ⇨ (f y).1 := by
+  apply le_antisymm
+  · rw [le_himp_iff]
+    have hW : p ≤ (f (x ⇨ y)).1 ⊓ (f x).1 := le_inf (f (x ⇨ y)).2 (f x).2
+    have h1 : (⟨_, hW⟩ : Set.Ici p) ≤ f (x ⇨ y) := by
+      show _ ≤ (f (x ⇨ y)).1
+      exact inf_le_left
+    have h2 : (⟨_, hW⟩ : Set.Ici p) ≤ f x := by
+      show _ ≤ (f x).1
+      exact inf_le_right
+    have h3 : f.symm ⟨_, hW⟩ ≤ y :=
+      le_trans (le_inf (f.symm_apply_le.mpr h1) (f.symm_apply_le.mpr h2)) himp_inf_le
+    exact f.symm_apply_le.mp h3
+  · have hZ : p ≤ (f x).1 ⇨ (f y).1 := le_trans (f y).2 le_himp
+    have hfz : f (f.symm ⟨_, hZ⟩) = ⟨_, hZ⟩ := f.apply_symm_apply _
+    have hzx : f.symm ⟨_, hZ⟩ ⊓ x ≤ y := by
+      apply f.le_iff_le.mp
+      have ha : (f (f.symm ⟨_, hZ⟩ ⊓ x)).1 ≤ (f x).1 ⇨ (f y).1 := by
+        have := f.monotone (inf_le_left : f.symm ⟨_, hZ⟩ ⊓ x ≤ f.symm ⟨_, hZ⟩)
+        rw [hfz] at this
+        exact this
+      have hb : (f (f.symm ⟨_, hZ⟩ ⊓ x)).1 ≤ (f x).1 := f.monotone inf_le_right
+      show (f (f.symm ⟨_, hZ⟩ ⊓ x)).1 ≤ (f y).1
+      exact le_trans (le_inf ha hb) himp_inf_le
+    have h7 := f.monotone (le_himp_iff.mpr hzx)
+    rw [hfz] at h7
+    exact h7
+
+/-- **`[p, ⊤] = {p, d} ∪ ↑a`.** -/
+theorem iso_split (X : RNClass) (hX : p ≤ X) : X = p ∨ X = (f NE).1 ∨ (f E).1 ≤ X := by
+  have hfx : f (f.symm ⟨X, hX⟩) = ⟨X, hX⟩ := f.apply_symm_apply _
+  rcases f0_split (f.symm ⟨X, hX⟩) with h | h | h
+  · left
+    have := congrArg Subtype.val hfx
+    rw [h, iso_bot f] at this
+    exact this.symm
+  · right
+    left
+    have := congrArg Subtype.val hfx
+    rw [h] at this
+    exact this.symm
+  · right
+    right
+    have := f.monotone h
+    rw [hfx] at this
+    exact this
+
+/-- **`↑a = {a, d₄} ∪ ↑a₃`.** -/
+theorem iso_split_a (X : RNClass) (hX : (f E).1 ≤ X) :
+    X = (f E).1 ∨ X = (f T4c).1 ∨ (f T3).1 ≤ X := by
+  have hX' : p ≤ X := le_trans (f E).2 hX
+  have hfx : f (f.symm ⟨X, hX'⟩) = ⟨X, hX'⟩ := f.apply_symm_apply _
+  have hE : E ≤ f.symm ⟨X, hX'⟩ := f.le_symm_apply.mpr hX
+  rcases f0_split_e hE with h | h | h
+  · left
+    have := congrArg Subtype.val hfx
+    rw [h] at this
+    exact this.symm
+  · right
+    left
+    have := congrArg Subtype.val hfx
+    rw [h] at this
+    exact this.symm
+  · right
+    right
+    have := f.monotone h
+    rw [hfx] at this
+    exact this
+
+theorem Ai_nle_Di : ¬ (f E).1 ≤ (f NE).1 := fun h => nle_e_ne ((iso_le f).mp h)
+theorem Di_nle_D4i : ¬ (f NE).1 ≤ (f T4c).1 := fun h => nle_ne_t4 ((iso_le f).mp h)
+theorem D4i_nle_Ai : ¬ (f T4c).1 ≤ (f E).1 := fun h => nle_t4_e ((iso_le f).mp h)
+theorem Ai_le_D4i : (f E).1 ≤ (f T4c).1 := (iso_le f).mpr (le_of_deriv D4_below_1)
+theorem Ai_le_A3i : (f E).1 ≤ (f T3).1 := (iso_le f).mpr E_le_T3
+theorem Di_le_A3i : (f NE).1 ≤ (f T3).1 := (iso_le f).mpr (le_of_deriv D3_below_2)
+
+theorem Di_nle_p : ¬ (f NE).1 ≤ p := fun h => by
+  have h' : (f NE).1 ≤ (f ⊥).1 := by
+    rw [iso_bot f]
+    exact h
+  exact nle_ne_bot ((iso_le f).mp h')
+
+/-- **`d` covers `p`.** -/
+theorem iso_cover (X : RNClass) (h1 : p ≤ X) (h2 : X ≤ (f NE).1) : X = p ∨ X = (f NE).1 := by
+  rcases iso_split f X h1 with h | h | h
+  · exact Or.inl h
+  · exact Or.inr h
+  · exact absurd (le_trans h h2) (Ai_nle_Di f)
+
+/-- **`d` is meet-prime** (negative form). -/
+theorem iso_prime (Z1 Z2 : RNClass) (h1 : ¬ Z1 ≤ (f NE).1) (h2 : ¬ Z2 ≤ (f NE).1) :
+    ¬ Z1 ⊓ Z2 ≤ (f NE).1 := by
+  have k : ∀ Z : RNClass, ¬ Z ≤ (f NE).1 → (f E).1 ≤ p ⊔ Z := fun Z hZ => by
+    rcases iso_split f (p ⊔ Z) le_sup_left with h | h | h
+    · exact absurd (le_trans (le_trans le_sup_right (le_of_eq h)) (f NE).2) hZ
+    · exact absurd (le_trans le_sup_right (le_of_eq h)) hZ
+    · exact h
+  intro h12
+  apply Ai_nle_Di f
+  calc (f E).1 ≤ (p ⊔ Z1) ⊓ (p ⊔ Z2) := le_inf (k Z1 h1) (k Z2 h2)
+    _ = p ⊔ Z1 ⊓ Z2 := (sup_inf_left p Z1 Z2).symm
+    _ ≤ (f NE).1 := sup_le (f NE).2 h12
+
+/-- **`d₄ = d ⇨ p`.** -/
+theorem Di_himp : (f NE).1 ⇨ p = (f T4c).1 := by
+  have h := iso_himp f NE ⊥
+  rw [ne_himp_bot, iso_bot f] at h
+  exact h.symm
+
+/-- **`d = d₄ ⇨ p`.** -/
+theorem D4i_himp : (f T4c).1 ⇨ p = (f NE).1 := by
+  have h := iso_himp f T4c ⊥
+  rw [t4_himp_bot, iso_bot f] at h
+  exact h.symm
+
+end Transport
+
+/-! ## 10. `ObstructionA` PROVED: a new root below a `d`-world
+
+The root `r` sees `w` and everything above it; its only `Rₘ`-successor is
+itself, so `r ⊨ ◯φ` gives `r ⊨ φ`.  The old worlds keep their forcing. -/
+
+namespace RootExt
+
+variable (M : ConstraintModel) (w : M.W)
+
+def ri : Option M.W → Option M.W → Prop
+  | none, none => True
+  | none, some v => M.Ri w v
+  | some u, some v => M.Ri u v
+  | some _, none => False
+
+def rm : Option M.W → Option M.W → Prop
+  | none, none => True
+  | some u, some v => M.Rm u v
+  | _, _ => False
+
+def fl : Option M.W → Prop
+  | none => False
+  | some u => u ∈ M.F
+
+def vl (a : String) : Option M.W → Prop
+  | none => False
+  | some u => u ∈ M.V a
+
+theorem ri_refl : ∀ x : Option M.W, ri M w x x
+  | none => trivial
+  | some u => M.refl_i u
+
+theorem rm_refl : ∀ x : Option M.W, rm M x x
+  | none => trivial
+  | some u => M.refl_m u
+
+theorem ri_trans {x y z : Option M.W} (h1 : ri M w x y) (h2 : ri M w y z) : ri M w x z := by
+  cases x <;> cases y <;> cases z <;>
+    first
+    | exact trivial
+    | exact M.trans_i h1 h2
+    | exact h2
+    | exact False.elim h1
+
+theorem rm_trans {x y z : Option M.W} (h1 : rm M x y) (h2 : rm M y z) : rm M x z := by
+  cases x <;> cases y <;> cases z <;>
+    first
+    | exact trivial
+    | exact M.trans_m h1 h2
+    | exact False.elim h1
+    | exact False.elim h2
+
+theorem rm_sub {x y : Option M.W} (h : rm M x y) : ri M w x y := by
+  cases x <;> cases y <;>
+    first
+    | exact trivial
+    | exact M.sub_mi h
+    | exact False.elim h
+
+theorem fl_hered {x y : Option M.W} (h : ri M w x y) (hx : fl M x) : fl M y := by
+  cases x <;> cases y <;>
+    first
+    | exact M.hered_F h hx
+    | exact False.elim hx
+    | exact False.elim h
+
+theorem vl_hered {a : String} {x y : Option M.W} (h : ri M w x y) (hx : vl M a x) :
+    vl M a y := by
+  cases x <;> cases y <;>
+    first
+    | exact M.hered_V h hx
+    | exact False.elim hx
+    | exact False.elim h
+
+theorem vl_full {a : String} {x : Option M.W} (hx : fl M x) : vl M a x := by
+  cases x with
+  | none => exact False.elim hx
+  | some u => exact M.full_F hx
+
+/-- The extension by a root below `w`. -/
+def ext : ConstraintModel where
+  W := Option M.W
+  Ri := ri M w
+  Rm := rm M
+  F := {x | fl M x}
+  V a := {x | vl M a x}
+  refl_i := ri_refl M w
+  trans_i := ri_trans M w
+  refl_m := rm_refl M
+  trans_m := rm_trans M
+  sub_mi := rm_sub M w
+  hered_F := fun h hx => fl_hered M w h hx
+  hered_V := fun h hx => vl_hered M w h hx
+  full_F := fun hx => vl_full M hx
+
+/-- The old worlds keep their forcing. -/
+theorem old_force : ∀ (φ : PLLFormula) (u : M.W), (ext M w).force (some u) φ ↔ M.force u φ
+  | .prop _, _ => Iff.rfl
+  | .falsePLL, _ => Iff.rfl
+  | .and A B, u => and_congr (old_force A u) (old_force B u)
+  | .or A B, u => or_congr (old_force A u) (old_force B u)
+  | .ifThen A B, u =>
+      ⟨fun h v huv hA => (old_force B v).mp (h (some v) huv ((old_force A v).mpr hA)),
+       fun h y hy hA => by
+        cases y with
+        | none => exact False.elim hy
+        | some v => exact (old_force B v).mpr (h v hy ((old_force A v).mp hA))⟩
+  | .somehow A, u =>
+      ⟨fun h v huv => by
+        obtain ⟨y, hy, hA⟩ := h (some v) huv
+        cases y with
+        | none => exact False.elim hy
+        | some u' => exact ⟨u', hy, (old_force A u').mp hA⟩,
+       fun h y hy => by
+        cases y with
+        | none => exact False.elim hy
+        | some v =>
+            obtain ⟨u', hu', hA⟩ := h v hy
+            exact ⟨some u', hu', (old_force A u').mpr hA⟩⟩
+
+theorem root_box {φ : PLLFormula} (h : (ext M w).force none (.somehow φ)) :
+    (ext M w).force none φ := by
+  obtain ⟨y, hy, hφ⟩ := h none trivial
+  cases y with
+  | none => exact hφ
+  | some _ => exact False.elim hy
+
+theorem root_hered {φ : PLLFormula} (h : (ext M w).force none φ) : M.force w φ :=
+  (old_force M w φ w).mp
+    ((ext M w).force_hered (show (ext M w).Ri none (some w) from M.refl_i w) h)
+
+theorem root_imp_box {d : PLLFormula} (hw : M.force w d) :
+    (ext M w).force none ((PLLFormula.somehow d).ifThen d) := by
+  show ∀ y, (ext M w).Ri none y → (ext M w).force y (.somehow d) → (ext M w).force y d
+  intro y hy hb
+  cases y with
+  | none => exact root_box M w hb
+  | some v => exact (old_force M w d v).mpr (M.force_hered hy hw)
+
+end RootExt
+
+/-- **`ObstructionA` PROVED.** -/
+theorem obstructionA : ObstructionA := by
+  unfold ObstructionA
+  intro p d hp hd hpd hdp hcov hprime h1 h2
+  have hz : ¬ ¬ LaxInfinite.Le ((PLLFormula.somehow d).ifThen d) d := fun hn =>
+    hprime ((PLLFormula.somehow d).ifThen d) (PLLFormula.somehow d)
+      (by simp [atomFree, hd]) (by simp [atomFree, hd]) hn h1
+      (fun M w h => h.1 w (M.refl_i w) h.2)
+  have hc : ¬ ¬ LaxInfinite.Le d (p.or (.somehow (d.ifThen p))) := fun hn => by
+    have hxp : ¬ LaxInfinite.Le (d.and (p.or (.somehow (d.ifThen p)))) p := fun hle =>
+      h2 (fun M w hb v hwv hdv => hle M v ⟨hdv, Or.inr (M.force_hered hwv hb)⟩)
+    have hpx : LaxInfinite.Le p (d.and (p.or (.somehow (d.ifThen p)))) :=
+      fun M w hpw => ⟨hpd M w hpw, Or.inl hpw⟩
+    have hxd : LaxInfinite.Le (d.and (p.or (.somehow (d.ifThen p)))) d := fun _ _ h => h.1
+    have hdx := hcov (d.and (p.or (.somehow (d.ifThen p)))) (by simp [atomFree, hp, hd])
+      hpx hxd hxp
+    exact hn (fun M w hdw => (hdx M w hdw).2)
+  apply hz
+  intro hz'
+  apply hc
+  intro hc'
+  apply hdp
+  intro M w hw
+  have hr : (RootExt.ext M w).force none d :=
+    hz' (RootExt.ext M w) none (RootExt.root_imp_box M w hw)
+  rcases hc' (RootExt.ext M w) none hr with hp' | hb
+  · exact RootExt.root_hered M w hp'
+  · have h4 : M.force w (d.ifThen p) := RootExt.root_hered M w (RootExt.root_box M w hb)
+    exact h4 w (M.refl_i w) hw
+
+/-! ## 11. The case analysis at an isomorphism -/
+
+theorem box_mono {x y : RNClass} (h : x ≤ y) : box x ≤ box y := by
+  induction x using Quotient.ind
+  induction y using Quotient.ind
+  exact fun M _ hb v hv => (hb v hv).imp fun _ hu => ⟨hu.1, h M _ hu.2⟩
+
+/-- `x` is meet-prime (negative form). -/
+def MeetPrime (x : RNClass) : Prop := ∀ y z : RNClass, ¬ y ≤ x → ¬ z ≤ x → ¬ y ⊓ z ≤ x
+
+/-- `v` covers `u`. -/
+def CoversC (u v : RNClass) : Prop := u < v ∧ ∀ x : RNClass, u ≤ x → x ≤ v → x = u ∨ x = v
+
+section Cases
+
+variable {p : RNClass} (f : RNClass ≃o Set.Ici p)
+
+/-- **`ObstructionA` at an isomorphism**: not both `◯d ⊬ d` and `◯d₄ ⊬ d₄`. -/
+theorem iso_obstruction (h1 : ¬ box (f NE).1 ≤ (f NE).1)
+    (h2 : ¬ box (f T4c).1 ≤ (f T4c).1) : False := by
+  obtain ⟨p0, rfl⟩ := Quotient.exists_rep p
+  obtain ⟨d0, hd0⟩ := Quotient.exists_rep (f NE).1
+  have hpd : (Quotient.mk _ p0 : RNClass) ≤ Quotient.mk _ d0 := by
+    rw [hd0]
+    exact (f NE).2
+  have hdp : ¬ (Quotient.mk _ d0 : RNClass) ≤ Quotient.mk _ p0 := by
+    rw [hd0]
+    exact Di_nle_p f
+  refine obstructionA p0.1 d0.1 p0.2 d0.2 hpd hdp ?_ ?_ ?_ ?_
+  · intro x hx hx1 hx2 hx3
+    have h2' : cls x hx ≤ (f NE).1 := by
+      have : cls x hx ≤ Quotient.mk _ d0 := hx2
+      rwa [hd0] at this
+    rcases iso_cover f (cls x hx) hx1 h2' with h | h
+    · exact absurd (le_of_eq h) hx3
+    · have : (Quotient.mk _ d0 : RNClass) ≤ cls x hx := by
+        rw [hd0, h]
+      exact this
+  · intro x y hx hy hx1 hy1 hxy
+    have hx1' : ¬ cls x hx ≤ (f NE).1 := by
+      have : ¬ cls x hx ≤ Quotient.mk _ d0 := hx1
+      rwa [hd0] at this
+    have hy1' : ¬ cls y hy ≤ (f NE).1 := by
+      have : ¬ cls y hy ≤ Quotient.mk _ d0 := hy1
+      rwa [hd0] at this
+    apply iso_prime f (cls x hx) (cls y hy) hx1' hy1'
+    have : cls x hx ⊓ cls y hy ≤ Quotient.mk _ d0 := hxy
+    rwa [hd0] at this
+  · have : ¬ box (Quotient.mk _ d0) ≤ Quotient.mk _ d0 := by
+      rw [hd0]
+      exact h1
+    exact this
+  · have : ¬ box (Quotient.mk _ d0 ⇨ Quotient.mk _ p0) ≤ Quotient.mk _ d0 ⇨ Quotient.mk _ p0 := by
+      rw [hd0, Di_himp f]
+      exact h2
+    exact this
+
+/-- **The case analysis** (every `p`, no density used).  With `a = f(◯⊥)`,
+`d = f(¬◯⊥)`, `d₄ = f(t4)`:
+
+    ◯p = p  ∨  ◯p = d  ∨  ◯p = d₄  ∨  (◯p = a ∧ ◯d₄ = d₄).
+
+The remaining possibility `a₃ ≤ ◯p` is excluded by `ObstructionA`.  F0
+itself (`p = ⊥`, `◯⊥ = t1`, `◯t4 = t4`) is in the last case. -/
+theorem iso_cases :
+    box p = p ∨ box p = (f NE).1 ∨ box p = (f T4c).1 ∨
+      (box p = (f E).1 ∧ box (f T4c).1 = (f T4c).1) := by
+  have hpD : p ≤ (f NE).1 := (f NE).2
+  have hpD4 : p ≤ (f T4c).1 := (f T4c).2
+  rcases iso_split f (box p) (le_box p) with h | h | h
+  · exact Or.inl h
+  · exact Or.inr (Or.inl h)
+  · rcases iso_split_a f (box p) h with h' | h' | h'
+    · refine Or.inr (Or.inr (Or.inr ⟨h', ?_⟩))
+      have hd1 : ¬ box (f NE).1 ≤ (f NE).1 := fun hb =>
+        Ai_nle_Di f (le_trans h (le_trans (box_mono hpD) hb))
+      rcases iso_split_a f (box (f T4c).1) (le_trans (Ai_le_D4i f) (le_box _)) with k | k | k
+      · exfalso
+        apply D4i_nle_Ai f
+        rw [← k]
+        exact le_box _
+      · exact k
+      · exfalso
+        exact iso_obstruction f hd1
+          (fun hb => Di_nle_D4i f (le_trans (Di_le_A3i f) (le_trans k hb)))
+    · exact Or.inr (Or.inr (Or.inl h'))
+    · exfalso
+      exact iso_obstruction f
+        (fun hb => Ai_nle_Di f (le_trans (Ai_le_A3i f)
+          (le_trans h' (le_trans (box_mono hpD) hb))))
+        (fun hb => Di_nle_D4i f (le_trans (Di_le_A3i f)
+          (le_trans h' (le_trans (box_mono hpD4) hb))))
+
+/-- **Case `◯p = d`**: then `◯p` covers `p` and is meet-prime. -/
+theorem case_d_shape (h : box p = (f NE).1) : CoversC p (box p) ∧ MeetPrime (box p) := by
+  rw [h]
+  refine ⟨⟨lt_of_le_not_ge (f NE).2 (Di_nle_p f), fun x h1 h2 => iso_cover f x h1 h2⟩,
+    fun y z hy hz => iso_prime f y z hy hz⟩
+
+/-- **Case `◯p = d₄`**: then the gap `◯p ⇨ p` (which is `d`) covers `p`. -/
+theorem case_d4_shape (h : box p = (f T4c).1) : CoversC p (box p ⇨ p) := by
+  rw [h, D4i_himp f]
+  exact ⟨lt_of_le_not_ge (f NE).2 (Di_nle_p f), fun x h1 h2 => iso_cover f x h1 h2⟩
+
+/-- **Case `◯p = a`**: then `◯p` is a big atom of `[p, ⊤]`. -/
+theorem case_a_shape (h : box p = (f E).1) : BigAtom (⟨box p, le_box p⟩ : Set.Ici p) := by
+  refine ⟨fun hb => ?_, ⟨(f NE).1, (f NE).2⟩, fun x => ?_⟩
+  · have h1 : (f E).1 ≤ (f ⊥).1 := by
+      rw [← h, iso_bot f]
+      exact hb (botI p)
+    exact nle_e_bot ((iso_le f).mp h1)
+  · rcases iso_split f x.1 x.2 with k | k | k
+    · refine Or.inr (Or.inl fun w => ?_)
+      show x.1 ≤ w.1
+      rw [k]
+      exact w.2
+    · exact Or.inr (Or.inr (Subtype.ext k))
+    · refine Or.inl ?_
+      show box p ≤ x.1
+      rw [h]
+      exact k
+
+end Cases
+
 end FilterIso
 end F0
 end PLLND
@@ -954,3 +1429,19 @@ end PLLND
 #axioms_within PLLND.F0.FilterIso.c1_ici_no_core [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.c1_filter_not_iso [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.obstructionA_F0_case [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.ne_himp_bot [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.t4_himp_bot [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.iso_himp [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.iso_split [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.iso_split_a [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.iso_cover [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.iso_prime [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.Di_himp [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.D4i_himp [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.RootExt.old_force [propext]
+#axioms_within PLLND.F0.FilterIso.obstructionA [propext]
+#axioms_within PLLND.F0.FilterIso.iso_obstruction [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.iso_cases [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.case_d_shape [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.case_d4_shape [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.case_a_shape [propext, Quot.sound]
