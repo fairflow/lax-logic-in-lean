@@ -7,7 +7,7 @@ import F0Paper.Blocks
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper CLPPaper.Cite F0Paper.Math F0Paper.Blocks
+open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.F0.Mink PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 

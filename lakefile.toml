@@ -76,6 +76,19 @@ name = "CLPPaper"
 [[lean_lib]]
 name = "F0Paper"
 
+# PaperKit: the notation table and presentation blocks shared by F0Paper and
+# SemPaper (factored out of F0Paper on 2026-10-24).  Imports library modules
+# only; not in defaultTargets.
+[[lean_lib]]
+name = "PaperKit"
+
+# SemPaper: the paper "Semantics and Decision for PLL" (constraint models,
+# subframe models, the subframe tableau and its certificates, the deciders,
+# F0 as a nuclear Heyting algebra).  Deliberately NOT in defaultTargets, as
+# CLPPaper.  Build HTML + PDF with scripts/sem-paper.sh.
+[[lean_lib]]
+name = "SemPaper"
+
 [[lean_lib]]
 name = "LaxLogic"
 
@@ -347,7 +360,7 @@ globs = ["wip.frjx", "wip.frjv_consequences", "wip.minmodv", "wip.minmodv_test",
          "wip.f0Covers", "wip.f0OddGaps", "wip.f0IndepBlueprint", "wip.f0IndepCells",
          "wip.f0Indep", "wip.f0Dyadic", "wip.f0Rat", "wip.f0Minkowski",
          "wip.f0Structure", "wip.f0Hole", "wip.f0T6", "wip.f0Normal", "wip.f0SelfSim",
-         "wip.f0SigOnto", "wip.f0NotIso",
+         "wip.f0SigOnto", "wip.f0NotIso", "wip.f0FilterIso",
          "wip.p2llSubConj", "wip.p2llSyntax", "wip.p2llND", "wip.p2llJND",
          "wip.p2llStatements", "wip.p2llOrCell", "wip.p2llInterp", "wip.p2llBoolSem",
          "wip.p2llRoundTrip", "wip.p2llMutual", "wip.esakiaNuclearFin", "wip.esakiaNuclearCells",

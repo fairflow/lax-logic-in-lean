@@ -22,54 +22,28 @@ figure or its caption; the regions of the self-similarity figure are
 schematic (positions not to scale).  Written 2026-10-23 for v0.3 of the paper.
 
 v0.4 (2026-10-24): the PDF includes each figure at its natural size, so a
-label prints at the size set here, FS points, the size of the body text.  A
-figure wider than the text block (MAXW) stops the script: content is reduced
-(fewer rungs, the key moved to the caption, the copies panel placed below the
-ladders when the two do not fit side by side), never the type.
+label prints at the size set in scripts/paperfig.py, FS points, the size of
+the body text.  A figure wider than the text block (MAXW) stops the script:
+content is reduced (fewer rungs, the key moved to the caption, the copies
+panel placed below the ladders when the two do not fit side by side), never
+the type.  The reading, checking and drawing are shared with Paper I
+(scripts/paperfig.py, since 2026-10-24).
 """
-import json
 import os
-import re
 import subprocess
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paperfig  # noqa: E402  (the helpers shared with scripts/sem-figures.py)
+from paperfig import (FONT, FS, MAXW, SUB, GREY, BLUE, GREEN,  # noqa: E402
+                      lab, header, text_width, box)
+
 OUT = "docs/f0-paper-figures"
-FONT = "STIX Two Math"
-FS = 10          # label size in points, as printed (the body text is 10 pt)
-CIRC = 7         # the modality's circle, set smaller to sit at letter height
-MAXW = 455       # the text block: A4 less 2 x 24 mm is 459 pt
-SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
-GREY, BLUE, GREEN, BROWN = "#888888", "#3060a0", "#2a8a5a", "#a05a20"
+TAG = "f0-figures"
 
 
 def t(k):
     return "t" + str(k).translate(SUB)
-
-
-def lean_data():
-    p = subprocess.run(["lake", "env", "lean", "tools/F0/FigureData.lean"],
-                       capture_output=True, text=True)
-    if p.returncode != 0:
-        sys.exit("f0-figures: the data emitter failed:\n" + p.stdout + p.stderr)
-    for line in p.stdout.splitlines():
-        if line.startswith("F0FIGURES "):
-            return json.loads(line[len("F0FIGURES "):])
-    sys.exit("f0-figures: no F0FIGURES line in the emitter's output")
-
-
-def check_names(names):
-    """#check every cited declaration in the compiled library."""
-    os.makedirs(OUT, exist_ok=True)
-    path = os.path.join(OUT, "check.lean")
-    with open(path, "w") as f:
-        f.write("import wip.f0Covers\nimport wip.ladder8\nimport wip.f0SelfSim\n\n")
-        for n in names:
-            f.write("#check @" + n + "\n")
-    p = subprocess.run(["lake", "env", "lean", path], capture_output=True, text=True)
-    out = p.stdout + p.stderr
-    if p.returncode != 0 or "error" in out:
-        sys.exit("f0-figures: a cited name does not resolve:\n" + out)
-    print(f"  f0-figures: {len(names)} cited names resolve")
 
 
 def render(tree, named, k):
@@ -104,24 +78,6 @@ def render(tree, named, k):
         return "¬" + name(a[0])
     sym = {"and": " ∧ ", "or": " ∨ ", "imp": " ↠ "}[op]
     return name(a[0]) + sym + name(a[1])
-
-
-def lab(text, colour=None, size=None):
-    """A graphviz HTML-like label: the circle of the modality (U+25EF, a large
-    circle in STIX) set smaller, so that it sits at letter height."""
-    s = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    s = s.replace("◯", f'<FONT POINT-SIZE="{CIRC}">◯</FONT>')
-    if colour:
-        s = f'<FONT COLOR="{colour}">{s}</FONT>'
-    if size:
-        s = f'<FONT POINT-SIZE="{size}">{s}</FONT>'
-    return "<" + s + ">"
-
-
-def header(name, extra=""):
-    return (f'graph {name} {{\n  rankdir=BT; nodesep=0.3; ranksep=0.32; margin=0; pad=0.06; {extra}\n'
-            f'  node [shape=plaintext, fontname="{FONT}", fontsize={FS}, margin="0.04,0.03", width=0.1, height=0.1];\n'
-            f'  edge [fontname="{FONT}", fontsize={FS}];\n')
 
 
 def bottom(d):
@@ -170,29 +126,13 @@ def ladder_layout(pairs, n):
     p = subprocess.run(["dot", "-Tplain"], input=s, capture_output=True, text=True,
                        errors="replace")
     if p.returncode != 0:
-        sys.exit("f0-figures: dot -Tplain failed:\n" + p.stderr)
+        sys.exit(f"{TAG}: dot -Tplain failed:\n" + p.stderr)
     pos = {}
     for line in p.stdout.splitlines():
         f = line.split()
         if f and f[0] == "node":
             pos[int(f[1][1:])] = (float(f[2]) * 72, float(f[3]) * 72, float(f[4]) * 72)
     return pos
-
-
-def text_width(text, size=FS):
-    """A label's width in points, estimated (STIX averages about 0.55 em)."""
-    return 0.55 * size * len(text)
-
-
-def box(name, x0, y0, x1, y1, colour, text, text_colour=None, size=FS):
-    """A region: a rectangle node at fixed position, its name at the lower left."""
-    w, h = (x1 - x0) / 72, (y1 - y0) / 72
-    s = (f'  {name} [shape=box, label="", fixedsize=true, width={w:.3f}, height={h:.3f}, '
-         f'color="{colour}", pos="{(x0 + x1) / 2:.1f},{(y0 + y1) / 2:.1f}!"];\n')
-    tw = text_width(text, size)
-    s += (f'  {name}_l [label={lab(text, text_colour or colour, size)}, '
-          f'pos="{x0 + 5 + tw / 2:.1f},{y0 + size:.1f}!"];\n')
-    return s
 
 
 def selfsim(d):
@@ -267,53 +207,11 @@ def selfsim(d):
     return s, names, "neato"
 
 
-def draw(name, src, engine):
-    path = os.path.join(OUT, name + ".dot")
-    with open(path, "w") as f:
-        f.write(src)
-    args = [engine] + (["-n2"] if engine == "neato" else [])
-    for fmt, ext in (("svg:cairo", "svg"), ("pdf", "pdf")):
-        p = subprocess.run(args + ["-T" + fmt, path, "-o", os.path.join(OUT, f"{name}.{ext}")],
-                           capture_output=True, text=True, errors="replace")
-        if p.returncode != 0:
-            sys.exit(f"f0-figures: {engine} -T{fmt} failed on {name}:\n" + p.stderr)
-    # the SVGs are inlined in one HTML page: cairo's ids (glyph-0-1, ...) would
-    # collide between figures, so each figure's ids get its name as a prefix
-    svg = os.path.join(OUT, name + ".svg")
-    with open(svg) as f:
-        s = f.read()
-    # the PDF is printed at its natural size: one wider than the text block is
-    # an error (graphviz's default PDF margin of 36 pt is set to 0 above)
-    p = subprocess.run(["pdfinfo", os.path.join(OUT, name + ".pdf")],
-                       capture_output=True, text=True, errors="replace")
-    m = re.search(r'Page size:\s*([0-9.]+) x ([0-9.]+) pts', p.stdout)
-    if not m:
-        sys.exit(f"f0-figures: pdfinfo gives no page size for {name}.pdf\n" + p.stdout + p.stderr)
-    w, h = float(m.group(1)), float(m.group(2))
-    if w > MAXW:
-        sys.exit(f"f0-figures: {name} is {w:.0f} pt wide, more than the text block "
-                 f"({MAXW} pt); reduce its content")
-    print(f"  f0-figures: {name}: {w:.0f} x {h:.0f} pt, labels at {FS} pt")
-    s = re.sub(r'id="([^"]+)"', lambda m: f'id="{name}-{m.group(1)}"', s)
-    s = re.sub(r'href="#([^"]+)"', lambda m: f'href="#{name}-{m.group(1)}"', s)
-    s = re.sub(r'url\(#([^)]+)\)', lambda m: f'url(#{name}-{m.group(1)})', s)
-    with open(svg, "w") as f:
-        f.write(s)
-
-
 def main():
     os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-    d = lean_data()
+    d = paperfig.lean_data("tools/F0/FigureData.lean", "F0FIGURES", TAG)
     figs = {"bottom": bottom(d), "rungs": rungs(d), "selfsim": selfsim(d)}
-    names = []
-    for _, (_, ns, _) in figs.items():
-        for n in ns:
-            if n not in names:
-                names.append(n)
-    check_names(names)
-    for name, (src, _, engine) in figs.items():
-        draw(name, src, engine)
-    print(f"  f0-figures: wrote {', '.join(figs)} to {OUT}/ (.svg, .pdf)")
+    paperfig.run(figs, OUT, ["wip.f0Covers", "wip.ladder8", "wip.f0SelfSim"], TAG)
 
 
 if __name__ == "__main__":
