@@ -354,7 +354,422 @@ theorem filterIsoQ_iff_dense : FilterIsoQ ↔ DenseResidue := by
 
 /-! ## 6. The σ-bases -/
 
--- PART2
+namespace SigC
+
+/-- Worlds of the σ-extension of a constraint model: the old worlds, the tops
+`nT` (no fallible `Rₘ`-successor, so `¬◯⊥` holds) and `eT`, and a fallible
+world `fT` above `eT` (so `◯⊥` holds at `eT`).  Only the non-fallible old
+worlds see the tops. -/
+inductive CW (W : Type) where
+  | orig (x : W)
+  | nT
+  | eT
+  | fT
+
+variable (M : ConstraintModel)
+
+def ri : CW M.W → CW M.W → Prop
+  | .orig x, .orig y => M.Ri x y
+  | .orig x, .nT => x ∉ M.F
+  | .orig x, .eT => x ∉ M.F
+  | .orig x, .fT => x ∉ M.F
+  | .nT, .nT => True
+  | .eT, .eT => True
+  | .eT, .fT => True
+  | .fT, .fT => True
+  | _, _ => False
+
+def rm : CW M.W → CW M.W → Prop
+  | .orig x, .orig y => M.Rm x y
+  | .nT, .nT => True
+  | .eT, .eT => True
+  | .eT, .fT => True
+  | .fT, .fT => True
+  | _, _ => False
+
+def fl : CW M.W → Prop
+  | .orig x => x ∈ M.F
+  | .fT => True
+  | _ => False
+
+def vl (a : String) : CW M.W → Prop
+  | .orig x => x ∈ M.V a
+  | _ => True
+
+theorem ri_refl : ∀ w : CW M.W, ri M w w
+  | .orig x => M.refl_i x
+  | .nT => trivial
+  | .eT => trivial
+  | .fT => trivial
+
+theorem rm_refl : ∀ w : CW M.W, rm M w w
+  | .orig x => M.refl_m x
+  | .nT => trivial
+  | .eT => trivial
+  | .fT => trivial
+
+theorem ri_trans {u v w : CW M.W} (h1 : ri M u v) (h2 : ri M v w) : ri M u w := by
+  cases u <;> cases v <;> cases w <;>
+    first
+    | exact trivial
+    | exact M.trans_i h1 h2
+    | exact fun hx => h2 (M.hered_F h1 hx)
+    | exact h1
+    | exact False.elim h1
+    | exact False.elim h2
+
+theorem rm_trans {u v w : CW M.W} (h1 : rm M u v) (h2 : rm M v w) : rm M u w := by
+  cases u <;> cases v <;> cases w <;>
+    first
+    | exact trivial
+    | exact M.trans_m h1 h2
+    | exact False.elim h1
+    | exact False.elim h2
+
+theorem rm_sub {u v : CW M.W} (h : rm M u v) : ri M u v := by
+  cases u <;> cases v <;>
+    first
+    | exact trivial
+    | exact M.sub_mi h
+    | exact False.elim h
+
+theorem fl_hered {u v : CW M.W} (h : ri M u v) (hu : fl M u) : fl M v := by
+  cases u <;> cases v <;>
+    first
+    | exact trivial
+    | exact M.hered_F h hu
+    | exact False.elim (h hu)
+    | exact False.elim h
+    | exact False.elim hu
+
+theorem vl_hered {a : String} {u v : CW M.W} (h : ri M u v) (hu : vl M a u) : vl M a v := by
+  cases u <;> cases v <;>
+    first
+    | exact trivial
+    | exact M.hered_V h hu
+    | exact False.elim h
+
+theorem vl_full {a : String} {w : CW M.W} (hw : fl M w) : vl M a w := by
+  cases w with
+  | orig x => exact M.full_F hw
+  | nT => exact trivial
+  | eT => exact trivial
+  | fT => exact trivial
+
+/-- **The σ-extension**, a constraint model. -/
+def ext : ConstraintModel where
+  W := CW M.W
+  Ri := ri M
+  Rm := rm M
+  F := {w | fl M w}
+  V a := {w | vl M a w}
+  refl_i := ri_refl M
+  trans_i := ri_trans M
+  refl_m := rm_refl M
+  trans_m := rm_trans M
+  sub_mi := rm_sub M
+  hered_F := fun h hu => fl_hered M h hu
+  hered_V := fun h hu => vl_hered M h hu
+  full_F := fun hw => vl_full M hw
+
+theorem decF (hF : ∀ x : M.W, x ∈ M.F ∨ x ∉ M.F) :
+    ∀ w : CW M.W, w ∈ (ext M).F ∨ w ∉ (ext M).F
+  | .orig x => hF x
+  | .nT => Or.inr fun h => h
+  | .eT => Or.inr fun h => h
+  | .fT => Or.inl trivial
+
+theorem not_e_nT : ¬ (ext M).force CW.nT e := by
+  intro h
+  obtain ⟨u, hu, hf⟩ := h CW.nT trivial
+  cases u with
+  | orig _ => exact hu
+  | nT => exact hf
+  | eT => exact hu
+  | fT => exact hu
+
+theorem e_eT : (ext M).force CW.eT e := by
+  show ∀ v, (ext M).Ri CW.eT v → ∃ u, (ext M).Rm v u ∧ (ext M).force u .falsePLL
+  intro v hv
+  cases v with
+  | orig _ => exact False.elim hv
+  | nT => exact False.elim hv
+  | eT => exact ⟨CW.fT, trivial, trivial⟩
+  | fT => exact ⟨CW.fT, trivial, trivial⟩
+
+theorem fT_force (φ : PLLFormula) : (ext M).force CW.fT φ :=
+  (ext M).force_of_fallible (show CW.fT ∈ (ext M).F from trivial)
+
+def isTop : CW M.W → Prop
+  | .orig _ => False
+  | _ => True
+
+theorem top_up {u v : CW M.W} (hu : isTop M u) (h : ri M u v) : isTop M v := by
+  cases u <;> cases v <;> first | exact trivial | exact False.elim hu | exact False.elim h
+
+theorem t3_top : ∀ w : CW M.W, isTop M w → (ext M).force w t3
+  | .orig _, hw => False.elim hw
+  | .nT, _ => by
+      show (ext M).force CW.nT e ∨ (ext M).force CW.nT ne
+      refine Or.inr ?_
+      show ∀ v, (ext M).Ri CW.nT v → (ext M).force v e → (ext M).force v .falsePLL
+      intro v hv hve
+      cases v with
+      | orig _ => exact False.elim hv
+      | nT => exact False.elim (not_e_nT M hve)
+      | eT => exact False.elim hv
+      | fT => exact False.elim hv
+  | .eT, _ => Or.inl (e_eT M)
+  | .fT, _ => fT_force M t3
+
+theorem t3_orig {x : M.W} (hx : x ∉ M.F) : ¬ (ext M).force (CW.orig x) t3 := by
+  intro h
+  rcases (h : (ext M).force (CW.orig x) e ∨ (ext M).force (CW.orig x) ne) with h | h
+  · exact not_e_nT M ((ext M).force_hered (show (ext M).Ri (CW.orig x) CW.nT from hx) h)
+  · exact h CW.eT hx (e_eT M)
+
+/-- **The tops force every `σ`-formula.** -/
+theorem top_sig : ∀ (ψ : PLLFormula) (w : CW M.W), isTop M w → (ext M).force w (Sig.sig ψ)
+  | .prop _, w, hw => by
+      cases w with
+      | orig _ => exact False.elim hw
+      | nT => exact trivial
+      | eT => exact trivial
+      | fT => exact trivial
+  | .falsePLL, w, hw => t3_top M w hw
+  | .and A B, w, hw => ⟨top_sig A w hw, top_sig B w hw⟩
+  | .or A _, w, hw => Or.inl (top_sig A w hw)
+  | .ifThen _ B, w, hw => fun v hv _ => top_sig B v (top_up M hw hv)
+  | .somehow A, w, hw => fun v hv => ⟨v, rm_refl M v, top_sig A v (top_up M hw hv)⟩
+
+/-- **At old worlds `σ ψ` holds exactly where `ψ` holds**, when fallibility
+is decidable in `M`. -/
+theorem orig_sig (hF : ∀ x : M.W, x ∈ M.F ∨ x ∉ M.F) :
+    ∀ (ψ : PLLFormula) (x : M.W), (ext M).force (CW.orig x) (Sig.sig ψ) ↔ M.force x ψ
+  | .prop _, _ => Iff.rfl
+  | .falsePLL, x => ⟨fun h => (hF x).elim id (fun hx => False.elim (t3_orig M hx h)),
+      fun h => (ext M).force_of_fallible (show CW.orig x ∈ (ext M).F from h)⟩
+  | .and A B, x => and_congr (orig_sig hF A x) (orig_sig hF B x)
+  | .or A B, x => or_congr (orig_sig hF A x) (orig_sig hF B x)
+  | .ifThen A B, x =>
+      ⟨fun h y hxy hA => (orig_sig hF B y).mp (h (CW.orig y) hxy ((orig_sig hF A y).mpr hA)),
+       fun h v hv hA => by
+        cases v with
+        | orig y => exact (orig_sig hF B y).mpr (h y hv ((orig_sig hF A y).mp hA))
+        | nT => exact top_sig M B CW.nT trivial
+        | eT => exact top_sig M B CW.eT trivial
+        | fT => exact fT_force M _⟩
+  | .somehow A, x =>
+      ⟨fun h y hxy => by
+        obtain ⟨u, hu, hA⟩ := h (CW.orig y) hxy
+        cases u with
+        | orig z => exact ⟨z, hu, (orig_sig hF A z).mp hA⟩
+        | nT => exact False.elim hu
+        | eT => exact False.elim hu
+        | fT => exact False.elim hu,
+       fun h v hv => by
+        cases v with
+        | orig y =>
+            obtain ⟨z, hz, hA⟩ := h y hv
+            exact ⟨CW.orig z, hz, (orig_sig hF A z).mpr hA⟩
+        | nT => exact ⟨CW.nT, trivial, top_sig M A CW.nT trivial⟩
+        | eT => exact ⟨CW.eT, trivial, top_sig M A CW.eT trivial⟩
+        | fT => exact ⟨CW.fT, trivial, fT_force M _⟩⟩
+
+end SigC
+
+/-- A refutation of `a ⊢ b` on a constraint model with decidable fallibility. -/
+def Refutes (a b : PLLFormula) : Prop :=
+  ∃ M : ConstraintModel, (∀ x : M.W, x ∈ M.F ∨ x ∉ M.F) ∧
+    ∃ w : M.W, M.force w a ∧ ¬ M.force w b
+
+theorem not_le_of_refutes {a b : PLLFormula} (h : Refutes a b) : ¬ LaxInfinite.Le a b := by
+  intro hle
+  obtain ⟨M, _, w, ha, hb⟩ := h
+  exact hb (hle M w ha)
+
+/-- **`σ` carries refutations** (semantic reflection, no completeness). -/
+theorem refutes_sig {a b : PLLFormula} (h : Refutes a b) :
+    Refutes (Sig.sig a) (Sig.sig b) := by
+  obtain ⟨M, hF, w, ha, hb⟩ := h
+  exact ⟨SigC.ext M, SigC.decF M hF, SigC.CW.orig w, (SigC.orig_sig M hF a w).mpr ha,
+    fun h => hb ((SigC.orig_sig M hF b w).mp h)⟩
+
+theorem refutes_sigN : ∀ (n : Nat) {a b : PLLFormula}, Refutes a b →
+    Refutes (Sig.sigN n a) (Sig.sigN n b)
+  | 0, _, _, h => h
+  | n + 1, _, _, h => refutes_sigN n (refutes_sig h)
+
+/-- A checked finite countermodel is a refutation with decidable fallibility. -/
+theorem refutes_of_check {M : FinCM} {w : Nat} {a b : PLLFormula}
+    (h : FinCM.checkB M w [a] b = true) : Refutes a b := by
+  simp only [FinCM.checkB, Bool.and_eq_true, decide_eq_true_eq,
+    List.all_eq_true, Bool.not_eq_true'] at h
+  obtain ⟨⟨⟨hwb, hlt⟩, hΓ⟩, hC⟩ := h
+  have hwf := FinCM.wellFormed_of_wellB hwb
+  refine ⟨M.toModel hwf, fun x => ?_, ⟨w, hlt⟩,
+    (M.force_iff hwf a ⟨w, hlt⟩).mpr (hΓ a (List.mem_singleton_self a)), fun hf => ?_⟩
+  · show M.fallB x.1 = true ∨ ¬ M.fallB x.1 = true
+    cases M.fallB x.1 with
+    | true => exact Or.inl rfl
+    | false => exact Or.inr Bool.false_ne_true
+  · rw [M.force_iff hwf b ⟨w, hlt⟩, hC] at hf
+    exact Bool.false_ne_true hf
+
+/-- Two disjoint pairs `(a1, b1)`, `(a2, b2)` of `[q, ⊤]` with no member in
+common: the positive facts are derivations, the negative ones refutations. -/
+structure TwoPairs (q a1 b1 a2 b2 : PLLFormula) : Prop where
+  la1 : Deriv [q] a1
+  lb1 : Deriv [q] b1
+  la2 : Deriv [q] a2
+  lb2 : Deriv [q] b2
+  m1 : Deriv [a1.and b1] q
+  m2 : Deriv [a2.and b2] q
+  na1 : Refutes a1 q
+  nb1 : Refutes b1 q
+  na2 : Refutes a2 q
+  nb2 : Refutes b2 q
+  x11 : Refutes a1 a2 ∨ Refutes a2 a1
+  x12 : Refutes a1 b2 ∨ Refutes b2 a1
+  x21 : Refutes b1 a2 ∨ Refutes a2 b1
+  x22 : Refutes b1 b2 ∨ Refutes b2 b1
+
+theorem sigN_and : ∀ (n : Nat) (φ ψ : PLLFormula),
+    Sig.sigN n (φ.and ψ) = (Sig.sigN n φ).and (Sig.sigN n ψ)
+  | 0, _, _ => rfl
+  | n + 1, φ, ψ => sigN_and n (Sig.sig φ) (Sig.sig ψ)
+
+theorem refutes_or_sigN (n : Nat) {a b : PLLFormula} (h : Refutes a b ∨ Refutes b a) :
+    Refutes (Sig.sigN n a) (Sig.sigN n b) ∨ Refutes (Sig.sigN n b) (Sig.sigN n a) :=
+  h.elim (fun h => Or.inl (refutes_sigN n h)) (fun h => Or.inr (refutes_sigN n h))
+
+/-- **`σⁿ` carries two disjoint pairs.** -/
+theorem twoPairs_sigN (n : Nat) {q a1 b1 a2 b2 : PLLFormula}
+    (hq : atomFree q = true) (ha1 : atomFree a1 = true) (hb1 : atomFree b1 = true)
+    (ha2 : atomFree a2 = true) (hb2 : atomFree b2 = true)
+    (h : TwoPairs q a1 b1 a2 b2) :
+    TwoPairs (Sig.sigN n q) (Sig.sigN n a1) (Sig.sigN n b1) (Sig.sigN n a2)
+      (Sig.sigN n b2) where
+  la1 := Sig.sigN_mono n hq ha1 h.la1
+  lb1 := Sig.sigN_mono n hq hb1 h.lb1
+  la2 := Sig.sigN_mono n hq ha2 h.la2
+  lb2 := Sig.sigN_mono n hq hb2 h.lb2
+  m1 := by
+    have := Sig.sigN_mono n (φ := a1.and b1) (by simp [atomFree, ha1, hb1]) hq h.m1
+    rwa [sigN_and] at this
+  m2 := by
+    have := Sig.sigN_mono n (φ := a2.and b2) (by simp [atomFree, ha2, hb2]) hq h.m2
+    rwa [sigN_and] at this
+  na1 := refutes_sigN n h.na1
+  nb1 := refutes_sigN n h.nb1
+  na2 := refutes_sigN n h.na2
+  nb2 := refutes_sigN n h.nb2
+  x11 := refutes_or_sigN n h.x11
+  x12 := refutes_or_sigN n h.x12
+  x21 := refutes_or_sigN n h.x21
+  x22 := refutes_or_sigN n h.x22
+
+/-- A point of `[⟦q⟧, ⊤]`. -/
+def ptq (q : PLLFormula) (hq : atomFree q = true) (φ : PLLFormula) (h : atomFree φ = true)
+    (hle : Deriv [q] φ) : Set.Ici (cls q hq) :=
+  ⟨cls φ h, le_of_deriv hle⟩
+
+theorem ptq_not_bot {q φ : PLLFormula} {hq : atomFree q = true} {h : atomFree φ = true}
+    {hle : Deriv [q] φ} (hn : ¬ LaxInfinite.Le φ q) : ¬ IsBot (ptq q hq φ h hle) :=
+  fun hb => hn (hb ⟨cls q hq, Set.self_mem_Ici⟩)
+
+theorem ptq_disj {q a b : PLLFormula} {hq : atomFree q = true} {ha : atomFree a = true}
+    {hb : atomFree b = true} {hla : Deriv [q] a} {hlb : Deriv [q] b}
+    (hab : Deriv [a.and b] q) : Disj (ptq q hq a ha hla) (ptq q hq b hb hlb) := by
+  intro z hza hzb
+  obtain ⟨zq, hzq⟩ := z
+  induction zq using Quotient.ind
+  rename_i c
+  have hct : LaxInfinite.Le c.1 q := fun M w hc =>
+    le_of_deriv hab M w ⟨(hza : LaxInfinite.Le c.1 a) M w hc, (hzb : LaxInfinite.Le c.1 b) M w hc⟩
+  intro w
+  show (Quotient.mk LaxInfinite.closedSetoid c : RNClass) ≤ w.1
+  exact le_trans (hct : (Quotient.mk LaxInfinite.closedSetoid c : RNClass) ≤ cls q hq)
+    (Set.mem_Ici.mp w.2)
+
+theorem ptq_ne {q a b : PLLFormula} {hq : atomFree q = true} {ha : atomFree a = true}
+    {hb : atomFree b = true} {hla : Deriv [q] a} {hlb : Deriv [q] b}
+    (hne : Refutes a b ∨ Refutes b a) : ptq q hq a ha hla ≠ ptq q hq b hb hlb := fun h => by
+  have he : LaxInfinite.LaxEquiv a b := Quotient.exact (congrArg Subtype.val h)
+  rcases hne with hn | hn
+  · exact not_le_of_refutes hn he.1
+  · exact not_le_of_refutes hn he.2
+
+/-- **Two disjoint pairs with no member in common: `[q, ⊤]` has no core.** -/
+theorem ici_no_core_of_twoPairs {q a1 b1 a2 b2 : PLLFormula} (hq : atomFree q = true)
+    (ha1 : atomFree a1 = true) (hb1 : atomFree b1 = true)
+    (ha2 : atomFree a2 = true) (hb2 : atomFree b2 = true)
+    (h : TwoPairs q a1 b1 a2 b2) : ¬ HasCore (Set.Ici (cls q hq)) := by
+  rintro ⟨d, hd⟩
+  have hC := hd (ptq q hq a1 ha1 h.la1) (ptq q hq b1 hb1 h.lb1)
+    (ptq_not_bot (not_le_of_refutes h.na1)) (ptq_not_bot (not_le_of_refutes h.nb1))
+    (ptq_disj h.m1)
+  have hT := hd (ptq q hq a2 ha2 h.la2) (ptq q hq b2 hb2 h.lb2)
+    (ptq_not_bot (not_le_of_refutes h.na2)) (ptq_not_bot (not_le_of_refutes h.nb2))
+    (ptq_disj h.m2)
+  rcases hC with h1 | h1 <;> rcases hT with h2 | h2
+  · exact ptq_ne h.x11 (h1.trans h2.symm)
+  · exact ptq_ne h.x12 (h1.trans h2.symm)
+  · exact ptq_ne h.x21 (h1.trans h2.symm)
+  · exact ptq_ne h.x22 (h1.trans h2.symm)
+
+/-! The eight countermodels of `wip/f0NotIso.lean`, as refutations. -/
+
+theorem rf_c1_t3 : Refutes NotIso.c1F t3 :=
+  refutes_of_check (M := NotIso.K_c1_t3) (w := 0) (by decide)
+theorem rf_g1_t3 : Refutes NotIso.g1F t3 :=
+  refutes_of_check (M := NotIso.K_g1_t3) (w := 0) (by decide)
+theorem rf_t5_t3 : Refutes t5 t3 :=
+  refutes_of_check (M := NotIso.K_t5_t3) (w := 0) (by decide)
+theorem rf_t6_t3 : Refutes NotIso.t6F t3 :=
+  refutes_of_check (M := NotIso.K_t6_t3) (w := 0) (by decide)
+theorem rf_c1_t5 : Refutes NotIso.c1F t5 :=
+  refutes_of_check (M := NotIso.K_c1_t5_lr) (w := 0) (by decide)
+theorem rf_t6_c1 : Refutes NotIso.t6F NotIso.c1F :=
+  refutes_of_check (M := NotIso.K_c1_t6_rl) (w := 0) (by decide)
+theorem rf_g1_t5 : Refutes NotIso.g1F t5 :=
+  refutes_of_check (M := NotIso.K_g1_t5_lr) (w := 0) (by decide)
+theorem rf_g1_t6 : Refutes NotIso.g1F NotIso.t6F :=
+  refutes_of_check (M := NotIso.K_g1_t6_lr) (w := 0) (by decide)
+
+/-- **The two disjoint pairs above `t3`** (`wip/f0NotIso.lean`), as data. -/
+theorem twoPairs_t3 : TwoPairs t3 NotIso.c1F NotIso.g1F t5 NotIso.t6F where
+  la1 := NotIso.t3_le_c1
+  lb1 := NotIso.t3_le_g1
+  la2 := NotIso.t3_le_t5
+  lb2 := NotIso.t3_le_t6
+  m1 := NotIso.c1g1_le_t3
+  m2 := NotIso.t5t6_le_t3
+  na1 := rf_c1_t3
+  nb1 := rf_g1_t3
+  na2 := rf_t5_t3
+  nb2 := rf_t6_t3
+  x11 := Or.inl rf_c1_t5
+  x12 := Or.inr rf_t6_c1
+  x21 := Or.inl rf_g1_t5
+  x22 := Or.inl rf_g1_t6
+
+/-- **Cell `σⁿ⁺¹(⊥) = σⁿ(t3)`, every `n`: `[σⁿ(t3), ⊤] ≇ F0`.**  `n = 0` is
+`t3_filter_not_iso`; `n = 1` is the base `σ²(⊥) = ◯t3 ∨ g1` of the second copy. -/
+theorem sigN_filter_not_iso (n : Nat) :
+    ¬ Nonempty (Set.Ici (cls (Sig.sigN n t3) (Sig.sigN_vf n rfl)) ≃o RNClass) := by
+  rintro ⟨f⟩
+  have h := twoPairs_sigN n (q := t3) (a1 := NotIso.c1F) (b1 := NotIso.g1F) (a2 := t5)
+    (b2 := NotIso.t6F) rfl rfl rfl rfl rfl twoPairs_t3
+  exact ici_no_core_of_twoPairs (Sig.sigN_vf n (φ := t3) rfl)
+    (Sig.sigN_vf n (φ := NotIso.c1F) rfl) (Sig.sigN_vf n (φ := NotIso.g1F) rfl)
+    (Sig.sigN_vf n (φ := t5) rfl) (Sig.sigN_vf n (φ := NotIso.t6F) rfl) h
+    (hasCore_of_iso f NotIso.rnclass_core)
+
+/-- The second base, `σ²(⊥) = σ(t3)`, explicitly. -/
+theorem sig2_filter_not_iso :
+    ¬ Nonempty (Set.Ici (cls (Sig.sig t3) (Sig.sig_vf rfl)) ≃o RNClass) :=
+  sigN_filter_not_iso 1
 
 end FilterIso
 end F0
@@ -373,3 +788,12 @@ end PLLND
 #axioms_within PLLND.F0.FilterIso.e_filter_not_iso [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.nondense_filter_not_iso [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.filterIsoQ_iff_dense [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.SigC.orig_sig [propext]
+#axioms_within PLLND.F0.FilterIso.refutes_sig [propext]
+#axioms_within PLLND.F0.FilterIso.refutes_sigN [propext]
+#axioms_within PLLND.F0.FilterIso.refutes_of_check [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.twoPairs_sigN [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.ici_no_core_of_twoPairs [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.twoPairs_t3 [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.sigN_filter_not_iso [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.sig2_filter_not_iso [propext, Quot.sound]
