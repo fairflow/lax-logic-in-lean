@@ -17,8 +17,8 @@ Every headline result that is PROVED, or REFUTED by a kernel-checked
 counterexample, with the axioms its declarations depend on, computed by
 `collectAxioms` when the document is built.  Where `Classical.choice` appears,
 the last column names where it enters, from `#axiom_path` (`Meta/Audit.lean`);
-"Mathlib's sets" is `Set.instCompleteAtomicBooleanAlgebra`, through the order on
-cuts, and "Mathlib's nuclei" is `InfHomClass.toOrderHomClass`, through
+_Mathlib's sets_ is `Set.instCompleteAtomicBooleanAlgebra`, through the order on
+cuts, and _Mathlib's nuclei_ is `InfHomClass.toOrderHomClass`, through
 `Nucleus.monotone` (Section 11).  A dash: no choice.
 
 :::f0table (widths := "0.34 0.09 0.2 0.28 0.05")

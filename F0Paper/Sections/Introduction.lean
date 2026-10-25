@@ -119,7 +119,7 @@ end of each section, with the axiom pins; Section 12 gives the axioms of every
 headline result, computed by `collectAxioms` when the document is built.
 PROVED means kernel-checked and sorry-free; REFUTED, a kernel-checked
 counterexample; a _pen argument_ is a proof on paper, not mechanised; anything
-else is OPEN.  In displays the meta-level connectives are written "and", "or",
+else is OPEN.  In displays the meta-level connectives are written “and”, “or”,
 and $`x \in \mathrm{Fm}_0` says that $`x` is variable-free.  The declarations
 are in the repository's `wip/` directory and in `LaxLogic/PLL/SubTab`; the
 figures are drawn by `scripts/f0-figures.py` from data Lean computes.

@@ -54,11 +54,12 @@ if m:
   extra += m.group(0) + '\n'
 # a paper with a running head ({paperStamp}): its definition too, and the
 # build stamp moves to the title block, the date line of the title page, in
-# small type (2026-10-25)
+# small type (2026-10-25); the \date given here, after the stamp's definition,
+# replaces the template's empty one
 m = re.search(r'\\gdef\\versoRunningHead\{[^{}]*\}', s)
 if m:
   extra += m.group(0) + '\n'
-  s = s.replace(r'\date{\sffamily }', r'\date{\sffamily\footnotesize\versoBuildStamp}', 1)
+  extra += r'\date{\sffamily\footnotesize\versoBuildStamp}' '\n'
 s = s.replace('\\begin{document}', extra + '\\begin{document}', 1)
 open(p, 'w', encoding='utf-8').write(s)
 PY

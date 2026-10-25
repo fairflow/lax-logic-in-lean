@@ -10,7 +10,7 @@ the layout code are those of `CLPPaper/Math.lean`
 The table is one lookup by constant name.  Constants of the library modules
 imported below are named with a double backtick, checked when this file is
 compiled; those a paper brings from elsewhere (the F0 development in
-`wip/`, the FRJ library, Mathlib's completions) with a single backtick, a
+`wip/`, the FRJ library, Mathlib's MacNeille completion) with a single backtick, a
 plain name literal, so that this module imports no `wip/` file.  A case whose
 constant is not in a paper's environment never fires.
 

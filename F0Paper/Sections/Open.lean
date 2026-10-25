@@ -24,9 +24,9 @@ proof sketch is given where one exists.
   $`G = \bigcup_n {\uparrow}(g_1 \land \cdots \land g_n)`, which
   lies over the limit point $`x_{\mathrm{gap}}` (Section 11), and is normal
   exactly when every upper bound of the common lower bounds of the gaps lies
-  above a finite meet of gaps.  OPEN, with no witness either way.  The model
-  "Rieger–Nishimura ladder with one world above all its worlds" forces every
-  such upper bound, so it does not separate them from $`G`; a witness of
+  above a finite meet of gaps.  OPEN, with no witness either way.  The
+  Rieger–Nishimura ladder with one world added above all its worlds forces
+  every such upper bound, so it does not separate them from $`G`; a witness of
   non-normality needs a prime filter containing every gap, no common lower
   bound of them, and not some upper bound of those; a proof of normality needs
   a trace argument of the kind of `L_bounded`.
