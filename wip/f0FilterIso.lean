@@ -9,11 +9,11 @@ Paper III, open question 1.  The question, as a proposition (`FilterIsoQ`):
 
     ∀ p : RNClass,  p ≠ ⊥  →  ¬ Nonempty (Set.Ici p ≃o RNClass)
 
-## The reduction to the dense filters (PROVED)
+## The reduction to the filters above `t3` (PROVED)
 
 `F0 = {⊥, t1, t2, t4} ∪ ↑t3` (`classify_low`, from `low_trichotomy` and the
-tables `D3`, `D4` of `wip/f0Covers.lean`).  The three non-dense `p ≠ ⊥` are
-refuted, each by its own order invariant:
+tables `D3`, `D4` of `wip/f0Covers.lean`).  The three `p ≠ ⊥` not above `t3`
+are refuted, each by its own order invariant:
 
 * `p = t2 = ¬◯⊥` and `p = t4`: `[t2, ⊤] = {t2} ∪ ↑t3` and `[t4, ⊤] = {t4} ∪ ↑t5`
   have no disjoint pair; F0 has one, `(t1, t2)` (`HasDisjPair`).
@@ -28,9 +28,14 @@ refuted, each by its own order invariant:
   by the shift `tₙ ↦ tₙ₊₂` (pen); the descent breaks at `t3` because `◯t3 ≠ t3`
   creates the second disjoint pair `(◯t3, ◯t3 ↠ t3)` above `t3`.
 
-So the question is equivalent to its dense residue (`filterIsoQ_iff_dense`):
+So the question is equivalent to the residue above `t3`, `AboveResidue T3`
+(`filterIsoQ_iff_aboveResidue_t3`):
 
     ∀ p : RNClass,  t3 ≤ p  →  ¬ Nonempty (Set.Ici p ≃o RNClass)
+
+Why `t3`: `↑t3` is the kernel of `¬¬` (`above_t3_iff_compl_compl_eq_top`):
+
+    t3 ≤ p  ↔  ¬¬p = ⊤
 
 ## The σ-bases (PROVED)
 
@@ -41,7 +46,7 @@ refutation on constraint models with decidable fallibility (`refutes_sig`:
 add the tops `nT`, `eT`, and a fallible `fT` above `eT`), so the eight
 countermodels of `wip/f0NotIso.lean` serve every `n`; no completeness theorem.
 
-## A dense cell off the σ-bases (PROVED)
+## A cell above `t3` off the σ-bases (PROVED)
 
 `p = c1 = ◯t3 = σ(t1)`, `◯`-fixed like `t1`: `[c1, ⊤]` has three pairwise
 disjoint elements (`c1_filter_not_iso`).
@@ -55,7 +60,7 @@ Transport (§9) and `iso_cases` (§11), for any `f : F0 ≃o [p, ⊤]`, with
 
     ◯p = p  ∨  ◯p = d  ∨  ◯p = d₄  ∨  (◯p = a ∧ ◯d₄ = d₄).
 
-`DenseResidue` is OPEN in each of the four cases; the cells of §12 (`σⁿ(c1)`
+`AboveResidue T3` is OPEN in each of the four cases; the cells of §12 (`σⁿ(c1)`
 for every `n`, `t3`, `t5`) fail each case shape, or realise case (i) and are
 refuted otherwise.
 
@@ -80,9 +85,11 @@ order-isomorphic to F0. -/
 def FilterIsoQ : Prop :=
   ∀ p : RNClass, p ≠ ⊥ → ¬ Nonempty (Set.Ici p ≃o RNClass)
 
-/-- **The dense residue**: the same for the filters above `t3`. -/
-def DenseResidue : Prop :=
-  ∀ p : RNClass, T3 ≤ p → ¬ Nonempty (Set.Ici p ≃o RNClass)
+/-- **The residue above `c`**: no filter `[p, ⊤]` with `c ≤ p` is
+order-isomorphic to F0.  The question is `AboveResidue T3` once the filters
+not above `t3` are refuted (`filterIsoQ_iff_aboveResidue_t3`). -/
+def AboveResidue (c : RNClass) : Prop :=
+  ∀ p : RNClass, c ≤ p → ¬ Nonempty (Set.Ici p ≃o RNClass)
 
 /-! ## 1. Order-theoretic tools -/
 
@@ -341,8 +348,8 @@ theorem e_filter_not_iso : ¬ Nonempty (Set.Ici E ≃o RNClass) := by
 
 /-! ## 5. The reduction -/
 
-/-- **Every non-dense `p ≠ ⊥` is refuted.** -/
-theorem nondense_filter_not_iso (p : RNClass) (hp : p ≠ ⊥) (hd : ¬ T3 ≤ p) :
+/-- **Every `p ≠ ⊥` not above `t3` is refuted.** -/
+theorem not_above_t3_filter_not_iso (p : RNClass) (hp : p ≠ ⊥) (hd : ¬ T3 ≤ p) :
     ¬ Nonempty (Set.Ici p ≃o RNClass) := by
   rcases classify_low p with h | h | h | h | h
   · exact absurd h hd
@@ -354,8 +361,8 @@ theorem nondense_filter_not_iso (p : RNClass) (hp : p ≠ ⊥) (hd : ¬ T3 ≤ p
   · subst h
     exact t4_filter_not_iso
 
-/-- **The question is equivalent to its dense residue.** -/
-theorem filterIsoQ_iff_dense : FilterIsoQ ↔ DenseResidue := by
+/-- **The question is equivalent to the residue above `t3`.** -/
+theorem filterIsoQ_iff_aboveResidue_t3 : FilterIsoQ ↔ AboveResidue T3 := by
   constructor
   · intro h p hp
     refine h p fun h0 => ?_
@@ -791,9 +798,9 @@ theorem sig2_filter_not_iso :
     ¬ Nonempty (Set.Ici (cls (Sig.sig t3) (Sig.sig_vf rfl)) ≃o RNClass) :=
   sigN_filter_not_iso 1
 
-/-! ## 7. A dense cell off the σ-bases: `c1 = ◯t3 = σ(t1)`
+/-! ## 7. A cell above `t3` off the σ-bases: `c1 = ◯t3 = σ(t1)`
 
-The dense analogue of the cell `t1`: `◯`-fixed (`◯c1 ⊣⊢ c1`) and the σ-image
+The analogue above `t3` of the cell `t1`: `◯`-fixed (`◯c1 ⊣⊢ c1`) and the σ-image
 of `t1`, but not a σ-base.  `[c1, ⊤]` has three pairwise disjoint elements
 above `c1`,
 
@@ -979,6 +986,52 @@ theorem t4_himp_bot : T4c ⇨ ⊥ = NE := by
     ⟨fun M _ h v hv he => h v hv (fun u hu _ => M.force_hered hu he),
      fun M _ h v hv h4 => h v hv (h4 v (M.refl_i v)
        (Or.inr fun u hu he => h u (M.trans_i hv hu) he))⟩)
+
+/-! ### Why `t3`: `↑t3` is the kernel of `¬¬`
+
+The residue above `t3` is the residue on the kernel of the nucleus `¬¬` of
+F0: `t3 ≤ p ↔ ¬¬p = ⊤`, equivalently `¬p = ⊥`.  From `classify_low`: the
+negations of `⊥`, `t1`, `t2`, `t4` are `⊤`, `t2`, `t4`, `t2`, none of them `⊥`,
+and `¬t3 = ⊥`. -/
+
+/-- `¬t3 = ⊥`: `¬(◯⊥ ∨ ¬◯⊥) ⊢ ⊥`. -/
+theorem t3_compl : T3ᶜ = ⊥ := by
+  rw [← himp_bot]
+  refine le_antisymm ?_ bot_le
+  show LaxInfinite.Le (t3.ifThen .falsePLL) .falsePLL
+  exact fun M w h => h w (M.refl_i w) (Or.inr fun v hv he => h v hv (Or.inl he))
+
+theorem nle_top_bot : ¬ LaxInfinite.Le (.ifThen .falsePLL .falsePLL) .falsePLL :=
+  not_le_of_check (M := M3) (w := 0) (by decide)
+
+theorem rn_top_ne_bot : (⊤ : RNClass) ≠ ⊥ := fun h =>
+  nle_top_bot (le_of_eq h : (⊤ : RNClass) ≤ ⊥)
+
+/-- **`↑t3` is the kernel of `¬`**: `t3 ≤ p ↔ ¬p = ⊥`. -/
+theorem above_t3_iff_compl_eq_bot (p : RNClass) : T3 ≤ p ↔ pᶜ = ⊥ := by
+  constructor
+  · intro h
+    exact le_antisymm (le_trans (compl_le_compl h) (le_of_eq t3_compl)) bot_le
+  · intro h
+    rcases classify_low p with k | k | k | k | k
+    · exact k
+    · rw [k, compl_bot] at h
+      exact absurd h rn_top_ne_bot
+    · rw [k, ← himp_bot] at h
+      exact absurd (le_of_eq h) nle_ne_bot
+    · rw [k, ← himp_bot, ne_himp_bot] at h
+      exact absurd (le_of_eq h) nle_t4_bot
+    · rw [k, ← himp_bot, t4_himp_bot] at h
+      exact absurd (le_of_eq h) nle_ne_bot
+
+/-- **`↑t3` is the kernel of `¬¬`**: `t3 ≤ p ↔ ¬¬p = ⊤`. -/
+theorem above_t3_iff_compl_compl_eq_top (p : RNClass) : T3 ≤ p ↔ pᶜᶜ = ⊤ := by
+  rw [above_t3_iff_compl_eq_bot]
+  constructor
+  · intro h
+    rw [h, compl_bot]
+  · intro h
+    rw [← inf_compl_self pᶜ, h, inf_top_eq]
 
 section Transport
 
@@ -1415,10 +1468,10 @@ end Cases
 * (iii) `◯p = d₄`: the gap `◯p ⇨ p` covers `p`;
 * (iv)  `◯p = a`, `◯d₄ = d₄`: `◯p` is a big atom of `[p, ⊤]` (F0 itself, `p = ⊥`).
 
-The cells: (i) is realised by the dense, `◯`-fixed `σⁿ(c1)`, every `n`, and
-each is still refuted (three pairwise disjoint elements); (ii)–(iv) fail
-at the designed dense cells `t3` and `t5` for the stated local reason; `t5`
-is refuted outright as well. -/
+The cells: (i) is realised by the `◯`-fixed `σⁿ(c1)` above `t3`, every `n`,
+and each is still refuted (three pairwise disjoint elements); (ii)–(iv) fail
+at the designed cells `t3` and `t5` for the stated local reason; `t5` is
+refuted outright as well. -/
 
 /-! ### The A-translation is monotone on the semantic order -/
 
@@ -1510,8 +1563,8 @@ theorem t3_le_sigN_bot : ∀ n : Nat, Deriv [t3] (Sig.sigN (n + 1) .falsePLL)
   | 0 => Deriv.iden (.head _)
   | n + 1 => Deriv.cutHead (t3_le_sigN_bot n) (Sig.sigN_bot_strict (n + 1)).1
 
-/-- `σⁿ(c1)` is dense. -/
-theorem C1n_dense : ∀ n : Nat, T3 ≤ C1n n
+/-- `σⁿ(c1)` lies above `t3`. -/
+theorem C1n_above_t3 : ∀ n : Nat, T3 ≤ C1n n
   | 0 => le_of_deriv NotIso.t3_le_c1
   | n + 1 => le_of_deriv (Deriv.cutHead (t3_le_sigN_bot n) (Sig.sigN_bot_le (n + 1) NotIso.c1F rfl))
 
@@ -1542,7 +1595,7 @@ theorem C1n_ici_no_core (n : Nat) : ¬ HasCore (Set.Ici (C1n n)) := by
     (ptq_disj_le (hm beF gaF rfl rfl meet_be_ga))
 
 /-- **Case (i) cell, every `n`: `[σⁿ(c1), ⊤] ≇ F0`**, though `σⁿ(c1)` is
-dense and `◯`-fixed (`C1n_dense`, `C1n_box`). -/
+above `t3` and `◯`-fixed (`C1n_above_t3`, `C1n_box`). -/
 theorem C1n_filter_not_iso (n : Nat) : ¬ Nonempty (Set.Ici (C1n n) ≃o RNClass) :=
   fun ⟨f⟩ => C1n_ici_no_core n (hasCore_of_iso f NotIso.rnclass_core)
 
@@ -1690,8 +1743,8 @@ end PLLND
 #axioms_within PLLND.F0.FilterIso.bigAtom_rn [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.bigAtom_ici_e [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.e_filter_not_iso [propext, Quot.sound]
-#axioms_within PLLND.F0.FilterIso.nondense_filter_not_iso [propext, Quot.sound]
-#axioms_within PLLND.F0.FilterIso.filterIsoQ_iff_dense [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.not_above_t3_filter_not_iso [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.filterIsoQ_iff_aboveResidue_t3 [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.SigC.orig_sig [propext]
 #axioms_within PLLND.F0.FilterIso.refutes_sig [propext]
 #axioms_within PLLND.F0.FilterIso.refutes_sigN [propext]
@@ -1726,7 +1779,7 @@ end PLLND
 #axioms_within PLLND.F0.FilterIso.subBot_le [propext]
 #axioms_within PLLND.F0.FilterIso.sigN_le [propext]
 #axioms_within PLLND.F0.FilterIso.C1n_box [propext, Quot.sound]
-#axioms_within PLLND.F0.FilterIso.C1n_dense [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.C1n_above_t3 [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.C1n_filter_not_iso [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.c1_t6 []
 #axioms_within PLLND.F0.FilterIso.t5_filter_not_iso [propext, Quot.sound]
@@ -1735,3 +1788,6 @@ end PLLND
 #axioms_within PLLND.F0.FilterIso.gap_t3_not_cover [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.box_t3_not_bigAtom [propext, Quot.sound]
 #axioms_within PLLND.F0.FilterIso.box_t5_not_bigAtom [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.t3_compl [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.above_t3_iff_compl_eq_bot [propext, Quot.sound]
+#axioms_within PLLND.F0.FilterIso.above_t3_iff_compl_compl_eq_top [propext, Quot.sound]
