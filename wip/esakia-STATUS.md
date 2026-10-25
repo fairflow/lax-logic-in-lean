@@ -206,3 +206,82 @@ Next round (only after review), in dependency order:
 2. R1, R2, R4 (short), R3a/R3b/R3c, R5 (the ω-cell, by hand).
 3. General G1 (Esakia duality, objects) then G2–G4; Classical.choice enters
    at the prime filter theorem and Alexander's subbasis theorem.
+
+## 2026-10-25 10:57 GMT: Phase A (finite layer and bridge) PROVED; checkpoint
+
+Matthew's decision (via the coordinator): prove the nuclear Esakia duality,
+finite layer first; statements stand as written. No statement text was
+changed; no hypothesis added; no statement refuted.
+
+Finite layer, all PROVED for the unchanged `def … : Prop` of
+`wip/esakiaNuclearFin.lean`, every pin `[propext, Quot.sound]`:
+
+| theorem | statement | module | commit |
+|---|---|---|---|
+| `EsakiaNuclear.f1` | `F1` | `wip/esakiaNuclearFinProofs.lean` | 8113d9e |
+| `EsakiaNuclear.f2` | `F2` | same | 8113d9e |
+| `EsakiaNuclear.f3` | `F3` | same | 8113d9e |
+| `EsakiaNuclear.f4` | `F4` | same | 8113d9e |
+| `EsakiaNuclear.f5` | `F5` | same | 8113d9e |
+| `EsakiaNuclear.f6` | `F6` | `wip/esakiaNuclearFinProofs2.lean` | ec43812 |
+| `EsakiaNuclear.f7` | `F7` | same | ec43812 |
+| `EsakiaNuclear.f8` | `F8` | same | ec43812 |
+| `EsakiaNuclear.f9` | `F9` | same | ec43812 |
+| `EsakiaNuclear.f10a` | `F10a` | `wip/esakiaNuclearFinProofs3.lean` | d8aaea6 |
+| `EsakiaNuclear.f10` | `F10` | same | d8aaea6 |
+
+Proof kit `wip/esakiaNuclearFinBase.lean` (8745048): bit-list
+extensionality, enumeration of `allSubs`, maximal/minimal elements by
+counting, the finite prime filter theorem (`FinHA.Ax.exists_prime`, by a
+maximal element and the himp-candidate trick, no distributivity used),
+separation by meet-primes, the dual is a poset.
+
+Deviation from the requested pin "[propext] or less": `Quot.sound` is in
+every pin. It enters only through `funext` (core `List.all_eq_true`,
+`Nat.instLawfulBEq`, `List.ext_getElem`; for the bridge, `Set.ext`).
+`Classical.choice` is absent from the whole finite layer. Choice leaks met
+and removed on the way: `List.nodup_range` (own `nodup_range'`), the simp
+lemma `Nat.right_eq_add` (replaced by `Nat.noConfusion`), and
+`beq_self_eq_true` on `Nat` via `Nat.instTransOrd` (replaced by
+`beq_iff_eq.mpr rfl`).
+
+Bridge, `wip/esakiaNuclearBridgeProofs.lean` (45220ec), statements of
+`wip/esakiaNuclearGen.lean` unchanged:
+
+| theorem | statement | pin |
+|---|---|---|
+| `Bridge.r1` | `R1` | `[propext, Classical.choice, Quot.sound]` |
+| `Bridge.r2` | `R2` | `[propext, Quot.sound]` |
+| `Bridge.r3a` | `R3a` | `[propext, Classical.choice, Quot.sound]` |
+| `Bridge.r3b` | `R3b` | `[propext, Classical.choice, Quot.sound]` |
+| `Bridge.r3c` | `R3c` | `[propext, Classical.choice, Quot.sound]` |
+| `Bridge.r4` | `R4` | `[propext, Classical.choice, Quot.sound]` |
+| `Bridge.r1_dne` | `R1 → ∀ P : Prop, ¬¬P → P` | `[]` |
+| `Bridge.r3c_dne` | `R3c → ∀ P : Prop, ¬¬P → P` | `[]` |
+| `Bridge.r4_dne` | `R4 → ∀ P : Prop, ¬¬P → P` | `[]` |
+
+So R1, R3c and R4 have no choice-free proof: each implies double-negation
+elimination (witnesses: a one-point subframe model with `V p = {_ | P}`; a
+two-world constraint model with `false Rᵢ true` iff `P`; a one-point
+subframe model with `S = {_ | P}`). The cause: the library's models carry
+arbitrary propositions as `S`, `V a`, `Rᵢ`, while `j_S(U) = X ∖ ↓(S ∖ U)`
+and `mPt` read the ◯-clause and the order through a double negation. R2 is
+constructive. R3a (⇒) and R3b use excluded middle in the proof (choice
+enters only through `Classical.propDecidable`, found with `#axiom_path`);
+whether they are constructively provable is OPEN.
+
+Gates. Every pin was watched failing once (`_out/esakiaPinsFail.lean`,
+untracked): each choice-free pin tightened to `[propext]` fails on
+`Quot.sound` and to `[Quot.sound]` fails on `propext` (f1–f10, f10a, r2);
+each classical pin tightened to `[propext, Quot.sound]` fails on
+`Classical.choice` (r1, r3a, r3b, r3c, r4). The three `[]` pins cannot be
+tightened. No `sorry`, `admit` or `native_decide` in any Phase A module.
+
+Skipped: the congruence lemma for the "exhaustive" reading of the C1/C2
+cells. Reason: F1–F10 are now PROVED for every `j : Nat → Nat`, so the
+cells' coverage no longer carries any claim.
+
+`python3 scripts/check-imports.py`: 3046 imports in 1236 modules, every one
+resolves. `df -m /System/Volumes/Data`: 137 927 MB free at the last build.
+
+Next: Phase B (G1–G4, R5; classical), on the coordinator's resume.
