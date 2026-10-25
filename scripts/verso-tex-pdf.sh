@@ -30,10 +30,13 @@ extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, 
   + r'\usepackage{amsmath,amssymb}' '\n'                      # \Vdash, \nvdash, \square, \rightsquigarrow (KaTeX has them too)
   + r'\usepackage[a4paper,margin=24mm,headheight=26pt,headsep=14pt]{geometry}' '\n'
   + r'\hypersetup{colorlinks=true, urlcolor=blue!55!black, linkcolor=black, citecolor=black}' '\n'   # no link boxes
-  # the build stamp (\versoBuildStamp, defined by {buildStamp}) centred on its own
-  # line above the running heads; the header gets two lines
-  + r'\newcommand{\versoStampText}{\ifdefined\versoBuildStamp{\scriptsize\sffamily\versoBuildStamp}\fi}' '\n'
-  + r'\newcommand{\versoStampLine}{\ifdefined\versoBuildStamp{\scriptsize\sffamily\versoBuildStamp}\\[2pt]\fi}' '\n'
+  # a line centred above the running heads (the header gets two lines): the
+  # paper's running head \versoRunningHead, `III:F0Lattice 0.5 · 25 Oct 2026`,
+  # when it declares one with PaperKit's {paperStamp} (2026-10-25); otherwise
+  # the build stamp \versoBuildStamp of {buildStamp} (the CLP paper)
+  + r'\newcommand{\versoHeadText}{\ifdefined\versoRunningHead{\footnotesize\versoRunningHead}\else{\scriptsize\versoBuildStamp}\fi}' '\n'
+  + r'\newcommand{\versoStampText}{\ifdefined\versoBuildStamp{\sffamily\versoHeadText}\fi}' '\n'
+  + r'\newcommand{\versoStampLine}{\ifdefined\versoBuildStamp{\sffamily\versoHeadText}\\[2pt]\fi}' '\n'
   + r'\makeoddhead{headings}{}{\parbox{\textwidth}{\centering\versoStampLine\makebox[\textwidth]{{\slshape\rightmark}\hfill\thepage}}}{}' '\n'
   + r'\makeevenhead{headings}{}{\parbox{\textwidth}{\centering\versoStampLine\makebox[\textwidth]{\thepage\hfill{\slshape\leftmark}}}}{}' '\n'
   + r'\makeoddhead{plain}{}{\versoStampText}{}' '\n'
@@ -49,6 +52,13 @@ import re
 m = re.search(r'\\gdef\\versoBuildStamp\{[^{}]*\}', s)
 if m:
   extra += m.group(0) + '\n'
+# a paper with a running head ({paperStamp}): its definition too, and the
+# build stamp moves to the title block, the date line of the title page, in
+# small type (2026-10-25)
+m = re.search(r'\\gdef\\versoRunningHead\{[^{}]*\}', s)
+if m:
+  extra += m.group(0) + '\n'
+  s = s.replace(r'\date{\sffamily }', r'\date{\sffamily\footnotesize\versoBuildStamp}', 1)
 s = s.replace('\\begin{document}', extra + '\\begin{document}', 1)
 open(p, 'w', encoding='utf-8').write(s)
 PY
