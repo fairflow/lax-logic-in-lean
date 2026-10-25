@@ -8,14 +8,18 @@ File 4 of the P2LL definability campaign (`wip/p2ll-STATUS.md`).  Each
 statement below is a `def … : Prop`, its text fixed before any proof (the
 `FRJO` pattern for OPEN claims, `TOOLS.md`): a `sorry` would assert, and an
 open case is data, never a sorried theorem (CLAUDE.md rule 1).  Each docstring
-records the status, PROVED (with the theorem name) or REFUTED (with the
-refuting cell); the proofs live in `wip/p2llInterp.lean` (I₁, Fix, I₂:
-`interpToJ`, `fixOfIsJ`, `interpToP2LL`, 2026-10-24) and the refutations in
-`wip/p2llBoolSem.lean` (RTP, RTJ, MP, MJ as stated, 2026-10-24: each fails
-only on formulas outside the fragment its calculus owns, see §8 of the status
-note; the restricted statements are proposed there).  The cells already PROVED
-are in `wip/p2llND.lean` (F1, C5, C7) and `wip/p2llJND.lean` (C1, C2, C3, F2);
-the PLL-level refuter C6 is `wip/p2llOrCell.lean`.
+records the status, PROVED (with the theorem name) or OPEN, and any change of
+wording with its date.  The proofs of I₁, Fix, I₂ are `interpToJ`, `fixOfIsJ`,
+`interpToP2LL` in `wip/p2llInterp.lean` (2026-10-24).  RTP, RTJ, MP, MJ were
+first stated on 2026-10-24 over the whole shared formula type; that wording is
+REFUTED (`wip/p2llBoolSem.lean`: each fails only on formulas outside the
+fragment its calculus owns, status note §8) and was replaced on 2026-10-25
+(Matthew's decision, status note §9) by the text below, with the fragment
+hypotheses `allJFree` (P2LL side) and `circFree` (guarded side); the old
+wording is kept in `wip/p2llBoolSem.lean` as `…Unrestricted`, the record of
+the refutation.  The cells already PROVED are in `wip/p2llND.lean` (F1, C5,
+C7) and `wip/p2llJND.lean` (C1, C2, C3, F2); the PLL-level refuter C6 is
+`wip/p2llOrCell.lean`.
 
 Notation of the statements (plan §1.6, `wip/p2llSyntax.lean`):
 
@@ -24,11 +28,12 @@ Notation of the statements (plan §1.6, `wip/p2llSyntax.lean`):
     G(Θ) = guards Θ    [◯s → s : s ∈ Θ]                       (the relativisation of the declarations)
 
 The two interpretation theorems are the "derivability-preserving both ways";
-the two round trips are the faithfulness of each translation; the two
-biconditionals follow from them.  Proof routes are in `wip/p2ll-STATUS.md` §4.
-All seven statements are about locally closed formulas: every formula a
-derivation of either calculus concludes is locally closed (`LaxND2.lc`,
-`JND.lc`), and the round trips and biconditionals assume `LC` explicitly.
+the two round trips are the faithfulness of each translation on its own
+fragment; the two biconditionals follow from them.  Proof routes are in
+`wip/p2ll-STATUS.md` §4 and §9.  All seven statements are about locally closed
+formulas: every formula a derivation of either calculus concludes is locally
+closed (`LaxND2.lc`, `JND.lc`), and the round trips and biconditionals assume
+`LC` explicitly.
 -/
 
 namespace P2LL
@@ -71,66 +76,64 @@ def InterpToP2LL : Prop :=
     Nonempty (LaxND2 (guards Θ ++ Γ.map rel) (rel φ))
 
 /-- (RTP) The round trip on the P2LL side, Proposition C generalised to every
-formula by congruence:
+P2LL formula by congruence:
 
-    LC φ   ⟹   φ ⊢_P2LL (φ°)*   and   (φ°)* ⊢_P2LL φ.
+    LC φ,  allJFree φ   ⟹   φ ⊢_P2LL (φ°)*   and   (φ°)* ⊢_P2LL φ.
 
 The one-◯ instance is PROVED (C7, `LaxND2.circ_to_circNuc`,
-`LaxND2.circNuc_to_circ`).  REFUTED AS STATED (`roundTripP2LL_false`,
-`wip/p2llBoolSem.lean`): `φ` ranges over the whole shared formula type, and
-at `φ := ∀°q.q` (`allJ (bvar 0)`), inert in P2LL, the first half fails
-(`rtp_fails₁`); at `∀°q.(q → q)` the second half fails (`rtp_fails₂`).  The
-intended statement restricts `φ` to `allJFree`; proposed in the status note
-§8, not yet adopted. -/
+`LaxND2.circNuc_to_circ`).  Wording replaced 2026-10-25: the wording of
+2026-10-24 lacked `allJFree φ` and is REFUTED (`RoundTripP2LLUnrestricted`,
+`roundTripP2LL_false`, cells `rtp_fails₁`, `rtp_fails₂` in
+`wip/p2llBoolSem.lean`).  OPEN. -/
 def RoundTripP2LL : Prop :=
-  ∀ φ : Fm, LC φ →
+  ∀ φ : Fm, LC φ → allJFree φ →
     Nonempty (LaxND2 [φ] (rel (toJ φ))) ∧ Nonempty (LaxND2 [rel (toJ φ)] φ)
 
 /-- (RTJ) The round trip on the guarded side:
 
-    LC φ   ⟹   Θ ; φ ⊢_J (φ*)°   and   Θ ; (φ*)° ⊢_J φ.
+    LC φ,  circFree φ   ⟹   Θ ; φ ⊢_J (φ*)°   and   Θ ; (φ*)° ⊢_J φ.
 
 Route: the `∀°` case instantiates at `◯°s` for a fresh plain `s` (a J-formula
 by the `allJ` and `imp` clauses) and uses `◯°s ⊣⊢ s` under the hypothesis
-`◯°s → s`; needs substitution of equivalents.  REFUTED AS STATED
-(`roundTripJ_false`, `wip/p2llBoolSem.lean`): at `φ := ◯⊥`, inert in the
-guarded calculus, the first half fails (`rtj_fails₁`); at `◯⊤` the second
-(`rtj_fails₂`).  The intended statement restricts `φ` to `circFree`; proposed
-in the status note §8, not yet adopted. -/
+`◯°s → s`; needs substitution of equivalents.  Wording replaced 2026-10-25:
+the wording of 2026-10-24 lacked `circFree φ` and is REFUTED
+(`RoundTripJUnrestricted`, `roundTripJ_false`, cells `rtj_fails₁`,
+`rtj_fails₂` in `wip/p2llBoolSem.lean`).  OPEN. -/
 def RoundTripJ : Prop :=
-  ∀ (Θ : List String) (φ : Fm), LC φ →
+  ∀ (Θ : List String) (φ : Fm), LC φ → circFree φ →
     Nonempty (JND IsJ Θ [φ] (toJ (rel φ))) ∧ Nonempty (JND IsJ Θ [toJ (rel φ)] φ)
 
 /-- (MP) Mutual interpretability, seen from P2LL:
 
-    Γ ⊢_P2LL φ   ⟺   [] ; Γ° ⊢_J φ°      (Γ, φ locally closed).
+    Γ ⊢_P2LL φ   ⟺   [] ; Γ° ⊢_J φ°      (Γ, φ locally closed P2LL formulas).
 
-From (I₁), (I₂) and (RTP).  REFUTED AS STATED (`mutualP2LL_false`,
-`wip/p2llBoolSem.lean`): at `Γ := []`, `φ := ∀°q.(q → q)` the right side holds
-(`jd_allJ_refl`) and the left fails (`mp_fails`).  The intended statement
-restricts `Γ` and `φ` to `allJFree`; proposed in the status note §8. -/
+From (I₁), (I₂) and (RTP).  Wording replaced 2026-10-25: the wording of
+2026-10-24 lacked `allJFree` on `φ` and on `Γ` and is REFUTED
+(`MutualP2LLUnrestricted`, `mutualP2LL_false`, cells `jd_allJ_refl`,
+`mp_fails` in `wip/p2llBoolSem.lean`).  OPEN. -/
 def MutualP2LL : Prop :=
-  ∀ (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ) → LC φ →
+  ∀ (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ ∧ allJFree ψ) → LC φ → allJFree φ →
     (Nonempty (LaxND2 Γ φ) ↔ Nonempty (JND IsJ [] (Γ.map toJ) (toJ φ)))
 
 /-- (MJ) Mutual interpretability, seen from the guarded calculus:
 
-    Θ ; Γ ⊢_J φ   ⟺   G(Θ), Γ* ⊢_P2LL φ*      (Γ, φ locally closed).
+    Θ ; Γ ⊢_J φ   ⟺   G(Θ), Γ* ⊢_P2LL φ*      (Γ, φ locally closed guarded formulas).
 
 From (I₂), (I₁) and (RTJ), discharging the translated guards `◯°s → s` by
-`∀°E` at the declared `s`.  REFUTED AS STATED (`mutualJ_false`,
-`wip/p2llBoolSem.lean`): at `Θ := []`, `Γ := []`, `φ := ◯⊤` the right side
-holds (`pd_circ_top`) and the left fails (`mj_fails`).  The intended statement
-restricts `Γ` and `φ` to `circFree`; proposed in the status note §8. -/
+`∀°E` at the declared `s`.  Wording replaced 2026-10-25: the wording of
+2026-10-24 lacked `circFree` on `φ` and on `Γ` and is REFUTED
+(`MutualJUnrestricted`, `mutualJ_false`, cells `pd_circ_top`, `mj_fails` in
+`wip/p2llBoolSem.lean`).  OPEN. -/
 def MutualJ : Prop :=
-  ∀ (Θ : List String) (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ) → LC φ →
+  ∀ (Θ : List String) (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ ∧ circFree ψ) → LC φ → circFree φ →
     (Nonempty (JND IsJ Θ Γ φ) ↔ Nonempty (LaxND2 (guards Θ ++ Γ.map rel) (rel φ)))
 
 end P2LL
 
 /-! The statements are definitions of propositions and carry no axioms; the
 pins record that none of them is sorried.  The pins of the PROOFS are in
-`wip/p2llInterp.lean`, those of the REFUTATIONS in `wip/p2llBoolSem.lean`. -/
+`wip/p2llInterp.lean` and `wip/p2llRoundTrip.lean`, those of the REFUTATIONS
+of the 2026-10-24 wording in `wip/p2llBoolSem.lean`. -/
 
 #axioms_within P2LL.InterpToJ []
 #axioms_within P2LL.FixOfIsJ []

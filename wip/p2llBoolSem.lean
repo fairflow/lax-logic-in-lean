@@ -39,10 +39,12 @@ positive theorems of the campaign (`wip/p2llInterp.lean`) choose no names and
 stay at `[propext]`.  With `Nat` variables the refutations would be
 `[propext]` too.
 
-The four statements are therefore REFUTED as stated.  Their restrictions to
-the proper fragments (`allJFree` for RTP and MP, `circFree` for RTJ and MJ)
-are the intended statements; they are proposed, not assumed, in
-`wip/p2ll-STATUS.md` §8.
+The four statements were therefore REFUTED as first stated (2026-10-24).  On
+2026-10-25 (Matthew's decision, status note §9) the names in
+`wip/p2llStatements.lean` took the restricted text (`allJFree` for RTP and
+MP, `circFree` for RTJ and MJ); the wording of 2026-10-24 is kept here as
+`RoundTripP2LLUnrestricted`, `RoundTripJUnrestricted`,
+`MutualP2LLUnrestricted`, `MutualJUnrestricted`, the record of the refutation.
 -/
 
 namespace P2LL
@@ -479,6 +481,32 @@ theorem JND.bsound (S : BSem) (ha : ∀ a b, S.allJ a b = (a && b)) :
     · exact band_right h
     · exact band_left h
 
+/-! ## The wording of 2026-10-24, REFUTED
+
+The four statements as first reported, quantifying over the whole shared
+formula type; replaced in `wip/p2llStatements.lean` on 2026-10-25 by the
+fragment-restricted wording.  Kept as the record. -/
+
+/-- RTP, wording of 2026-10-24, REFUTED (`roundTripP2LL_false`): no `allJFree φ`. -/
+def RoundTripP2LLUnrestricted : Prop :=
+  ∀ φ : Fm, LC φ →
+    Nonempty (LaxND2 [φ] (rel (toJ φ))) ∧ Nonempty (LaxND2 [rel (toJ φ)] φ)
+
+/-- RTJ, wording of 2026-10-24, REFUTED (`roundTripJ_false`): no `circFree φ`. -/
+def RoundTripJUnrestricted : Prop :=
+  ∀ (Θ : List String) (φ : Fm), LC φ →
+    Nonempty (JND IsJ Θ [φ] (toJ (rel φ))) ∧ Nonempty (JND IsJ Θ [toJ (rel φ)] φ)
+
+/-- MP, wording of 2026-10-24, REFUTED (`mutualP2LL_false`): no `allJFree` on `Γ`, `φ`. -/
+def MutualP2LLUnrestricted : Prop :=
+  ∀ (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ) → LC φ →
+    (Nonempty (LaxND2 Γ φ) ↔ Nonempty (JND IsJ [] (Γ.map toJ) (toJ φ)))
+
+/-- MJ, wording of 2026-10-24, REFUTED (`mutualJ_false`): no `circFree` on `Γ`, `φ`. -/
+def MutualJUnrestricted : Prop :=
+  ∀ (Θ : List String) (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ) → LC φ →
+    (Nonempty (JND IsJ Θ Γ φ) ↔ Nonempty (LaxND2 (guards Θ ++ Γ.map rel) (rel φ)))
+
 /-! ## The models and the cells -/
 
 /-- The P2LL models: `circ` the identity, `allJ` the constant `c`. -/
@@ -511,8 +539,8 @@ theorem rtp_fails₂ :
     (singleH (by decide))
   exact absurd h (by decide)
 
-/-- **RTP is REFUTED as stated** (it fails outside the P2LL fragment). -/
-theorem roundTripP2LL_false : ¬ RoundTripP2LL := fun h =>
+/-- **RTP, wording of 2026-10-24, is REFUTED** (it fails outside the P2LL fragment). -/
+theorem roundTripP2LL_false : ¬ RoundTripP2LLUnrestricted := fun h =>
   rtp_fails₁ (h (Fm.allJ (.bvar 0)) (by decide)).1
 
 /-- `⊢_J ∀°q.(q → q)`, under any declarations and hypotheses. -/
@@ -528,8 +556,8 @@ theorem mp_fails : ¬ Nonempty (LaxND2 [] (Fm.allJ (.imp (.bvar 0) (.bvar 0)))) 
   have h := LaxND2.bsound (SP false) (fun _ => rfl) d (fun _ => true) (fun _ => true) emptyH
   exact absurd h (by decide)
 
-/-- **MP is REFUTED as stated** (at `Γ = []`, `φ = ∀°q.(q → q)`). -/
-theorem mutualP2LL_false : ¬ MutualP2LL := fun h =>
+/-- **MP, wording of 2026-10-24, is REFUTED** (at `Γ = []`, `φ = ∀°q.(q → q)`). -/
+theorem mutualP2LL_false : ¬ MutualP2LLUnrestricted := fun h =>
   mp_fails ((h [] (Fm.allJ (.imp (.bvar 0) (.bvar 0))) (fun _ h => nomatch h) (by decide)).mpr
     ⟨jd_allJ_refl [] []⟩)
 
@@ -547,8 +575,8 @@ theorem rtj_fails₂ : ¬ Nonempty (JND IsJ [] [toJ (rel (Fm.circ Fm.top))] (Fm.
     (singleH (by decide))
   exact absurd h (by decide)
 
-/-- **RTJ is REFUTED as stated** (it fails outside the guarded fragment). -/
-theorem roundTripJ_false : ¬ RoundTripJ := fun h =>
+/-- **RTJ, wording of 2026-10-24, is REFUTED** (it fails outside the guarded fragment). -/
+theorem roundTripJ_false : ¬ RoundTripJUnrestricted := fun h =>
   rtj_fails₁ (h [] (Fm.circ .bot) trivial).1
 
 /-- `⊢_P2LL ◯⊤`. -/
@@ -561,8 +589,8 @@ theorem mj_fails : ¬ Nonempty (JND IsJ [] [] (Fm.circ Fm.top)) := by
   have h := JND.bsound (SJ false) (fun _ _ => rfl) d (fun _ => true) (fun _ => true) emptyH
   exact absurd h (by decide)
 
-/-- **MJ is REFUTED as stated** (at `Θ = []`, `Γ = []`, `φ = ◯⊤`). -/
-theorem mutualJ_false : ¬ MutualJ := fun h =>
+/-- **MJ, wording of 2026-10-24, is REFUTED** (at `Θ = []`, `Γ = []`, `φ = ◯⊤`). -/
+theorem mutualJ_false : ¬ MutualJUnrestricted := fun h =>
   mj_fails ((h [] [] (Fm.circ Fm.top) (fun _ h => nomatch h) ⟨trivial, trivial⟩).mpr ⟨pd_circ_top⟩)
 
 end P2LL
@@ -587,6 +615,10 @@ See `wip/p2ll-STATUS.md` §8. -/
 #axioms_within P2LL.allIntro_sem [propext, Classical.choice, Quot.sound]
 #axioms_within P2LL.LaxND2.bsound [propext, Classical.choice, Quot.sound]
 #axioms_within P2LL.JND.bsound [propext, Classical.choice, Quot.sound]
+#axioms_within P2LL.RoundTripP2LLUnrestricted []
+#axioms_within P2LL.RoundTripJUnrestricted []
+#axioms_within P2LL.MutualP2LLUnrestricted []
+#axioms_within P2LL.MutualJUnrestricted []
 #axioms_within P2LL.jd_allJ_refl []
 #axioms_within P2LL.pd_circ_top []
 #axioms_within P2LL.rtp_fails₁ [propext, Classical.choice, Quot.sound]

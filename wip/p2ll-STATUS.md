@@ -364,3 +364,41 @@ translated guards `◯°s → s` by C3 at the declared `s`.
 * 2026-10-24 (phase 2, step 3): RTP, RTJ, MP, MJ REFUTED as stated (§8),
   kernel-checked on a two-valued semantics; repaired statements proposed;
   STOP, report to the manager, nothing built on the repair.
+
+## 9. Phase 2, step 3 resumed (2026-10-25): the repair ADOPTED, four statements REPLACED
+
+Matthew's decision, relayed by the manager: adopt the repair of §8 and
+replace the four statements.  In `wip/p2llStatements.lean` the names
+`RoundTripP2LL`, `RoundTripJ`, `MutualP2LL`, `MutualJ` now carry exactly the
+text of RTP', RTJ', MP', MJ' of §8:
+
+    RTP  ∀ φ, LC φ → allJFree φ →
+           Nonempty (LaxND2 [φ] (rel (toJ φ))) ∧ Nonempty (LaxND2 [rel (toJ φ)] φ)
+    RTJ  ∀ Θ φ, LC φ → circFree φ →
+           Nonempty (JND IsJ Θ [φ] (toJ (rel φ))) ∧ Nonempty (JND IsJ Θ [toJ (rel φ)] φ)
+    MP   ∀ Γ φ, (∀ ψ ∈ Γ, LC ψ ∧ allJFree ψ) → LC φ → allJFree φ →
+           (Nonempty (LaxND2 Γ φ) ↔ Nonempty (JND IsJ [] (Γ.map toJ) (toJ φ)))
+    MJ   ∀ Θ Γ φ, (∀ ψ ∈ Γ, LC ψ ∧ circFree ψ) → LC φ → circFree φ →
+           (Nonempty (JND IsJ Θ Γ φ) ↔ Nonempty (LaxND2 (guards Θ ++ Γ.map rel) (rel φ)))
+
+The wording of 2026-10-24 lives on in `wip/p2llBoolSem.lean` as
+`RoundTripP2LLUnrestricted`, `RoundTripJUnrestricted`,
+`MutualP2LLUnrestricted`, `MutualJUnrestricted` (docstrings "wording of
+2026-10-24, REFUTED"); the four refutations `…_false` now name them, pins
+unchanged.  I₁, Fix, I₂ are untouched.  The three changes of the campaign so
+far, each with its reason: (1) well-formedness side conditions on the rules,
+§6 (I₁ was false for ill-formed sequents); (2) `IsJ`, `IPC2ND` as data, §7
+(Fix by recursion on the J-derivation without choice; meaning unchanged, as
+`IsJ Θ χ → P` is `Nonempty (IsJ Θ χ) → P` for a proposition `P`); (3) the
+fragment hypotheses on RTP, RTJ, MP, MJ, §8–9 (false on the inert connective
+of the other calculus).
+
+Proof plan for the four (from §8), to be carried out in
+`wip/p2llRoundTrip.lean` (RTP, RTJ) and `wip/p2llMutual.lean` (MP, MJ),
+one commit per theorem, no fresh name anywhere, pins aimed at `[propext]`.
+
+## 5. Log (continued)
+
+* 2026-10-25: repair adopted; RTP, RTJ, MP, MJ replaced by the fragment-
+  restricted wording (§9); old wording moved to `wip/p2llBoolSem.lean`;
+  committed before any proof.
