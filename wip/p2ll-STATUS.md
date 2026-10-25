@@ -464,3 +464,39 @@ is decoded into data; RTP on `φ` gives `φ`.  Pins watched at `[]`:
 ## 5. Log (continued)
 
 * 2026-10-25: MP PROVED (§12); MJ next (same file).
+
+## 13. Phase 2, step 4 (2026-10-25): MJ PROVED (`wip/p2llMutual.lean`)
+
+    mutualJ : MutualJ     [propext]
+
+Left to right is I₂ (`relD`).  Right to left: I₁ (`toJD`, at the same `Θ`)
+brings the derivation back to the guarded calculus with hypotheses
+`(◯s → s)° = ◯°s → s` for `s ∈ Θ` and `(ψ*)°` for `ψ ∈ Γ` (`map_append'`,
+`[]`, splits the translated context); `peelGuards` discharges the guards by
+C3 at the declared `s` (`→I`, `JND.circJ_collapse`, `→E`), `ctxBackJ`
+translates the rest back by RTJ as in §12, RTJ on `φ` gives `φ`.  Pins
+watched at `[]`: `peelGuards`, `ctxBackJ`, `mutualJ` are `[propext]`.
+
+## 14. The seven statements: all PROVED (2026-10-25)
+
+    interpToJ     : InterpToJ        wip/p2llInterp.lean      [propext]
+    fixOfIsJ      : FixOfIsJ         wip/p2llInterp.lean      [propext]
+    interpToP2LL  : InterpToP2LL     wip/p2llInterp.lean      [propext]
+    roundTripP2LL : RoundTripP2LL    wip/p2llRoundTrip.lean   [propext]
+    roundTripJ    : RoundTripJ       wip/p2llRoundTrip.lean   [propext]
+    mutualP2LL    : MutualP2LL       wip/p2llMutual.lean      [propext]
+    mutualJ       : MutualJ          wip/p2llMutual.lean      [propext]
+
+The statements are the `def … : Prop` of `wip/p2llStatements.lean`: I₁, Fix,
+I₂ as reported on 2026-10-24 (after the well-formedness revision of §6); RTP,
+RTJ, MP, MJ in the fragment-restricted wording of 2026-10-25 (§9), their
+2026-10-24 wording REFUTED (§8, `wip/p2llBoolSem.lean`, pins
+`[propext, Classical.choice, Quot.sound]` from `String` only).  All seven are
+about locally closed formulas (`LaxND2.lc`, `JND.lc`).  No theorem chooses a
+fresh name; `propext` is the floor of every proof, through `Fm.lc_opn` and the
+context lemmas.
+
+## 5. Log (continued)
+
+* 2026-10-25: MJ PROVED (§13); all seven statements PROVED (§14); docstrings
+  of `wip/p2llStatements.lean` updated; final report to the manager.

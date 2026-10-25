@@ -9,7 +9,7 @@ statement below is a `def … : Prop`, its text fixed before any proof (the
 `FRJO` pattern for OPEN claims, `TOOLS.md`): a `sorry` would assert, and an
 open case is data, never a sorried theorem (CLAUDE.md rule 1).  Each docstring
 records the status, PROVED (with the theorem name) or OPEN, and any change of
-wording with its date.  The proofs of I₁, Fix, I₂ are `interpToJ`, `fixOfIsJ`,
+wording with its date; all seven are PROVED (2026-10-25).  The proofs of I₁, Fix, I₂ are `interpToJ`, `fixOfIsJ`,
 `interpToP2LL` in `wip/p2llInterp.lean` (2026-10-24).  RTP, RTJ, MP, MJ were
 first stated on 2026-10-24 over the whole shared formula type; that wording is
 REFUTED (`wip/p2llBoolSem.lean`: each fails only on formulas outside the
@@ -84,7 +84,8 @@ The one-◯ instance is PROVED (C7, `LaxND2.circ_to_circNuc`,
 `LaxND2.circNuc_to_circ`).  Wording replaced 2026-10-25: the wording of
 2026-10-24 lacked `allJFree φ` and is REFUTED (`RoundTripP2LLUnrestricted`,
 `roundTripP2LL_false`, cells `rtp_fails₁`, `rtp_fails₂` in
-`wip/p2llBoolSem.lean`).  OPEN. -/
+`wip/p2llBoolSem.lean`).  PROVED: `roundTripP2LL` (`wip/p2llRoundTrip.lean`,
+by `rtpD`, induction on the size of `φ`), pin `[propext]`. -/
 def RoundTripP2LL : Prop :=
   ∀ φ : Fm, LC φ → allJFree φ →
     Nonempty (LaxND2 [φ] (rel (toJ φ))) ∧ Nonempty (LaxND2 [rel (toJ φ)] φ)
@@ -98,7 +99,9 @@ by the `allJ` and `imp` clauses) and uses `◯°s ⊣⊢ s` under the hypothesis
 `◯°s → s`; needs substitution of equivalents.  Wording replaced 2026-10-25:
 the wording of 2026-10-24 lacked `circFree φ` and is REFUTED
 (`RoundTripJUnrestricted`, `roundTripJ_false`, cells `rtj_fails₁`,
-`rtj_fails₂` in `wip/p2llBoolSem.lean`).  OPEN. -/
+`rtj_fails₂` in `wip/p2llBoolSem.lean`).  PROVED: `roundTripJ`
+(`wip/p2llRoundTrip.lean`, by `rtjD` and the substitution of equivalents
+`JND.congrD`), pin `[propext]`. -/
 def RoundTripJ : Prop :=
   ∀ (Θ : List String) (φ : Fm), LC φ → circFree φ →
     Nonempty (JND IsJ Θ [φ] (toJ (rel φ))) ∧ Nonempty (JND IsJ Θ [toJ (rel φ)] φ)
@@ -110,7 +113,8 @@ def RoundTripJ : Prop :=
 From (I₁), (I₂) and (RTP).  Wording replaced 2026-10-25: the wording of
 2026-10-24 lacked `allJFree` on `φ` and on `Γ` and is REFUTED
 (`MutualP2LLUnrestricted`, `mutualP2LL_false`, cells `jd_allJ_refl`,
-`mp_fails` in `wip/p2llBoolSem.lean`).  OPEN. -/
+`mp_fails` in `wip/p2llBoolSem.lean`).  PROVED: `mutualP2LL`
+(`wip/p2llMutual.lean`), pin `[propext]`. -/
 def MutualP2LL : Prop :=
   ∀ (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ ∧ allJFree ψ) → LC φ → allJFree φ →
     (Nonempty (LaxND2 Γ φ) ↔ Nonempty (JND IsJ [] (Γ.map toJ) (toJ φ)))
@@ -123,7 +127,8 @@ From (I₂), (I₁) and (RTJ), discharging the translated guards `◯°s → s` 
 `∀°E` at the declared `s`.  Wording replaced 2026-10-25: the wording of
 2026-10-24 lacked `circFree` on `φ` and on `Γ` and is REFUTED
 (`MutualJUnrestricted`, `mutualJ_false`, cells `pd_circ_top`, `mj_fails` in
-`wip/p2llBoolSem.lean`).  OPEN. -/
+`wip/p2llBoolSem.lean`).  PROVED: `mutualJ` (`wip/p2llMutual.lean`), pin
+`[propext]`. -/
 def MutualJ : Prop :=
   ∀ (Θ : List String) (Γ : List Fm) (φ : Fm), (∀ ψ ∈ Γ, LC ψ ∧ circFree ψ) → LC φ → circFree φ →
     (Nonempty (JND IsJ Θ Γ φ) ↔ Nonempty (LaxND2 (guards Θ ++ Γ.map rel) (rel φ)))
@@ -132,8 +137,8 @@ end P2LL
 
 /-! The statements are definitions of propositions and carry no axioms; the
 pins record that none of them is sorried.  The pins of the PROOFS are in
-`wip/p2llInterp.lean` and `wip/p2llRoundTrip.lean`, those of the REFUTATIONS
-of the 2026-10-24 wording in `wip/p2llBoolSem.lean`. -/
+`wip/p2llInterp.lean`, `wip/p2llRoundTrip.lean` and `wip/p2llMutual.lean`,
+those of the REFUTATIONS of the 2026-10-24 wording in `wip/p2llBoolSem.lean`. -/
 
 #axioms_within P2LL.InterpToJ []
 #axioms_within P2LL.FixOfIsJ []
