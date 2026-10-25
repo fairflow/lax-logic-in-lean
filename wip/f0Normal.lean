@@ -558,6 +558,370 @@ theorem force_d_x {k : Nat} : (M k).force .x (dF k) := by
   · exact force_t7_base _
   · exact force_t7_base _
 
+
+/-! ### The type of `x` is `k+1` when `k ≥ 2` -/
+
+/-- `x ⊩ ρ (k+1)` for `k ≥ 2`: `ρ (k+1) = ρ k ∨ (ρ k ↠ ρ (k−1))`, and every
+successor of `x` forcing `ρ k` (`z`, the `lad i` with `i < k`, the tops) forces
+`ρ (k−1)`; `z` does because `k − 1 ≥ 1`.  (At `k = 1` this FAILS at `z`:
+`_out/f0Normal_gate.lean`.) -/
+theorem force_ρ_succ_x {k : Nat} (hk : 2 ≤ k) : (M k).force .x (ρF (k + 1)) := by
+  obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+  show (M (k' + 1)).force .x (ρF (k' + 1)) ∨
+    (M (k' + 1)).force .x (.ifThen (ρF (k' + 1)) (ρF k'))
+  refine Or.inr (fun b hb hρ => ?_)
+  rcases succ_x hb with rfl | rfl | ⟨i, hi, rfl⟩ | ⟨w, hw, rfl⟩
+  · exact absurd hρ (not_force_ρ_x (Nat.le_refl _))
+  · exact force_ρ_z (by omega)
+  · exact (force_base _ _ _).mpr ((T6.rel_odd k' i).mpr (by omega))
+  · exact (force_base _ _ _).mpr ((T6.rel_transfer (RNEmbed.rnP_boxFree k').1).2 w hw)
+
+theorem not_force_d_succ_x {k : Nat} (hk : 2 ≤ k) : ¬ (M k).force .x (dF (k + 1)) := fun h =>
+  not_force_t7_x (h .x trivial (force_ρ_succ_x hk))
+
+/-! ## (a), (b), (c): the chain `d k` in F0 -/
+
+/-- (a) `d (k+1) ≤ d k`: `↠` is antitone in its antecedent and `ρ k ≤ ρ (k+1)`. -/
+theorem d_anti (k : Nat) : d (k + 1) ≤ d k := by
+  show Le (dF (k + 1)) (dF k)
+  intro C w h v hv hρ
+  exact h v hv (force_ρF_succ C hρ)
+
+theorem d_le_of_le {i j : Nat} (hij : i ≤ j) : d j ≤ d i := by
+  induction hij with
+  | refl => exact le_refl _
+  | step _ ih => exact le_trans (d_anti _) ih
+
+/-- (c) `t7 ≤ d k`: `b ≤ a ↠ b`. -/
+theorem t7_le_d (k : Nat) : t7 ≤ d k := by
+  show Le t7F (dF k)
+  intro C w h v hv _
+  exact C.force_hered hv h
+
+/-- (b) `¬ d k ≤ d (k+1)` for `k ≥ 2`: the world `x` of `M k` forces `d k` and
+not `d (k+1)`. -/
+theorem d_not_le {k : Nat} (hk : 2 ≤ k) : ¬ d k ≤ d (k + 1) := fun h =>
+  not_force_d_succ_x hk (h (M k) .x force_d_x)
+
+/-! ## (★): every world of a finite subframe model forces some rung
+
+By descent on the number of proper successors: if every proper successor of
+`w` forces `σ J` then `w ⊩ σ (J+2) = σ (J+1) ∨ (σ (J+1) ↠ σ J)`, since a
+successor forcing `σ (J+1)` is proper (else `w` would force it, by persistence)
+and so forces `σ J`.  Stated for any sequence with the Rieger–Nishimura
+recursion `σ (j+1) = σ j ∨ τ j`, `τ (j+1) = σ (j+1) ↠ σ j`. -/
+
+theorem sforce_or_inl (M : SubframeModel) {w : M.W} {φ ψ : PLLFormula} (h : M.force w φ) :
+    M.force w (φ.or ψ) :=
+  show M.force w φ ∨ M.force w ψ from Or.inl h
+
+section Star
+
+open SubframeModel.CF
+
+variable (M : SubframeModel) [FinDec M]
+
+/-- The number of proper successors of `w`. -/
+def nProper (w : M.W) : Nat :=
+  (FinDec.elems (M := M)).countP (fun v => decide (M.le w v ∧ ¬ M.le v w))
+
+theorem nProper_lt {w v : M.W} (h1 : M.le w v) (h2 : ¬ M.le v w) :
+    nProper M v < nProper M w :=
+  FRJ.countP_lt_countP
+    (fun u _ hu => by
+      have hu' := of_decide_eq_true hu
+      exact decide_eq_true ⟨M.trans h1 hu'.1, fun h => hu'.2 (M.trans h h1)⟩)
+    (FinDec.complete v) (decide_eq_true ⟨h1, h2⟩)
+    (decide_eq_false (fun h => h.2 (M.refl v)))
+
+/-- One index bounding the rungs forced at all proper successors in a list. -/
+theorem bound_list (σ : Nat → PLLFormula)
+    (hmono : ∀ {i j : Nat} {v : M.W}, i ≤ j → M.force v (σ i) → M.force v (σ j))
+    (w : M.W) :
+    ∀ L : List M.W, (∀ v ∈ L, M.le w v → ¬ M.le v w → ∃ k, M.force v (σ k)) →
+      ∃ J, ∀ v ∈ L, M.le w v → ¬ M.le v w → M.force v (σ J)
+  | [], _ => ⟨0, fun v hv => absurd hv List.not_mem_nil⟩
+  | v :: L, h => by
+      obtain ⟨J, hJ⟩ := bound_list σ hmono w L (fun u hu => h u (List.mem_cons_of_mem v hu))
+      rcases Decidable.em (M.le w v ∧ ¬ M.le v w) with hv | hv
+      · obtain ⟨k, hk⟩ := h v (List.mem_cons_self ..) hv.1 hv.2
+        refine ⟨max J k, fun u hu h1 h2 => ?_⟩
+        rcases List.mem_cons.mp hu with rfl | hu
+        · exact hmono (Nat.le_max_right J k) hk
+        · exact hmono (Nat.le_max_left J k) (hJ u hu h1 h2)
+      · refine ⟨J, fun u hu h1 h2 => ?_⟩
+        rcases List.mem_cons.mp hu with rfl | hu
+        · exact absurd ⟨h1, h2⟩ hv
+        · exact hJ u hu h1 h2
+
+/-- The step: from `σ J` at every proper successor to `σ (J+2)` at `w`. -/
+theorem step_two (σ τ : Nat → PLLFormula)
+    (hσ : ∀ j, σ (j + 1) = (σ j).or (τ j))
+    (hτ : ∀ j, τ (j + 1) = (σ (j + 1)).ifThen (σ j))
+    (w : M.W) (J : Nat) (hJ : ∀ v, M.le w v → ¬ M.le v w → M.force v (σ J)) :
+    M.force w (σ (J + 1 + 1)) := by
+  rw [hσ (J + 1), hτ J]
+  show M.force w (σ (J + 1)) ∨ M.force w ((σ (J + 1)).ifThen (σ J))
+  rcases Decidable.em (M.force w (σ (J + 1))) with h | h
+  · exact Or.inl h
+  · refine Or.inr (fun v hwv hv => ?_)
+    rcases Decidable.em (M.le v w) with hvw | hvw
+    · exact absurd (SubframeModel.force_mono M _ hvw hv) h
+    · exact hJ v hwv hvw
+
+theorem exists_force_aux (σ τ : Nat → PLLFormula)
+    (hσ : ∀ j, σ (j + 1) = (σ j).or (τ j))
+    (hτ : ∀ j, τ (j + 1) = (σ (j + 1)).ifThen (σ j)) :
+    ∀ (n : Nat) (w : M.W), nProper M w ≤ n → ∃ k, M.force w (σ k) := by
+  have hmono : ∀ {i j : Nat} {v : M.W}, i ≤ j → M.force v (σ i) → M.force v (σ j) := by
+    intro i j v hij h
+    induction hij with
+    | refl => exact h
+    | step _ ih =>
+        rw [hσ]
+        exact sforce_or_inl M ih
+  intro n
+  induction n with
+  | zero =>
+      intro w hw
+      refine ⟨0 + 1 + 1, step_two M σ τ hσ hτ w 0 (fun v h1 h2 => ?_)⟩
+      exact absurd (Nat.lt_of_lt_of_le (nProper_lt M h1 h2) hw) (Nat.not_lt_zero _)
+  | succ n ih =>
+      intro w hw
+      obtain ⟨J, hJ⟩ := bound_list M σ hmono w (FinDec.elems (M := M)) (fun v _ h1 h2 =>
+        ih v (Nat.le_of_lt_succ (Nat.lt_of_lt_of_le (nProper_lt M h1 h2) hw)))
+      exact ⟨J + 1 + 1, step_two M σ τ hσ hτ w J (fun v h1 h2 => hJ v (FinDec.complete v) h1 h2)⟩
+
+/-- **(★), generically.** -/
+theorem exists_force_chain (σ τ : Nat → PLLFormula)
+    (hσ : ∀ j, σ (j + 1) = (σ j).or (τ j))
+    (hτ : ∀ j, τ (j + 1) = (σ (j + 1)).ifThen (σ j)) (w : M.W) :
+    ∃ k, M.force w (σ k) :=
+  exists_force_aux M σ τ hσ hτ _ w (Nat.le_refl _)
+
+end Star
+
+/-- **(★)**: every world of every finite subframe model forces some `ρ k`. -/
+theorem star : Star := fun M _ w =>
+  exists_force_chain M ρF (fun k => rel (rnP k).2) (fun _ => rfl) (fun _ => rfl) w
+
+/-- (★) for the odd rungs `t (2k+1)`. -/
+theorem starOdd : StarOdd := fun M _ w =>
+  exists_force_chain M oddF (fun k => embed (rnP k).2) (fun _ => rfl) (fun _ => rfl) w
+
+/-! ## From constraint models to finite subframe models, without choice -/
+
+section Transfer
+
+open SubframeModel.CF
+
+/-- `SubframeModel.toConstraint_force` for a `FinDec` model: its one case
+split, on membership in `S`, is decidable there, so no choice enters. -/
+theorem toConstraint_force_fd (M : SubframeModel) [FinDec M] :
+    ∀ (φ : PLLFormula) (x : M.W),
+      ((SubframeModel.toConstraint M).force (some x) φ ↔ M.force x φ) := by
+  intro φ
+  induction φ with
+  | prop a => intro x; exact Iff.rfl
+  | falsePLL =>
+      intro x
+      constructor
+      · intro h
+        cases (show (some x : Option M.W) = none from h)
+      · intro h
+        exact h.elim
+  | and φ ψ ihφ ihψ => intro x; exact and_congr (ihφ x) (ihψ x)
+  | or φ ψ ihφ ihψ => intro x; exact or_congr (ihφ x) (ihψ x)
+  | ifThen φ ψ ihφ ihψ =>
+      intro x
+      constructor
+      · intro h v hxv hφ
+        exact (ihψ v).mp (h (some v) hxv ((ihφ v).mpr hφ))
+      · intro h b hxb hφ
+        cases b with
+        | none => exact (SubframeModel.toConstraint M).force_of_fallible rfl
+        | some v => exact (ihψ v).mpr (h v hxb ((ihφ v).mp hφ))
+  | somehow φ ih =>
+      intro x
+      constructor
+      · intro h v hxv hvS
+        obtain ⟨u, hvu, hu⟩ := h (some v) hxv
+        cases u with
+        | none => exact absurd hvS hvu
+        | some u' =>
+            have hvu' : v = u' := hvu
+            subst hvu'
+            exact (ih v).mp hu
+      · intro h b hxb
+        cases b with
+        | none => exact ⟨none, trivial, (SubframeModel.toConstraint M).force_of_fallible rfl⟩
+        | some v =>
+            rcases Decidable.em (v ∈ M.S) with hvS | hvS
+            · exact ⟨some v, rfl, (ih v).mpr (h v hxb hvS)⟩
+            · exact ⟨none, hvS, (SubframeModel.toConstraint M).force_of_fallible rfl⟩
+
+end Transfer
+
+/-- `ρ j ≤ ρ (j+1)` in a subframe model. -/
+theorem sforce_ρF_succ (M : SubframeModel) {x : M.W} {j : Nat} (h : M.force x (ρF j)) :
+    M.force x (ρF (j + 1)) :=
+  sforce_or_inl M h
+
+/-! ## (d): the greatest lower bound, through the choice-free completeness -/
+
+/-- (d) A common lower bound `y` of the `d (k+2)` is `≤ t7`.  At a world of a
+finite subframe model forcing `y` some `ρ k` holds (★), hence `ρ (k+2)`, and
+`y ≤ d (k+2)` puts `t7` there; `completeness_imp` and `soundness` close. -/
+theorem le_t7_of_le_d : GreatestLowerBound := by
+  intro y
+  induction y using Quotient.ind
+  rename_i a
+  intro hy
+  show Le a.1 t7F
+  have hnd : Nonempty (LaxND [] (a.1 ↠ t7F)) :=
+    SubframeModel.CF.completeness_imp (fun M _ x hx => by
+      obtain ⟨k, hk⟩ := star M x
+      have hk2 : M.force x (ρF (k + 2)) := sforce_ρF_succ M (sforce_ρF_succ M hk)
+      have hd : M.force x (dF (k + 2)) :=
+        (toConstraint_force_fd M _ x).mp
+          (hy k (SubframeModel.toConstraint M) (some x) ((toConstraint_force_fd M _ x).mpr hx))
+      exact hd x (M.refl x) hk2)
+  obtain ⟨p⟩ := hnd
+  intro C w hw
+  exact PLLND.soundness p C w (fun _ hχ => absurd hχ List.not_mem_nil) w (C.refl_i w) hw
+
+/-! ## The two joins -/
+
+/-- `⋁_k ρ k = ⊤`: an upper bound of all `ρ k` holds at every world of every
+finite subframe model, by (★). -/
+theorem supRho : SupRho := by
+  refine ⟨fun y _ => le_top, fun y hy => ?_⟩
+  induction y using Quotient.ind
+  rename_i a
+  show Le (.ifThen .falsePLL .falsePLL) a.1
+  have hnd : Nonempty (LaxND [] a.1) :=
+    SubframeModel.CF.completeness (fun M _ x => by
+      obtain ⟨k, hk⟩ := star M x
+      exact (toConstraint_force_fd M _ x).mp
+        (hy (Set.mem_range_self k) (SubframeModel.toConstraint M) (some x)
+          ((toConstraint_force_fd M _ x).mpr hk)))
+  obtain ⟨p⟩ := hnd
+  intro C w _
+  exact PLLND.soundness p C w (fun _ hχ => absurd hχ List.not_mem_nil)
+
+/-- `⋁_k t (2k+1) = ⊤`. -/
+theorem supOddRungs : SupOddRungs := by
+  refine ⟨fun y _ => le_top, fun y hy => ?_⟩
+  induction y using Quotient.ind
+  rename_i a
+  show Le (.ifThen .falsePLL .falsePLL) a.1
+  have hnd : Nonempty (LaxND [] a.1) :=
+    SubframeModel.CF.completeness (fun M _ x => by
+      obtain ⟨k, hk⟩ := starOdd M x
+      exact (toConstraint_force_fd M _ x).mp
+        (hy (Set.mem_range_self k) (SubframeModel.toConstraint M) (some x)
+          ((toConstraint_force_fd M _ x).mpr hk)))
+  obtain ⟨p⟩ := hnd
+  intro C w _
+  exact PLLND.soundness p C w (fun _ hχ => absurd hχ List.not_mem_nil)
+
+/-! ## (e): `F₇` -/
+
+theorem d_mem_F7 (k : Nat) : d (k + 2) ∈ F7 := ⟨k, le_refl _⟩
+
+/-- `F₇` is a filter: the union of the chain of principal filters `↑(d (k+2))`. -/
+theorem F7_isFilter : F7IsFilter := by
+  refine ⟨⟨d 2, d_mem_F7 0⟩, fun x y ⟨k, hk⟩ hxy => ⟨k, le_trans hk hxy⟩, ?_⟩
+  rintro x y ⟨k₁, h₁⟩ ⟨k₂, h₂⟩
+  refine ⟨max k₁ k₂, le_inf ?_ ?_⟩
+  · exact le_trans (d_le_of_le (Nat.add_le_add_right (Nat.le_max_left k₁ k₂) 2)) h₁
+  · exact le_trans (d_le_of_le (Nat.add_le_add_right (Nat.le_max_right k₁ k₂) 2)) h₂
+
+theorem t7_mem_lowerBounds_F7 : t7 ∈ lowerBounds F7 :=
+  fun _ ⟨_, hk⟩ => le_trans (t7_le_d _) hk
+
+/-- `F₇ˡ = ↓t7`. -/
+theorem lowerBounds_F7 : lowerBounds F7 = Set.Iic t7 := by
+  ext y
+  constructor
+  · intro hy
+    exact le_t7_of_le_d y (fun k => hy (d_mem_F7 k))
+  · intro hy z hz
+    obtain ⟨k, hk⟩ := hz
+    exact le_trans hy (le_trans (t7_le_d _) hk)
+
+/-- The meet of `F₇` is `t7`. -/
+theorem F7_meet : F7Meet :=
+  ⟨t7_mem_lowerBounds_F7, fun y hy => le_t7_of_le_d y (fun k => hy (d_mem_F7 k))⟩
+
+/-- `t7 ∉ F₇`: else `d (k+2) ≤ t7 ≤ d (k+3)`, against (b). -/
+theorem t7_not_mem_F7 : t7 ∉ F7 := fun ⟨k, hk⟩ =>
+  d_not_le (k := k + 2) (by omega) (le_trans hk (t7_le_d (k + 3)))
+
+/-- `F₇` is a proper filter. -/
+theorem bot_not_mem_F7 : (⊥ : RNClass) ∉ F7 := fun h =>
+  t7_not_mem_F7 (F7_isFilter.2.1 _ _ h bot_le)
+
+/-- `F₇ˡᵘ = ↑t7`. -/
+theorem upperBounds_lowerBounds_F7 : upperBounds (lowerBounds F7) = Set.Ici t7 := by
+  rw [lowerBounds_F7]
+  ext y
+  constructor
+  · intro hy
+    exact hy (Set.mem_Iic.mpr (le_refl t7))
+  · intro hy z hz
+    exact le_trans (Set.mem_Iic.mp hz) hy
+
+/-- **`F₇` is not normal**: `t7 ∈ F₇ˡᵘ`, `t7 ∉ F₇`. -/
+theorem F7_not_normal : F7NotNormal := by
+  intro h
+  have ht : t7 ∈ F7 := by
+    rw [← h, upperBounds_lowerBounds_F7]
+    exact Set.self_mem_Ici
+  exact t7_not_mem_F7 ht
+
+/-- `F₇` is not principal: a least element would be some `d (k+2)`, but
+`d (k+3) ∈ F₇` lies strictly below it. -/
+theorem F7_nonPrincipal : F7NonPrincipal := by
+  intro m hm
+  have hm_mem : m ∈ F7 := by
+    rw [hm]
+    exact Set.self_mem_Ici
+  obtain ⟨k, hk⟩ := hm_mem
+  have h3 : d (k + 3) ∈ F7 := d_mem_F7 (k + 1)
+  rw [hm] at h3
+  exact d_not_le (k := k + 2) (by omega) (le_trans hk h3)
+
+/-! ## The theorems, under their statement names -/
+
+/-- **F0 has a filter that is not normal.** -/
+theorem notAllNormal : NotAllNormal := ⟨F7, F7_isFilter, F7_not_normal⟩
+
+theorem descending : Descending := d_anti
+theorem strictlyDescending : StrictlyDescending := fun _ hk => d_not_le hk
+theorem lowerBound : LowerBound := t7_le_d
+theorem greatestLowerBound : GreatestLowerBound := le_t7_of_le_d
+
 end Normal
 end F0
 end PLLND
+
+/-! ## Axiom pins -/
+
+#axioms_within PLLND.F0.Normal.force_d_x [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.force_ρ_succ_x [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.star [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.starOdd [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.toConstraint_force_fd [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.supRho [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.supOddRungs [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.descending [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.strictlyDescending [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.lowerBound [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.greatestLowerBound [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.F7_isFilter [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.F7_meet [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.F7_nonPrincipal [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.bot_not_mem_F7 [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.F7_not_normal [propext, Quot.sound]
+#axioms_within PLLND.F0.Normal.notAllNormal [propext, Quot.sound]
