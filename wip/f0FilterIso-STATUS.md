@@ -62,3 +62,27 @@ the checkpoint report.
 
 Not done: the ◯-free instance (Rieger–Nishimura: `[p, ⊤] ≅ RN` by the shift
 `tₙ ↦ tₙ₊₂`, a YES answer) is a pen remark only.
+
+## 2026-10-25 18:05 GMT: round 2 (after PR #92 at 72871ff)
+
+Commits on top of `72871ff` only; nothing rewritten, nothing pushed.
+
+PROVED (pins in the file, each watched failing at a tighter set,
+`_out/pinwatch3.lean`, 30 failures as expected):
+
+* Transport (§9): for `f : F0 ≃o [p, ⊤]`, `iso_split` (`[p,⊤] = {p,d} ∪ ↑a`),
+  `iso_split_a` (`↑a = {a,d₄} ∪ ↑a₃`), `iso_cover`, `iso_prime`,
+  `iso_himp` (an order isomorphism onto `[p,⊤]` carries `⇨`), `Di_himp`
+  (`d ⇨ p = d₄`), `D4i_himp` (`d₄ ⇨ p = d`).  `[propext, Quot.sound]`.
+* `obstructionA : ObstructionA`, as stated, `[propext]`: one new root below a
+  `d`-world, its only `Rₘ`-successor itself (`RootExt`).
+* `iso_cases` (every `p`, no density): `◯p = p ∨ ◯p = d ∨ ◯p = d₄ ∨
+  (◯p = a ∧ ◯d₄ = d₄)`; the shapes `case_d_shape`, `case_d4_shape`,
+  `case_a_shape`.
+* Cells: `C1n_filter_not_iso n` (`σⁿ(c1)`, dense and `◯`-fixed, case (i)
+  realised, refuted by three pairwise disjoint elements, every `n`);
+  `t5_filter_not_iso`; `box_t3_not_meetPrime`, `box_t5_not_cover` (case ii);
+  `gap_t3_not_cover` (case iii); `box_t3_not_bigAtom`, `box_t5_not_bigAtom`
+  (case iv).  Semantic A-translation: `subBot_le`, `sigN_le` (`[propext]`).
+
+OPEN: `DenseResidue` in each of the four cases.  Skipped: the cell `g1`.

@@ -46,11 +46,18 @@ countermodels of `wip/f0NotIso.lean` serve every `n`; no completeness theorem.
 `p = c1 = ◯t3 = σ(t1)`, `◯`-fixed like `t1`: `[c1, ⊤]` has three pairwise
 disjoint elements (`c1_filter_not_iso`).
 
-## What remains (OPEN)
+## Any isomorphism, and what remains (PROVED / OPEN)
 
-`DenseResidue` for the other dense `p`.  The proposed next statement is
-`ObstructionA` (§8, a `Prop`, not proved here): if `d` covers `p` and is
-meet-prime, then `◯d ⊢ d` or `◯(d ↠ p) ⊢ d ↠ p`.
+`ObstructionA` (§8) is PROVED (`obstructionA`, §10, one root construction):
+if `d` covers `p` and is meet-prime, then `◯d ⊢ d` or `◯(d ↠ p) ⊢ d ↠ p`.
+Transport (§9) and `iso_cases` (§11), for any `f : F0 ≃o [p, ⊤]`, with
+`a = f(◯⊥)`, `d = f(¬◯⊥)`, `d₄ = f(t4)`:
+
+    ◯p = p  ∨  ◯p = d  ∨  ◯p = d₄  ∨  (◯p = a ∧ ◯d₄ = d₄).
+
+`DenseResidue` is OPEN in each of the four cases; the cells of §12 (`σⁿ(c1)`
+for every `n`, `t3`, `t5`) fail each case shape, or realise case (i) and are
+refuted otherwise.
 
 Pins: `[propext, Quot.sound]` for the cells and the reduction; tighter where
 the declaration needs less (each pin watched failing at a tighter set).
@@ -888,7 +895,7 @@ theorem c1_ici_no_core : ¬ HasCore (Set.Ici C1) :=
 theorem c1_filter_not_iso : ¬ Nonempty (Set.Ici C1 ≃o RNClass) :=
   fun ⟨f⟩ => c1_ici_no_core (hasCore_of_iso f NotIso.rnclass_core)
 
-/-! ## 8. The proposed next statement (OPEN, not proved here)
+/-! ## 8. Obstruction A: the statement (proved in §10)
 
 If `[p, ⊤] ≅ F0` by `f`, put `a = f(◯⊥)`, `d = f(¬◯⊥)`, `d₄ = f(t4) = d ↠ p`.
 Transported from F0: `[p, ⊤] = {p, d} ∪ ↑a`, so `d` covers `p` and is
@@ -896,7 +903,7 @@ meet-prime (two elements not below `d` join with `p` above `a`).  The
 statement below then gives `◯d ⊢ d` or `◯d₄ ⊢ d₄`.  In F0 itself (`p = ⊥`)
 the second holds: `◯¬¬◯⊥ ⊢ ¬¬◯⊥` (`pen_nn_closed`), and `◯¬◯⊥ ⊬ ¬◯⊥`. -/
 
-/-- **Obstruction A** (OPEN; proposed).  For `d` covering `p`, meet-prime
+/-- **Obstruction A** (PROVED in §10, `obstructionA`).  For `d` covering `p`, meet-prime
 (stated negatively, as it is obtained), with `d₄ = d ↠ p`:
 
     ¬ (◯d ⊢ d)  and  ¬ (◯d₄ ⊢ d₄)   is impossible.
