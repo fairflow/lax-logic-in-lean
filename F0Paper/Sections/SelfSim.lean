@@ -73,7 +73,7 @@ $`h_{\sigma^{n}(\bot), \top}(\varphi) \dashv\vdash \sigma^{n}(\varphi)`).
 {leanStmt Sig.copies_strict}
 
 On the rungs, $`\sigma(t_n) \dashv\vdash \mathrm{rel}(r_n)`, so the chain below the
-sixth rung (Section 9) is the image of the ladder under $`\sigma`.  PROVED.
+sixth rung (Section 8) is the image of the ladder under $`\sigma`.  PROVED.
 
 {stmt}`Sig.sig_ladder`
 
@@ -127,7 +127,8 @@ the pairs $`(c_1, g_1)`, where $`c_1 = \bigcirc t_3`, and $`(t_5, t_6)` are
 disjoint and share no member (`two_disjoint_pairs_above_t3`).  A member lying
 in every disjoint pair (`HasCore`) is carried across an order isomorphism
 (`hasCore_of_iso`); $`F_0` has one (`rnclass_core`), $`[t_3, \top]` has none
-(`ici_no_core`).  PROVED, so the order isomorphism is REFUTED.
+(`ici_no_core`).  PROVED, so the order isomorphism is REFUTED.  Section 10
+asks the same question of the other filters.
 
 {stmt}`NotIso.t3_filter_not_iso`
 

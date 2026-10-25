@@ -12,14 +12,15 @@ import SemPaper.Sections.Open
 import SemPaper.Sections.References
 import CLPPaper.Src
 import CLPPaper.Layout
+import PaperKit.Stamp
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper
+open CLPPaper PaperKit.Stamp
 
 #doc (Manual) "Semantics and Decision for PLL" =>
 
-{buildStamp}`SemPaper/VERSION`
+{paperStamp (number := "I") (name := "Semantics")}`SemPaper/VERSION`
 
 {texSetup}
 

@@ -112,7 +112,7 @@ free distributive lattice of the odd gaps (`indep`, `lpoly_deriv_iff`) one-to-on
 into $`[p, q]`; 3 implies 2 by the dyadic construction of Section 5, and level 3
 gives countably many pairwise $`\parallel` threads by that of Section 7, both
 mechanised for the odd gaps only; level 1 excludes level 2.  For every $`n` the
-interval $`[\sigma^{n}(\bot), \top]` is at level 4 (Section 10):
+interval $`[\sigma^{n}(\bot), \top]` is at level 4 (Section 9):
 $`h_{\sigma^{n}(\bot), \top}(\varphi) \dashv\vdash \sigma^{n}(\varphi)`, by the
 pen identity $`\sigma^{n}(\varphi) = \varphi[\bot := \sigma^{n}(\bot)]`, and
 $`\sigma^{n}` is one-to-one by `sigN_faithful`.

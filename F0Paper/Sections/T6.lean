@@ -32,7 +32,7 @@ $`\lnot\lnot p = p` has five elements (textbook, not mechanised), so an infinite
 family below $`t_6` must use $`\bigcirc` beyond $`p := \bigcirc\bot`.  It does:
 $`u = \bigcirc\lnot\bigcirc\bot` lies above $`t_3` (`t3_le_u`), and reading $`p`
 as $`u` and $`\bot` as $`t_3` (`rel`) turns the Rieger–Nishimura rungs into a ladder
-in $`[t_3, \top]`; Section 10 shows that it is the image of the rungs under
+in $`[t_3, \top]`; Section 9 shows that it is the image of the rungs under
 $`\sigma`.  The chain $`x_k = \mathrm{rel}(r_{2k+1}) \land t_6` is strictly
 increasing below $`t_6`.  PROVED, on a countermodel: the Rieger–Nishimura ladder
 under three top worlds, where $`u` holds on the ladder exactly at world $`0`, as
