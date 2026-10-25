@@ -21,7 +21,7 @@ p = sys.argv[1]; s = open(p, encoding='utf-8').read()
 s = s.replace(r'\setmonofont{DejaVu Sans Mono}',
   r'\setmonofont{DejaVuSansMono}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold, '
   r'ItalicFont=*-Oblique, BoldItalicFont=*-BoldOblique]')
-fallback = '◯ℚ⊨⊫⋃⋂⋁⊬⊢⊣⊤⊥∧∨⊃≥≤∀∃⟹⟺⇝⋆⋖⋀ℕ∈⊓'   # ⋖⋀ℕ∈⊓: the F0 paper (2026-10-22)
+fallback = '◯ℚ⊨⊫⋃⋂⋁⊬⊢⊣⊤⊥∧∨⊃≥≤∀∃⟹⟺⇝⋆⋖⋀ℕ∈⊓⊔'   # ⋖⋀ℕ∈⊓: the F0 paper (2026-10-22); ⊔: the semantics paper (2026-10-25)
 fallback2 = '⨅'   # not in DejaVu Sans; STIX Two Math has it (the F0 paper, 2026-10-22)
 extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold]' '\n'
   + r'\newfontfamily\symbolfontb{STIXTwoMath-Regular}[Extension=.otf]' '\n'

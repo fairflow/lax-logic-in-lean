@@ -531,6 +531,26 @@ partial def semCase? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := d
     return some (wrap 5 ((← form st 1 a) ++ " \\models " ++ (← form st 1 b)))
   | (``PLLND.LaxInfinite.LaxEquiv, #[a, b]) =>
     return some (wrap 5 ((← form st 1 a) ++ " \\equiv " ++ (← form st 1 b)))
+  -- the Esakia dual (`wip/esakiaNuclearGen.lean`) and the sets it is made of
+  | (`EsakiaNuclear.Gen.phi, #[_, _, a]) => return some ("\\varphi(" ++ (← generic st 0 a) ++ ")")
+  | (`EsakiaNuclear.Gen.Nj, #[_, _, j]) => return some ("N_{" ++ (← generic st 0 j) ++ "}")
+  | (`EsakiaNuclear.Gen.Spec, #[A, _]) => return some ("X_{" ++ (← generic st 0 A) ++ "}")
+  | (`EsakiaNuclear.Gen.IsNuclear, #[_, _, _, N]) =>
+    return some (wrap 5 ((← generic st 6 N) ++ "\\ \\text{nuclear}"))
+  | (`IsClosed, #[_, _, s]) => return some (wrap 5 ((← generic st 6 s) ++ "\\ \\text{closed}"))
+  | (`IsClopen, #[_, _, s]) => return some (wrap 5 ((← generic st 6 s) ++ "\\ \\text{clopen}"))
+  | (`lowerClosure, #[_, _, s]) => return some ("{\\downarrow}" ++ (← generic st 9 s))
+  | (`SetLike.coe, #[_, _, _, s]) => return some (← generic st p s)
+  | (`HasCompl.compl, #[_, _, s]) | (`Compl.compl, #[_, _, s]) =>
+    return some ((← generic st 9 s) ++ "^{c}")
+  | (`SDiff.sdiff, #[_, _, a, b]) =>
+    return some (wrap 6 ((← generic st 6 a) ++ " \\setminus " ++ (← generic st 7 b)))
+  | (`Inter.inter, #[_, _, a, b]) =>
+    return some (wrap 6 ((← generic st 6 a) ++ " \\cap " ++ (← generic st 7 b)))
+  | (`Union.union, #[_, _, a, b]) =>
+    return some (wrap 6 ((← generic st 6 a) ++ " \\cup " ++ (← generic st 7 b)))
+  | (`HasSubset.Subset, #[_, _, a, b]) =>
+    return some (wrap 5 ((← generic st 6 a) ++ " \\subseteq " ++ (← generic st 6 b)))
   | _ => return none
 
 /-- Propositions, terms and everything else. -/

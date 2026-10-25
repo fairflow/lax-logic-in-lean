@@ -8,8 +8,12 @@ open Verso.Genre.Manual
 
 Each question below is OPEN.
 
-* _Esakia duality for Heyting algebras with a nucleus_, and the place of the
-  subframe models in the dual (Section 8).
+* _Constructive proofs of R3a and R3b_ (Section 8): the proofs of R3a,
+  direction $`\Rightarrow`, and of R3b use excluded middle; R1, R3c and R4 provably cannot be proved without it.
+* _Removing the extra uses of excluded middle_ in the general case of
+  Section 8: those beyond the prime filter theorem and Alexander's subbasis
+  theorem, the choice of the value $`j_N(a)`, and Mathlib's
+  `IsCompact.elim_finite_subcover`.
 * _Does the compiled producer of the tableau terminate on every formula?_  The
   argument is a pen argument (along a branch the set of true formulas grows at
   least every second step); the proof of the dichotomy is about a different,

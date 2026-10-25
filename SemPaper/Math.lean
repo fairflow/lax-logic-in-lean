@@ -3,7 +3,8 @@ The environment of the semantics paper, "Semantics and decision for PLL", for `{
 and the tables: the shared notation table (`PaperKit/Math.lean`; the
 sections set `paperkit.notation` to `"sem"`) and the modules whose
 declarations the paper displays.  All are library modules except
-`wip.f0Nuclear`, where F0's Heyting algebra and nucleus are proved.
+`wip.f0Nuclear`, where F0's Heyting algebra and nucleus are proved, and the
+`wip.esakiaNuclear*` modules of the duality (v0.2).
 -/
 import PaperKit.Math
 import LaxLogic.PLL.ND.NDCore
@@ -23,3 +24,9 @@ import FRJ.Gbu.W.LaxND
 import FRJ.Gbu.W.Saturate
 import LaxLogic.ClosedFragmentLattice
 import wip.f0Nuclear
+import wip.esakiaNuclearFinProofs
+import wip.esakiaNuclearFinProofs2
+import wip.esakiaNuclearFinProofs3
+import wip.esakiaNuclearBridgeProofs
+import wip.esakiaNuclearGenProofs
+import wip.esakiaNuclearCells

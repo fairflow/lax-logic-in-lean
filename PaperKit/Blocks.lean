@@ -4,6 +4,8 @@ F0 paper v0.3, 2026-10-23, and v0.4; factored out of `F0Paper/Blocks.lean`
 on 2026-10-24 for the semantics paper, `SemPaper/`, without changing the F0 paper's
 output):
 
+* `{leanDef Name}`: the content of a definition, `Name xs := value`, as a
+  further small line beneath the statement of a theorem that proves it.
 * `{leanStmt Name}`: the checked Lean statement of a declaration, beneath its
   displayed formula.  It is Lean's pretty-printing of the compiled declaration
   (`ppSignature`, under the document's `open` lines), with its source link.
@@ -134,12 +136,39 @@ def leanStmt : BlockCommandOf NameConfig
     let js := (ToJson.toJson d).compress
     `(Verso.Doc.Block.other {Block.f0Lean with data := (Json.parse $(quote js)).toOption.getD Json.null} #[])
 
+/-- (one line, at 90 columns) `N xs := value` for a definition `N`, binder
+types omitted: Lean's pretty-printing of its compiled value. -/
+def defLine (n : Name) : MetaM (String × String) := do
+  let some (.defnInfo dv) := (← getEnv).find? n
+    | throwError "leanDef: {n} is not a definition"
+  withOptions (fun o => (o.setBool `pp.piBinderTypes false).setBool `pp.funBinderTypes false) <|
+    lambdaTelescope dv.value fun xs body => do
+      let l ← ppExpr (mkAppN (mkConst n (dv.levelParams.map mkLevelParam)) xs)
+      let r ← ppExpr body
+      let f := l ++ Std.Format.text " :=" ++ Std.Format.nest 2 (Std.Format.line ++ r)
+      let flat := " ".intercalate ((f.pretty 100000).splitOn "\n" |>.map (·.trimAscii.copy))
+      pure (flat, (Std.Format.group f).pretty 90)
+
+/-- The content of a definition, as a further small line beneath a theorem
+that proves it (`F1 := ∀ H, …`), with its source link (the semantics
+paper, v0.2). -/
+@[block_command]
+def leanDef : BlockCommandOf NameConfig
+  | ⟨(_, n)⟩ => do
+    let (flat, wide) ← defLine n
+    let (path, line, label) ← srcInfo n
+    let d : LeanStmtData := (flat, wide, label, path, line)
+    let js := (ToJson.toJson d).compress
+    `(Verso.Doc.Block.other {Block.f0Lean with data := (Json.parse $(quote js)).toOption.getD Json.null} #[])
+
 /-! ## The table of supporting declarations -/
 
-/-- (name, the formula as items set one after another, label, path, line)
-per row: a definition by cases has an item per case, a line break allowed
-between items (`PaperKit.Math.stmtFlat`). -/
-abbrev LemmaRow := String × List String × String × String × Nat
+/-- (name, the formula as items set one after another, label, path, line,
+wide) per row: a definition by cases has an item per case, a line break
+allowed between items (`PaperKit.Math.stmtFlat`).  `wide` (the semantics
+paper, whose module names are long) widens the label column and lets a label
+break before its line number; the F0 paper's tables are unchanged. -/
+abbrev LemmaRow := String × List String × String × String × Nat × Bool
 
 block_extension Block.f0Lemmas where
   traverse _ _ _ := pure none
@@ -148,23 +177,29 @@ block_extension Block.f0Lemmas where
     | .error e => do reportError s!"lemmaTable: bad data: {e}"; pure .empty
     | .ok rows =>
       let mut body := ""
-      for (nm, f, label, path, line) in rows do
+      let wide := rows.any fun (_, _, _, _, _, w) => w
+      for (nm, f, label, path, line, w) in rows do
         let url ← (srcUrl path line : IO String)
+        let lab := if w then (texName label).replace ":" "\\allowbreak{}:" else texName label
         body := body ++ "\\texttt{" ++ texName nm ++ "} & " ++
           -- items apart by a stretchable space, where a line may break
           "\\hskip 0.7em plus 0.4em\\relax ".intercalate (f.map fun s => "$" ++ s ++ "$") ++
-          " & \\oldhref{" ++ texUrl url ++ "}{\\texttt{" ++ texName label ++ "}}\\\\\n"
+          " & \\oldhref{" ++ texUrl url ++ "}{\\texttt{" ++ lab ++ "}}\\\\\n"
+      let cols := if wide then
+          "\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.21\\linewidth}" ++
+          ">{\\raggedright\\arraybackslash}p{0.48\\linewidth}>{\\raggedleft\\arraybackslash}p{0.27\\linewidth}@{}}\n"
+        else
+          "\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.25\\linewidth}" ++
+          ">{\\raggedright\\arraybackslash}p{0.57\\linewidth}>{\\raggedleft\\arraybackslash}p{0.14\\linewidth}@{}}\n"
       pure <| .raw ("\\par\\begingroup\\footnotesize\\setlength{\\LTpre}{4pt}\\setlength{\\LTpost}{4pt}" ++
-        "\\def\\arraystretch{1.2}" ++
-        "\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.25\\linewidth}" ++
-        ">{\\raggedright\\arraybackslash}p{0.57\\linewidth}>{\\raggedleft\\arraybackslash}p{0.14\\linewidth}@{}}\n" ++
+        "\\def\\arraystretch{1.2}" ++ cols ++
         "\\hline\n" ++ body ++ "\\hline\n\\end{longtable}\\endgroup\\par ")
   toHtml := some <| fun _ _ _ data _ => do
     match FromJson.fromJson? (α := Array LemmaRow) data with
     | .error e => do reportError s!"lemmaTable: bad data: {e}"; pure .empty
     | .ok rows =>
       let mut trs : Array Html := #[]
-      for (nm, f, label, path, line) in rows do
+      for (nm, f, label, path, line, _) in rows do
         let url ← (srcUrl path line : IO String)
         let mut cells : Array Html := #[]
         for s in f do
@@ -197,7 +232,8 @@ def lemmaTable : BlockCommandOf NamesConfig
       if f.isEmpty || f.any (·.trimAscii.isEmpty) then
         throwError "lemmaTable: {n} prints as empty"
       let (path, line, label) ← srcInfo n
-      rows := rows.push (← shortName n, f, label, path, line)
+      let wide := PaperKit.Math.paperkit.notation.get (← getOptions) == "sem"
+      rows := rows.push (← shortName n, f, label, path, line, wide)
     let js := (ToJson.toJson rows).compress
     `(Verso.Doc.Block.other {Block.f0Lemmas with data := (Json.parse $(quote js)).toOption.getD Json.null} #[])
 
