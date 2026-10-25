@@ -12,6 +12,8 @@ import wip.f0Rat
 import wip.f0Minkowski
 import wip.f0Nuclear
 import wip.f0MacNeilleNonUnique
+import wip.f0MacNeillePoints
+import wip.f0FilterIso
 import wip.f0Structure
 import wip.f0Hole
 import wip.f0SelfSim

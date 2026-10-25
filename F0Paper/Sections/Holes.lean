@@ -28,7 +28,7 @@ high enough world, since it fails where $`g_{m+1}` fails on the edged lift
 $`\mathcal{E}_m` and the two models agree on it at world $`m + 3` past some
 level.  A greatest lower bound would lie above every $`W_b`, so its truth set
 would be unbounded: impossible.  A second unfilled cut is in Section 7;
-Section 8 extends $`\bigcirc` to the completion.
+Section 11 fills both in the Dedekind–MacNeille completion.
 
 # Supporting declarations
 

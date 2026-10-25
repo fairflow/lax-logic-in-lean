@@ -553,6 +553,54 @@ partial def semCase? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := d
     return some (wrap 5 ((← generic st 6 a) ++ " \\subseteq " ++ (← generic st 6 b)))
   | _ => return none
 
+/-- The cases added for the F0 paper's v0.5 (2026-10-25: the filters
+`[p, ⊤]` of `wip/f0FilterIso.lean`, the points of the completion in
+`wip/f0MacNeillePoints.lean`), in force only under the F0 paper's notation
+(`"f0"`), so that the semantics paper's output does not change. -/
+partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
+  let wrap (q : Nat) (s : String) := if q < p then paren s else s
+  match e.getAppFnArgs with
+  -- an element of a filter `[p, ⊤]` is written as the element of F0 it is
+  | (``Subtype.val, #[_, _, a]) => return some (← generic st p a)
+  | (``Subtype.mk, #[_, _, v, _]) => return some (← generic st p v)
+  -- the Heyting negation `x ⇒ ⊥`
+  | (`HasCompl.compl, #[_, _, a]) | (`Compl.compl, #[_, _, a]) =>
+    return some (wrap 4 ("\\lnot " ++ (← generic st 9 a)))
+  -- the semantic order of formulas: every world forcing `a` forces `b`
+  | (``PLLND.LaxInfinite.Le, #[a, b]) =>
+    return some (wrap 5 ((← form st 1 a) ++ " \\models " ++ (← form st 1 b)))
+  -- the completion of F0, its implication, cardinals, the reals
+  | (`DedekindCut, #[a, _]) =>
+    if a.consumeMData.isConstOf ``PLLND.RNClass then return some "F^{*}" else return none
+  | (`MacNeille.cutHimp, #[_, _, x, y]) =>
+    return some (wrap 6 s!"{← generic st 7 x} \\Rightarrow {← generic st 7 y}")
+  | (`Cardinal.mk, #[a]) => return some ("|" ++ (← generic st 0 a) ++ "|")
+  | (`Cardinal.continuum, #[]) => return some "2^{\\aleph_0}"
+  | (``Function.Injective, #[_, _, f]) =>
+    return some (wrap 5 ((← generic st 9 f) ++ "\\ \\text{is one-to-one}"))
+  | (`Rat.cast, #[_, _, q]) => return some (← generic st p q)
+  | (`Real, #[]) => return some "\\mathbb{R}"
+  -- `wip/f0MacNeillePoints.lean`
+  | (`PLLND.F0.Points.cl, #[φ, _]) => return some (← form st p φ)
+  | (`PLLND.F0.Points.fq, #[]) => return some "f'"
+  | (`PLLND.F0.Points.fq, #[q]) => return some ("f'(" ++ (← generic st 0 q) ++ ")")
+  | (`PLLND.F0.Points.X, #[]) => return some "X"
+  | (`PLLND.F0.Points.X, #[r]) => return some ("X_{" ++ (← generic st 0 r) ++ "}")
+  | (`PLLND.F0.Points.gapCut, #[]) => return some "x_{\\mathrm{gap}}"
+  | (`PLLND.F0.Points.gaps, #[]) => return some "\\mathcal{G}"
+  -- `wip/f0FilterIso.lean`: the classes of the bottom of F0, and the case shapes
+  | (`PLLND.F0.FilterIso.E, #[]) => return some "t_{1}"
+  | (`PLLND.F0.FilterIso.NE, #[]) => return some "t_{2}"
+  | (`PLLND.F0.FilterIso.T4c, #[]) => return some "t_{4}"
+  | (`PLLND.F0.FilterIso.T5c, #[]) => return some "t_{5}"
+  | (`PLLND.F0.FilterIso.C1, #[]) => return some "c_{1}"
+  | (`PLLND.F0.FilterIso.C1n, #[n]) => return some ("\\sigma^{" ++ (← generic st 0 n) ++ "}(c_{1})")
+  | (`PLLND.F0.FilterIso.CoversC, #[u, v]) =>
+    return some (wrap 5 ((← generic st 6 u) ++ " \\lessdot " ++ (← generic st 6 v)))
+  | (`PLLND.F0.FilterIso.MeetPrime, #[x]) =>
+    return some (wrap 5 ((← generic st 6 x) ++ "\\ \\text{meet-prime}"))
+  | _ => return none
+
 /-- Propositions, terms and everything else. -/
 partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   let st := {st0 with nested := true}
@@ -568,6 +616,8 @@ partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
   -- the cases of the semantics paper, when its notation is in force
   if paperkit.notation.get (← getOptions) == "sem" then
     if let some s ← semCase? st p e then return s
+  if paperkit.notation.get (← getOptions) == "f0" then
+    if let some s ← f0Case? st p e then return s
   match e with
   | .fvar id =>
     let d ← id.getDecl
