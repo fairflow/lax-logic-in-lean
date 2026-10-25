@@ -15,6 +15,11 @@ open Verso.Genre
 open Verso.Genre.Manual
 open CLPPaper.Cite
 
+-- The list below is read from `docs/references.bib` when this module is
+-- elaborated, and Lake does not track that file: after a change to the
+-- bibliography, edit this line so that the list is read again.
+-- Last bibliography change: 2026-10-25 (BezhanishviliEtAlDiego2021: pages, doi).
+
 #doc (Manual) "References" =>
 
 Every work cited above, from the repository's master bibliography
