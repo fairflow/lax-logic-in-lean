@@ -18,6 +18,7 @@ for p in \
   tools/Cover.lean \
   tools/RNDBExport.lean \
   tools/F0/ExplorerGen.lean \
+  scripts/f0explorer \
   scripts/rndb_audit.py \
   tools/rho-hasse-svg.py \
   tools/Cert.lean \
