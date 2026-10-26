@@ -326,8 +326,8 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
   <div class="title-row">
     <h1>F0 explorer</h1>
     <div class="controls">
-      <label class="switch" title="Mark the classes with a known ∨-free member">
-        <input type="checkbox" id="vf-toggle" aria-label="∨-free: mark classes with a known ∨-free member">
+      <label class="switch" title="Mark classes with a known ∨-free member">
+        <input type="checkbox" id="vf-toggle" aria-label="Mark classes with a known ∨-free member">
         <span class="switch-track" aria-hidden="true"></span>
         <span class="switch-label">∨-free</span>
       </label>
@@ -335,7 +335,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
     </div>
   </div>
   <p class="stamp" id="stamp"></p>
-  <p class="vf-caption" id="vf-caption" hidden>Marked: classes with a <strong>known</strong> ∨-free member. A lower bound: other classes may have ∨-free members not yet found.</p>
+  <p class="vf-caption" id="vf-caption" hidden>Marked: classes with a <strong>known</strong> ∨-free member (a lower bound).</p>
   <nav class="tabs" role="tablist" aria-label="Views">
     <button type="button" role="tab" data-view="order" aria-selected="true">Order</button>
     <button type="button" role="tab" data-view="pairs" aria-selected="false">Pairs</button>
@@ -591,18 +591,18 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
     const domain = FAMS.filter((f) => Array.isArray(f.indices) && f.family !== 'bot' && f.family !== 'top' && f.indices.length)
       .map((f) => `${esc(f.family)}${esc(Math.min(...f.indices))}…${esc(f.family)}${esc(Math.max(...f.indices))}`).join(', ');
     $('about-body').innerHTML =
-      `<p>F0 is the variable-free fragment of propositional lax logic (PLL). This page shows R, the classes of F0 in the
-      current database, ordered by derivability (u below v when [u] ⊢ v), and the tables of ∧, ∨, ↠ and ◯ on R.
-      Hover over a class for its letter name's definition, its minimal form and its weight (◯-depth, size, ◯-scope);
-      click a class, an edge, a pair or a table cell for its Lean theorems and, for ⊬, the countermodel.</p>
+      `<p>F0 is the variable-free fragment of propositional lax logic (PLL). The page shows the frontier, the classes
+      of F0 whose pairwise order is all certified, ordered by derivability (u below v when [u] ⊢ v), with the tables
+      of ∧, ∨, ↠ and ◯. Hover over a class for its definition, minimal form and weight (◯-depth, size, ◯-scope);
+      click a class, edge, pair or cell for its Lean theorems and, for ⊬, the countermodel.</p>
       <p>The RN embedding substitutes ◯⊥ for p in the Rieger–Nishimura formulas rn n of one-variable intuitionistic
-      logic. The families: ${defs}. A class is named by its preferred certified membership (families in the order
-      ${order}, then the smallest index; searched over ${domain}); a class with none takes a compound name x ∘ y over
-      family-named classes, certified by two bridge facts. Names are written in words (lax rung 1), with the letter
-      name (c1) beside them; a name of a textbook shape also carries a nickname.</p>
-      <p>∉R marks a result certified distinct from every class of R; it may still carry a family name. Unknown marks
-      a fact not yet decided. Each fact shown is a Lean theorem, pinned at ${esc(META.pins || '(pins not stated)')}.
-      The ∨-free switch marks the classes with a known ∨-free member: a lower bound.</p>`;
+      logic. The families: ${defs}. A class takes its first certified family name (order ${order}, then the smallest
+      index; searched over ${domain}), else a compound name x ∘ y over named classes, certified by two bridge facts.
+      Textbook shapes also carry a nickname.</p>
+      <p>Beyond the frontier: certified distinct from every class of the frontier (it may still have a family name).
+      Unknown: not yet decided. Every fact shown is a Lean theorem pinned at ${esc(META.pins || '(pins not stated)')}.
+      Results on the whole of F0 (the elements not above t3, filters, the completion F*) are in Paper III,
+      <em>The Order of F0</em>.</p>`;
   }
 
   // ------------------------------------------------------------ views
@@ -616,28 +616,28 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
   }
 
   function shelf() {
-    let h = '<div class="shelf"><h3>Outside R</h3>';
+    let h = '<div class="shelf"><h3>Beyond the frontier</h3>';
     const names = [...outside.keys()].sort((a, b) => cmp(strKey(a), strKey(b)) || (a < b ? -1 : a > b ? 1 : 0));
     if (outside.size) h += `<div class="chips">${names.map(oref).join('')}</div>`;
-    else h += '<p class="small muted">No named class outside R in this data.</p>';
+    else h += '<p class="small muted">None named in this data.</p>';
     const b = D.boundary || {};
     let outCells = 0, unnamedOut = 0;
     for (const c of D.ops) if (opKind(c) === 'out') { outCells++; if (c.result_name == null) unnamedOut++; }
-    h += `<p class="small muted">∉R cells in the tables: ${esc(b.notR ?? outCells)}; without a name in the data: ${unnamedOut}.
-      Unknown cells: ${esc(b.unknown ?? 0)}.</p></div>`;
+    h += `<p class="small muted">Table cells beyond the frontier: ${esc(b.notR ?? outCells)}, ${unnamedOut} of them unnamed;
+      unknown: ${esc(b.unknown ?? 0)}.</p></div>`;
     return h;
   }
 
   function renderOrder() {
     const t = orderTally();
-    let h = `<div class="view-head"><h2>The order of R</h2></div>`;
+    let h = `<div class="view-head"><h2>The frontier</h2></div>`;
     if (!covers.length) {
       h += '<p class="empty">No covers in the data (the order is not fully certified), so no diagram is drawn.</p>';
     } else {
       const W = LAY.width, H = LAY.height;
-      let s = `<div class="diagram-wrap"><svg class="diagram" viewBox="0 0 ${W} ${H}" role="group" aria-label="Hasse diagram of R">`;
+      let s = `<div class="diagram-wrap"><svg class="diagram" viewBox="0 0 ${W} ${H}" role="group" aria-label="Hasse diagram of the frontier">`;
       s += `<rect class="frame" x="3" y="3" width="${W - 6}" height="${H - 6}" rx="10"></rect>`;
-      s += `<text class="frame-label" x="14" y="21">R · ${N} classes</text>`;
+      s += `<text class="frame-label" x="14" y="21">${N} classes · ${esc(D.generated)}</text>`;
       const hh = (p) => (p.h || 24) / 2;
       for (const [a, b] of covers) {
         const p = LAY.nodes[a], q = LAY.nodes[b];
@@ -662,11 +662,8 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
       s += '</svg></div>';
       h += s;
     }
-    h += `<p class="tally">Order of R: ${t.le} cells [u] ⊢ v · ${t.nle} cells [u] ⊬ v · ${t.unk} unknown · ${covers.length} covers drawn
-      (each edge u ⋖ v: nothing of R strictly between).</p>`;
-    h += `<p class="tally">${stampText()}</p>`;
-    h += `<div class="legend"><span>click a node for its class, an edge for its two certificates</span>
-      <span><i class="sw vf"></i>known ∨-free member (switch on)</span></div>`;
+    h += `<p class="tally">${t.le} [u] ⊢ v · ${t.nle} [u] ⊬ v · ${t.unk} unknown · ${covers.length} covers u ⋖ v (no class of the
+      frontier strictly between). Click a node or an edge for its certificates.</p>`;
     h += shelf();
     return h;
   }
@@ -696,7 +693,6 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
 
   function renderPairs() {
     const ax = axis();
-    const t = orderTally();
     let h = `<div class="view-head"><h2>Pairs: [row] ⊢ column?</h2>${sortControl()}</div>`;
     h += `<div class="grid-wrap"><table class="grid">${gridHead(ax, '⊢?')}<tbody>`;
     for (const a of ax) {
@@ -711,9 +707,8 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
       h += '</tr>';
     }
     h += '</tbody></table></div>';
-    h += `<div class="legend"><span><i class="sw le"></i>⊢ certified</span><span><i class="sw nle"></i>⊬ certified (countermodel)</span>
-      <span><i class="sw unk"></i>unknown</span><span><i class="sw cov"></i>a cover in R</span></div>`;
-    h += `<p class="tally">${t.le} ⊢ · ${t.nle} ⊬ · ${t.unk} unknown. ${stampText()}</p>`;
+    h += `<div class="legend"><span><i class="sw le"></i>⊢</span><span><i class="sw nle"></i>⊬ (countermodel)</span>
+      <span><i class="sw unk"></i>unknown</span><span><i class="sw cov"></i>cover</span></div>`;
     h += `<div class="rowlist">${rowSelect(ax)}<ul>${ax.filter((b) => b !== state.row).map((b) => {
       const kind = orderKind(ord[state.row][b]);
       const rel = kind === 'le' ? '⊢' : kind === 'nle' ? '⊬' : '? (unknown)';
@@ -735,7 +730,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
     }
     if (kind === 'out') {
       const nm = c.result_name;
-      return `<td class="k-out${nm != null ? ' named' : ''}" data-k="${key}">${esc(nm != null ? nm : '∉R')}</td>`;
+      return `<td class="k-out${nm != null ? ' named' : ''}" data-k="${key}">${nm != null ? esc(nm) : ''}</td>`;
     }
     return `<td class="k-unk" data-k="${key}">?</td>`;
   }
@@ -750,7 +745,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
       const pc = (x) => (100 * (x || 0) / tot).toFixed(2) + '%';
       h += `<div class="bar-row"><span class="op">${OPS[op].sym}</span>
         <span class="bar" aria-hidden="true"><i class="b-in" style="width:${pc(p.inR)}"></i><i class="b-out" style="width:${pc(p.notR)}"></i><i class="b-unk" style="width:${pc(p.unknown)}"></i></span>
-        <span class="nums">${esc(p.inR)} in R · ${esc(p.notR)} ∉R · ${esc(p.unknown)} unknown</span></div>`;
+        <span class="nums">${esc(p.inR)} in · ${esc(p.notR)} beyond · ${esc(p.unknown)} unknown</span></div>`;
     }
     return h + '</div>';
   }
@@ -771,16 +766,16 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
       h += '</tr>';
     }
     h += '</tbody></table></div>';
-    h += `<div class="legend"><span><i class="sw in"></i>result in R, by letter name (hover for the name in words)</span>
-      <span><i class="sw out"></i>∉R; <i>c2</i> = named, outside R</span><span><i class="sw unk"></i>unknown</span>
-      <span><i class="sw vf"></i>result with a known ∨-free member (switch on)</span></div>`;
+    h += `<div class="legend"><span><i class="sw in"></i>in the frontier</span>
+      <span><i class="sw out"></i>beyond it (named in italics)</span><span><i class="sw unk"></i>unknown</span>
+      <span><i class="sw vf"></i>known ∨-free member (switch on)</span></div>`;
     const list = (o, a, b) => {
       const c = opCell(o, a, b);
       const kind = opKind(c);
       const expr = o === 'box' ? `◯ ${operand(a)}` : `${operand(a)} ${OPS[o].sym} ${operand(b)}`;
       let res;
       if (kind === 'in') res = relName(posOfId.get(c.result));
-      else if (kind === 'out') res = c.result_name != null ? `${esc(c.result_name)} (∉R)` : '∉R';
+      else if (kind === 'out') res = c.result_name != null ? `${esc(c.result_name)}, beyond the frontier` : 'beyond the frontier';
       else res = 'unknown';
       return `<li data-k="o:${o}:${a}:${o === 'box' ? '' : b}"><i class="sw ${kind}"></i><span>${expr} = ${res}</span></li>`;
     };
@@ -790,7 +785,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
 
   function renderClasses() {
     const ax = axis();
-    let h = `<div class="view-head"><h2>Classes of R</h2>${sortControl()}</div><div class="cards">`;
+    let h = `<div class="view-head"><h2>Classes</h2>${sortControl()}</div><div class="cards">`;
     for (const k of ax) {
       const c = C[k];
       const sn = name(k) != null && name(k) !== label(k) ? `<span class="sn f">${esc(name(k))}</span>` : '';
@@ -841,8 +836,8 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
       if (i === m.root) s += `<text x="${pos[i].x + R + 8}" y="${pos[i].y + 4}">root</text>`;
     }
     s += '</svg>';
-    return s + `<p class="note">At the root the model refutes ${relName(fromK)} ↠ ${relName(toK)}.
-      <i class="sw spt"></i> S: the S-points. ≤ shown up to transitivity.</p>`;
+    return s + `<p class="note">The root refutes ${relName(fromK)} ↠ ${relName(toK)}.
+      <i class="sw spt"></i> S: the S-points; ≤ up to transitivity.</p>`;
   }
 
   // ------------------------------------------------------------ panels
@@ -904,7 +899,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
     const cov = (list, dir) => (list.length ? list.slice().sort((x, y) => cmp(nameKey(x), nameKey(y))).map((m) =>
       `<span>${cref(m)} <button type="button" class="lnk" data-k="e:${dir === 'below' ? m + ',' + k : k + ',' + m}" title="open the cover">⋖</button></span>`).join(' ')
       : '<span class="empty">none</span>');
-    h += `<h3>Covers in R</h3><p>below: ${cov(below[k], 'below')}</p><p>above: ${cov(above[k], 'above')}</p>`;
+    h += `<h3>Covers in the frontier</h3><p>below: ${cov(below[k], 'below')}</p><p>above: ${cov(above[k], 'above')}</p>`;
     h += `<h3>Compare with</h3><select data-compare="${k}"><option value="">choose a class…</option>${axis().filter((m) => m !== k).map((m) =>
       `<option value="${m}">${esc(label(m))}${name(m) == null ? ': ' + esc(minimal(m)) : ''}</option>`).join('')}</select>`;
     const members = [c.formula].concat(Array.isArray(c.members) ? c.members.filter((f) => f !== c.formula) : []);
@@ -916,8 +911,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
 
   function pairPanel(a, b, asCover) {
     let h = asCover
-      ? `<h2>${esc(headOperand(a))} ⋖ ${esc(headOperand(b))}</h2><p class="note">A cover in R (the data's <code>covers</code>):
-        [${relName(a)}] ⊢ ${relName(b)}, [${relName(b)}] ⊬ ${relName(a)}, and no class of R strictly between.</p>`
+      ? `<h2>${esc(headOperand(a))} ⋖ ${esc(headOperand(b))}</h2><p class="note">A cover: no class of the frontier strictly between.</p>`
       : `<h2>${esc(headOperand(a))} · ${esc(headOperand(b))}</h2>`;
     h += `<p>${cref(a)} ${cref(b)}</p>`;
     h += factBlock(a, b) + factBlock(b, a);
@@ -943,11 +937,11 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
     } else if (kind === 'out') {
       const seps = Array.isArray(c.separations) ? c.separations : [];
       const ks = new Set(seps.map((s) => P(s.k)).filter((x) => x !== undefined));
-      h += `<p><strong class="out-badge">∉R</strong>${c.result_name != null ? ` · named ${oref(String(c.result_name))}` : ' · no name in the data'}</p>`;
+      h += `<p><strong class="out-badge">beyond the frontier</strong>${c.result_name != null ? ` · named ${oref(String(c.result_name))}` : ' · no name in the data'}</p>`;
       if (c.result_name != null && Array.isArray(c.result_name_bridge) && c.result_name_bridge.length) {
         h += `<p class="note">${X} ⊣⊢ <span class="cn">${esc(outsideLong(String(c.result_name)))}</span> by ${c.result_name_bridge.map(thm).join(', ')}</p>`;
       }
-      h += `<p>${seps.length} certified separations${ks.size === N ? `, one from each of the ${N} classes of R` : ''}.</p>`;
+      h += `<p>${seps.length} certified separations${ks.size === N ? ', one from each class of the frontier' : ''}.</p>`;
       h += `<details><summary>show the separations</summary><p class="note">X = ${X}</p><ul>${seps.map((s) => {
         const k = P(s.k);
         const nk = k === undefined ? esc(s.k) : relName(k);
@@ -963,7 +957,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
   function outsidePanel(nm) {
     const o = outside.get(nm);
     const lg = outsideLong(nm);
-    let h = `<h2>${esc(lg)}</h2><p><strong class="out-badge">outside R</strong></p>`;
+    let h = `<h2>${esc(lg)}</h2><p><strong class="out-badge">beyond the frontier</strong></p>`;
     if (!o) return h + '<p class="empty">Not in the data.</p>';
     const info = o.info;
     h += `<p class="names">${lg !== nm ? `<span class="sn f">${esc(nm)}</span> ` : ''}${info && info.term ? thm(info.term) : ''}</p>`;
@@ -974,11 +968,11 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
       if (info.minimal) h += `<h3>Minimal form</h3><p class="f">${esc(info.minimal)}</p><p class="note">${weightText(Array.isArray(info.minimal_weight) ? info.minimal_weight : null)}</p>`;
       if (Array.isArray(info.minimal_theorems) && info.minimal_theorems.length) h += `<p class="note">member by ${info.minimal_theorems.map(thm).join(', ')}</p>`;
       if (Array.isArray(info.families) && info.families.length) h += `<h3>Family memberships</h3><ul>${info.families.map(famItem).join('')}</ul>`;
-      h += '<h3>Separation from R</h3>';
-      if (info.separations != null) h += `<p>${esc(info.separations)} certified separations from the classes of R.</p>`;
+      h += '<h3>Separation from the frontier</h3>';
+      if (info.separations != null) h += `<p>${esc(info.separations)} certified separations.</p>`;
       if (Array.isArray(info.theorems) && info.theorems.length) h += `<details><summary>show the theorems</summary><ul>${info.theorems.map((t) => `<li>${thm(t)}</li>`).join('')}</ul></details>`;
     } else {
-      h += '<p class="note">Named on the ∉R table cells below; no further entry in the data.</p>';
+      h += '<p class="note">No further entry in the data.</p>';
     }
     h += `<h3>Table cells with this result</h3>`;
     if (o.cells.length) {
@@ -992,7 +986,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
   }
 
   function hintPanel() {
-    return `<p class="muted">Select a class, an edge of the order, a pair or a table cell to see its certificate here.</p>`;
+    return `<p class="muted">Select a class, edge, pair or cell for its certificates.</p>`;
   }
 
   function parseKey(key) {
@@ -1012,9 +1006,9 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
     if (p) {
       if (p.t === 'c' && C[p.k]) { kind = 'Class'; h = classPanel(p.k); }
       else if (p.t === 'p' && C[p.a] && C[p.b]) { kind = 'Pair'; h = pairPanel(p.a, p.b, false); }
-      else if (p.t === 'e' && C[p.a] && C[p.b]) { kind = 'Cover in R'; h = pairPanel(p.a, p.b, true); }
+      else if (p.t === 'e' && C[p.a] && C[p.b]) { kind = 'Cover'; h = pairPanel(p.a, p.b, true); }
       else if (p.t === 'o' && p.op in OPS && C[p.a]) { kind = 'Table cell'; h = opPanel(p.op, p.a, p.b); }
-      else if (p.t === 'x') { kind = 'Outside R'; h = outsidePanel(p.nm); }
+      else if (p.t === 'x') { kind = 'Beyond the frontier'; h = outsidePanel(p.nm); }
     }
     panelKind.textContent = kind;
     panelBody.innerHTML = h;
@@ -1057,7 +1051,7 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
       `<div class="tf">${esc(minimal(k))}</div><div class="tw">${weightText(weight(k))}${vfk(k) ? ' · known ∨-free member' : ''}</div>`;
     if (p.t === 'c' && C[p.k]) return cls(p.k);
     if ((p.t === 'p' || p.t === 'e') && C[p.a] && C[p.b]) {
-      if (p.t === 'e') return `<div class="tn">${esc(headOperand(p.a))} ⋖ ${esc(headOperand(p.b))}</div><div class="tw">a cover in R; click for both certificates</div>`;
+      if (p.t === 'e') return `<div class="tn">${esc(headOperand(p.a))} ⋖ ${esc(headOperand(p.b))}</div><div class="tw">a cover; click for its certificates</div>`;
       const kind = orderKind(ord[p.a][p.b]);
       const rel = kind === 'le' ? '⊢' : kind === 'nle' ? '⊬' : '? (unknown)';
       return `<div class="tf">[${relName(p.a)}] ${rel} ${relName(p.b)}</div><div class="tw">${ord[p.a][p.b] ? esc(ord[p.a][p.b].theorem) : ''}</div>`;
@@ -1068,14 +1062,14 @@ svg.cm text.sl { fill: var(--s-point); font: 600 11px var(--sans); }
       const expr = p.op === 'box' ? `◯ ${operand(p.a)}` : `${operand(p.a)} ${OPS[p.op].sym} ${operand(p.b)}`;
       let res = 'unknown';
       if (kind === 'in') { const r = posOfId.get(c.result); return `<div class="tf">${expr} =</div>${cls(r)}`; }
-      if (kind === 'out') res = c.result_name != null ? `${esc(c.result_name)}, outside R (∉R)` : '∉R';
+      if (kind === 'out') res = c.result_name != null ? `${esc(c.result_name)}, beyond the frontier` : 'beyond the frontier';
       return `<div class="tf">${expr} = ${res}</div>`;
     }
     if (p.t === 'x') {
       const o = outside.get(p.nm);
       const info = o && o.info;
       const lg = outsideLong(p.nm);
-      return `<div class="tn">${esc(lg)} <span class="tw">outside R</span></div>` +
+      return `<div class="tn">${esc(lg)} <span class="tw">beyond the frontier</span></div>` +
         `<div class="ts">${lg !== p.nm ? `<span class="f">${esc(p.nm)}</span> · ` : ''}${info && info.term ? `<code>${esc(info.term)}</code>` : ''}</div>` +
         (info && info.nickname ? `<div class="tk">“${esc(info.nickname)}”</div>` : '') +
         defLines(p.nm, null).map((l) => `<div class="td">${l}</div>`).join('') +
