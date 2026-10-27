@@ -186,3 +186,62 @@ manager.
   - `pllfast`'s closure still holds the sorried `wip.semui_char` and
     `wip.semui_henkin` (through `tools.Decide` → `wip.check_closed`); the
     tableau's library closure and `subtabdecide`'s do not.
+
+## 2026-10-27 11:28 GMT: the proof-status ledger records the move
+
+**CI on PR #96 (356b569)** failed in "Proof-status ledger"
+(`scripts/check-ledger.sh --built-only`): `GONE PLLND.SemUI.amalgamation
+(LaxLogic.PLL.SemUI.SemUILayered)`, plus 712 additions.  The gate's diff
+(`scripts/ledger-diff.py`) classifies a declaration that leaves one module and
+appears in another, with the same axioms, as MOVED (stale, not a regression),
+but only when the new module is in the fresh run; CI does not build
+`wip.semUILayeredAmalgamation`, so it saw GONE.
+
+**What the tool offers.**  `--update` only: a full regeneration from every
+built `.olean`.  Here it was not safe: it would fail on the two listed modules
+with no `.olean` (`SemUILayeredAmalg`, `SubframeAmalg`); it would read about 200
+`.olean`s that are stale by Lake's hash (downstream of `SemUILayered`, not
+rebuilt); and it would add the 107–122 built-but-unlisted modules of the seeded
+cache, whose freshness is unverified.  So it was not run.
+
+**What was run: a scoped regeneration** (`_out/f0step3/ledger_splice.py`).
+The ledger's own generator, `lake env lean --run scripts/ledger.lean`, on the
+18 modules whose rows change, each confirmed current at HEAD by a no-op
+`lake build` by name: `SemUILayered`, the 13 `SubTab` modules,
+`Syntax.Parse`, `tools.Decide`, `wip.semUILayeredAmalgamation`,
+`wip.semui_amalg_probe`.  Their rows replace those modules' rows; every other
+row is kept byte for byte; the module list, `docs/status-ledger.md` and the
+README figures are regenerated as `--update` does.
+
+**Record diff** (before → after, `_out/f0step3/ledger_summary.py`):
+
+| | rows |
+|---|--:|
+| before | 30057 |
+| after | 30714 |
+| REMOVED | **0** |
+| MOVED, axioms unchanged | 55: `PLLND.SemUI.amalgamation` (`LaxLogic.PLL.SemUI.SemUILayered` → `wip.semUILayeredAmalgamation`, still `sorryAx`), and 54 parser declarations (`tools.Decide` → `LaxLogic.PLL.Syntax.Parse`) |
+| NEW | 657, the 13 SubTab modules; none sorried; all within `[propext, Classical.choice, Quot.sound]` |
+| changed in place | 0 |
+| `sorryAx` rows | 23 → 23 (in libraries: 1 → 0; in `wip/`: 16 → 17) |
+
+`scripts/ledger-diff.py` on the two records: exit 2, 712 additions/moves
+(= CI's 712), no regression.
+
+**Checks.**
+* New record against the fresh rows of the 18 modules (`--scope-fresh`):
+  clean, 853 declarations.
+* CI-like scope (the same rows without the wip module): against the OLD record
+  it reproduces CI's `1 REGRESSION ... GONE amalgamation`; against the new
+  record it is clean (852).
+* `scripts/readme-figures.py --check`: up to date.
+* `scripts/check-ledger.sh --built-only`, locally, over all 731 built modules:
+  - first run: 9 regressions, all `GONE` in `LaxLogic.PLL.Search.Run`
+    (`eGap`, `eU`, `e₁`–`e₆`, `memo_regression_certificate`).  This was an
+    artefact of the seeded cache: that `.olean` was dated 2026-10-12, older than
+    the commit that added them (`7f3f1e5`, 2026-10-19).  Rebuilt by name, its
+    21 rows match the record exactly;
+  - second run: exit 2, **0 regressions**, 2703 additions.  All of them are
+    from the 107 built-but-unlisted modules of the seed (papers, `Audit.*`,
+    `CertifyAdoption`, the `tools/SubTab` executables, ...), which CI does not
+    build.  They were not added.
