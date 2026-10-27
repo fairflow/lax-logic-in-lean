@@ -29,7 +29,11 @@ the question (`H₂` free on `p, q`) is the definition.  Degenerate here.
 | statement | theorem | status |
 |-----------|---------|--------|
 | `FreePair → FreeHAnAbove (base 2) 2` | `freeHAn_of_freePair` | PROVED (packaging) |
-| `FreePair` | — | OPEN |
+| lemma (a), general form (below) | `relB_transfer` | PROVED |
+| lemma (a) on `R_b` | `relB_restrict` | PROVED |
+| `⟹` for any base below the generators | `relB_preserves` | PROVED |
+| `FreePair`, direction `⟹` | `freePair_preserves` | PROVED |
+| `FreePair`, direction `⟸` | — | OPEN |
 
 ## Stage 1: the designed cells (CLAUDE.md rules 7, 9)
 
@@ -52,9 +56,37 @@ predicted killer C1 does not kill: `x₁ = σ²⊥ ∨ ¬¬_{t3}◯Y` is `¬¬`-
 relative to `t3`, but relative to `σ²⊥` its cofinality condition ranges over
 the shell `{σ²⊥, ¬t3}`, which the `σ²⊥`-relative negations cannot see.
 
+## Stage 2 (a): the relativisation lemma
+
+Semantic `b ≤ x a` (`hbx : ∀ v a, v ⊩ b → v ⊩ x a`) gives
+
+    v ⊩ b  →  v ⊩ relB b x A          (every A; `force_relB_of_b`)
+
+General form (`relB_transfer`): `K` a subframe model (read as a Kripke
+model), `φ : K → M` with
+
+    φ k ⊮ b;   k ≤ j → φ k ≤ φ j;   φ k ≤ v → v ⊩ b ∨ ∃ j ≥ k, φ j = v;
+    φ k ⊩ x (pvar i) ⟺ k ∈ V(pvar i)   (i < n).
+
+Then for ◯-free `A` with `varsBelow n A`:
+
+    φ k ⊩_M relB b x A   ⟺   k ⊩_K A.
+
+As briefed (`relB_restrict`, `M` finite): `R_b = {v : v ⊮ b}` with the
+order restricted and `V a = {v : v ⊩ x a}` (`restrict`), `φ = Subtype.val`.
+Direction `⟹` (`relB_preserves`): if `[A] ⊢ B` then at a world of a finite
+model forcing `relB A`, either it forces `b` (then `relB B`), or it lies in
+`R_b`, where soundness of `[A] ⊢ B` and lemma (a) give `relB B`;
+completeness for finite subframe models (`SubframeModel.CF.completeness_imp`,
+choice-free) gives `[relB A] ⊢ relB B`.  No syntactic substitution lemma for
+`⊥ ↦ b` was needed.  `ZL.transfer` (`wip/f0FreeHAn.lean`) is the
+one-variable template (there the map runs the other way, a p-morphism onto
+the ladder skeleton).
+
 ## Log
 
 * 2026-10-27 19:38: statement written and built (`lake build wip.f0FreePair`),
   committed before any proof.
 * 2026-10-27 19:45: Stage 1, the four cells: all PASS, kernel-checked
   (`lake build wip.f0FreePair` clean, pins `[propext, Quot.sound]`).
+* 2026-10-27 19:50: lemma (a) and the direction `⟹` PROVED, module clean.

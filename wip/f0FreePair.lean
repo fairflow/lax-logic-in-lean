@@ -43,6 +43,7 @@ namespace Pair
 
 open SemUI RNEmbed Sig FreeIPL FreeHAn
 open PLLND.LaxInfinite (atomFree)
+open SubframeModel.CF (FinDec)
 
 /-! ## The statement -/
 
@@ -179,6 +180,149 @@ theorem cell_C4 : ¬ Deriv [] (relB b2 xs C4) :=
   SubTab.no.verdict (relB b2 xs C4)
     { n := 8, root := 0, le := [[true, true, true, true, true, true, true, true], [false, true, true, true, true, true, true, true], [false, false, true, true, true, true, true, true], [false, false, false, true, true, false, false, false], [false, false, false, false, true, false, false, false], [false, false, false, false, false, true, true, true], [false, false, false, false, false, false, true, false], [false, false, false, false, false, false, false, true]], S := [false, true, false, true, false, false, true, false], val := [[], [], [], [], [], [], [], []] }
 
+/-! ## Lemma (a): the relativisation lemma
+
+For any base `b` and generators `x` with `b ≤ x a` semantically, every
+`relB`-image holds wherever `b` holds (`force_relB_of_b`), so the value of a
+`relB`-image at a world refuting `b` depends only on the worlds refuting `b`.
+The general form (`relB_transfer`) is stated for a map `φ : K → M` from a
+Kripke model `K` onto the `b`-refuting part above its image: monotone, back
+(every successor of `φ k` either forces `b` or is `φ j` for some `j ≥ k`), and
+reading the valuation of `K` off the generators.  Then for ◯-free `A` in the
+variables `pvar 0, …, pvar (n-1)`,
+
+    φ k ⊩_M relB b x A   ⟺   k ⊩_K A.
+
+`ZL.transfer` of `wip/f0FreeHAn.lean` is the one-variable instance with the
+map running the other way (a p-morphism onto the ladder skeleton).  The
+instance `φ = Subtype.val` on the restriction `R_b = {v : v ⊮ b}` with
+`V a = {v : v ⊩ x a}` (`restrict`) is the lemma as briefed
+(`relB_restrict`); it gives the direction `⟹` of `FreePair`
+(`relB_preserves`), by soundness on `R_b` and completeness for finite models. -/
+
+section Relativisation
+
+variable (M : SubframeModel) (b : PLLFormula) (x : String → PLLFormula)
+
+/-- **Every `relB`-image holds where `b` holds**, given `b ≤ x a` at every world. -/
+theorem force_relB_of_b (hbx : ∀ v a, M.force v b → M.force v (x a)) :
+    ∀ (A : PLLFormula) (v : M.W), M.force v b → M.force v (relB b x A)
+  | .prop a, v, hv => hbx v a hv
+  | .falsePLL, _, hv => hv
+  | .and A B, v, hv => ⟨force_relB_of_b hbx A v hv, force_relB_of_b hbx B v hv⟩
+  | .or A _, v, hv => Or.inl (force_relB_of_b hbx A v hv)
+  | .ifThen _ B, _, hv => fun u hu _ =>
+      force_relB_of_b hbx B u (SubframeModel.force_mono M b hu hv)
+  | .somehow A, _, hv => fun u hu _ =>
+      force_relB_of_b hbx A u (SubframeModel.force_mono M b hu hv)
+
+/-- The atoms of a formula with `varsBelow n` are among `pvar 0, …, pvar (n-1)`. -/
+theorem varsBelow_prop {n : Nat} {a : String} (h : varsBelow n (.prop a) = true) :
+    ∃ i, i < n ∧ a = pvar i := by
+  have h' : ((List.range n).any fun i => decide (a = pvar i)) = true := h
+  obtain ⟨i, hi, ha⟩ := List.any_eq_true.mp h'
+  exact ⟨i, List.mem_range.mp hi, of_decide_eq_true ha⟩
+
+/-- **The relativisation lemma**, general form: for a map `φ` from a Kripke
+model `K` into `M` with image refuting `b`, monotone, with the back condition
+relative to `b`, and reading the valuation of `K` off the generators, the
+`relB`-image of a ◯-free formula over `pvar 0, …, pvar (n-1)` holds at `φ k`
+iff the formula holds at `k`. -/
+theorem relB_transfer (K : SubframeModel) (φ : K.W → M.W) (n : Nat)
+    (hbx : ∀ v a, M.force v b → M.force v (x a))
+    (hb : ∀ k, ¬ M.force (φ k) b)
+    (hmono : ∀ {k j}, K.le k j → M.le (φ k) (φ j))
+    (hback : ∀ k v, M.le (φ k) v → M.force v b ∨ ∃ j, K.le k j ∧ φ j = v)
+    (hatom : ∀ k i, i < n → (M.force (φ k) (x (pvar i)) ↔ k ∈ K.V (pvar i))) :
+    ∀ A : PLLFormula, boxFree A = true → varsBelow n A = true →
+      ∀ k, (M.force (φ k) (relB b x A) ↔ K.force k A)
+  | .prop a, _, hv, k => by
+      obtain ⟨i, hi, rfl⟩ := varsBelow_prop hv
+      exact hatom k i hi
+  | .falsePLL, _, _, k => ⟨hb k, False.elim⟩
+  | .and A B, hf, hv, k => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      have hv' := Bool.and_eq_true_iff.mp (hv : (varsBelow n A && varsBelow n B) = true)
+      exact and_congr (relB_transfer K φ n hbx hb hmono hback hatom A hf'.1 hv'.1 k)
+        (relB_transfer K φ n hbx hb hmono hback hatom B hf'.2 hv'.2 k)
+  | .or A B, hf, hv, k => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      have hv' := Bool.and_eq_true_iff.mp (hv : (varsBelow n A && varsBelow n B) = true)
+      exact or_congr (relB_transfer K φ n hbx hb hmono hback hatom A hf'.1 hv'.1 k)
+        (relB_transfer K φ n hbx hb hmono hback hatom B hf'.2 hv'.2 k)
+  | .ifThen A B, hf, hv, k => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      have hv' := Bool.and_eq_true_iff.mp (hv : (varsBelow n A && varsBelow n B) = true)
+      have ihA := relB_transfer K φ n hbx hb hmono hback hatom A hf'.1 hv'.1
+      have ihB := relB_transfer K φ n hbx hb hmono hback hatom B hf'.2 hv'.2
+      show (∀ v, M.le (φ k) v → M.force v (relB b x A) → M.force v (relB b x B)) ↔
+        (∀ j, K.le k j → K.force j A → K.force j B)
+      constructor
+      · intro h j hj hA
+        exact (ihB j).mp (h (φ j) (hmono hj) ((ihA j).mpr hA))
+      · intro h v hv hA
+        rcases hback k v hv with hvb | ⟨j, hj, rfl⟩
+        · exact force_relB_of_b M b x hbx B v hvb
+        · exact (ihB j).mpr (h j hj ((ihA j).mp hA))
+  | .somehow _, hf, _, _ => nomatch hf
+
+/-- **The restriction `R_b`**: the worlds refuting `b`, the order restricted,
+no `S`-points (irrelevant for ◯-free formulas), `V a = {v : v ⊩ x a}`. -/
+def restrict : SubframeModel where
+  W := {v : M.W // ¬ M.force v b}
+  le u v := M.le u.1 v.1
+  S := fun _ => False
+  V a := {v | M.force v.1 (x a)}
+  refl u := M.refl u.1
+  trans h₁ h₂ := M.trans h₁ h₂
+  hered h hv := SubframeModel.force_mono M _ h hv
+
+/-- **Lemma (a)**, as briefed: at a world `w ⊮ b` of a finite model, the
+`relB`-image of a ◯-free `A` holds iff `A` holds at `w` in `R_b`. -/
+theorem relB_restrict [FinDec M] (hbx : ∀ v a, M.force v b → M.force v (x a)) (n : Nat) :
+    ∀ A : PLLFormula, boxFree A = true → varsBelow n A = true →
+      ∀ w : (restrict M b x).W, (M.force w.1 (relB b x A) ↔ (restrict M b x).force w A) :=
+  relB_transfer M b x (restrict M b x) Subtype.val n hbx (fun w => w.2) (fun h => h)
+    (fun _ v hwv => if hvb : M.force v b then Or.inl hvb else Or.inr ⟨⟨v, hvb⟩, hwv, rfl⟩)
+    (fun _ _ _ => Iff.rfl)
+
+end Relativisation
+
+/-- **Preservation** (the direction `⟹`): for a base `b` below every
+generator in every model, `[A] ⊢ B` gives `[relB b x A] ⊢ relB b x B` for
+◯-free `A`, `B` over `pvar 0, …, pvar (n-1)`. -/
+theorem relB_preserves (b : PLLFormula) (x : String → PLLFormula) (n : Nat)
+    (hbx : ∀ (M : SubframeModel) v a, M.force v b → M.force v (x a))
+    {A B : PLLFormula} (hA : boxFree A = true) (hB : boxFree B = true)
+    (vA : varsBelow n A = true) (vB : varsBelow n B = true) (hd : Deriv [A] B) :
+    Deriv [relB b x A] (relB b x B) := by
+  obtain ⟨d⟩ := hd
+  have hsem : ∀ (M : SubframeModel) [FinDec M] (v : M.W),
+      M.force v (relB b x A) → M.force v (relB b x B) := by
+    intro M _ v hv
+    rcases Decidable.em (M.force v b) with hvb | hvb
+    · exact force_relB_of_b M b x (hbx M) B v hvb
+    · have hA' := (relB_restrict M b x (hbx M) n A hA vA ⟨v, hvb⟩).mp hv
+      exact (relB_restrict M b x (hbx M) n B hB vB ⟨v, hvb⟩).mpr
+        (SubframeModel.CF.soundness₁ d (restrict M b x) ⟨v, hvb⟩ hA')
+  have h2 : Deriv [] ((relB b x A).ifThen (relB b x B)) :=
+    SubframeModel.CF.completeness_imp hsem
+  exact Deriv.impElim (h2.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _))
+
+/-- `σ²⊥ ≤ xs a` at every world of every model. -/
+theorem b2_le_xs_sem (M : SubframeModel) (v : M.W) (a : String) (hv : M.force v b2) :
+    M.force v (xs a) := by
+  unfold xs
+  split
+  · exact Or.inl hv
+  · exact fun u hu _ => SubframeModel.force_mono M b2 hu hv
+
+/-- **`FreePair`, direction `⟹`.** -/
+theorem freePair_preserves {A B : PLLFormula} (hA : boxFree A = true) (hB : boxFree B = true)
+    (vA : varsBelow 2 A = true) (vB : varsBelow 2 B = true) (hd : Deriv [A] B) :
+    Deriv [relB b2 xs A] (relB b2 xs B) :=
+  relB_preserves b2 xs 2 b2_le_xs_sem hA hB vA vB hd
+
 end Pair
 end F0
 end PLLND
@@ -196,3 +340,9 @@ end PLLND
 #axioms_within PLLND.F0.Pair.cell_C2 [propext, Quot.sound]
 #axioms_within PLLND.F0.Pair.cell_C3 [propext, Quot.sound]
 #axioms_within PLLND.F0.Pair.cell_C4 [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.force_relB_of_b [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.varsBelow_prop [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.relB_transfer [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.relB_restrict [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.relB_preserves [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.freePair_preserves [propext, Quot.sound]
