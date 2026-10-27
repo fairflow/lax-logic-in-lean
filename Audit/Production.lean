@@ -65,10 +65,10 @@ the whole estate, which is how a gate stops meaning anything.
   not machine-checked in the sense the rest of the estate is.  Either
   re-prove by `decide`, or move them out of the library.
 
-* `LaxLogic.PLL.SemUI.SemUILayered` — ONE sorried declaration,
-  `SemUI.amalgamation`, from the semantic uniform-interpolation development
-  shelved on 2026-08-07.  A `sorry` ASSERTS, so as written it states the
-  amalgamation lemma as though it held.
+* `LaxLogic.PLL.SemUI.SemUILayered` — RELEASED 2026-10-27, and swept again.
+  It held ONE sorried declaration, `SemUI.amalgamation`, from the semantic
+  uniform-interpolation development shelved on 2026-08-07.  A `sorry` ASSERTS,
+  so as written it stated the amalgamation lemma as though it held.
 
   The other four went to `wip/` on 2026-10-05, acting on this list's own
   sentence that shelved work belongs in the experimental estate and not in
@@ -78,13 +78,18 @@ the whole estate, which is how a gate stops meaning anything.
   out of every library.  Both were LEAVES — only `LaxLogic.lean` and three
   `wip/` files imported them.
 
-  `SemUILayered` CANNOT follow them, and the reason is worth recording:
+  `SemUILayered` could not follow them, and the reason is worth recording:
   `SemUIFrag` imports it, and `LaxLogic/Focusing/LJFComplete.lean` imports
-  `SemUIFrag`, so the module is upstream of a live completeness result.  Taking
-  the last sorry out of `LaxLogic/` therefore means moving the DECLARATION, not
-  the file — and `SemUI.amalgamation` is named by sixteen `wip/` files, so the
-  right repair is CLAUDE.md rule 1's: make it a typed obligation passed as a
-  parameter, not a sorried theorem.  That is a design decision, not a tidy-up.
+  `SemUIFrag`, so the module is upstream of a live completeness result (and,
+  since 2026-10-22, of the subframe tableau, through `SubframeLayered`).  So
+  the DECLARATION moved, not the file.  On 2026-10-27 (F0 plan, decision D6,
+  Matthew) `SemUI.amalgamation` went to `wip/semUILayeredAmalgamation.lean`
+  with its name, statement and docstring unchanged, pinned there at
+  `[propext, Classical.choice, Quot.sound, sorryAx]`.  No Lean declaration
+  used it (the `wip/` files that name it do so in prose only), so no import
+  changed.  Watched: `#axiom_sweep [LaxLogic.PLL.SemUI.SemUILayered] allowing
+  [propext, Classical.choice, Quot.sound]` failed on `amalgamation` (1 of 84
+  declarations) before the move and passed (83) after.
 
 * `LaxLogic.Obligation.Examples` — `sorried` and `downstream` (2026-09-16).
   Unlike the entries above, these are not shelved work: the module's §5 exists
@@ -100,6 +105,5 @@ Each line here is a claim that something is not meeting the bar.  The
 list should get shorter. -/
 
 #axiom_sweep [LaxLogic, FRJ, Rewrite, LJF]
-  except [LaxLogic.Belief.Examples, LaxLogic.PLL.SemUI.SemUILayered,
-          LaxLogic.Obligation.Examples]
+  except [LaxLogic.Belief.Examples, LaxLogic.Obligation.Examples]
   allowing [propext, Classical.choice, Quot.sound]

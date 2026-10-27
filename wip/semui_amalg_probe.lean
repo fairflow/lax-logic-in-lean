@@ -3,7 +3,8 @@ import LaxLogic.PLL.SemUI.SemUILayered
 /-!
 # The refutation screen for `amalgamation` — three designed cells
 
-`LaxLogic/PLL/SemUI/SemUILayered.lean:821` carries `amalgamation` as a `sorry`,
+`wip/semUILayeredAmalgamation.lean` (moved there from `LaxLogic/PLL/SemUI/SemUILayered.lean:821`
+on 2026-10-27, F0 plan D6) carries `amalgamation` as a `sorry`,
 labelled in its own docstring "OPEN — the central open problem of the route".
 `docs/ui-proof-status-report.md` puts it where it belongs: whether PLL has
 uniform interpolation is open in the literature, and the algebraic form

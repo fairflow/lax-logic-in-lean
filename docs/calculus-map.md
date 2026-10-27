@@ -309,11 +309,13 @@ result is really about**.
   (the finite-model enumeration), `Tableau.lean` (the untrusted producer
   `SubTab.solve` and refuter `SubTab.refute`), `Engine.lean` (the
   lean-certify engine), `Gates.lean` (negative tests), `Facts.lean`
-  (29 generated facts); the import closure is free of `tools/` and `wip/`.
-  The deciders and the output layer are in `tools/SubTab/` (library
-  `SubTabTools`: the settings and the source printers; executables
-  `pllfast`, `subtabdecide`, `refbench`; `TOOLS.md` §2–3).  Moved here on
-  2026-10-22, declaration names unchanged.
+  (29 generated facts), `Source.lean` (the certificates as Lean source and
+  the `Repr TCert` instance; from `tools/SubTab/` 2026-10-27); the import
+  closure is free of `tools/` and `wip/`, and of `sorry` (2026-10-27).  The
+  formula parser is `LaxLogic/PLL/Syntax/Parse.lean`.  The deciders and the
+  output layer are in `tools/SubTab/` (library `SubTabTools`: the settings;
+  executables `pllfast`, `subtabdecide`, `refbench`; `TOOLS.md` §2–3).
+  Moved here on 2026-10-22, declaration names unchanged.
 * **Semantics**: subframe models (`LaxLogic/PLL/Semantics/Subframe.lean`), an
   intuitionistic Kripke model with a set `S` of points, no fallible worlds,
   and

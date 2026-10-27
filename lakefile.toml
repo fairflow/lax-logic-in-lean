@@ -171,10 +171,13 @@ globs = ["FRJ.Gbu.Base", "FRJ.Gbu.DB", "FRJ.Gbu.Search", "FRJ.Gbu.Measure", "FRJ
 # dichotomy and completeness of the tableau, the translation of closed
 # tableaux into LaxND, the untrusted producer and the finite-model
 # enumeration, the lean-certify engine, the negative gates and the generated
-# facts.  Every declaration is within [propext, Quot.sound], and the import
-# closure is free of tools/ and wip/.  An explicit list in defaultTargets, as
-# FRJGbu: the `LaxLogic` root module does not import these.  The deciders and
-# the output layer are in SubTabTools.
+# facts, and the certificate printers with the `Repr TCert` instance (Source,
+# moved from tools/ 2026-10-27).  Every declaration is within [propext,
+# Quot.sound], and the import closure is free of tools/ and wip/.  The parser
+# and formula printer they use, LaxLogic.PLL.Syntax.Parse, is outside this list
+# (`parseFormula` reaches Classical.choice through Lean's `String.toList`).  An
+# explicit list in defaultTargets, as FRJGbu: the `LaxLogic` root module does
+# not import these.  The decider settings are in SubTabTools.
 [[lean_lib]]
 name = "SubTab"
 globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
@@ -182,7 +185,8 @@ globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
          "LaxLogic.PLL.SubTab.Model", "LaxLogic.PLL.SubTab.Complete",
          "LaxLogic.PLL.SubTab.Translate", "LaxLogic.PLL.SubTab.ModelEnum",
          "LaxLogic.PLL.SubTab.Tableau", "LaxLogic.PLL.SubTab.Engine",
-         "LaxLogic.PLL.SubTab.Gates", "LaxLogic.PLL.SubTab.Facts"]
+         "LaxLogic.PLL.SubTab.Gates", "LaxLogic.PLL.SubTab.Facts",
+         "LaxLogic.PLL.SubTab.Source"]
 
 [[lean_exe]]
 name = "bilaxscreen"
@@ -226,12 +230,12 @@ name = "pllbench"
 root = "tools.Bench"
 
 # The subframe tableau's tools (tools/SubTab/, 2026-10-22): the lean-certify
-# decider settings and the source printers of the certificates.  The tableau,
-# the enumeration, the engine and their theory are the library SubTab,
-# LaxLogic/PLL/SubTab/.  The globs are an explicit list, as above.
+# decider settings.  The tableau, the enumeration, the engine, the certificate
+# printers and their theory are the library SubTab, LaxLogic/PLL/SubTab/ (the
+# printers moved there 2026-10-27).  The globs are an explicit list, as above.
 [[lean_lib]]
 name = "SubTabTools"
-globs = ["tools.SubTab.Settings", "tools.SubTab.Source"]
+globs = ["tools.SubTab.Settings"]
 
 # pllfast: `pll` with the subframe tableau in front — the tableau for the
 # verdict (a countermodel, or a closed tableau whose proof term comes from
@@ -256,6 +260,29 @@ root = "tools.SubTab.SubTabDecide"
 [[lean_exe]]
 name = "refbench"
 root = "tools.SubTab.RefBench"
+
+# Harness: the project's lean-certify decider (F0 plan step 4, 2026-10-27;
+# docs/engine-adoption-statements.md §3 and §9, docs/f0-step4-STATUS.md):
+# the soundness statements of the engines fincm (FinCM countermodels) and ljfo
+# (LJF◯ derivation trees), their certifiers and adapters (Tools), and their
+# exemplars and negative tests (Gates); and the one project-wide decider
+# settings file (Settings: subtab, enum, fincm, ljfo; the order of the pairs
+# PROVISIONAL until the comparison G4).  Not a default target:
+# `lake build Harness`.  The globs are an explicit list, as SubTab.  Settings
+# declares Harness.tools and Harness.decider, as tools/SubTab/Settings.lean
+# (library SubTabTools) does, so the two cannot share an environment.
+[[lean_lib]]
+name = "Harness"
+globs = ["Harness.Statements", "Harness.Tools", "Harness.Gates", "Harness.Settings"]
+
+# plldecide: the project's lean-certify decider, configured by
+# Harness/Settings.lean; entry point Harness/Main.lean (outside the library:
+# it declares `main`).  Exit codes 0 yes, 1 no, 2 parse error, 3 flag.  Not a
+# default target: `lake build plldecide`, then run .lake/build/bin/plldecide
+# under gtimeout.  (2026-10-27)
+[[lean_exe]]
+name = "plldecide"
+root = "Harness.Main"
 
 
 # Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup
@@ -330,7 +357,7 @@ globs = ["wip.frjx", "wip.frjv_consequences", "wip.minmodv", "wip.minmodv_test",
          "wip.check_scan", "wip.check_join", "wip.check_closed", "wip.oracle2", "wip.semui_ctx_core", 
          "wip.semui_char", "wip.semui_henkin", 
          "wip.cutinv_screen", "wip.cutinv_screen_cert", 
-         "wip.semui_amalg_probe", 
+         "wip.semui_amalg_probe", "wip.semUILayeredAmalgamation",
          "wip.confl_core", "wip.G4conf", "wip.crankC", "wip.witTripleC", "wip.canonFinC", 
          "wip.residueGrowth", "wip.stabilise", "wip.rnDictBase", "wip.rnDict", "wip.rho_order", 
          "wip.rho_engines", "wip.ljfo_link", "wip.two_sided", "wip.ljfo_unravel", "wip.rnDictRefute", 
@@ -360,7 +387,8 @@ globs = ["wip.frjx", "wip.frjv_consequences", "wip.minmodv", "wip.minmodv_test",
          "wip.f0Covers", "wip.f0OddGaps", "wip.f0IndepBlueprint", "wip.f0IndepCells",
          "wip.f0Indep", "wip.f0Dyadic", "wip.f0Rat", "wip.f0Minkowski",
          "wip.f0Structure", "wip.f0Hole", "wip.f0T6", "wip.f0Normal", "wip.f0SelfSim",
-         "wip.f0SigOnto", "wip.f0NotIso", "wip.f0FilterIso", "wip.f0FreeIPL", "wip.f0FreeHAn", "wip.f0FreePair",
+         "wip.f0SigOnto", "wip.f0NotIso", "wip.f0FilterIso", "wip.f0FreeIPL", "wip.f0FreeHAn", "wip.f0MeetCount",
+         "wip.f0FreePair",
          "wip.p2llSubConj", "wip.p2llSyntax", "wip.p2llND", "wip.p2llJND",
          "wip.p2llStatements", "wip.p2llOrCell", "wip.p2llInterp", "wip.p2llBoolSem",
          "wip.p2llRoundTrip", "wip.p2llMutual", "wip.esakiaNuclearFin", "wip.esakiaNuclearCells",

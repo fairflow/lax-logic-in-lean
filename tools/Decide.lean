@@ -49,6 +49,7 @@ Exit codes (the `frjcert` convention):
 import wip.check_closed
 import FRJ.Gbu.LaxND
 import LaxLogic.PLL.ND.Terms
+import LaxLogic.PLL.Syntax.Parse
 import tools.Svg
 import Rewrite
 
@@ -56,92 +57,13 @@ open FRJ FRJ.Gbu FRJ.Search FRJ.Gbu.W PLLND
 
 namespace PLLTools
 
-/-! ## 1. Parsing (the `frjcert` grammar, atoms only — no `q<k>` names) -/
-
-inductive Tok where
-  | lp | rp | bot | top | neg | box | conj | disj | imp
-  | id (s : String)
-  deriving BEq, Repr
-
-def isIdChar (c : Char) : Bool := c.isAlphanum || c == '_' || c == '\''
-
-partial def tokenize (cs : List Char) : Except String (List Tok) :=
-  match cs with
-  | [] => .ok []
-  | c :: rest =>
-    if c == ' ' || c == '\t' then tokenize rest
-    else if c == '(' then (tokenize rest).map (.lp :: ·)
-    else if c == ')' then (tokenize rest).map (.rp :: ·)
-    else if c == '⊥' then (tokenize rest).map (.bot :: ·)
-    else if c == '⊤' then (tokenize rest).map (.top :: ·)
-    else if c == '¬' || c == '~' then (tokenize rest).map (.neg :: ·)
-    else if c == '◯' || c == '#' then (tokenize rest).map (.box :: ·)
-    else if c == '∧' || c == '&' then (tokenize rest).map (.conj :: ·)
-    else if c == '⊃' || c == '→' then (tokenize rest).map (.imp :: ·)
-    else if c == '∨' then (tokenize rest).map (.disj :: ·)
-    else if c == '|' then (tokenize rest).map (.disj :: ·)
-    else if c == '-' then
-      match rest with
-      | '>' :: r => (tokenize r).map (.imp :: ·)
-      | _ => .error "stray '-'"
-    else if isIdChar c then
-      let name := String.ofList (c :: rest.takeWhile isIdChar)
-      (tokenize (rest.dropWhile isIdChar)).map (.id name :: ·)
-    else .error s!"unexpected character '{c}'"
-
-mutual
-
-partial def pImp (ts : List Tok) : Except String (Form × List Tok) := do
-  let (a, ts) ← pDisj ts
-  match ts with
-  | .imp :: r => let (b, r) ← pImp r; pure (.imp a b, r)
-  | _ => pure (a, ts)
-
-partial def pDisj (ts : List Tok) : Except String (Form × List Tok) := do
-  let (a, ts) ← pConj ts
-  match ts with
-  | .disj :: r => let (b, r) ← pDisj r; pure (.or a b, r)
-  | _ => pure (a, ts)
-
-partial def pConj (ts : List Tok) : Except String (Form × List Tok) := do
-  let (a, ts) ← pUn ts
-  match ts with
-  | .conj :: r => let (b, r) ← pConj r; pure (.and a b, r)
-  | _ => pure (a, ts)
-
-partial def pUn (ts : List Tok) : Except String (Form × List Tok) := do
-  match ts with
-  | .neg :: r => let (a, r) ← pUn r; pure (.imp a .bot, r)
-  | .box :: r => let (a, r) ← pUn r; pure (.circ a, r)
-  | .bot :: r => pure (.bot, r)
-  | .top :: r => pure (.imp .bot .bot, r)
-  | .id s :: r => pure (.atom s, r)
-  | .lp :: r => do
-      let (a, r) ← pImp r
-      match r with
-      | .rp :: r' => pure (a, r')
-      | _ => .error "expected ')'"
-  | _ => .error "expected a formula"
-
-end
-
-def parseFormula (s : String) : Except String PLLFormula := do
-  let ts ← tokenize s.toList
-  let (g, r) ← pImp ts
-  if r.isEmpty then pure (toPLL g) else .error "trailing tokens after the formula"
+/-! ## 1. Parsing: `PLLTools.parseFormula` is in `LaxLogic/PLL/Syntax/Parse.lean`
+since 2026-10-27 (moved from here, name unchanged). -/
 
 /-! ## 2. Source printers (paste-ready Lean) -/
 
-/-- A `PLLFormula` as fully qualified Lean source (as
-`PLLND.Search.srcOf`, copied here to keep the search engine out of the
-decider's import graph). -/
-def srcOfP : PLLFormula → String
-  | .prop a      => s!"(PLLFormula.prop \"{a}\")"
-  | .falsePLL    => "PLLFormula.falsePLL"
-  | .and A B     => s!"({srcOfP A}.and {srcOfP B})"
-  | .or A B      => s!"({srcOfP A}.or {srcOfP B})"
-  | .ifThen A B  => s!"({srcOfP A}.ifThen {srcOfP B})"
-  | .somehow A   => s!"({srcOfP A}.somehow)"
+/- `PLLTools.srcOfP`, the formula printer, is in `LaxLogic/PLL/Syntax/Parse.lean`
+since 2026-10-27 (moved from here, name unchanged). -/
 
 /-- de Bruijn index of a variable (as `PLLND.Var.idx`, kept local so the
 tool does not import `LaxLogic.PLL.Search.Run` — that module drags
