@@ -29,6 +29,7 @@ for p in \
   tools/DecideCmd.lean \
   tools/SubTab/PllFast.lean \
   tools/SubTab/SubTabDecide.lean \
+  Harness \
   tools/SubTab \
   LaxLogic/PLL/SubTab \
   wip/check_closed.lean \
