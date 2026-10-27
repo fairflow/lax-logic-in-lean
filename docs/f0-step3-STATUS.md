@@ -161,3 +161,28 @@ the new one in `wip/semUILayeredAmalgamation.lean`.
 the 33-cell port benchmark were not run.  `docs/next-session.md` item 62
 ("whether `SemUILayered.amalgamation` becomes a `Prop`") is left for the
 manager.
+
+## 2026-10-27 09:36 GMT: closed
+
+* Commits on this branch: the merge of `origin/method-f0`, `094785e` (this
+  note), `7ed3889` (D6), `4bbb33b` (step 3), `2d257a1` (TOOLS.md version
+  cells from `tools/tools-register.sh`), and this closing note.  Not pushed;
+  no upstream.
+* `PaperKit` built green after both parts.  `python3 scripts/check-imports.py`:
+  3252 imports in 1279 modules, every one resolves.
+* Disk: 129 135 MB free on `/System/Volumes/Data` at the last check.
+* Skips, for the manager:
+  - `lake build Production` (the whole library), so the `except` change in
+    `Audit/Production.lean` is checked only by the same sweep on the one
+    module.
+  - The ~200 `wip/` modules downstream of `SemUILayered` that nothing here
+    needed were not rebuilt; none names `amalgamation` in code.
+  - `LaxLogic.PLL.Syntax.Parse` is not imported by `LaxLogic.lean`, so the
+    Production sweep does not see it; its two pins do.
+  - `wip/semUILayeredAmalgamation.lean` is not imported by
+    `Audit/Experimental.lean`.
+  - The 33-cell port benchmark of `pllfast`/`subtabdecide` was not re-run:
+    three designed cells each, above.
+  - `pllfast`'s closure still holds the sorried `wip.semui_char` and
+    `wip.semui_henkin` (through `tools.Decide` → `wip.check_closed`); the
+    tableau's library closure and `subtabdecide`'s do not.
