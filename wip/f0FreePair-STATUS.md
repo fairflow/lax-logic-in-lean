@@ -83,6 +83,65 @@ choice-free) gives `[relB A] ⊢ relB B`.  No syntactic substitution lemma for
 one-variable template (there the map runs the other way, a p-morphism onto
 the ladder skeleton).
 
+## Stage 2 (b), (c): the gadget design (committed before its proof)
+
+(b) Finite models: `SubframeModel.CF.completeness_imp` (choice-free) reduces
+`[A] ⊢ B` to `k ⊩ A → k ⊩ B` at every world `k` of every finite decidable
+subframe model `K`; for ◯-free `A`, `B` the set `S` of `K` is irrelevant, so
+`K` is a finite Kripke model on `p`, `q` (a preorder; neither rootedness nor
+antisymmetry is used).
+
+(c) The gadget `M(K)`.  Worlds: `e`, `n` (tops), `f`, `g`, `h` (shell), and
+`w_k` for `k ∈ K`.  Order (reflexive, and):
+
+    w_j ≤ w_k ⟺ j ≤_K k
+    w_k ≤ e, n, f, g          (always)
+    w_k ≤ h ⟺ k ⊮ q           (down-closed in k, so transitive)
+    f ≤ e, n;   g ≤ e;   h ≤ e, n
+
+    S = {n, g, h} ∪ {w_k : k ⊮ p};   no atoms.
+
+The forcing it is designed for (pen; each line is a lemma of the proof):
+
+| world | in `S` | above | forces | refutes | shell type `(s, n)` |
+|-------|--------|-------|--------|---------|---------------------|
+| `e` | no | — | `◯⊥`, `t3`, `σ²⊥`, `t4` | | |
+| `n` | yes | — | `¬◯⊥`, `t3`, `σ²⊥`, `¬t4`, `Y` | `◯⊥`, `t4` | |
+| `f` | no | `e, n` | `◯t3`, `σ²⊥`, `◯Y` | `t3` | `(0, 1)` |
+| `g` | yes | `e` | `◯t3 ↠ t3`, `σ²⊥`, `t4`, `Y`, `◯Y` | `t3`, `◯t3` | `(1, 0)` |
+| `h` | yes | `e, n` | `◯t3 ↠ t3`, `σ²⊥`, `◯Y ↠ t3` | `t3`, `◯t3`, `t4`, `¬t4`, `Y`, `◯Y` | `(1, 1)` |
+| `w_k` | iff `k ⊮ p` | `e, n, f, g` (`h` iff `k ⊮ q`), `w_j` (`j ≥ k`) | | `σ²⊥` (by `g`: `◯t3` fails; by `f`: `◯t3 ↠ t3` fails) | |
+
+So `R_{σ²⊥} = {w_k}`, order-isomorphic to `K`, and
+
+    x₀ = ◯σ²⊥ at w_k  ⟺  no S-world refuting σ²⊥ above w_k  ⟺  ∀ j ≥ k, j ⊩ p  ⟺  k ⊩ p
+    x₁ at w_k  ⟺  (◯Y ↠ t3) ↠ t3 at w_k  ⟺  w_k ≰ h  ⟺  k ⊩ q
+
+(for `x₁`: `σ²⊥` fails at `w_k`; the worlds above `w_k` refuting `t3` are the
+`w_j`, `f`, `g` and possibly `h`; `f`, `g` force `◯Y` and refute `t3`, every
+`w_j` sees `f`, so each of these refutes `◯Y ↠ t3`; `h` forces `◯Y ↠ t3` and
+refutes `t3`).  Lemma (a) with `φ = w` (back condition: every successor of
+`w_k` is a shell world or top, which forces `σ²⊥`, or a `w_j` with `j ≥ k`)
+then gives, for ◯-free `A` over `p`, `q`,
+
+    w_k ⊩ relB σ²⊥ xs A   ⟺   k ⊩_K A,
+
+and reflection follows: if `[relB A] ⊢ relB B` and `k ⊩_K A`, then
+`w_k ⊩ relB A`, by soundness `w_k ⊩ relB B`, so `k ⊩_K B`; by (b),
+`[A] ⊢ B`.
+
+The design works for every finite `K`, with no case on its shape: the only
+`K`-dependence is `S ∩ R` (read off `p`) and the edges `w_k ≤ h` (read off
+`q`).  The roles: `x₀` reads the `S`-membership of the `R`-worlds (the
+mechanism of `freeIPL1`, one level up), `x₁` reads which shell worlds lie
+above (the cofinality mechanism of `ZL`), and the two do not interfere
+because `x₀` is blind to the shell (every shell world forces `σ²⊥`) and `x₁`
+is blind to `S ∩ R` (it only asks for `◯Y`-worlds outside `R`).
+
+Validation (kernel-checked, `gadget_C1` … `gadget_C4`): the gadget over the
+IPC countermodel of each Stage 1 cell, as a `SubCM` table, refutes the
+image at `w_root` (7, 8, 8, 7 worlds).
+
 ## Log
 
 * 2026-10-27 19:38: statement written and built (`lake build wip.f0FreePair`),
@@ -90,3 +149,6 @@ the ladder skeleton).
 * 2026-10-27 19:45: Stage 1, the four cells: all PASS, kernel-checked
   (`lake build wip.f0FreePair` clean, pins `[propext, Quot.sound]`).
 * 2026-10-27 19:50: lemma (a) and the direction `⟹` PROVED, module clean.
+* 2026-10-27 19:55: gadget design written (above) and validated on the four
+  cells (`gadget_C1` … `gadget_C4`, kernel-checked); committed before its
+  general proof.

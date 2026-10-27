@@ -323,6 +323,77 @@ theorem freePair_preserves {A B : PLLFormula} (hA : boxFree A = true) (hB : boxF
     Deriv [relB b2 xs A] (relB b2 xs B) :=
   relB_preserves b2 xs 2 b2_le_xs_sem hA hB vA vB hd
 
+/-! ## Stage 2 (c): the gadget, its design validated on the four cells
+
+The gadget `M(K)` over a finite Kripke model `K` on `p = pvar 0`,
+`q = pvar 1` (design in `wip/f0FreePair-STATUS.md`): worlds `e`, `n` (tops),
+`f`, `g`, `h` (the shell: they refute `t3` and force `σ²⊥`), and `w_k` for
+`k ∈ K`;
+
+    w_j ≤ w_k ⟺ j ≤ k;   w_k ≤ e, n, f, g;   w_k ≤ h ⟺ k ⊮ q;
+    f ≤ e, n;   g ≤ e;   h ≤ e, n;
+    S = {n, g, h} ∪ {w_k : k ⊮ p}.
+
+Below: the gadget over the IPC countermodel of each cell, as a `SubCM` table
+(worlds `0 = e, 1 = n, 2 = f, 3 = g, 4 = h`, then `w_k`, root `w₀`),
+kernel-checked to refute the image: the design's existentials realised on the
+four designed cells (METHOD.md §3), before the general proof. -/
+
+/-- The gadget over `k₀ < k₁`, `q` at `k₁`, `p` nowhere, refutes `relB C1`. -/
+theorem gadget_C1 : ¬ Deriv [] (relB b2 xs C1) :=
+  SubTab.no.verdict (relB b2 xs C1)
+    { n := 7, root := 5,
+      le := [[true, false, false, false, false, false, false],
+             [false, true, false, false, false, false, false],
+             [true, true, true, false, false, false, false],
+             [true, false, false, true, false, false, false],
+             [true, true, false, false, true, false, false],
+             [true, true, true, true, true, true, true],
+             [true, true, true, true, false, false, true]],
+      S := [false, true, false, true, true, true, true], val := [[], [], [], [], [], [], []] }
+
+/-- The gadget over the fork `k₀ < k₁, k₂`, `q` at `k₁`, `p` nowhere, refutes
+`relB C2`. -/
+theorem gadget_C2 : ¬ Deriv [] (relB b2 xs C2) :=
+  SubTab.no.verdict (relB b2 xs C2)
+    { n := 8, root := 5,
+      le := [[true, false, false, false, false, false, false, false],
+             [false, true, false, false, false, false, false, false],
+             [true, true, true, false, false, false, false, false],
+             [true, false, false, true, false, false, false, false],
+             [true, true, false, false, true, false, false, false],
+             [true, true, true, true, true, true, true, true],
+             [true, true, true, true, false, false, true, false],
+             [true, true, true, true, true, false, false, true]],
+      S := [false, true, false, true, true, true, true, true], val := [[], [], [], [], [], [], [], []] }
+
+/-- The gadget over the fork, `p` at `k₁`, `q` at `k₂`, refutes `relB C3`. -/
+theorem gadget_C3 : ¬ Deriv [] (relB b2 xs C3) :=
+  SubTab.no.verdict (relB b2 xs C3)
+    { n := 8, root := 5,
+      le := [[true, false, false, false, false, false, false, false],
+             [false, true, false, false, false, false, false, false],
+             [true, true, true, false, false, false, false, false],
+             [true, false, false, true, false, false, false, false],
+             [true, true, false, false, true, false, false, false],
+             [true, true, true, true, true, true, true, true],
+             [true, true, true, true, true, false, true, false],
+             [true, true, true, true, false, false, false, true]],
+      S := [false, true, false, true, true, true, false, true], val := [[], [], [], [], [], [], [], []] }
+
+/-- The gadget over `k₀ < k₁`, `p` at `k₁`, `q` everywhere, refutes `relB C4`. -/
+theorem gadget_C4 : ¬ Deriv [] (relB b2 xs C4) :=
+  SubTab.no.verdict (relB b2 xs C4)
+    { n := 7, root := 5,
+      le := [[true, false, false, false, false, false, false],
+             [false, true, false, false, false, false, false],
+             [true, true, true, false, false, false, false],
+             [true, false, false, true, false, false, false],
+             [true, true, false, false, true, false, false],
+             [true, true, true, true, false, true, true],
+             [true, true, true, true, false, false, true]],
+      S := [false, true, false, true, true, true, false], val := [[], [], [], [], [], [], []] }
+
 end Pair
 end F0
 end PLLND
@@ -346,3 +417,7 @@ end PLLND
 #axioms_within PLLND.F0.Pair.relB_restrict [propext, Quot.sound]
 #axioms_within PLLND.F0.Pair.relB_preserves [propext, Quot.sound]
 #axioms_within PLLND.F0.Pair.freePair_preserves [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.gadget_C1 [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.gadget_C2 [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.gadget_C3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Pair.gadget_C4 [propext, Quot.sound]
