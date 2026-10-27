@@ -106,10 +106,10 @@ proposed for them.
 
 One declaration, in a module importing only `LaxLogic.PLL.ND.NDCore`
 (proposed: `Harness/Spec.lean`, namespace `PLLDecider`).  The subframe
-tableau, once moved, should take `PLLND.SubTab.Holds` to be that constant
-(an `abbrev`).  Otherwise the registry relies on definitional unfolding to
-identify two constants of the same value (decision M9; to be agreed with
-the agent doing the move).
+tableau, moved to this repository on 2026-10-22 (#74), should take
+`PLLND.SubTab.Holds` to be that constant (an `abbrev`).  Otherwise the
+registry relies on definitional unfolding to identify two constants of
+the same value (decision M9; settled in §9).
 
 ### 1.3 What each existing certifier needs to meet `Holds`
 

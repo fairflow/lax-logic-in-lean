@@ -4,8 +4,8 @@ Branch `f0-step4` (local only, not pushed, no upstream), cut from
 `origin/main` 70b977a (#96 and #97 merged).  Plan:
 `docs/f0-reimplementation-plan.md` §6 step 4; method: `METHOD-F0.md` §3
 (gate decisions of 2026-10-27) and §6; engine statements:
-`docs/engine-adoption-statements.md`, merged from the local branch
-`engine-adoption` (57577f0).
+`docs/engine-adoption-statements.md`, written on 2026-10-22 on the local
+branch `engine-adoption` and merged here.
 
 Scope: `fincm` (a disprover, `FinCM` countermodels from
 `CounterEmit.emit`) and `ljfo` (a prover, LJF◯ `DerivTree`s from
@@ -303,16 +303,15 @@ The certificates of four of these answers are kernel-checked in
   holds no row from a `CertifyAdoption` or `Harness` module.  The ledger
   check itself was not run locally.
 * `TOOLS.md`: the `plldecide` version cell set from `tools/tools-register.sh`
-  (`Harness b5d2c09 · 2026-10-27`).  `docs/engine-adoption-statements.md`
+  (after the squash below: `Harness e339b75 · 2026-10-27`).  `docs/engine-adoption-statements.md`
   §9.4: step 4 as built.
 * Disk: 126 488 MB free on `/System/Volumes/Data` at the close.
 
-**Commits** (branch `f0-step4`, local, not pushed, no upstream; the
-automatic upstream that `git checkout -b … origin/main` set was removed):
-`121d065` (the merge of `engine-adoption`, 57577f0), `b02a5fd` (document §9, this note),
-`350f062` (statements), `3f6bd86` (adapters, gates, Regression), `020d244`
-(settings, `plldecide`, TOOLS.md), `b5d2c09` (the exit fix, smoke cells),
-and this closing commit.
+**Commits.**  Branch `f0-step4`, local, not pushed, no upstream (the
+automatic upstream that `git checkout -b … origin/main` set was
+removed).  The branch was squashed into `e339b75` to keep the history
+free of references to the old location of the tableau, and the version
+cells were then updated in the following commit.
 
 **Skips and caps, for the manager.**
 * Not built: `g4c`, `frjw`, `reject` (out of scope); `curry_iff`; the
