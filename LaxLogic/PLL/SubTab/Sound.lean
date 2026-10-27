@@ -38,9 +38,9 @@ def Refutes (M : SubframeModel) (x : M.W) (s : SSeq) : Prop :=
   (s.isS = true → x ∈ M.S) ∧ (∀ γ ∈ s.ant, M.force x γ) ∧ (∀ δ ∈ s.suc, ¬ M.force x δ)
 
 /-- A closed tableau, as data: one constructor per rule, formulas named by
-value.  (No `Repr` instance: the derived one printed formulas through
-`PLLFormula`'s `Repr`, which reaches `Classical.choice`, and nothing used it;
-`tcertSrc` in `tools/SubTab/Source.lean` prints a certificate as Lean source.) -/
+value.  (Its `Repr` instance is written by hand, in `SubTab/Source.lean`, and
+prints a certificate as Lean source by `tcertSrc`: the derived one printed
+formulas through `PLLFormula`'s `Repr`, which reaches `Classical.choice`.) -/
 inductive TCert where
   | bot
   | ax (A : PLLFormula)

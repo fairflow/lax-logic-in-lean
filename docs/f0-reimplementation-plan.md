@@ -331,6 +331,21 @@ comes first, on 25 October.
 | 6 | The F0 store as a lean-certify client: the E1 rows extended, the database engine first in the settings, the chain certifier and the tactic of §0, import of RNDB with the parity report of §5 | G2 for the statements | after 5 |
 | later | Supersession (G5); F1, the one-variable fragment (G1); the systematic numbering of the classes (METHOD-F0 §8 Q6) | | |
 
+*Step 3 done, 2026-10-27, with D6* (details in `docs/f0-step3-STATUS.md`):
+- The engine, the producer, the enumeration and the certifiers were already in
+  the library `SubTab` (commit `9c478e2`, 2026-10-22), and the derived
+  `Repr TCert` already removed.  Their import closure was re-checked: no
+  `tools.`/`wip.` module.
+- The decider's front end: the formula parser and printer moved from
+  `tools/Decide.lean` to `LaxLogic/PLL/Syntax/Parse.lean`, and the certificate
+  printers from `tools/SubTab/` to `LaxLogic/PLL/SubTab/Source.lean`.  The
+  closure of `subtabdecide` now holds no `wip/` module (it held 17).
+  `pllfast` and `refbench` keep `tools.Decide` and `wip.two_sided` by design:
+  the W-engine fallback and the bench's other engines.
+- `Repr TCert` is back, written by hand over `tcertSrc`, within `[propext]`.
+- D6: `SemUI.amalgamation` moved to `wip/semUILayeredAmalgamation.lean`.
+  `collectAxioms` finds no `sorryAx` in the tableau's import closure.
+
 The spikes S4 (certificate cost) and S5 (import dry run) of the first
 draft are folded into step 6: lean-certify's `Chunk` answers S4's
 question, and the import's parity report is S5's result.

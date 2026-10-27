@@ -171,10 +171,13 @@ globs = ["FRJ.Gbu.Base", "FRJ.Gbu.DB", "FRJ.Gbu.Search", "FRJ.Gbu.Measure", "FRJ
 # dichotomy and completeness of the tableau, the translation of closed
 # tableaux into LaxND, the untrusted producer and the finite-model
 # enumeration, the lean-certify engine, the negative gates and the generated
-# facts.  Every declaration is within [propext, Quot.sound], and the import
-# closure is free of tools/ and wip/.  An explicit list in defaultTargets, as
-# FRJGbu: the `LaxLogic` root module does not import these.  The deciders and
-# the output layer are in SubTabTools.
+# facts, and the certificate printers with the `Repr TCert` instance (Source,
+# moved from tools/ 2026-10-27).  Every declaration is within [propext,
+# Quot.sound], and the import closure is free of tools/ and wip/.  The parser
+# and formula printer they use, LaxLogic.PLL.Syntax.Parse, is outside this list
+# (`parseFormula` reaches Classical.choice through Lean's `String.toList`).  An
+# explicit list in defaultTargets, as FRJGbu: the `LaxLogic` root module does
+# not import these.  The decider settings are in SubTabTools.
 [[lean_lib]]
 name = "SubTab"
 globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
@@ -182,7 +185,8 @@ globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
          "LaxLogic.PLL.SubTab.Model", "LaxLogic.PLL.SubTab.Complete",
          "LaxLogic.PLL.SubTab.Translate", "LaxLogic.PLL.SubTab.ModelEnum",
          "LaxLogic.PLL.SubTab.Tableau", "LaxLogic.PLL.SubTab.Engine",
-         "LaxLogic.PLL.SubTab.Gates", "LaxLogic.PLL.SubTab.Facts"]
+         "LaxLogic.PLL.SubTab.Gates", "LaxLogic.PLL.SubTab.Facts",
+         "LaxLogic.PLL.SubTab.Source"]
 
 [[lean_exe]]
 name = "bilaxscreen"
@@ -226,12 +230,12 @@ name = "pllbench"
 root = "tools.Bench"
 
 # The subframe tableau's tools (tools/SubTab/, 2026-10-22): the lean-certify
-# decider settings and the source printers of the certificates.  The tableau,
-# the enumeration, the engine and their theory are the library SubTab,
-# LaxLogic/PLL/SubTab/.  The globs are an explicit list, as above.
+# decider settings.  The tableau, the enumeration, the engine, the certificate
+# printers and their theory are the library SubTab, LaxLogic/PLL/SubTab/ (the
+# printers moved there 2026-10-27).  The globs are an explicit list, as above.
 [[lean_lib]]
 name = "SubTabTools"
-globs = ["tools.SubTab.Settings", "tools.SubTab.Source"]
+globs = ["tools.SubTab.Settings"]
 
 # pllfast: `pll` with the subframe tableau in front — the tableau for the
 # verdict (a countermodel, or a closed tableau whose proof term comes from
