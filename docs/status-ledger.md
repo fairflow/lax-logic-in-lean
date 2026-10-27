@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-10-22 13:27 BST from `e14130a` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-10-27 10:13 GMT from `356b569` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**30057 declarations** in **611 modules**: 13786 theorems, 16271 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**30714 declarations** in **626 modules**: 14047 theorems, 16667 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -100,10 +100,11 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.PLL.Normalisation` | 398 | 170 | 398 |  |  |
 | `LaxLogic.PLL.Realisability` | 112 | 40 | 112 |  |  |
 | `LaxLogic.PLL.Search` | 446 | 74 | 446 |  |  |
-| `LaxLogic.PLL.SemUI` | 939 | 537 | 938 | 1 |  |
+| `LaxLogic.PLL.SemUI` | 938 | 536 | 938 |  |  |
 | `LaxLogic.PLL.Semantics` | 623 | 352 | 623 |  |  |
 | `LaxLogic.PLL.Sequent` | 266 | 116 | 266 |  |  |
-| `LaxLogic.PLL.Syntax` | 394 | 143 | 394 |  |  |
+| `LaxLogic.PLL.SubTab` | 657 | 261 | 657 |  |  |
+| `LaxLogic.PLL.Syntax` | 448 | 155 | 448 |  |  |
 | `LaxLogic.PLL.Timing` | 133 | 42 | 133 |  |  |
 | `LaxLogic.PLL.UI` | 309 | 214 | 309 |  |  |
 | `LaxLogic.PLLInstanceBound` | 27 | 9 | 27 |  |  |
@@ -175,7 +176,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `RNDB` | 2149 | 95 | 2149 |  |  |
 | `Reject` | 224 | 116 | 224 |  |  |
 | `Rewrite` | 113 | 62 | 113 |  |  |
-| `tools` | 901 | 131 | 901 |  |  |
+| `tools` | 847 | 119 | 847 |  |  |
 | `wip.G4conf` | 62 | 18 | 60 | 2 |  |
 | `wip.ascRefute` | 25 | 10 | 25 |  |  |
 | `wip.atomForce` | 6 | 6 | 6 |  |  |
@@ -328,6 +329,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.secondgen` | 7 | 6 | 7 |  |  |
 | `wip.seeds` | 14 | 13 | 14 |  |  |
 | `wip.semSpecW` | 6 | 4 | 6 |  |  |
+| `wip.semUILayeredAmalgamation` | 1 | 1 | 0 | 1 |  |
 | `wip.semui_amalg_probe` | 6 | 0 | 6 |  |  |
 | `wip.semui_char` | 16 | 14 | 15 | 1 |  |
 | `wip.semui_ctx_core` | 41 | 4 | 41 |  |  |
@@ -396,9 +398,9 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 12957 |
-| `propext`, `Quot.sound` | 8516 |
-| `propext` | 5713 |
+| *(none — axiom-free)* | 13358 |
+| `propext`, `Quot.sound` | 8627 |
+| `propext` | 5858 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2837 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
@@ -416,7 +418,6 @@ Every distinct axiom set in the estate, most common first.
 |---|---|
 | `LaxLogic.Obligation.Examples.downstream` | `LaxLogic.Obligation.Examples` |
 | `LaxLogic.Obligation.Examples.sorried` | `LaxLogic.Obligation.Examples` |
-| `PLLND.SemUI.amalgamation` | `LaxLogic.PLL.SemUI.SemUILayered` |
 | `PLLND.conservativity_IPL` | `LaxLogic.ToolkitTest.Challenge.conservativity_IPL` |
 | `PLLND.isIPL_erase` | `LaxLogic.ToolkitTest.Challenge.isIPL_erase` |
 | `LJFIPC.map_unNeg_negOf` | `LaxLogic.ToolkitTest.Challenge.map_unNeg_negOf` |
@@ -428,6 +429,7 @@ Every distinct axiom set in the estate, most common first.
 | `PLLND.gammaPairFloorA_open` | `wip.cascadeBox` |
 | `PLLND.gammaPairFloorBox_open` | `wip.cascadeBox` |
 | `PLLND.jumpPairFloor_open` | `wip.cascadeBox` |
+| `PLLND.SemUI.amalgamation` | `wip.semUILayeredAmalgamation` |
 | `PLLND.SemUI.layered_of_frag_agree_W` | `wip.semui_char` |
 | `PLLND.SemUI.amalgamation_assembled` | `wip.semui_henkin` |
 | `PLLND.SemUI.wit_force` | `wip.semui_henkin` |
