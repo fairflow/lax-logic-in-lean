@@ -103,6 +103,14 @@ steerable.
 | G5 | supersession | any tool or data set that replaces another (the `constraint-supersession-check` skill first) |
 | G6 | release | anything private becoming public, and any Pages publication |
 
+**Matthew's decisions on the gates, 2026-10-27:**
+- **G1:** passed. §1 is written.
+- **G2:** approved, subject to the choice of engines. Statements that depend on an engine wait for the comparison (G4).
+- **G3:** delegated to the manager. The manager settles the tie rule (§8 Q5) and the keys under invariant 5, and reports the decision.
+- **G4:** the designed cells, budgets and measures are fixed before any run. Then one complete run compares every engine on all of them.
+- **G5:** delegated, with one rule. Old copies are preserved, and the new ones are marked in TOOLS.md as the ones to use. Nothing is deleted.
+- **G6:** not needed now.
+
 ## 4 · Units of work
 
 - **Spike**: at most half a day, one question, read-only wherever possible.
