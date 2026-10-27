@@ -387,6 +387,7 @@ Only L3's class key needs G3.
 * **D2.**  The name and place of the new library.  The proposal is a
   top-level `F0/` with namespace `F0`, a new `lean_lib`, outside
   `defaultTargets` until G5.
+  *Decided 2026-10-27: approved, `F0/`.*
 * **D3.**  The certificate formats.  *Revised 2026-10-22: they follow the
   comparison of step 5 (§0).*  The first draft's recommendation was LJF◯ trees for
   `⊢` (fuel-free, checker on main, carried to `LaxND` by `bridge_iff`)
@@ -404,3 +405,6 @@ Only L3's class key needs G3.
 * **D6.**  The sorried library theorem `SemUILayered.amalgamation`.  The
   new library does not need it (P6), but `Rewrite/Core.lean` imports its
   module, so the old normaliser's closure keeps it until you decide.
+  *Decided 2026-10-27:* do not import it. Nothing depends on it, and it is sorried, so it is not trusted.
+  - **Finding:** its module, `LaxLogic/PLL/SemUI/SemUILayered.lean`, is also in the import closure of the subframe tableau, through `SubTab/Semantics` → `SubframeLayered` → `SemUIFrag`.
+  - **Implementation, folded into step 3:** move the sorried theorem out of that module into a `wip/` module of its own, so that no library module's closure contains a `sorry`. This is a move, not a deletion. Then confirm with `collectAxioms` that no library declaration depends on `sorryAx`.
