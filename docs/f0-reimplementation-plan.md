@@ -227,6 +227,10 @@ frozen version of that list by value, never a definition that grows.
 This reverses a deliberate choice of `RNDB/Types.lean`, so it needs
 Matthew's word (§8, D4).  (Answers §1.5.)
 
+*Decided by Matthew, 2026-10-27:* the raw store holds absolute facts only, with no relative claims.
+- No layer of relative claims is built now.
+- If one is needed later, it sits on top of the store. Each frozen list (an issue of the database) gets a short identifier, and a file of claims relative to that list cites it by the identifier, so it costs little space.
+
 **P8. Every answer certified or unknown.**  `ask` tries strategies in a
 fixed order and returns the first certified answer:
 
@@ -379,7 +383,7 @@ Only L3's class key needs G3.
   - Approved: P1, P3, P4, P6, P8, P10.
   - Approved with amendments: P2 (two phases: choose a route, then fix it) and P5 (generated and regenerable, but not regenerated on every push). See the notes under each.
   - Struck: P9.
-  - P7 is open, pending the explanation asked for (it is also D4).
+  - P7 approved, and with it D4: the raw store holds absolute facts only, and relative claims go in a later layer if ever needed.
 * **D2.**  The name and place of the new library.  The proposal is a
   top-level `F0/` with namespace `F0`, a new `lean_lib`, outside
   `defaultTargets` until G5.
