@@ -653,6 +653,16 @@ partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
     return some ((← form st 9 a) ++ "[q := " ++ hd ++ "(q),\\ \\bot := " ++ (← form st 1 b) ++ "]")
   | (`PLLND.F0.FreeIPL.relG, #[x, a]) =>
     return some ((← form st 9 a) ++ "[q := " ++ (← generic st 9 x) ++ "(q),\\ \\bot := t_{3}]")
+  | (`PLLND.F0.FreeIPL.Rneg, #[a]) =>
+    return some (wrap 1 ((← form st 2 a) ++ " \\twoheadrightarrow t_{3}"))
+  | (`PLLND.F0.FreeIPL.sgn, #[s, x]) =>
+    return some ((← form st 9 x) ++ "^{" ++ (← generic st 0 s) ++ "}")
+  | (`PLLND.F0.Pair.pP, #[]) => return some "p_{0}"
+  | (`PLLND.F0.Pair.qP, #[]) => return some "p_{1}"
+  | (`PLLND.F0.Pair.negF, #[a]) => return some (wrap 4 ("\\lnot " ++ (← form st 4 a)))
+  -- the order of a subframe model, as in the semantics paper
+  | (``PLLND.SubframeModel.le, #[_, a, b]) =>
+    return some (wrap 5 ((← generic st 6 a) ++ " \\le " ++ (← generic st 6 b)))
   | (`PLLND.F0.FreeIPL.h1, #[a]) =>
     return some ("\\sigma(" ++ (← form st 9 a) ++ "[p := \\bigcirc\\bot])")
   | (`PLLND.F0.FreeHAn.pvar, #[i]) => return some ("p_{" ++ (← generic st 0 i) ++ "}")

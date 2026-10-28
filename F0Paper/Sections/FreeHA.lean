@@ -114,9 +114,11 @@ PROVED.
 
 {leanStmt MeetCount.meet_counting}
 
-{stmt}`MeetCount.MeetEmb`
-
-Here $`k(b) \le K` is `TypeBound`: one of $`K` valuations of the variable-free
+Here $`f` is a meet-embedding of $`H_n` (`MeetEmb`) when it sends the
+$`\bigcirc`-free formulas in $`p_0, \ldots, p_{n-1}` to variable-free
+formulas, $`A \dashv\vdash B` iff $`f(A) \dashv\vdash f(B)`, and
+$`f(A \land B) \dashv\vdash f(A) \land f(B)`; nothing is assumed about
+$`\lor`, $`\twoheadrightarrow` or $`\bot`.  And $`k(b) \le K` is `TypeBound`: one of $`K` valuations of the variable-free
 formulas is assigned to every world of every finite subframe model, and every
 $`b`-maximal world forces exactly the formulas its valuation makes true.
 $`k(\bot) = 2` and $`k(t_3) = 3`: the upper bounds are PROVED
@@ -294,9 +296,11 @@ level down: base $`\sigma^{2}\bot`, threshold $`t_3`, the three
 $`t_3`-maximal worlds $`f`, $`g`, $`h` above the copies, one of each of the three
 types, and the generators $`y_0 = \bigcirc\sigma^{2}\bot`, reading $`S`, and
 $`y_1 = \sigma^{2}\bot \lor ((\bigcirc Y \twoheadrightarrow t_3) \twoheadrightarrow t_3)`,
-reading whether $`h` lies above.  PROVED.
+reading whether $`h` lies above.  PROVED:
 
-{stmt}`Pair.freePair`
+{stmt}`Pair.FreePair`
+
+{leanDef Pair.FreePair}
 
 {leanStmt Pair.freePair}
 
@@ -322,9 +326,9 @@ One family of generators for every $`n`:
 
 PROVED, with the family $`x(p_i) = x_i`:
 
-{stmt}`freeFamily3`
-
 {leanStmt freeFamily3}
+
+So every $`H_n`, and $`H_\omega`, lies in $`[\sigma^{3}\bot, \top]`.  PROVED:
 
 {stmt}`freeHAnAbove_base3`
 
@@ -334,7 +338,7 @@ PROVED, with the family $`x(p_i) = x_i`:
 
 {leanStmt freeHAωAbove_base3}
 
-{stmt}`conjecture`
+The conjecture, with $`m = 3`.  PROVED:
 
 {leanStmt conjecture}
 
@@ -422,7 +426,7 @@ $`h` is one-to-one, not onto $`[\sigma^{3}\bot, \top]`.
 
 # Supporting declarations
 
-{lemmaTable relB pvar varsBelow FreeHAωAbove TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.FreeIPL1InAboveT3 FreeIPL.freeIPL1 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.NoMeetCopyH2 MeetCount.noMeetCopyH2_bot MeetCount.noMeetCopyH2_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 Free3 free3_preserves free3_reflects free3 freeFamily3_of_free3 freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.FreeOmega3 Base3.freeOmega3 Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc EmbedForms.PairwiseHimp EmbedForms.pairwiseHimp EmbedForms.Shift EmbedForms.shift EmbedForms.ShiftH2 EmbedForms.shiftH2 EmbedForms.ShiftOrderEmb EmbedForms.shift2_orderEmb EmbedForms.ShiftMeetFails EmbedForms.shiftMeetFails}
+{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.FreeIPL1InAboveT3 FreeIPL.freeIPL1 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.NoMeetCopyH2 MeetCount.noMeetCopyH2_bot MeetCount.noMeetCopyH2_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 Free3 free3_preserves free3_reflects free3 freeFamily3_of_free3 freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.FreeOmega3 Base3.freeOmega3 Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc EmbedForms.PairwiseHimp EmbedForms.pairwiseHimp EmbedForms.Shift EmbedForms.shift EmbedForms.ShiftH2 EmbedForms.shiftH2 EmbedForms.ShiftOrderEmb EmbedForms.shift2_orderEmb EmbedForms.ShiftMeetFails EmbedForms.shiftMeetFails}
 
 Pins: every declaration of `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
 `wip/f0FreePair.lean`, `wip/f0MeetCount.lean` and `wip/f0FreeBase3.lean` here
