@@ -405,6 +405,156 @@ theorem cell_O2 : ¬ Deriv [] (relB b3 xr O2) := SubTab.no.verdict (relB b3 xr O
 /-- **Cell O3 PASSES**: `⊬ ◯(y₀ ∨ y₁) ↠ ◯y₀ ∨ ◯y₁`, `y₁ = xr a1 = gen 2`. -/
 theorem cell_O3 : ¬ Deriv [] (relB b3 xr O3) := SubTab.no.verdict (relB b3 xr O3) (gadT K3)
 
+/-! ## Stage C (a): the relativisation lemma with `◯`
+
+`relB_transferω` of `f0FreeBase3` with a `◯` case, under the extra hypothesis
+that the map reflects and preserves `S`:
+
+    hS : ∀ k, φ k ∈ M.S ⟺ k ∈ K.S.
+
+`◯`, direction `⟸`: an `S`-point `v` above `φ k` either forces `b`, hence
+every `relB`-image (`force_relB_of_b`, which covers `◯`), or is `φ j` with
+`j ≥ k`, and then `j ∈ K.S` by `hS`.  Direction `⟹`: `φ j ∈ M.S` by `hS`. -/
+
+section RelativisationO
+
+variable (M : SubframeModel) (b : PLLFormula) (x : String → PLLFormula)
+
+/-- **The relativisation lemma, `◯` included.** -/
+theorem relB_transferO (K : SubframeModel) (φ : K.W → M.W)
+    (hbx : ∀ v a, M.force v b → M.force v (x a))
+    (hb : ∀ k, ¬ M.force (φ k) b)
+    (hmono : ∀ {k j}, K.le k j → M.le (φ k) (φ j))
+    (hback : ∀ k v, M.le (φ k) v → M.force v b ∨ ∃ j, K.le k j ∧ φ j = v)
+    (hS : ∀ k, φ k ∈ M.S ↔ k ∈ K.S)
+    (hatom : ∀ k a, (M.force (φ k) (x a) ↔ k ∈ K.V a)) :
+    ∀ (A : PLLFormula) (k : K.W), (M.force (φ k) (relB b x A) ↔ K.force k A)
+  | .prop a, k => hatom k a
+  | .falsePLL, k => ⟨hb k, False.elim⟩
+  | .and A B, k => and_congr (relB_transferO K φ hbx hb hmono hback hS hatom A k)
+      (relB_transferO K φ hbx hb hmono hback hS hatom B k)
+  | .or A B, k => or_congr (relB_transferO K φ hbx hb hmono hback hS hatom A k)
+      (relB_transferO K φ hbx hb hmono hback hS hatom B k)
+  | .ifThen A B, k => by
+      have ihA := relB_transferO K φ hbx hb hmono hback hS hatom A
+      have ihB := relB_transferO K φ hbx hb hmono hback hS hatom B
+      show (∀ v, M.le (φ k) v → M.force v (relB b x A) → M.force v (relB b x B)) ↔
+        (∀ j, K.le k j → K.force j A → K.force j B)
+      constructor
+      · intro h j hj hA
+        exact (ihB j).mp (h (φ j) (hmono hj) ((ihA j).mpr hA))
+      · intro h v hv hA
+        rcases hback k v hv with hvb | ⟨j, hj, rfl⟩
+        · exact force_relB_of_b M b x hbx B v hvb
+        · exact (ihB j).mpr (h j hj ((ihA j).mp hA))
+  | .somehow A, k => by
+      have ihA := relB_transferO K φ hbx hb hmono hback hS hatom A
+      show (∀ v, M.le (φ k) v → v ∈ M.S → M.force v (relB b x A)) ↔
+        (∀ j, K.le k j → j ∈ K.S → K.force j A)
+      constructor
+      · intro h j hj hjS
+        exact (ihA j).mp (h (φ j) (hmono hj) ((hS j).mpr hjS))
+      · intro h v hv hvS
+        rcases hback k v hv with hvb | ⟨j, hj, rfl⟩
+        · exact force_relB_of_b M b x hbx A v hvb
+        · exact (ihA j).mpr (h j hj ((hS j).mp hvS))
+
+/-- **The restriction `R_b` keeping `S`**: the worlds refuting `b`, the order
+and `S` restricted, `V a = {v : v ⊩ x a}`. -/
+def restrictS : SubframeModel where
+  W := {v : M.W // ¬ M.force v b}
+  le u v := M.le u.1 v.1
+  S := {u | u.1 ∈ M.S}
+  V a := {v | M.force v.1 (x a)}
+  refl u := M.refl u.1
+  trans h₁ h₂ := M.trans h₁ h₂
+  hered h hv := SubframeModel.force_mono M _ h hv
+
+/-- At a world `w ⊮ b` of a finite model, the `relB`-image of any `A` holds
+iff `A` holds at `w` in `R_b` (with `S` restricted). -/
+theorem relB_restrictS [FinDec M] (hbx : ∀ v a, M.force v b → M.force v (x a)) :
+    ∀ (A : PLLFormula) (w : (restrictS M b x).W),
+      (M.force w.1 (relB b x A) ↔ (restrictS M b x).force w A) :=
+  relB_transferO M b x (restrictS M b x) Subtype.val hbx (fun w => w.2) (fun h => h)
+    (fun _ v hwv => if hvb : M.force v b then Or.inl hvb else Or.inr ⟨⟨v, hvb⟩, hwv, rfl⟩)
+    (fun _ => Iff.rfl) (fun _ _ => Iff.rfl)
+
+end RelativisationO
+
+/-- **Preservation, `◯` included** (the direction `⟹`): for a base `b` below
+every generator in every model, `[A] ⊢ B` gives `[relB b x A] ⊢ relB b x B`
+for ALL `A`, `B`. -/
+theorem relB_preservesO (b : PLLFormula) (x : String → PLLFormula)
+    (hbx : ∀ (M : SubframeModel) v a, M.force v b → M.force v (x a))
+    {A B : PLLFormula} (hd : Deriv [A] B) : Deriv [relB b x A] (relB b x B) := by
+  obtain ⟨d⟩ := hd
+  have hsem : ∀ (M : SubframeModel) [FinDec M] (v : M.W),
+      M.force v (relB b x A) → M.force v (relB b x B) := by
+    intro M _ v hv
+    rcases Decidable.em (M.force v b) with hvb | hvb
+    · exact force_relB_of_b M b x (hbx M) B v hvb
+    · have hA' := (relB_restrictS M b x (hbx M) A ⟨v, hvb⟩).mp hv
+      exact (relB_restrictS M b x (hbx M) B ⟨v, hvb⟩).mpr
+        (SubframeModel.CF.soundness₁ d (restrictS M b x) ⟨v, hvb⟩ hA')
+  have h2 : Deriv [] ((relB b x A).ifThen (relB b x B)) :=
+    SubframeModel.CF.completeness_imp hsem
+  exact Deriv.impElim (h2.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _))
+
+/-! ## Stage C (b): the gadget with `K`'s own `S` on the copies -/
+
+namespace GadR
+
+variable {K : SubframeModel} [FinDec K]
+
+/-- **The gadget transfer, `◯` included**: with `w_k ∈ S ⟺ k ∈ K.S`,
+
+    w_k ⊩ relB σ³⊥ xr A   ⟺   k ⊩_K A     for every A. -/
+theorem transfer : ∀ (A : PLLFormula) (k : K.W),
+    ((MS K (· ∈ K.S)).force (Base3.Gad.Pt.w k) (relB b3 xr A) ↔ K.force k A) :=
+  relB_transferO (MS K (· ∈ K.S)) b3 xr K Base3.Gad.Pt.w (fun v _ hv => b3_le_xr_sem _ v _ hv)
+    w_not_b3 (fun h => h) w_back (fun _ => Iff.rfl) w_read
+
+end GadR
+
+/-- **`FreeReaders`, direction `⟸`** (faithfulness), by the gadget over every
+finite Kripke model, the copies carrying the model's own `S`. -/
+theorem freeReaders_reflects {A B : PLLFormula}
+    (hd : Deriv [relB b3 xr A] (relB b3 xr B)) : Deriv [A] B := by
+  obtain ⟨d⟩ := hd
+  have hsem : ∀ (K : SubframeModel) [FinDec K] (k : K.W), K.force k A → K.force k B := by
+    intro K _ k hk
+    exact (GadR.transfer B k).mp
+      (SubframeModel.CF.soundness₁ d (GadR.MS K (· ∈ K.S)) (Base3.Gad.Pt.w k)
+        ((GadR.transfer A k).mpr hk))
+  have h2 : Deriv [] (A.ifThen B) := SubframeModel.CF.completeness_imp hsem
+  exact Deriv.impElim (h2.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _))
+
+/-- **`FreeReaders`, direction `⟹`** (substitution). -/
+theorem freeReaders_preserves {A B : PLLFormula} (hd : Deriv [A] B) :
+    Deriv [relB b3 xr A] (relB b3 xr B) :=
+  relB_preservesO b3 xr (fun M v _ hv => b3_le_xr_sem M v _ hv) hd
+
+/-- **PROVED: `FreeReaders`.** -/
+theorem freeReaders : FreeReaders := fun _ _ => ⟨freeReaders_preserves, freeReaders_reflects⟩
+
+/-- **PROVED: `FreePLLAbove (σ³⊥)`**: PLL embeds faithfully into `[σ³⊥, ⊤]`
+of its closed fragment, `◯` to `◯`. -/
+theorem freePLLAbove_base3 : FreePLLAbove (base 3) := ⟨xr, xr_vf, b3_le_xr, freeReaders⟩
+
+/-- `FreePLLAbove b` gives the `n`-variable form for every `n`. -/
+theorem freePLLnAbove_of (b : PLLFormula) (h : FreePLLAbove b) (n : Nat) : FreePLLnAbove b n :=
+  let ⟨x, hvf, hle, hf⟩ := h
+  ⟨x, hvf, hle, fun A B _ _ => hf A B⟩
+
+/-- **PROVED: the `n`-variable form**, for every `n`. -/
+theorem freePLLnAbove_base3 (n : Nat) : FreePLLnAbove (base 3) n :=
+  freePLLnAbove_of (base 3) freePLLAbove_base3 n
+
+/-- `FreePLLAbove b` restricts to `FreeHAωAbove b` (the ◯-free formulas). -/
+theorem freeHAωAbove_of_freePLL (b : PLLFormula) (h : FreePLLAbove b) : FreeHAωAbove b :=
+  let ⟨x, hvf, hle, hf⟩ := h
+  ⟨x, hvf, hle, fun A B _ _ => hf A B⟩
+
 end FreePLL
 end F0
 end PLLND
@@ -434,3 +584,14 @@ end PLLND
 #axioms_within PLLND.F0.FreePLL.cell_O1 [propext, Quot.sound]
 #axioms_within PLLND.F0.FreePLL.cell_O2 [propext, Quot.sound]
 #axioms_within PLLND.F0.FreePLL.cell_O3 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.relB_transferO [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.relB_restrictS [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.relB_preservesO [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.GadR.transfer [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.freeReaders_reflects [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.freeReaders_preserves [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.freeReaders [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.freePLLAbove_base3 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.freePLLnAbove_of [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.freePLLnAbove_base3 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.freeHAωAbove_of_freePLL [propext, Quot.sound]

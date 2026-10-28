@@ -37,8 +37,16 @@ Designed cells (Stage B), atoms `a0 = ""` (code 0, read by `gen 1`) and
 | `⊬ O1`, `⊬ O2`, `⊬ O3` in PLL | `pll_O1`, `pll_O2`, `pll_O3` | PROVED (1-, 2-, 3-world countermodels) |
 | Stage B images `relB σ³⊥ xr Oᵢ` no theorems | `cell_O1`, `cell_O2`, `cell_O3` | PROVED (gadget tables, 11, 12, 13 worlds) |
 | base facts and readings on the three tables | `baseFacts_K1/K2/K3`, `reads_K1/K2/K3` | PROVED |
-| `FreeReaders` | — | OPEN |
-| `FreePLLAbove (σ³⊥)` | — | OPEN |
+| relativisation lemma with `◯` (under `hS`) | `relB_transferO` | PROVED |
+| restriction `R_b` keeping `S`; transfer to it | `restrictS`, `relB_restrictS` | PROVED |
+| preservation for all formulas (`⟹`) | `relB_preservesO` | PROVED |
+| gadget transfer, `◯` included, copies with `K`'s `S` | `GadR.transfer` | PROVED |
+| `FreeReaders`, `⟹` / `⟸` | `freeReaders_preserves` / `freeReaders_reflects` | PROVED |
+| **`FreeReaders`** | `freeReaders` | **PROVED** |
+| **`FreePLLAbove (σ³⊥)`** | `freePLLAbove_base3` | **PROVED** |
+| `FreePLLAbove b → FreePLLnAbove b n` | `freePLLnAbove_of` | PROVED (packaging) |
+| **`∀ n, FreePLLnAbove (σ³⊥) n`** | `freePLLnAbove_base3` | **PROVED** |
+| `FreePLLAbove b → FreeHAωAbove b` | `freeHAωAbove_of_freePLL` | PROVED (packaging) |
 
 ## Stage A (rule 8): the ◯-free fragment, PROVED
 
@@ -71,6 +79,48 @@ in `S` iff `i ∈ S`, seeing `e₀ n₀ L₀ f m₀ kn` always, `m₁` and `L₁
 `baseFacts` holds, and `readsB`: at every copy `xr p`, `xr q` hold iff `p`,
 `q` hold at the world, and the copy is in `S` iff the world is.
 
+## Stage C: the proof (PROVED)
+
+`relB_transferO` is `relB_transferω` of `f0FreeBase3` with a `◯` case,
+under `hS : ∀ k, φ k ∈ M.S ⟺ k ∈ K.S`:
+
+* `⟹`: for `j ≥ k` in `K.S`, `φ j ≥ φ k` and `φ j ∈ M.S`, so `φ j ⊩ relB A`,
+  so `j ⊩ A`.
+* `⟸`: an `S`-point `v ≥ φ k` either forces `b`, hence every `relB`-image
+  (`force_relB_of_b`, which already covers `◯`), or is `φ j`, `j ≥ k`, and
+  then `j ∈ K.S`, so `j ⊩ A`, so `φ j ⊩ relB A`.
+
+Direction `⟹` of the theorem (`relB_preservesO`), semantic route: at a world
+`v ⊮ b` of a finite model, the restriction `R_b` to the worlds refuting `b`,
+with `S` restricted and `V a = {u : u ⊩ x a}` (`restrictS`), satisfies the
+hypotheses of `relB_transferO` with `φ = Subtype.val` (`hS` by definition);
+soundness on `R_b` and `completeness_imp` finish.  (The repository has term
+substitution, `LaxLogic/PLL/ND/Subst.lean`, but no atom-substitution lemma on
+`LaxND`; the semantic route needed no new syntax.)
+
+Direction `⟸` (`freeReaders_reflects`): the readers' gadget
+`GadR.MS K (· ∈ K.S)` satisfies `hS` by definition; every other hypothesis
+is a Stage A lemma, all independent of the copies' `S`.  So
+`w_k ⊩ relB σ³⊥ xr A ⟺ k ⊩ A` for every `A` (`GadR.transfer`), and
+`completeness_imp` reduces `[A] ⊢ B` to finite `K`.
+
+The manager's pen argument holds as written; nothing in it was wrong.  The
+one thing the brief did not say: the Stage B cells cannot use the atoms
+`pvar i`, since `code "p" = 113` and the reader `gen 114` is too large to
+evaluate; the atoms `""` and `"\x00"` (codes `0`, `1`) were used.
+
+## Gates (watched failing, 2026-10-28, scratch gate file, `lake env lean`)
+
+* `#axioms_within freePLLAbove_base3 [propext]`: FAIL (Quot.sound).
+* `#axioms_within GadR.transfer []`: FAIL (propext, Quot.sound).
+* `gadT K2` with the copies' `S` read as in the `x₀` gadget (`w_k ∈ S` iff
+  `k ⊮ p`, here both copies): the O2 verdict is REJECTED (`decide`: false).
+  So the copies must carry `K`'s own `S`.
+* `gadT K2` with no copy in `S` (Stage A's choice `Sw = ∅`): O2 REJECTED.
+* `gadT K1` with the readers `m₁`, `m₂` (and `L₁`, `L₂`) taken from above
+  the copy: O1 REJECTED (the copy then forces `gen 1`).
+* Control: the unmodified `gadT K2` is accepted.
+
 ## Log
 
 * 2026-10-28: Stage 0, statement written and checked (`lake env lean`),
@@ -78,3 +128,6 @@ in `S` iff `i ∈ S`, seeing `e₀ n₀ L₀ f m₀ kn` always, `m₁` and `L₁
 * 2026-10-28: Stage A, `FreeReadersIPC` PROVED, pins `[propext, Quot.sound]`.
 * 2026-10-28: Stage B, three designed cells PASS (`decide +kernel` on the
   gadget tables), base facts and readings kernel-checked.
+* 2026-10-28: Stage C, `FreeReaders`, `FreePLLAbove (σ³⊥)` and
+  `∀ n, FreePLLnAbove (σ³⊥) n` PROVED (`lake build wip.f0FreePLL` clean,
+  every pin `[propext, Quot.sound]`); gates watched failing.
