@@ -148,6 +148,129 @@ theorem conjecture_of_base3 (h : ∀ n, FreeHAnAbove (base 3) n) : Conjecture :=
 def sideCell : PLLFormula :=
   ((oddGap 0).ifThen (oddGap 1)).or ((oddGap 1).ifThen (oddGap 0))
 
+set_option maxRecDepth 100000
+
+/-- **The side cell is no theorem**: `⊬ (g1 ↠ g3) ∨ (g3 ↠ g1)` (subframe
+tableau, `refbench fact`: countermodel of 27 worlds, minimised to 8; checked
+here by the kernel against `sideCell` as computed in Lean).  So this cell does
+not rule out the odd-gap pair as generators of a free Heyting algebra. -/
+theorem side_cell : ¬ Deriv [] sideCell :=
+  SubTab.no.verdict sideCell
+    { n := 8, root := 0, le := [[true, true, true, true, true, true, true, true], [false, true, true, true, true, false, false, false], [false, false, true, false, false, false, false, false], [false, false, false, true, true, false, false, false], [false, false, false, false, true, false, false, false], [false, false, false, false, false, true, true, true], [false, false, false, false, false, false, true, false], [false, false, false, false, false, false, false, true]], S := [false, false, true, true, false, false, false, true], val := [[], [], [], [], [], [], [], []] }
+
+/-! ## Stage 1: the designed cells (refutation stage, CLAUDE.md rules 7 and 9)
+
+Three variables `p₀ = pvar 0`, `p₁ = pvar 1`, `p₂ = pvar 2` and the cells
+
+    Ca = (p₁ → p₂) ∨ (p₂ → p₁),   Cb = ¬¬p₂ → p₂,   Cc = (p₀ → p₂) ∨ (p₂ → p₀),
+
+none a theorem of IPC (`ipc_Ca`, `ipc_Cb`, `ipc_Cc`: a fork, a two-chain, a
+fork).  Freeness needs each image `relB σ³⊥ x3 C` to be no theorem of PLL.
+
+The gadget over a finite Kripke model `K` (pen design, `wip/f0FreeBase3-STATUS.md`),
+here with the upper structure shared between the cells, as a `SubCM` table:
+
+    0 e₀ (∉ S)   1 n₀ (∈ S)                       the tops (◯⊥, ¬◯⊥)
+    2 L₀  3 L₁  4 L₂ (∈ S)                        the ladder of `ZL` (L_j sees L_{j'} for j'+2 ≤ j,
+                                                  e₀ always, n₀ from L₁ up)
+    5 f (∉ S, sees e₀, n₀)
+    6 m₀ (∈ S)  7 m₁ (∈ S)  8 m₂ (∈ S)            the bottoms of ZL 0, ZL 1, ZL 2: m_r sees
+                                                  e₀, n₀, f, L₀ … L_r
+    9 kn (∉ S, sees e₀, n₀, L₀, f)                the bottom of ZL 0 taken out of S
+    10 … w_k (∈ S iff k ⊮ p₀)                     copies of K; w_k sees 0, 1, 2, 5, 6, 9 always,
+                                                  m_r and its cone iff k ⊮ p_r (r = 1, 2)
+
+`m₀` and `kn` are the two killers (σ²⊥-maximal, in and out of `S`), `m₁`, `m₂`
+the readers of `p₁`, `p₂`; `c_r` fails at `m_r` and holds at the other three.
+`baseFacts` checks: `0 … 5` force `σ²⊥`; `6 … 9` refute it and are
+`σ²⊥`-maximal; every world but the copies forces `σ³⊥`, the copies refute it;
+the separations `c₁`, `c₂`; `c_r ↠ σ²⊥` at `m_r`; `m₀ ∈ S`, `kn ∉ S`,
+`kn ⊩ ◯σ²⊥` and `kn ⊩ ◯Y`.  `read_*` checks that `gen i` holds at `w_k` iff
+`p_i` holds at `k`.  All kernel-evaluated (`decide +kernel`). -/
+
+/-- `p₀ = pvar 0`. -/
+def p0F : PLLFormula := .prop (pvar 0)
+
+/-- `p₁ = pvar 1`. -/
+def p1F : PLLFormula := .prop (pvar 1)
+
+/-- `p₂ = pvar 2`. -/
+def p2F : PLLFormula := .prop (pvar 2)
+
+/-- Ca = `(p₁ → p₂) ∨ (p₂ → p₁)`. -/
+def Ca : PLLFormula := (p1F.ifThen p2F).or (p2F.ifThen p1F)
+
+/-- Cb = `¬¬p₂ → p₂`. -/
+def Cb : PLLFormula := (negF (negF p2F)).ifThen p2F
+
+/-- Cc = `(p₀ → p₂) ∨ (p₂ → p₀)`. -/
+def Cc : PLLFormula := (p0F.ifThen p2F).or (p2F.ifThen p0F)
+
+/-- IPC: `⊬ (p₁ → p₂) ∨ (p₂ → p₁)` (a fork, `p₁` at one top, `p₂` at the other). -/
+theorem ipc_Ca : ¬ Deriv [] Ca :=
+  SubTab.no.verdict Ca
+    { n := 3, root := 0, le := [[true, true, true], [false, true, false], [false, false, true]],
+      S := [false, false, false], val := [[], ["pp"], ["ppp"]] }
+
+/-- IPC: `⊬ ¬¬p₂ → p₂` (a two-chain, `p₂` at the top). -/
+theorem ipc_Cb : ¬ Deriv [] Cb :=
+  SubTab.no.verdict Cb
+    { n := 2, root := 0, le := [[true, true], [false, true]], S := [false, false],
+      val := [[], ["ppp"]] }
+
+/-- IPC: `⊬ (p₀ → p₂) ∨ (p₂ → p₀)` (a fork, `p₀` at one top, `p₂` at the other). -/
+theorem ipc_Cc : ¬ Deriv [] Cc :=
+  SubTab.no.verdict Cc
+    { n := 3, root := 0, le := [[true, true, true], [false, true, false], [false, false, true]],
+      S := [false, false, false], val := [[], ["p"], ["ppp"]] }
+
+/-- The gadget over the fork `k₀ < k₁, k₂`, `p₁` at `k₁`, `p₂` at `k₂`. -/
+def TCa : SubTab.SubCM := { n := 13, root := 10, le := [[true, false, false, false, false, false, false, false, false, false, false, false, false], [false, true, false, false, false, false, false, false, false, false, false, false, false], [true, false, true, false, false, false, false, false, false, false, false, false, false], [true, true, false, true, false, false, false, false, false, false, false, false, false], [true, true, true, false, true, false, false, false, false, false, false, false, false], [true, true, false, false, false, true, false, false, false, false, false, false, false], [true, true, true, false, false, true, true, false, false, false, false, false, false], [true, true, true, true, false, true, false, true, false, false, false, false, false], [true, true, true, true, true, true, false, false, true, false, false, false, false], [true, true, true, false, false, true, false, false, false, true, false, false, false], [true, true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, false, true, true, false, true, false], [true, true, true, true, false, true, true, true, false, true, false, false, true]], S := [false, true, true, true, true, false, true, true, true, false, true, true, true], val := [[], [], [], [], [], [], [], [], [], [], [], [], []] }
+
+/-- The gadget over the chain `k₀ < k₁`, `p₂` at `k₁`. -/
+def TCb : SubTab.SubCM := { n := 12, root := 10, le := [[true, false, false, false, false, false, false, false, false, false, false, false], [false, true, false, false, false, false, false, false, false, false, false, false], [true, false, true, false, false, false, false, false, false, false, false, false], [true, true, false, true, false, false, false, false, false, false, false, false], [true, true, true, false, true, false, false, false, false, false, false, false], [true, true, false, false, false, true, false, false, false, false, false, false], [true, true, true, false, false, true, true, false, false, false, false, false], [true, true, true, true, false, true, false, true, false, false, false, false], [true, true, true, true, true, true, false, false, true, false, false, false], [true, true, true, false, false, true, false, false, false, true, false, false], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, false, true, true, true, false, true, false, true]], S := [false, true, true, true, true, false, true, true, true, false, true, true], val := [[], [], [], [], [], [], [], [], [], [], [], []] }
+
+/-- The gadget over the fork `k₀ < k₁, k₂`, `p₀` at `k₁`, `p₂` at `k₂`. -/
+def TCc : SubTab.SubCM := { n := 13, root := 10, le := [[true, false, false, false, false, false, false, false, false, false, false, false, false], [false, true, false, false, false, false, false, false, false, false, false, false, false], [true, false, true, false, false, false, false, false, false, false, false, false, false], [true, true, false, true, false, false, false, false, false, false, false, false, false], [true, true, true, false, true, false, false, false, false, false, false, false, false], [true, true, false, false, false, true, false, false, false, false, false, false, false], [true, true, true, false, false, true, true, false, false, false, false, false, false], [true, true, true, true, false, true, false, true, false, false, false, false, false], [true, true, true, true, true, true, false, false, true, false, false, false, false], [true, true, true, false, false, true, false, false, false, true, false, false, false], [true, true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, false, true, false], [true, true, true, true, false, true, true, true, false, true, false, false, true]], S := [false, true, true, true, true, false, true, true, true, false, true, false, true], val := [[], [], [], [], [], [], [], [], [], [], [], [], []] }
+
+/-- The base facts of the gadget, as Boolean checks on a table (worlds as above). -/
+def baseFacts (T : SubTab.SubCM) : Bool :=
+  T.okB &&
+  (List.range 6).all (fun i => T.forceB i b2) &&
+  [6, 7, 8, 9].all (fun i => !(T.forceB i b2)) &&
+  [6, 7, 8, 9].all (fun i => (List.range T.n).all fun j => !(T.leB i j) || j == i || T.forceB j b2) &&
+  (List.range 10).all (fun i => T.forceB i b3) &&
+  ((List.range T.n).filter (· ≥ 10)).all (fun i => !(T.forceB i b3)) &&
+  !(T.forceB 7 (sepC 1)) && T.forceB 6 (sepC 1) && T.forceB 8 (sepC 1) && T.forceB 9 (sepC 1) &&
+  !(T.forceB 8 (sepC 2)) && T.forceB 6 (sepC 2) && T.forceB 7 (sepC 2) && T.forceB 9 (sepC 2) &&
+  T.forceB 7 ((sepC 1).ifThen b2) && T.forceB 8 ((sepC 2).ifThen b2) &&
+  T.SB 6 && !(T.SB 9) && T.forceB 9 (.somehow b2) && T.forceB 9 xf
+
+theorem baseFacts_Ca : baseFacts TCa = true := by decide +kernel
+
+theorem baseFacts_Cb : baseFacts TCb = true := by decide +kernel
+
+theorem baseFacts_Cc : baseFacts TCc = true := by decide +kernel
+
+/-- `gen i` at `w_k` iff `p_i` at `k` (rows `w_{k₀}`, `w_{k₁}`, `w_{k₂}`; columns `i = 0, 1, 2`). -/
+theorem read_Ca : ([10, 11, 12].map fun k => ([0, 1, 2].map fun i => TCa.forceB k (gen i))) =
+    [[false, false, false], [false, true, false], [false, false, true]] := by decide +kernel
+
+theorem read_Cb : ([10, 11].map fun k => ([0, 1, 2].map fun i => TCb.forceB k (gen i))) =
+    [[false, false, false], [false, false, true]] := by decide +kernel
+
+theorem read_Cc : ([10, 11, 12].map fun k => ([0, 1, 2].map fun i => TCc.forceB k (gen i))) =
+    [[false, false, false], [true, false, false], [false, false, true]] := by decide +kernel
+
+/-- **Cell Ca PASSES**: `⊬ (x₁ ↠ x₂) ∨ (x₂ ↠ x₁)`. -/
+theorem cell_Ca : ¬ Deriv [] (relB b3 x3 Ca) := SubTab.no.verdict (relB b3 x3 Ca) TCa
+
+/-- **Cell Cb PASSES**: `⊬ ((x₂ ↠ σ³⊥) ↠ σ³⊥) ↠ x₂`. -/
+theorem cell_Cb : ¬ Deriv [] (relB b3 x3 Cb) := SubTab.no.verdict (relB b3 x3 Cb) TCb
+
+/-- **Cell Cc PASSES**: `⊬ (x₀ ↠ x₂) ∨ (x₂ ↠ x₀)`. -/
+theorem cell_Cc : ¬ Deriv [] (relB b3 x3 Cc) := SubTab.no.verdict (relB b3 x3 Cc) TCc
+
 end Base3
 end F0
 end PLLND
@@ -160,3 +283,16 @@ end PLLND
 #axioms_within PLLND.F0.Base3.freeFamily3_of_free3 [propext, Quot.sound]
 #axioms_within PLLND.F0.Base3.freeHAnAbove_of_family [propext, Quot.sound]
 #axioms_within PLLND.F0.Base3.conjecture_of_base3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.side_cell [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.ipc_Ca [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.ipc_Cb [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.ipc_Cc [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.baseFacts_Ca [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.baseFacts_Cb [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.baseFacts_Cc [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.read_Ca [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.read_Cb [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.read_Cc [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.cell_Ca [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.cell_Cb [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.cell_Cc [propext, Quot.sound]
