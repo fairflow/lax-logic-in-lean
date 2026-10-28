@@ -43,6 +43,30 @@ With `g1 = oddGap 0`, `g3 = oddGap 1` (`wip/f0FreeIPL.lean`):
 
 If it is provable, the pair cannot generate a free Heyting algebra over any base.
 
+## Results
+
+**PROVED: `Free3`** (`free3`), hence `FreeFamily3` (`freeFamily3`),
+`∀ n, FreeHAnAbove (σ³⊥) n` (`freeHAnAbove_base3`) and **`Conjecture`**
+(`conjecture`, with `m = 3` for every `n`): the one family `x3 (pvar i)`
+freely generates, for every `n`, a copy of the free Heyting algebra on `n`
+generators inside `[σ³⊥, ⊤]`, closed under F0's `∧`, `∨`, `↠`, with bottom
+`σ³⊥`.  Pins `[propext, Quot.sound]`; no `Classical.choice`, no `sorry`, no
+`native_decide`.
+
+* Stage 1: the designed cells `(p₁ → p₂) ∨ (p₂ → p₁)`, `¬¬p₂ → p₂`,
+  `(p₀ → p₂) ∨ (p₂ → p₀)` all pass (`cell_Ca`, `cell_Cb`, `cell_Cc`, gadget
+  tables, kernel-checked), with the base facts and the generator readings.
+* The gadget `M(K, D)` (`Gad.MK`) over a finite Kripke model `K`: a copy of
+  every cell `ZL r` (embedded as a generated submodel, `Gad.zforce`, by the
+  p-morphism lemma `force_pmorph`), the non-`S` killer `kn` (the bottom of
+  `ZL 0` taken out of `S`), and copies `w_k` of `K`, with `w_k ∈ S ⟺ D 0 k`
+  and `w_k` below `ZL (r+1)` iff `D (r+1) k`.  The `S`-killer is the bottom
+  of `ZL 0`, the reader of `x_r` the bottom of `ZL r`.  For `D r k ⟺ k ⊮ pvar r`
+  the generators read the valuation (`Gad.w_read`), lemma (a) of
+  `f0FreePair` (`relB_transfer`) gives `w_k ⊩ relB σ³⊥ x3 A ⟺ k ⊩ A`
+  (`Gad.transfer`), and `⟸` follows (`free3_reflects`).
+* Side cell: `⊬ (g1 ↠ g3) ∨ (g3 ↠ g1)` (`side_cell`).
+
 Status note: `wip/f0FreeBase3-STATUS.md`.
 -/
 
@@ -271,6 +295,469 @@ theorem cell_Cb : ¬ Deriv [] (relB b3 x3 Cb) := SubTab.no.verdict (relB b3 x3 C
 /-- **Cell Cc PASSES**: `⊬ (x₀ ↠ x₂) ∨ (x₂ ↠ x₀)`. -/
 theorem cell_Cc : ¬ Deriv [] (relB b3 x3 Cc) := SubTab.no.verdict (relB b3 x3 Cc) TCc
 
+/-! ## Stage 2 (a): p-morphisms preserve forcing -/
+
+/-- **Forcing is invariant under p-morphisms** (monotone, back condition, `S`
+and the valuation preserved and reflected). -/
+theorem force_pmorph (N M : SubframeModel) (f : N.W → M.W)
+    (hle : ∀ {a b}, N.le a b → M.le (f a) (f b))
+    (hback : ∀ a v, M.le (f a) v → ∃ b, N.le a b ∧ f b = v)
+    (hS : ∀ a, f a ∈ M.S ↔ a ∈ N.S)
+    (hV : ∀ x a, f a ∈ M.V x ↔ a ∈ N.V x) :
+    ∀ (φ : PLLFormula) (a : N.W), (M.force (f a) φ ↔ N.force a φ)
+  | .prop x, a => hV x a
+  | .falsePLL, _ => Iff.rfl
+  | .and A B, a => and_congr (force_pmorph N M f hle hback hS hV A a)
+      (force_pmorph N M f hle hback hS hV B a)
+  | .or A B, a => or_congr (force_pmorph N M f hle hback hS hV A a)
+      (force_pmorph N M f hle hback hS hV B a)
+  | .ifThen A B, a => by
+      have ihA := force_pmorph N M f hle hback hS hV A
+      have ihB := force_pmorph N M f hle hback hS hV B
+      show (∀ v, M.le (f a) v → M.force v A → M.force v B) ↔
+        (∀ b, N.le a b → N.force b A → N.force b B)
+      constructor
+      · intro h b hab hA
+        exact (ihB b).mp (h (f b) (hle hab) ((ihA b).mpr hA))
+      · intro h v hv hA
+        obtain ⟨b, hab, rfl⟩ := hback a v hv
+        exact (ihB b).mpr (h b hab ((ihA b).mp hA))
+  | .somehow A, a => by
+      have ihA := force_pmorph N M f hle hback hS hV A
+      show (∀ v, M.le (f a) v → v ∈ M.S → M.force v A) ↔
+        (∀ b, N.le a b → b ∈ N.S → N.force b A)
+      constructor
+      · intro h b hab hbS
+        exact (ihA b).mp (h (f b) (hle hab) ((hS b).mpr hbS))
+      · intro h v hv hvS
+        obtain ⟨b, hab, rfl⟩ := hback a v hv
+        exact (ihA b).mpr (h b hab ((hS b).mp hvS))
+
+/-! ## Stage 2 (b): the cells `ZL r` -/
+
+namespace Cell
+
+/-- The bottom `m` of `ZL r`. -/
+def bot (r : Nat) : (ZL.M r).W := ⟨r + 4, ZL.lt4 r⟩
+
+theorem bot_S (r : Nat) : bot r ∈ (ZL.M r).S :=
+  show r + 4 ≠ 0 ∧ r + 4 ≠ r + 3 from ⟨by omega, by omega⟩
+
+theorem eq_bot {r : Nat} {a : (ZL.M r).W} (h : a.1 = r + 4) : a = bot r := Subtype.ext h
+
+/-- Every world of `ZL r` but the bottom forces `σ²⊥`. -/
+theorem b2_of_ne {r : Nat} (a : (ZL.M r).W) (h : a.1 ≠ r + 4) : (ZL.M r).force a b2 :=
+  ZL.force_b2 a.2 h
+
+theorem not_b2_bot (r : Nat) : ¬ (ZL.M r).force (bot r) b2 := ZL.not_force_b2_m (ZL.lt4 r)
+
+/-- **Every world of `ZL r` forces `σ³⊥`**: the bottom is `σ²⊥`-maximal and in
+`S`, so it forces `◯σ²⊥ ↠ σ²⊥`; every other world forces `σ²⊥`, hence `◯σ²⊥`. -/
+theorem b3_all {r : Nat} (a : (ZL.M r).W) : (ZL.M r).force a b3 := by
+  rcases Decidable.em (a.1 = r + 4) with h | h
+  · have ha : a = bot r := eq_bot h
+    subst ha
+    show (ZL.M r).force (bot r) (PLLFormula.somehow b2) ∨
+      (ZL.M r).force (bot r) ((PLLFormula.somehow b2).ifThen b2)
+    refine Or.inr fun v _ hc => ?_
+    rcases Decidable.em (v.1 = r + 4) with hv4 | hv4
+    · have hvb : v = bot r := eq_bot hv4
+      subst hvb
+      exact absurd (hc (bot r) ((ZL.M r).refl _) (bot_S r)) (not_b2_bot r)
+    · exact b2_of_ne v hv4
+  · exact Or.inl fun v hv _ => SubframeModel.force_mono _ b2 hv (b2_of_ne a h)
+
+theorem phi_bot (r k : Nat) : (ZL.M r).force (bot r) (phiK k) ↔ r + 2 ≤ k := ZL.cell_force r k
+
+/-- **`c_s` holds at the bottom of `ZL r` for `r ≠ s`.** -/
+theorem sep_bot {r s : Nat} (h : r ≠ s) : (ZL.M r).force (bot r) (sepC s) := by
+  rcases Nat.lt_or_gt_of_ne h with hlt | hgt
+  · exact Or.inl ((phi_bot r (s + 1)).mpr (by omega))
+  · refine Or.inr fun v _ hφ => ?_
+    rcases Decidable.em (v.1 = r + 4) with hv4 | hv4
+    · have hvb : v = bot r := eq_bot hv4
+      subst hvb
+      exact absurd ((phi_bot r (s + 2)).mp hφ) (Nat.not_le_of_gt (Nat.add_lt_add_right hgt 2))
+    · exact b2_of_ne v hv4
+
+/-- **`c_r ↠ σ²⊥` holds at the bottom of `ZL r`** (it refutes `c_r`, and
+every proper successor forces `σ²⊥`). -/
+theorem sepimp_bot (r : Nat) : (ZL.M r).force (bot r) ((sepC r).ifThen b2) := by
+  show ∀ v, (ZL.M r).le (bot r) v → (ZL.M r).force v (sepC r) → (ZL.M r).force v b2
+  intro v _ hc
+  rcases Decidable.em (v.1 = r + 4) with hv4 | hv4
+  · have hvb : v = bot r := eq_bot hv4
+    subst hvb
+    rcases hc with hφ | himp
+    · exact absurd ((phi_bot r (r + 1)).mp hφ) (Nat.not_le_of_gt (Nat.lt_succ_self (r + 1)))
+    · exact himp _ ((ZL.M r).refl _) ((phi_bot r (r + 2)).mpr (Nat.le_refl _))
+  · exact b2_of_ne v hv4
+
+end Cell
+
+/-- At a world forcing `◯Y`, every relativised odd rung holds (`p` is an
+iterated first disjunct of `rn (2k+1)`). -/
+theorem force_relX_rnP (M : SubframeModel) (v : M.W) (hx : M.force v xf) :
+    ∀ k, M.force v (ZL.relX (rnP k).1)
+  | 0 => hx
+  | k + 1 => Or.inl (force_relX_rnP M v hx k)
+
+theorem force_phiK_of_xf (M : SubframeModel) (v : M.W) (hx : M.force v xf) (k : Nat) :
+    M.force v (phiK k) := by
+  unfold phiK
+  rw [rn_odd_eq]
+  exact force_relX_rnP M v hx k
+
+/-! ## Stage 2 (c): the gadget -/
+
+namespace Gad
+
+/-- The worlds of the gadget over a Kripke model with worlds `α`: a copy of
+every cell `ZL r` (`z r a`), the non-`S` killer `kn`, and a copy `w k` of each
+world `k`. -/
+inductive Pt (α : Type) where
+  | z (r : Nat) (a : (ZL.M r).W)
+  | kn
+  | w (k : α)
+
+variable (K : SubframeModel) (D : Nat → K.W → Prop)
+
+/-- The order: inside each cell `ZL r` its own order; `kn` sees the
+non-bottom worlds of `ZL 0` (whose bottom it copies, out of `S`); `w_j ≤ w_k`
+iff `j ≤ k`; `w_k` sees `kn` and all of `ZL 0`, and all of `ZL (r+1)` iff
+`D (r+1) k`. -/
+def Le : Pt K.W → Pt K.W → Prop
+  | .z r a, .z r' a' => r = r' ∧ ZL.Le r a.1 a'.1
+  | .kn, .kn => True
+  | .kn, .z r a => r = 0 ∧ a.1 < 4
+  | .w j, .w k => K.le j k
+  | .w _, .kn => True
+  | .w _, .z 0 _ => True
+  | .w k, .z (r + 1) _ => D (r + 1) k
+  | _, _ => False
+
+/-- `S`: the `S` of each cell; `kn ∉ S`; `w_k ∈ S` iff `D 0 k`. -/
+def SP : Pt K.W → Prop
+  | .z r a => a ∈ (ZL.M r).S
+  | .kn => False
+  | .w k => D 0 k
+
+variable {K D}
+
+theorem Le.refl : ∀ a : Pt K.W, Le K D a a
+  | .z r a => ⟨rfl, ZL.Le.refl r a.1⟩
+  | .kn => trivial
+  | .w k => K.refl k
+
+theorem lt4_of {a b : Nat} (ha : a < 4) (hb : b < 5) (h : ZL.Le 0 a b) : b < 4 := by
+  unfold ZL.Le at h
+  rcases h with h | ⟨h, _⟩ | ⟨h, _⟩ | ⟨_, h, h'⟩ | h <;> omega
+
+theorem Le.trans (hD : ∀ r {j k : K.W}, K.le j k → D r k → D r j) {a b c : Pt K.W}
+    (h₁ : Le K D a b) (h₂ : Le K D b c) : Le K D a c := by
+  cases a with
+  | z r a =>
+    cases b with
+    | z r' b =>
+      cases c with
+      | z r'' c =>
+        obtain ⟨e₁, h₁⟩ := h₁
+        obtain ⟨e₂, h₂⟩ := h₂
+        subst e₁
+        subst e₂
+        exact ⟨rfl, ZL.Le.trans h₁ h₂⟩
+      | kn => exact False.elim h₂
+      | w _ => exact False.elim h₂
+    | kn => exact False.elim h₁
+    | w _ => exact False.elim h₁
+  | kn =>
+    cases b with
+    | z r b =>
+      cases c with
+      | z r' c =>
+        obtain ⟨e₁, hb⟩ := h₁
+        obtain ⟨e₂, h₂⟩ := h₂
+        subst e₁
+        subst e₂
+        exact ⟨rfl, lt4_of hb c.2 h₂⟩
+      | kn => exact False.elim h₂
+      | w _ => exact False.elim h₂
+    | kn => exact h₂
+    | w _ => exact False.elim h₁
+  | w j =>
+    cases b with
+    | z r b =>
+      cases c with
+      | z r' c =>
+        obtain ⟨e₂, _⟩ := h₂
+        subst e₂
+        cases r with
+        | zero => trivial
+        | succ r => exact h₁
+      | kn => exact False.elim h₂
+      | w _ => exact False.elim h₂
+    | kn =>
+      cases c with
+      | z r c =>
+        obtain ⟨e₂, _⟩ := h₂
+        subst e₂
+        trivial
+      | kn => trivial
+      | w _ => exact False.elim h₂
+    | w k =>
+      cases c with
+      | z r c =>
+        cases r with
+        | zero => trivial
+        | succ r => exact hD (r + 1) h₁ h₂
+      | kn => trivial
+      | w l => exact K.trans h₁ h₂
+
+/-- **The gadget model `M(K, D)`**; no atoms. -/
+def MK (hD : ∀ r {j k : K.W}, K.le j k → D r k → D r j) : SubframeModel where
+  W := Pt K.W
+  le := Le K D
+  S := SP K D
+  V _ := fun _ => False
+  refl := Le.refl
+  trans h₁ h₂ := Le.trans hD h₁ h₂
+  hered _ h := False.elim h
+
+variable (hD : ∀ r {j k : K.W}, K.le j k → D r k → D r j)
+
+/-- **The cells embed as generated submodels**: forcing at `z r a` is forcing
+at `a` in `ZL r`. -/
+theorem zforce (r : Nat) (φ : PLLFormula) (a : (ZL.M r).W) :
+    (MK hD).force (Pt.z r a) φ ↔ (ZL.M r).force a φ :=
+  force_pmorph (ZL.M r) (MK hD) (Pt.z r) (fun h => ⟨rfl, h⟩)
+    (fun a v hv => by
+      cases v with
+      | z r' b =>
+        obtain ⟨e, hl⟩ := hv
+        subst e
+        exact ⟨b, hl, rfl⟩
+      | kn => exact False.elim hv
+      | w _ => exact False.elim hv)
+    (fun _ => Iff.rfl) (fun _ _ => Iff.rfl) φ a
+
+theorem z_b3 (r : Nat) (a : (ZL.M r).W) : (MK hD).force (Pt.z r a) b3 :=
+  (zforce hD r b3 a).mpr (Cell.b3_all a)
+
+/-! ### The killers -/
+
+/-- The `S`-killer: the bottom of `ZL 0`. -/
+theorem kS_S : (Pt.z 0 (Cell.bot 0) : (MK hD).W) ∈ (MK hD).S := Cell.bot_S 0
+
+theorem kS_not_b2 : ¬ (MK hD).force (Pt.z 0 (Cell.bot 0)) b2 := fun h =>
+  Cell.not_b2_bot 0 ((zforce hD 0 b2 _).mp h)
+
+theorem kn_succ {v : (MK hD).W} (hv : (MK hD).le Pt.kn v) :
+    v = Pt.kn ∨ ∃ a : (ZL.M 0).W, a.1 < 4 ∧ v = Pt.z 0 a := by
+  cases v with
+  | z r a =>
+    obtain ⟨e, ha⟩ := hv
+    subst e
+    exact Or.inr ⟨a, ha, rfl⟩
+  | kn => exact Or.inl rfl
+  | w _ => exact False.elim hv
+
+/-- `kn ⊩ ◯Y`: its `S`-successors are `n₀`, `L₀` of `ZL 0`. -/
+theorem kn_xf : (MK hD).force Pt.kn xf := by
+  show ∀ v, (MK hD).le Pt.kn v → v ∈ (MK hD).S → (MK hD).force v Yf
+  intro v hv hS
+  rcases kn_succ hD hv with h | ⟨a, ha, h⟩
+  · subst h
+    exact False.elim hS
+  · subst h
+    have hS' : a.1 ≠ 0 ∧ a.1 ≠ 0 + 3 := hS
+    obtain ⟨_, h3⟩ := hS'
+    exact (zforce hD 0 Yf a).mpr ((ZL.force_Y_iff a.2).mpr (by omega))
+
+/-- `kn ⊮ σ²⊥`: `◯t3` fails by `L₀`, `◯t3 ↠ t3` by `f`. -/
+theorem kn_not_b2 : ¬ (MK hD).force Pt.kn b2 := by
+  intro h
+  have h' : (MK hD).force Pt.kn SigOnto.c1F ∨ (MK hD).force Pt.kn SigOnto.g1F := h
+  rcases h' with hc | hg
+  · have h2 := hc (Pt.z 0 ⟨2, ZL.lt2 0⟩) ⟨rfl, by decide⟩ ⟨by decide, by decide⟩
+    exact ZL.not_force_t3 (ZL.lt2 0) (Nat.le_refl 2) ((zforce hD 0 t3 _).mp h2)
+  · have h3 := hg (Pt.z 0 ⟨3, ZL.lt3 0⟩) ⟨rfl, by decide⟩
+      ((zforce hD 0 _ _).mpr (ZL.force_c1_f (ZL.lt3 0)))
+    exact ZL.not_force_t3 (ZL.lt3 0) (by decide) ((zforce hD 0 t3 _).mp h3)
+
+/-- `kn ⊩ ◯σ²⊥`. -/
+theorem kn_c2 : (MK hD).force Pt.kn (.somehow b2) := by
+  show ∀ v, (MK hD).le Pt.kn v → v ∈ (MK hD).S → (MK hD).force v b2
+  intro v hv hS
+  rcases kn_succ hD hv with h | ⟨a, ha, h⟩
+  · subst h
+    exact False.elim hS
+  · subst h
+    exact (zforce hD 0 b2 a).mpr (Cell.b2_of_ne a (by omega))
+
+theorem kn_b3 : (MK hD).force Pt.kn b3 := Or.inl (kn_c2 hD)
+
+theorem kn_sep (s : Nat) : (MK hD).force Pt.kn (sepC s) :=
+  Or.inl (force_phiK_of_xf _ _ (kn_xf hD) (s + 1))
+
+/-! ### The copies `w_k` -/
+
+/-- **`w_k ⊮ σ³⊥`**: `◯σ²⊥` fails by the `S`-killer, `◯σ²⊥ ↠ σ²⊥` by `kn`. -/
+theorem w_not_b3 (k : K.W) : ¬ (MK hD).force (Pt.w k) b3 := by
+  intro h
+  have h' : (MK hD).force (Pt.w k) (PLLFormula.somehow b2) ∨
+      (MK hD).force (Pt.w k) ((PLLFormula.somehow b2).ifThen b2) := h
+  rcases h' with hc | hg
+  · exact kS_not_b2 hD (hc (Pt.z 0 (Cell.bot 0)) trivial (kS_S hD))
+  · exact kn_not_b2 hD (hg Pt.kn trivial (kn_c2 hD))
+
+/-- The back condition: every successor of `w_k` forces `σ³⊥` or is a `w_j`, `j ≥ k`. -/
+theorem w_back (k : K.W) (v : (MK hD).W) (hv : (MK hD).le (Pt.w k) v) :
+    (MK hD).force v b3 ∨ ∃ j, K.le k j ∧ Pt.w j = v := by
+  cases v with
+  | z r a => exact Or.inl (z_b3 hD r a)
+  | kn => exact Or.inl (kn_b3 hD)
+  | w j => exact Or.inr ⟨j, hv, rfl⟩
+
+/-- **`x₀ = ◯σ³⊥` reads `¬ D 0`.** -/
+theorem w_gen0 (k : K.W) : (MK hD).force (Pt.w k) (gen 0) ↔ ¬ D 0 k := by
+  constructor
+  · intro hx hk
+    exact w_not_b3 hD k (hx (Pt.w k) (K.refl k) hk)
+  · intro hk
+    show ∀ v, (MK hD).le (Pt.w k) v → v ∈ (MK hD).S → (MK hD).force v b3
+    intro v hv hS
+    cases v with
+    | z r a => exact z_b3 hD r a
+    | kn => exact kn_b3 hD
+    | w j => exact absurd (hD 0 hv hS) hk
+
+/-- **`x_{s+1}` reads `¬ D (s+1)`.** -/
+theorem w_gen_succ (k : K.W) (s : Nat) :
+    (MK hD).force (Pt.w k) (gen (s + 1)) ↔ ¬ D (s + 1) k := by
+  constructor
+  · intro hx hk
+    rcases hx with hb | himp
+    · exact w_not_b3 hD k hb
+    · have hr : (MK hD).force (Pt.z (s + 1) (Cell.bot (s + 1))) ((sepC (s + 1)).ifThen b2) :=
+        (zforce hD (s + 1) _ _).mpr (Cell.sepimp_bot (s + 1))
+      exact Cell.not_b2_bot (s + 1) ((zforce hD (s + 1) b2 _).mp (himp _ hk hr))
+  · intro hk
+    refine Or.inr ?_
+    show ∀ v, (MK hD).le (Pt.w k) v → (MK hD).force v ((sepC (s + 1)).ifThen b2) →
+      (MK hD).force v b2
+    intro v hv hsep
+    cases v with
+    | z r a =>
+      rcases Decidable.em (a.1 = r + 4) with h4 | h4
+      · have ha : a = Cell.bot r := Cell.eq_bot h4
+        subst ha
+        rcases Decidable.em (r = s + 1) with hr | hr
+        · subst hr
+          exact absurd hv hk
+        · exact hsep _ ((MK hD).refl _) ((zforce hD r _ _).mpr (Cell.sep_bot hr))
+      · exact (zforce hD r b2 a).mpr (Cell.b2_of_ne a h4)
+    | kn => exact hsep _ ((MK hD).refl _) (kn_sep hD (s + 1))
+    | w j => exact absurd (hsep Pt.kn trivial (kn_sep hD (s + 1))) (kn_not_b2 hD)
+
+end Gad
+
+/-! ## Stage 2 (d): the generators read the variables; the transfer -/
+
+/-- `σ³⊥ ≤ gen r` at every world of every model. -/
+theorem b3_le_gen_sem (M : SubframeModel) (v : M.W) (r : Nat) (hv : M.force v b3) :
+    M.force v (gen r) := by
+  cases r with
+  | zero => exact fun u hu _ => SubframeModel.force_mono M b3 hu hv
+  | succ s => exact Or.inl hv
+
+theorem b3_le_x3_sem (M : SubframeModel) (v : M.W) (a : String) (hv : M.force v b3) :
+    M.force v (x3 a) := b3_le_gen_sem M v _ hv
+
+/-- `pvar i` has `i + 1` UTF-8 bytes. -/
+theorem utf8ByteSize_pvar : ∀ i, (pvar i).utf8ByteSize = i + 1
+  | 0 => by decide
+  | i + 1 => by
+      have h : pvar (i + 1) = String.ofList ['p'] ++ pvar i := by
+        show String.ofList (['p'] ++ List.replicate (i + 1) 'p') = _
+        rw [String.ofList_append]
+        rfl
+      have h1 : (String.ofList ['p']).utf8ByteSize = 1 := by decide
+      rw [h, String.utf8ByteSize_append, utf8ByteSize_pvar i, h1, Nat.add_comm]
+
+theorem idx_pvar (i : Nat) : idx (pvar i) = i := by
+  unfold idx
+  rw [utf8ByteSize_pvar]
+  rfl
+
+/-- **`x3 (pvar i) = gen i`.** -/
+theorem x3_pvar (i : Nat) : x3 (pvar i) = gen i := by
+  unfold x3
+  rw [idx_pvar]
+
+namespace Gad
+
+/-- The reading for `x3`: `D r k ⟺ k ⊮ pvar r`. -/
+def Dp (K : SubframeModel) (r : Nat) (k : K.W) : Prop := k ∉ K.V (pvar r)
+
+theorem Dp_down (K : SubframeModel) : ∀ r {j k : K.W}, K.le j k → Dp K r k → Dp K r j :=
+  fun _ _ _ hjk hk hj => hk (K.hered hjk hj)
+
+variable {K : SubframeModel} [FinDec K]
+
+/-- **The generators read the valuation**: `w_k ⊩ gen i ⟺ k ⊩ pvar i`. -/
+theorem w_read (k : K.W) (i : Nat) :
+    (MK (Dp_down K)).force (Pt.w k) (gen i) ↔ k ∈ K.V (pvar i) := by
+  cases i with
+  | zero => exact (w_gen0 (Dp_down K) k).trans Decidable.not_not
+  | succ s => exact (w_gen_succ (Dp_down K) k s).trans Decidable.not_not
+
+/-- **The gadget transfer**: for ◯-free `A` over `pvar 0, …, pvar (n-1)`,
+
+    w_k ⊩_{M(K)} relB σ³⊥ x3 A   ⟺   k ⊩_K A. -/
+theorem transfer (n : Nat) : ∀ A : PLLFormula, boxFree A = true → varsBelow n A = true →
+    ∀ k : K.W, ((MK (Dp_down K)).force (Pt.w k) (relB b3 x3 A) ↔ K.force k A) :=
+  relB_transfer (MK (Dp_down K)) b3 x3 K Pt.w n (b3_le_x3_sem _) (w_not_b3 _) (fun h => h)
+    (w_back _) (fun k i _ => by rw [x3_pvar]; exact w_read k i)
+
+end Gad
+
+/-! ## Stage 2 (e): `Free3` -/
+
+/-- **`Free3`, direction `⟹`** (substitution). -/
+theorem free3_preserves {n : Nat} {A B : PLLFormula} (hA : boxFree A = true)
+    (hB : boxFree B = true) (vA : varsBelow n A = true) (vB : varsBelow n B = true)
+    (hd : Deriv [A] B) : Deriv [relB b3 x3 A] (relB b3 x3 B) :=
+  relB_preserves b3 x3 n b3_le_x3_sem hA hB vA vB hd
+
+/-- **`Free3`, direction `⟸`** (faithfulness), by the gadget over every finite
+Kripke model. -/
+theorem free3_reflects {n : Nat} {A B : PLLFormula} (hA : boxFree A = true)
+    (hB : boxFree B = true) (vA : varsBelow n A = true) (vB : varsBelow n B = true)
+    (hd : Deriv [relB b3 x3 A] (relB b3 x3 B)) : Deriv [A] B := by
+  obtain ⟨d⟩ := hd
+  have hsem : ∀ (K : SubframeModel) [FinDec K] (k : K.W), K.force k A → K.force k B := by
+    intro K _ k hk
+    exact (Gad.transfer n B hB vB k).mp
+      (SubframeModel.CF.soundness₁ d (Gad.MK (Gad.Dp_down K)) (Gad.Pt.w k)
+        ((Gad.transfer n A hA vA k).mpr hk))
+  have h2 : Deriv [] (A.ifThen B) := SubframeModel.CF.completeness_imp hsem
+  exact Deriv.impElim (h2.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _))
+
+/-- **PROVED: `Free3`.** -/
+theorem free3 : Free3 := fun _ _ _ hA hB vA vB =>
+  ⟨free3_preserves hA hB vA vB, free3_reflects hA hB vA vB⟩
+
+/-- **PROVED: `FreeFamily3`.** -/
+theorem freeFamily3 : FreeFamily3 := freeFamily3_of_free3 free3
+
+/-- **PROVED: `[σ³⊥, ⊤]` contains the free Heyting algebra on `n` generators,
+for every `n`, all from the one family `x3`.** -/
+theorem freeHAnAbove_base3 (n : Nat) : FreeHAnAbove (base 3) n :=
+  freeHAnAbove_of_family freeFamily3 n
+
+/-- **PROVED: the conjecture** `∀ n ∃ m, FreeHAnAbove (σᵐ⊥) n`, with `m = 3`. -/
+theorem conjecture : Conjecture := conjecture_of_base3 freeHAnAbove_base3
+
 end Base3
 end F0
 end PLLND
@@ -296,3 +783,25 @@ end PLLND
 #axioms_within PLLND.F0.Base3.cell_Ca [propext, Quot.sound]
 #axioms_within PLLND.F0.Base3.cell_Cb [propext, Quot.sound]
 #axioms_within PLLND.F0.Base3.cell_Cc [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.force_pmorph [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Cell.b3_all [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Cell.sep_bot [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Cell.sepimp_bot [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.force_phiK_of_xf [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.Le.trans [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.zforce [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.kn_xf [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.kn_not_b2 [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.w_not_b3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.w_gen0 [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.w_gen_succ [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.utf8ByteSize_pvar [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.x3_pvar [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.w_read [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.transfer [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.free3_preserves [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.free3_reflects [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.free3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.freeFamily3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.freeHAnAbove_base3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.conjecture [propext, Quot.sound]

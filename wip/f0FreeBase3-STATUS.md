@@ -38,9 +38,24 @@ variable-free fragment is `{⊥, ⊤}`).
 | `Free3 → FreeFamily3` | `freeFamily3_of_free3` | PROVED (packaging) |
 | `FreeFamily3 → ∀ n, FreeHAnAbove (σ³⊥) n` | `freeHAnAbove_of_family` | PROVED (packaging) |
 | `(∀ n, FreeHAnAbove (σ³⊥) n) → Conjecture` | `conjecture_of_base3` | PROVED (packaging) |
-| `Free3` | — | OPEN |
 | side cell `⊬ (g1 ↠ g3) ∨ (g3 ↠ g1)` | `side_cell` | PROVED (countermodel 27 → 8 worlds) |
 | Stage 1 cells Ca, Cb, Cc (images no theorems) | `cell_Ca`, `cell_Cb`, `cell_Cc` | PROVED (gadget tables) |
+| forcing invariant under p-morphisms | `force_pmorph` | PROVED |
+| every world of `ZL r` forces `σ³⊥` | `Cell.b3_all` | PROVED |
+| `c_s` at the bottom of `ZL r`, `r ≠ s` | `Cell.sep_bot` | PROVED |
+| `c_r ↠ σ²⊥` at the bottom of `ZL r` | `Cell.sepimp_bot` | PROVED |
+| `◯Y ⊩` every `φ_k` | `force_phiK_of_xf` | PROVED |
+| the cells embed in the gadget | `Gad.zforce` | PROVED |
+| killer facts (`kn ⊩ ◯Y`, `kn ⊮ σ²⊥`, `kn ⊩ ◯σ²⊥`, `kn ⊩ c_s`) | `Gad.kn_xf`, `kn_not_b2`, `kn_c2`, `kn_sep` | PROVED |
+| `w_k ⊮ σ³⊥`; back condition | `Gad.w_not_b3`, `Gad.w_back` | PROVED |
+| `w_k ⊩ x₀ ⟺ ¬ D 0 k`; `w_k ⊩ x_{s+1} ⟺ ¬ D (s+1) k` | `Gad.w_gen0`, `Gad.w_gen_succ` | PROVED |
+| `x3 (pvar i) = gen i` | `x3_pvar` (via `utf8ByteSize_pvar`) | PROVED |
+| the gadget transfer `w_k ⊩ relB σ³⊥ x3 A ⟺ k ⊩ A` | `Gad.transfer` | PROVED |
+| `Free3`, `⟹` / `⟸` | `free3_preserves` / `free3_reflects` | PROVED |
+| **`Free3`** | `free3` | **PROVED** |
+| **`FreeFamily3`** | `freeFamily3` | **PROVED** |
+| **`∀ n, FreeHAnAbove (σ³⊥) n`** | `freeHAnAbove_base3` | **PROVED** |
+| **`Conjecture`** (`∀ n ∃ m, FreeHAnAbove (σᵐ⊥) n`) | `conjecture` (`m = 3`) | **PROVED** |
 
 ## The gadget design (pen, checked against the brief before building on it)
 
@@ -96,7 +111,7 @@ structure shared between the cells (worlds `0 e₀`, `1 n₀`, `2–4 L₀–L�
 |------|-------------|-----|--------|---------|---------|
 | Ca | `(p₁ → p₂) ∨ (p₂ → p₁)` | fork, `p₁` at `k₁`, `p₂` at `k₂` | 13 worlds | PASS (image no theorem) | `cell_Ca` |
 | Cb | `¬¬p₂ → p₂` | chain, `p₂` at `k₁` | 12 worlds | PASS | `cell_Cb` |
-| Cc | `(p₀ → p₂) ∨ (p₀ → p₂ swapped)` | fork, `p₀` at `k₁`, `p₂` at `k₂` | 13 worlds | PASS | `cell_Cc` |
+| Cc | `(p₀ → p₂) ∨ (p₂ → p₀)` | fork, `p₀` at `k₁`, `p₂` at `k₂` | 13 worlds | PASS | `cell_Cc` |
 
 Base facts on each table (`baseFacts_Ca/Cb/Cc`): `0–5` force `σ²⊥`; `6–9`
 refute `σ²⊥` and are `σ²⊥`-maximal; every non-copy forces `σ³⊥` and every
@@ -111,9 +126,54 @@ binary under `gtimeout 300`, under a second, countermodel 27 → 8 worlds,
 kernel-checked against `sideCell` as computed in Lean).  The cell does not
 rule out the odd-gap pair.
 
+## Stage 2: the proof (PROVED)
+
+The gadget `Gad.MK hD` over a Kripke model `K` and a family `D : Nat → K → Prop`
+of down-sets (`hD`).  Worlds (`Gad.Pt`, a bare inductive, no `Fin`):
+
+    z r a   a world a of the cell ZL r (every r : Nat)      order and S of ZL r
+    kn      the non-S killer                                sees z 0 a for a < 4 (e₀, n₀, w₀, f of ZL 0)
+    w k     a copy of k ∈ K                                 w_j ≤ w_k ⟺ j ≤ k; w_k sees kn and all of ZL 0;
+                                                            w_k sees ZL (r+1) iff D (r+1) k;  w_k ∈ S ⟺ D 0 k
+
+The cells are generated submodels (`Gad.zforce`, by `force_pmorph`), so every
+fact of `wip/f0FreeHAn.lean` about `ZL r` transfers: `ZL.force_b2`,
+`ZL.not_force_b2_m`, `ZL.cell_force`, `ZL.force_Y_iff`, `ZL.not_force_t3`,
+`ZL.force_c1_f`.  The `S`-killer is `z 0 (bottom)`; the reader of `x_r` is
+`z r (bottom)`.  The model is infinite (one cell for every `r`); soundness
+holds in every subframe model, and only `K` needs to be finite
+(`completeness_imp`).  For `x3` the family is `D r k ⟺ k ⊮ pvar r`
+(`Gad.Dp`); `Gad.w_read` reads the valuation (decidable by `FinDec K`), and
+`relB_transfer` of `f0FreePair` with `φ = w`, `b = σ³⊥`, gives `Gad.transfer`.
+`free3_reflects`: `completeness_imp` reduces `[A] ⊢ B` to forcing in finite
+`K`; at `k ⊩ A`, `w_k ⊩ relB A` (transfer), `w_k ⊩ relB B` (soundness), `k ⊩ B`
+(transfer).  `free3_preserves` is `relB_preserves` of `f0FreePair`.
+
+`x3 (pvar i) = gen i` uses `String.ofList_append`, `String.utf8ByteSize_append`
+(both choice-free) and `decide` on `"p"`.
+
+## Gates (watched failing, 2026-10-28, scratch gate file, `lake env lean`)
+
+* `#axioms_within free3 [propext]`: FAIL ("depends on Quot.sound"); the
+  module's `[propext, Quot.sound]` pin passes.
+* `#axioms_within Gad.transfer []`: FAIL (propext, Quot.sound).
+* `TCb` with the reader `m₂` (and `L₂`) taken from above `w_{k₀}`: REJECTED by
+  `decide` (the root then forces `x₂`).
+* `TCc` with the non-`S` killer `kn` taken from above the copies: REJECTED
+  (the copies then force `◯σ²⊥ ↠ σ²⊥`, hence `σ³⊥` and every generator).
+
+## Skips and caps
+
+None.  One producer run (`refbench fact` on the side cell, `gtimeout 300`,
+under a second).  Builds: `lake build wip.f0FreeBase3` only; `lake env lean`
+on scratch files (probes, the Stage 2 draft, the gate file).
+
 ## Log
 
 * 2026-10-28: Stage 0, statement written and built
   (`lake build wip.f0FreeBase3`, 35 s), committed before any proof.
 * 2026-10-28: Stage 1, three designed cells PASS, base facts and readings
   kernel-checked; side cell decided (not provable).
+* 2026-10-28: Stage 2, `Free3`, `FreeFamily3`, `∀ n, FreeHAnAbove (σ³⊥) n`
+  and `Conjecture` PROVED (`lake build wip.f0FreeBase3` clean, every pin
+  `[propext, Quot.sound]`); gates watched failing.
