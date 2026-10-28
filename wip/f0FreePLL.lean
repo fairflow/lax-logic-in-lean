@@ -44,6 +44,27 @@ The atoms with codes `0` and `1` are `""` and `"\x00"` (`a0`, `a1`), so that
 
     O1 = ◯p → p,    O2 = ◯p ∨ ¬◯p,    O3 = ◯(p ∨ q) → ◯p ∨ ◯q
 
+## Results
+
+**PROVED: `FreeReaders`** (`freeReaders`), hence **`FreePLLAbove (σ³⊥)`**
+(`freePLLAbove_base3`) and `∀ n, FreePLLnAbove (σ³⊥) n`
+(`freePLLnAbove_base3`): PLL embeds faithfully into the interval `[σ³⊥, ⊤]`
+of its closed fragment F0, by `a ↦ gen (code a + 1)`, `⊥ ↦ σ³⊥`, `◯ ↦ ◯`.
+Pins `[propext, Quot.sound]`; no `Classical.choice`, no `sorry`, no
+`native_decide`.
+
+* Stage A: `FreeReadersIPC` (`freeReadersIPC`), the ◯-free instance, by the
+  readers' gadget `GadR.MS K Sw` with the copies' `S` an arbitrary `Sw`.
+* Stage B: `⊬ O1, O2, O3` (`pll_O1` … `pll_O3`) and their images no theorems
+  (`cell_O1` … `cell_O3`, gadget tables `gadT`).
+* Stage C: the relativisation lemma with `◯` (`relB_transferO`, under
+  `hS : φ k ∈ S ⟺ k ∈ S`), preservation for all formulas through the
+  restriction keeping `S` (`relB_preservesO`), and the gadget with `K`'s own
+  `S` on the copies (`GadR.transfer`).
+* The complement witness for the `x₀` generators of `f0FreeBase3`:
+  `◯x₁` is interderivable with no `x3`-image of a ◯-free formula
+  (`not_image_circ_x1`).
+
 Status note: `wip/f0FreePLL-STATUS.md`.
 -/
 
@@ -555,6 +576,60 @@ theorem freeHAωAbove_of_freePLL (b : PLLFormula) (h : FreePLLAbove b) : FreeHA�
   let ⟨x, hvf, hle, hf⟩ := h
   ⟨x, hvf, hle, fun A B _ _ => hf A B⟩
 
+/-! ## The complement witness for the `x₀` generators
+
+With `f0FreeBase3`'s generators `x3` (`x₀ = x3 (pvar 0) = ◯σ³⊥`,
+`x₁ = x3 (pvar 1) = gen 1`), the range is not closed under `◯`: `◯x₁` is
+interderivable with no image `relB σ³⊥ x3 A` of a ◯-free `A` over
+`pvar 0, …, pvar (n-1)`.  In every gadget of `f0FreeBase3`, `w_k ⊩ ◯x₁` gives
+`k ⊩ p₀ ∨ p₁` (`x3gad_circ_x1`: `w_k ∈ S` iff `k ⊮ p₀`), so `◯x₁ ⊣⊢ relB A`
+would give `[A] ⊢ p₀ ∨ p₁`, hence `[◯x₁] ⊢ x₀ ∨ x₁`; the table `Tsep` (a
+world `w ∉ S` below `s ∈ S`, both below the killers, the reader `m₁` above
+`w` only) refutes that (`sep_circ_x1`). -/
+
+/-- In `f0FreeBase3`'s gadget, `w_k ⊩ ◯x₁` gives `k ⊩ p₀ ∨ p₁`. -/
+theorem x3gad_circ_x1 {K : SubframeModel} [FinDec K] (k : K.W)
+    (h : (Base3.Gad.MK (Base3.Gad.Dp_down K)).force (Base3.Gad.Pt.w k) (.somehow (gen 1))) :
+    K.force k ((PLLFormula.prop (pvar 0)).or (.prop (pvar 1))) := by
+  rcases Decidable.em (k ∈ K.V (pvar 0)) with h0 | h0
+  · exact Or.inl h0
+  · exact Or.inr ((Base3.Gad.w_read k 1).mp (h _ ((Base3.Gad.MK _).refl _) h0))
+
+/-- The separating table: worlds `0 … 9` as in `gadT`, `10 = w ∉ S` below
+`11 = s ∈ S`; `w` sees the reader `m₁` (and `L₁`), `s` sees no reader. -/
+def Tsep : SubTab.SubCM :=
+  { n := 12, root := 10,
+    le := upLe.map (· ++ [false, false]) ++
+      [[true, true, true, true, false, true, true, true, false, true, true, true],
+       [true, true, true, false, false, true, true, false, false, true, false, true]],
+    S := upS ++ [false, true], val := List.replicate 12 [] }
+
+/-- `⊬ ◯x₁ ↠ x₀ ∨ x₁` (at `w`: `◯x₁` holds, `x₀` fails by `s`, `x₁` by `m₁`). -/
+theorem sep_circ_x1 : ¬ Deriv [] ((PLLFormula.somehow (gen 1)).ifThen ((gen 0).or (gen 1))) :=
+  SubTab.no.verdict _ Tsep
+
+/-- **The complement witness**: `◯x₁` is interderivable with no `x3`-image of
+a ◯-free formula over `pvar 0, …, pvar (n-1)`, for any `n`. -/
+theorem not_image_circ_x1 : ¬ ∃ (n : Nat) (A : PLLFormula), boxFree A = true ∧
+    varsBelow n A = true ∧ Deriv [.somehow (x3 (pvar 1))] (relB b3 x3 A) ∧
+      Deriv [relB b3 x3 A] (.somehow (x3 (pvar 1))) := by
+  rintro ⟨n, A, hA, vA, h1, h2⟩
+  rw [x3_pvar] at h1 h2
+  obtain ⟨d2⟩ := h2
+  have hsem : ∀ (K : SubframeModel) [FinDec K] (k : K.W), K.force k A →
+      K.force k ((PLLFormula.prop (pvar 0)).or (.prop (pvar 1))) := fun K _ k hk =>
+    x3gad_circ_x1 k (SubframeModel.CF.soundness₁ d2 _ _ ((Base3.Gad.transfer n A hA vA k).mpr hk))
+  have h3 : Deriv [] (A.ifThen ((PLLFormula.prop (pvar 0)).or (.prop (pvar 1)))) :=
+    SubframeModel.CF.completeness_imp hsem
+  have hAB : Deriv [A] ((PLLFormula.prop (pvar 0)).or (.prop (pvar 1))) :=
+    Deriv.impElim (h3.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _))
+  have hpres := relB_preservesω b3 x3 (fun M v a hv => b3_le_x3_sem M v a hv) hA rfl hAB
+  have e : relB b3 x3 ((PLLFormula.prop (pvar 0)).or (.prop (pvar 1))) = (gen 0).or (gen 1) := by
+    show (x3 (pvar 0)).or (x3 (pvar 1)) = _
+    rw [x3_pvar, x3_pvar]
+  rw [e] at hpres
+  exact sep_circ_x1 (Deriv.impIntro (Deriv.cutHead h1 hpres))
+
 end FreePLL
 end F0
 end PLLND
@@ -595,3 +670,6 @@ end PLLND
 #axioms_within PLLND.F0.FreePLL.freePLLnAbove_of [propext, Quot.sound]
 #axioms_within PLLND.F0.FreePLL.freePLLnAbove_base3 [propext, Quot.sound]
 #axioms_within PLLND.F0.FreePLL.freeHAωAbove_of_freePLL [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.x3gad_circ_x1 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.sep_circ_x1 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.not_image_circ_x1 [propext, Quot.sound]

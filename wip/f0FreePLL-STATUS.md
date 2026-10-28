@@ -47,6 +47,9 @@ Designed cells (Stage B), atoms `a0 = ""` (code 0, read by `gen 1`) and
 | `FreePLLAbove b → FreePLLnAbove b n` | `freePLLnAbove_of` | PROVED (packaging) |
 | **`∀ n, FreePLLnAbove (σ³⊥) n`** | `freePLLnAbove_base3` | **PROVED** |
 | `FreePLLAbove b → FreeHAωAbove b` | `freeHAωAbove_of_freePLL` | PROVED (packaging) |
+| `x3`-gadget: `w_k ⊩ ◯x₁ ⟹ k ⊩ p₀ ∨ p₁` | `x3gad_circ_x1` | PROVED |
+| `⊬ ◯x₁ ↠ x₀ ∨ x₁` (`x₀ = ◯σ³⊥`, `x₁ = gen 1`) | `sep_circ_x1` | PROVED (12-world table `Tsep`) |
+| complement: `◯x₁` ⊣⊢ no `x3`-image of a ◯-free formula over `pvar 0 … pvar (n-1)` | `not_image_circ_x1` | PROVED |
 
 ## Stage A (rule 8): the ◯-free fragment, PROVED
 
@@ -109,6 +112,26 @@ one thing the brief did not say: the Stage B cells cannot use the atoms
 `pvar i`, since `code "p" = 113` and the reader `gen 114` is too large to
 evaluate; the atoms `""` and `"\x00"` (codes `0`, `1`) were used.
 
+## The complement witness (optional in the brief; PROVED, about 50 lines)
+
+With the `x₀` generators of `f0FreeBase3` (`x3`), the range is not closed
+under `◯`:
+
+    ¬ ∃ n A,  A ◯-free over pvar 0 … pvar (n-1)  ∧
+              [◯x₁] ⊢ relB σ³⊥ x3 A  ∧  [relB σ³⊥ x3 A] ⊢ ◯x₁
+
+(`not_image_circ_x1`).  In every `f0FreeBase3` gadget `w_k ∈ S ⟺ k ⊮ p₀`,
+so `w_k ⊩ ◯x₁` gives `k ⊩ p₀ ∨ p₁` (`x3gad_circ_x1`); with `Gad.transfer`
+of `f0FreeBase3` and `completeness_imp`, `[relB A] ⊢ ◯x₁` gives
+`[A] ⊢ p₀ ∨ p₁`, then `relB_preservesω` gives `[relB A] ⊢ x₀ ∨ x₁`, and with
+`[◯x₁] ⊢ relB A` the cut `[◯x₁] ⊢ x₀ ∨ x₁`.  The table `Tsep` (upper worlds
+`0 … 9`, then `w ∉ S` below `s ∈ S`, the reader `m₁` and `L₁` above `w`
+only) refutes `◯x₁ ↠ x₀ ∨ x₁` (`sep_circ_x1`).  The pen argument said
+`◯x₁ ⟺ p₀ ∨ p₁` at the copies; only the direction `⟹` is needed.  The
+statement is for formulas over `pvar 0 … pvar (n-1)`; since
+`x3 a = gen (idx a)`, every `x3`-image is the image of such a formula, but
+that renaming is not mechanised here.
+
 ## Gates (watched failing, 2026-10-28, scratch gate file, `lake env lean`)
 
 * `#axioms_within freePLLAbove_base3 [propext]`: FAIL (Quot.sound).
@@ -120,6 +143,16 @@ evaluate; the atoms `""` and `"\x00"` (codes `0`, `1`) were used.
 * `gadT K1` with the readers `m₁`, `m₂` (and `L₁`, `L₂`) taken from above
   the copy: O1 REJECTED (the copy then forces `gen 1`).
 * Control: the unmodified `gadT K2` is accepted.
+* `Tsep` with `s` taken out of `S`: `sep_circ_x1` REJECTED (`w` then
+  forces `x₀ = ◯σ³⊥`).
+* `#axioms_within not_image_circ_x1 [Quot.sound]`: FAIL (propext).
+
+## Skips and caps
+
+None.  No producer run (every countermodel and gadget table was designed by
+hand and checked by `decide +kernel`).  Builds: `lake build wip.f0FreePLL`
+only; `lake env lean` on scratch files (the probe of `code` on literals, the
+drafts, the gate file).
 
 ## Log
 
@@ -131,3 +164,5 @@ evaluate; the atoms `""` and `"\x00"` (codes `0`, `1`) were used.
 * 2026-10-28: Stage C, `FreeReaders`, `FreePLLAbove (σ³⊥)` and
   `∀ n, FreePLLnAbove (σ³⊥) n` PROVED (`lake build wip.f0FreePLL` clean,
   every pin `[propext, Quot.sound]`); gates watched failing.
+* 2026-10-28: the complement witness for `x3` PROVED
+  (`not_image_circ_x1`); gates watched failing.
