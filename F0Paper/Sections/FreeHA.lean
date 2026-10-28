@@ -206,8 +206,9 @@ model with the same worlds and $`S = \emptyset`; on $`\bigcirc`-free formulas
 the two agree.  The multi-edge constraint models `cmM` of
 `wip/f0Indep.lean` serve the independence results of Section 4 only and are
 not used here: no constant of them occurs among the dependencies of the
-results of this section (a trace of the constants, 2026-10-28).  Constraint
-models occur in those dependencies at one place only, inside the library's
+results of this section printed here (a trace of their constants,
+2026-10-28; the results of PR #106 were not traced).  Constraint models occur
+in those dependencies at one place only, inside the library's
 completeness theorem for finite subframe models, which reaches the soundness
 of constraint models through Kripke frames (`FRJ.valid_of_derivable`); and the
 one-generator case at $`t_3` (`freeIPL1`) also uses the constraint model

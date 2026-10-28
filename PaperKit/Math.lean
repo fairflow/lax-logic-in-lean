@@ -691,6 +691,7 @@ partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
   | (`PLLND.F0.Base3.phiK, #[k]) => return some ("\\varphi_{" ++ (← generic st 0 k) ++ "}")
   | (`PLLND.F0.Base3.sepC, #[r]) => return some ("c_{" ++ (← generic st 0 r) ++ "}")
   | (`PLLND.F0.FreeHAn.Yf, #[]) => return some "Y"
+  | (`PLLND.F0.FreeHAn.xf, #[]) => return some (wrap 4 "\\bigcirc Y")
   | (`PLLND.F0.FreeHAn.x0, #[]) => return some "y_{0}"
   | (`PLLND.F0.FreeHAn.x1, #[]) => return some "y_{1}"
   | (`PLLND.F0.Pair.xs, #[a]) => return some ("y(" ++ (← generic st 0 a) ++ ")")
