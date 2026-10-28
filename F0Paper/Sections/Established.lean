@@ -19,7 +19,7 @@ counterexample, with the axioms its declarations depend on, computed by
 the last column names where it enters, from `#axiom_path` (`Meta/Audit.lean`);
 _Mathlib's sets_ is `Set.instCompleteAtomicBooleanAlgebra`, through the order on
 cuts, and _Mathlib's nuclei_ is `InfHomClass.toOrderHomClass`, through
-`Nucleus.monotone` (Section 11).  A dash: no choice.
+`Nucleus.monotone` (Section 12).  A dash: no choice.
 
 :::f0table (widths := "0.34 0.09 0.2 0.28 0.05")
 * * Result
@@ -137,76 +137,111 @@ cuts, and _Mathlib's nuclei_ is `InfHomClass.toOrderHomClass`, through
   * {axiomsOf}`NotIso.t3_filter_not_iso`
   * –
   * 9
+* * $`H_\omega` and every $`H_n` lie in $`[\sigma^{3}\bot, \top]` as Heyting subalgebras, from one family of variable-free generators: derivability between $`\bigcirc`-free formulas preserved and reflected
+  * PROVED
+  * {axiomsOf}`Base3.freeHAnAbove_base3 Base3.freeHAωAbove_base3 Base3.freeFamily3`
+  * –
+  * 10
+* * $`\forall n\, \exists m.\ H_n \hookrightarrow [\sigma^{m}\bot, \top]`, with $`m = 3`
+  * PROVED
+  * {axiomsOf}`Base3.conjecture`
+  * –
+  * 10
+* * $`H_1 \hookrightarrow [t_3, \top]`; $`H_2 \hookrightarrow [\sigma^{2}\bot, \top]`
+  * PROVED
+  * {axiomsOf}`FreeIPL.freeIPL1 Pair.freePair Pair.freeHAnAbove_base2_two`
+  * –
+  * 10
+* * Some pair of variable-free formulas generates $`H_2` over $`t_3`; $`H_\omega \hookrightarrow [t_3, \top]`
+  * REFUTED
+  * {axiomsOf}`FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3`
+  * –
+  * 10
+* * A one-to-one $`\land`-preserving copy of $`H_n` with bottom $`a` needs $`k(a) \ge 2^{n}`; $`k(\bot) \le 2`, $`k(t_3) \le 3`, $`k(\sigma^{2}\bot) = \infty`
+  * PROVED
+  * {axiomsOf}`MeetCount.meet_counting MeetCount.typeBound_bot MeetCount.typeBound_t3 FreeHAn.not_typeBound_base2 FreeHAn.base2_unbounded`
+  * –
+  * 10
+* * The pairwise lemma; the shift; an order copy of $`H_2` with bottom $`\bot` that does not preserve $`\land`
+  * PROVED
+  * {axiomsOf}`EmbedForms.pairwiseHimp EmbedForms.shift EmbedForms.shift2_orderEmb EmbedForms.shiftMeetFails`
+  * –
+  * 10
+* * $`\bigcirc`-free derivability in PLL is derivability in IPC
+  * PROVED
+  * {axiomsOf}`conservativity_IPL`
+  * –
+  * 10
 * * $`F_0 = \{\bot, t_1, t_2, t_4\} \cup {\uparrow}t_3`, and $`t_3 \le p \iff \lnot\lnot p = \top`
   * PROVED
   * {axiomsOf}`FilterIso.classify_low FilterIso.above_t3_iff_compl_compl_eq_top`
   * –
-  * 10
+  * 11
 * * The filter question is the residue above $`t_3`
   * PROVED
   * {axiomsOf}`FilterIso.filterIsoQ_iff_aboveResidue_t3`
   * –
-  * 10
+  * 11
 * * $`[p, \top]` is order-isomorphic to $`F_0`, for $`p = t_1, t_2, t_4, t_5, c_1` and every $`\sigma^{n}(t_3)`, $`\sigma^{n}(c_1)`
   * REFUTED
   * {axiomsOf}`FilterIso.e_filter_not_iso FilterIso.ne_filter_not_iso FilterIso.t4_filter_not_iso FilterIso.t5_filter_not_iso FilterIso.c1_filter_not_iso FilterIso.sigN_filter_not_iso FilterIso.C1n_filter_not_iso`
   * –
-  * 10
+  * 11
 * * Obstruction A, and the four cases at an isomorphism
   * PROVED
   * {axiomsOf}`FilterIso.obstructionA FilterIso.iso_cases`
   * –
-  * 10
+  * 11
 * * $`F_0` is a Heyting algebra with the nucleus $`\bigcirc`
   * PROVED
   * {axiomsOf}`instHeyting circNucleus`
   * –
-  * 11
+  * 12
 * * $`\mathrm{DM}(H)` is a frame, and $`H` a join- and meet-dense Heyting subalgebra
   * PROVED
   * {axiomsOf}`le_cutHimp_iff principal_himp sSup_principal_left sInf_principal_right`
   * Mathlib's sets
-  * 11
+  * 12
 * * The upper extension of a nucleus is a nucleus, the greatest; the extensions form an interval
   * PROVED
   * {axiomsOf}`exists_nucleus_extension extends_iff_mem_Icc`
   * Mathlib's nuclei
-  * 11
+  * 12
 * * $`\bigcirc` extends to $`F^{*}`, greatest among monotone extensions
   * PROVED
   * {axiomsOf}`circ_extends_to_DM`
   * Mathlib's sets and nuclei
-  * 11
+  * 12
 * * Nuclear extensions to the completion are unique
   * REFUTED
   * {axiomsOf}`MacNeilleNonUnique.nucleus_extension_not_unique`
   * the counterexample's nuclei, defined by cases (`threshold`)
-  * 11
+  * 12
 * * $`F^{*}` has a point that is not principal
   * PROVED
   * {axiomsOf}`Points.gapCut_ne_principal Points.exists_nonprincipal`
   * Mathlib's sets; excluded middle (`L_no_greatest`); the completeness theorem
-  * 11
+  * 12
 * * $`|F^{*}| = 2^{\aleph_0}`; $`\mathbb{R}` maps one-to-one into $`F^{*}`
   * PROVED
   * {axiomsOf}`Points.card_eq_continuum Points.X_injective`
   * Mathlib's sets; $`\mathbb{R}` (`Real.linearOrder`), cardinals, `Countable`
-  * 11
+  * 12
 * * $`F_0` has a filter that is not normal: $`F_7`, non-principal, with meet $`t_7`
   * PROVED
   * {axiomsOf}`Normal.notAllNormal Normal.F7_meet Normal.F7_nonPrincipal Normal.F7_not_normal Normal.descending Normal.strictlyDescending Normal.lowerBound Normal.greatestLowerBound`
   * –
-  * 11
+  * 12
 * * In every finite subframe model with decidable $`S` every world forces some $`\rho_k`, and some odd rung
   * PROVED
   * {axiomsOf}`Normal.star Normal.starOdd`
   * –
-  * 11
+  * 12
 * * $`\bigvee_k \rho_k = \top` and $`\bigvee_k t_{2k+1} = \top` in $`F_0`
   * PROVED
   * {axiomsOf}`Normal.supRho Normal.supOddRungs`
   * –
-  * 11
+  * 12
 :::
 
 Every other declaration in the paper is in the supporting tables at the ends

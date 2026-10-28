@@ -40,7 +40,7 @@ fresh block of variables, satisfy $`e_k(0) \dashv\vdash [\![ p ]\!]`,
 $`e_k(1) \dashv\vdash [\![ q ]\!]`, and $`e_k[(0, 1)] \parallel e_{k'}[(0, 1)]` for
 $`k \ne k'`.  So the open interval of every pair in the odd-gap lattice contains
 $`\aleph_0` threads, pairwise $`\parallel`.  PROVED.  Which other pairs have a
-thread is OPEN (Section 13).
+thread is OPEN (Section 14).
 
 {stmt}`incomparable_copies`
 

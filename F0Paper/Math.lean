@@ -18,6 +18,9 @@ import wip.f0Normal
 import wip.f0Structure
 import wip.f0Hole
 import wip.f0SelfSim
+import wip.f0FreeBase3
+import wip.f0MeetCount
+import wip.f0EmbedForms
 import wip.f0SigOnto
 import wip.f0NotIso
 import wip.gapWidth

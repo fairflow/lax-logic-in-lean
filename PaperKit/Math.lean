@@ -627,6 +627,71 @@ partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
     if f.isConstOf `PLLND.F0.Normal.odd then return some "\\{t_{2k+1} : k \\in \\mathbb{N}\\}"
     return none
   | (`Set.Iic, #[_, _, a]) => return some ("{\\downarrow}" ++ (← generic st 9 a))
+  -- v0.6 (2026-10-28): free Heyting algebras in F0 (`wip/f0FreeHAn.lean`,
+  -- `f0FreeIPL`, `f0FreePair`, `f0FreeBase3`, `f0MeetCount`)
+  | (``Eq, #[_, a, b]) =>
+    -- the Boolean side conditions: ◯-free, the variables in use
+    unless b.consumeMData.isConstOf ``Bool.true do return none
+    match a.consumeMData.getAppFnArgs with
+    | (`PLLND.SemUI.boxFree, #[x]) =>
+      return some (wrap 5 ((← form st 4 x) ++ "\\ \\text{is}\\ \\bigcirc\\text{-free}"))
+    | (`PLLND.F0.FreeHAn.varsBelow, #[n, x]) =>
+      let vs ← if natLit? n == some 1 then pure "\\{p_{0}\\}"
+        else if natLit? n == some 2 then pure "\\{p_{0}, p_{1}\\}"
+        else do pure ("\\{p_{0}, \\ldots, p_{" ++ (← generic st 6 n) ++ " - 1}\\}")
+      return some (wrap 5 ("\\mathrm{var}(" ++ (← form st 0 x) ++ ") \\subseteq " ++ vs))
+    | (`PLLND.F0.FreeIPL.onlyP, #[x]) =>
+      return some (wrap 5 ("\\mathrm{var}(" ++ (← form st 0 x) ++ ") \\subseteq \\{p\\}"))
+    | _ => return none
+  -- the relativisation `A[a := x(a), ⊥ := b]`; the generator assignments by name
+  | (`PLLND.F0.FreeHAn.relB, #[b, x, a]) =>
+    let xs := x.consumeMData
+    let hd ← if xs.isConstOf `PLLND.F0.Base3.x3 then pure "x"
+      else if xs.isConstOf `PLLND.F0.Base3.xω then pure "x^{\\omega}"
+      else if xs.isConstOf `PLLND.F0.Pair.xs then pure "y"
+      else generic st 9 xs
+    return some ((← form st 9 a) ++ "[q := " ++ hd ++ "(q),\\ \\bot := " ++ (← form st 1 b) ++ "]")
+  | (`PLLND.F0.FreeIPL.relG, #[x, a]) =>
+    return some ((← form st 9 a) ++ "[q := " ++ (← generic st 9 x) ++ "(q),\\ \\bot := t_{3}]")
+  | (`PLLND.F0.FreeIPL.h1, #[a]) =>
+    return some ("\\sigma(" ++ (← form st 9 a) ++ "[p := \\bigcirc\\bot])")
+  | (`PLLND.F0.FreeHAn.pvar, #[i]) => return some ("p_{" ++ (← generic st 0 i) ++ "}")
+  | (`PLLND.F0.FreeHAn.base, #[m]) => return some ("\\sigma^{" ++ (← generic st 0 m) ++ "}\\bot")
+  | (`PLLND.F0.Pair.b2, #[]) => return some "\\sigma^{2}\\bot"
+  | (`PLLND.F0.Base3.b3, #[]) => return some "\\sigma^{3}\\bot"
+  | (`PLLND.F0.FreeHAn.FreeHAnAbove, #[b, n]) =>
+    return some (wrap 5 ("H_{" ++ (← generic st 0 n) ++ "} \\hookrightarrow [" ++ (← form st 0 b) ++ ", \\top]"))
+  | (`PLLND.F0.FreeHAn.FreeHAωAbove, #[b]) =>
+    return some (wrap 5 ("H_{\\omega} \\hookrightarrow [" ++ (← form st 0 b) ++ ", \\top]"))
+  | (`PLLND.F0.FreeIPL.FreeIPLInAboveT3, #[]) => return some (wrap 5 "H_{\\omega} \\hookrightarrow [t_{3}, \\top]")
+  | (`PLLND.F0.Base3.gen, #[r]) => return some ("x_{" ++ (← generic st 0 r) ++ "}")
+  | (`PLLND.F0.Base3.x3, #[a]) => return some ("x(" ++ (← generic st 0 a) ++ ")")
+  | (`PLLND.F0.Base3.xω, #[a]) => return some ("x^{\\omega}(" ++ (← generic st 0 a) ++ ")")
+  | (`PLLND.F0.Base3.phiK, #[k]) => return some ("\\varphi_{" ++ (← generic st 0 k) ++ "}")
+  | (`PLLND.F0.Base3.sepC, #[r]) => return some ("c_{" ++ (← generic st 0 r) ++ "}")
+  | (`PLLND.F0.FreeHAn.Yf, #[]) => return some "Y"
+  | (`PLLND.F0.FreeHAn.x0, #[]) => return some "y_{0}"
+  | (`PLLND.F0.FreeHAn.x1, #[]) => return some "y_{1}"
+  | (`PLLND.F0.Pair.xs, #[a]) => return some ("y(" ++ (← generic st 0 a) ++ ")")
+  | (`PLLND.F0.FreeHAn.ZL.relX, #[a]) =>
+    return some ((← form st 9 a) ++ "[p := \\bigcirc Y,\\ \\bot := t_{3}]")
+  -- the cells `Z_r`, their bottoms, the gadget `M(K)` and its worlds
+  | (`PLLND.F0.FreeHAn.ZL.M, #[n]) => return some ("Z_{" ++ (← generic st 0 n) ++ "}")
+  | (`PLLND.F0.Base3.Cell.bot, #[r]) => return some ("m_{" ++ (← generic st 0 r) ++ "}")
+  | (`PLLND.F0.Base3.Gad.MK, #[K, D, _]) =>
+    if D.consumeMData.getAppFn.isConstOf `PLLND.F0.Base3.Gad.Dp then
+      return some ("\\mathcal{M}(" ++ (← generic st 0 K) ++ ")")
+    return some ("\\mathcal{M}(" ++ (← generic st 0 K) ++ ", " ++ (← generic st 0 D) ++ ")")
+  | (`PLLND.F0.Base3.Gad.Pt.w, #[_, k]) => return some ("w_{" ++ (← generic st 0 k) ++ "}")
+  | (`PLLND.F0.Base3.Gad.Pt.kn, #[_]) => return some "m'_{0}"
+  -- type counts and meet-embeddings
+  | (`PLLND.F0.FreeHAn.TypeBound, #[b, K]) =>
+    return some (wrap 5 ("k(" ++ (← form st 0 b) ++ ") \\le " ++ (← generic st 6 K)))
+  | (`PLLND.F0.FreeHAn.Distinct, #[b, K]) =>
+    return some (wrap 5 ("k(" ++ (← form st 0 b) ++ ") \\ge " ++ (← generic st 6 K)))
+  | (`PLLND.F0.MeetCount.MeetEmb, #[n, f]) =>
+    return some (wrap 5 ((← generic st 6 f) ++ "\\ \\text{is a meet-embedding of}\\ H_{" ++
+      (← generic st 0 n) ++ "}"))
   | _ => return none
 
 /-- Propositions, terms and everything else. -/

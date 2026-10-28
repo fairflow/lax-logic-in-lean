@@ -214,7 +214,7 @@ the new cut $`m` between the copies is sent to $`m` by one extension and to
 $`\top` by another ({cite}`TheunissenVenema2007`, Example 3.11).  The witness
 is a gap like those of $`F_0`: a down-set without greatest element under an
 up-set without least element.  Whether the interval of extensions is a single
-point at $`F_0` is OPEN (Section 13).
+point at $`F_0` is OPEN (Section 14).
 
 {stmt}`MacNeilleNonUnique.nucleus_extension_not_unique`
 
@@ -297,13 +297,13 @@ section is pen argument, on the definitions, except where marked.
   `dichotomy` and $`{\downarrow}t_2 = \{\bot, t_2\}`).  Over $`{\downarrow}t_1`,
   $`{\downarrow}t_2`, $`{\downarrow}t_4` the fibre is the principal filter alone:
   a non-principal filter contains none of $`\bot`, $`t_1`, $`t_2`, $`t_4` (each
-  would be its least element), so by `classify_low` (Section 10) it lies in
+  would be its least element), so by `classify_low` (Section 11) it lies in
   $`{\uparrow}t_3` and has $`t_3` as a lower bound.  Over a principal point
   $`{\downarrow}a` in general, the fibre has a second member exactly when $`a`
   is the meet in $`F_0` of a strictly decreasing sequence that avoids it.
   Over $`{\downarrow}t_7` there are at least two, $`{\uparrow}t_7` and
   $`F_7` (PROVED, below).  Over $`{\downarrow}t_3` and $`{\downarrow}t_5`: OPEN
-  (Section 13).
+  (Section 14).
 
 _Not every filter is normal._  Write
 $`\rho_k = \mathrm{rel}(r_{2k+1})` for the relativised odd rungs of Section 8
@@ -411,7 +411,7 @@ The construction needs an infinite principal downset, which $`F_0` has from
 $`t_6` on (Section 8).  In the $`\bigcirc`-free analogue, the Rieger–Nishimura
 lattice, every $`{\downarrow}t_n` is finite, so every filter is principal and
 normal (pen): the phenomenon is modal.  Whether a non-normal filter lies over a
-limit point (the gap filter is the candidate) is OPEN (Section 13).
+limit point (the gap filter is the candidate) is OPEN (Section 14).
 
 # Supporting declarations
 
