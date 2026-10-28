@@ -22,8 +22,7 @@ unexpected, where the free structure stops, the generators, the construction,
 and the formal statement with the reasons for trusting it.  Every declaration
 here is choice-free; `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
 `wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean`,
-`wip/f0FreeAnyFamily.lean`, `wip/f0EmbedForms.lean`, and `wip/f0FreePLL.lean`
-(PR #106).
+`wip/f0FreeAnyFamily.lean`, `wip/f0EmbedForms.lean`, `wip/f0FreePLL.lean`.
 
 # Summary
 
@@ -47,9 +46,8 @@ included,
 
 $$`A \vdash B \iff A[a := x^{r}(a),\ \bot := \sigma^{3}\bot] \vdash B[a := x^{r}(a),\ \bot := \sigma^{3}\bot].`
 
-PROVED (`freeReaders`, `freePLLAbove_base3`; `wip/f0FreePLL.lean`, public
-PR #106, pins $`\mathsf{propext}`, $`\mathsf{Quot.sound}`; not on main when
-this version was built, so not printed here).  Algebraically: the free
+PROVED (`freeReaders`, `freePLLAbove_base3`, `wip/f0FreePLL.lean`; printed
+with the formal statement below).  Algebraically: the free
 PLL-algebra on $`\omega` generators embeds into $`[\sigma^{3}\bot, \top]`,
 with the nucleus of $`F_0` restricted to the interval, while $`F_0` itself is
 the free PLL-algebra on no generators (pen reading, as for IPC below).
@@ -206,9 +204,8 @@ model with the same worlds and $`S = \emptyset`; on $`\bigcirc`-free formulas
 the two agree.  The multi-edge constraint models `cmM` of
 `wip/f0Indep.lean` serve the independence results of Section 4 only and are
 not used here: no constant of them occurs among the dependencies of the
-results of this section printed here (a trace of their constants,
-2026-10-28; the results of PR #106 were not traced).  Constraint models occur
-in those dependencies at one place only, inside the library's
+results of this section (a trace of their constants, 2026-10-28).
+Constraint models occur in those dependencies at one place only, inside the library's
 completeness theorem for finite subframe models, which reaches the soundness
 of constraint models through Kripke frames (`FRJ.valid_of_derivable`); and the
 one-generator case at $`t_3` (`freeIPL1`) also uses the constraint model
@@ -329,7 +326,7 @@ reading whether $`h` lies above.  PROVED:
 
 {leanStmt Pair.freePair}
 
-_PLL itself_ (`wip/f0FreePLL.lean`, PR #106).  Drop $`x_0`: the variable $`a`
+_PLL itself_ (`wip/f0FreePLL.lean`).  Drop $`x_0`: the variable $`a`
 is read by the reader $`m_{\mathrm{code}(a)+1}` alone, and the copy keeps the
 $`S` of $`K`, now any finite subframe model: $`w_k \in S` iff $`k \in S`.  The
 killer $`m_0` lies above every copy as before.  The relativisation lemma gains
@@ -430,9 +427,27 @@ The conjecture, with $`m = 3`.  PROVED:
 
 {leanStmt conjecture}
 
-For PLL the statement is `FreePLLAbove b`: `FreeHAωAbove b` with the side
-condition `boxFree` dropped, so that $`A` and $`B` range over all formulas
-(`wip/f0FreePLL.lean`, PR #106; PROVED for $`b = \sigma^{3}\bot`).
+For PLL the statement is `FreeHAωAbove` with the side condition `boxFree`
+dropped, so that $`A` and $`B` range over all formulas and $`\bigcirc` is sent
+to $`\bigcirc` (`wip/f0FreePLL.lean`):
+
+{stmt}`FreePLL.FreePLLAbove`
+
+{leanDef FreePLL.FreePLLAbove}
+
+With the readers alone as generators:
+
+{stmt}`FreePLL.FreeReaders`
+
+{leanDef FreePLL.FreeReaders}
+
+PROVED:
+
+{leanStmt FreePLL.freeReaders}
+
+{stmt}`FreePLL.freePLLAbove_base3`
+
+{leanStmt FreePLL.freePLLAbove_base3}
 
 Why the statement says what the summary claims:
 
@@ -491,7 +506,7 @@ $$`\text{(H)} \Longrightarrow \text{(L)} \Longrightarrow \text{(O)}, \qquad \tex
 $`h` is one-to-one, not onto $`[\sigma^{3}\bot, \top]`.
 
 * (1) _$`\bigcirc x_1` is not in the range._  PROVED (`not_image_circ_x1`,
-  `sep_circ_x1`; `wip/f0FreePLL.lean`, PR #106).  In every gadget
+  `sep_circ_x1`; `wip/f0FreePLL.lean`).  In every gadget
   $`\bigcirc x_1` holds at $`w_k` iff $`k \Vdash p_0 \lor p_1`, because $`x_0`
   and $`\bigcirc` both read $`S`: the worlds of $`S` above $`w_k` are the copies
   $`w_j`, $`j \ge k`, with $`j \nVdash p_0`, and worlds forcing
@@ -519,11 +534,12 @@ $`h` is one-to-one, not onto $`[\sigma^{3}\bot, \top]`.
 
 # Supporting declarations
 
-{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.FreeIPL1InAboveT3 FreeIPL.freeIPL1 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.NoMeetCopyH2 MeetCount.noMeetCopyH2_bot MeetCount.noMeetCopyH2_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 Free3 free3_preserves free3_reflects free3 freeFamily3_of_free3 freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.FreeOmega3 Base3.freeOmega3 Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc EmbedForms.PairwiseHimp EmbedForms.pairwiseHimp EmbedForms.Shift EmbedForms.shift EmbedForms.ShiftH2 EmbedForms.shiftH2 EmbedForms.ShiftOrderEmb EmbedForms.shift2_orderEmb EmbedForms.ShiftMeetFails EmbedForms.shiftMeetFails AnyFamily.AnyFamily3 AnyFamily.anyFamily3 AnyFamily.freeHAnAbove_base3' AnyFamily.sigN_relB AnyFamily.sigN_base AnyFamily.SigShiftω AnyFamily.sigShiftω}
+{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.FreeIPL1InAboveT3 FreeIPL.freeIPL1 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.NoMeetCopyH2 MeetCount.noMeetCopyH2_bot MeetCount.noMeetCopyH2_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 Free3 free3_preserves free3_reflects free3 freeFamily3_of_free3 freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.FreeOmega3 Base3.freeOmega3 Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc EmbedForms.PairwiseHimp EmbedForms.pairwiseHimp EmbedForms.Shift EmbedForms.shift EmbedForms.ShiftH2 EmbedForms.shiftH2 EmbedForms.ShiftOrderEmb EmbedForms.shift2_orderEmb EmbedForms.ShiftMeetFails EmbedForms.shiftMeetFails AnyFamily.AnyFamily3 AnyFamily.anyFamily3 AnyFamily.freeHAnAbove_base3' AnyFamily.sigN_relB AnyFamily.sigN_base AnyFamily.SigShiftω AnyFamily.sigShiftω FreePLL.xr FreePLL.relB_transferO FreePLL.FreePLLnAbove FreePLL.freePLLnAbove_base3 FreePLL.sep_circ_x1 FreePLL.not_image_circ_x1 FreePLL.cell_O1 FreePLL.cell_O2 FreePLL.cell_O3}
 
 Pins: every declaration of `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
-`wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean` and
-`wip/f0FreeAnyFamily.lean` here within `propext`, `Quot.sound`
+`wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean`,
+`wip/f0FreeAnyFamily.lean` and `wip/f0FreePLL.lean` here within `propext`,
+`Quot.sound`
 (`#axioms_within`); in
 `wip/f0EmbedForms.lean`, `pairwiseHimp` and `shift` within no axioms, the rest
 within `propext`, `Quot.sound`.

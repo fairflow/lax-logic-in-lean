@@ -113,8 +113,8 @@ $`[\sigma^{m}\bot, \top]`, $`m \ge 3`, and any $`n + 1`
 $`\sigma^{2}\bot`-maximal worlds of pairwise different types give $`H_n`
 (Section 10).  PLL itself embeds faithfully into $`F_0`, with the readers as
 generators and $`\bigcirc \mapsto \bigcirc`, and $`\bigcirc x_1` is not in
-the range of the copy of IPC: both PROVED in `wip/f0FreePLL.lean` (PR #106;
-Section 10).
+the range of the copy of IPC: both PROVED in `wip/f0FreePLL.lean`
+(Section 10).
 
 # Closed since v0.4.1
 
