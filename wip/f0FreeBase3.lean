@@ -65,6 +65,11 @@ generators inside `[σ³⊥, ⊤]`, closed under F0's `∧`, `∨`, `↠`, with 
   the generators read the valuation (`Gad.w_read`), lemma (a) of
   `f0FreePair` (`relB_transfer`) gives `w_k ⊩ relB σ³⊥ x3 A ⟺ k ⊩ A`
   (`Gad.transfer`), and `⟸` follows (`free3_reflects`).
+* Every variable a generator: **PROVED `FreeHAωAbove (σ³⊥)`**
+  (`freeHAωAbove_base3`), with `xω a = gen (code a)`, `code` a choice-free
+  injection `String → Nat` through the UTF-8 bytes (`code_inj`); contrast
+  `not_FreeIPLInAboveT3` of `wip/f0FreeIPL.lean`, the same statement at `t3`,
+  REFUTED.
 * Side cell: `⊬ (g1 ↠ g3) ∨ (g3 ↠ g1)` (`side_cell`).
 
 Status note: `wip/f0FreeBase3-STATUS.md`.
@@ -758,6 +763,175 @@ theorem freeHAnAbove_base3 (n : Nat) : FreeHAnAbove (base 3) n :=
 /-- **PROVED: the conjecture** `∀ n ∃ m, FreeHAnAbove (σᵐ⊥) n`, with `m = 3`. -/
 theorem conjecture : Conjecture := conjecture_of_base3 freeHAnAbove_base3
 
+/-! ## Stage 2 (f): every variable a generator, `FreeHAωAbove (σ³⊥)`
+
+A choice-free injection of `String` into `Nat` through the UTF-8 bytes
+(`code`, `code_inj`), and the generator `xω a = gen (code a)`.  The gadget is
+the same, with `D r k ⟺ ∀ a, code a = r → k ⊮ a`; the transfer and the
+preservation are `relB_transfer` / `relB_preserves` of `f0FreePair` without
+the bound on the variables (`relB_transferω`, `relB_preservesω`). -/
+
+/-- An injective code of byte lists: `b :: l ↦ b + 1 + 257 · encB l`. -/
+def encB : List UInt8 → Nat
+  | [] => 0
+  | b :: l => b.toNat + 1 + 257 * encB l
+
+theorem encB_inj : ∀ {l l' : List UInt8}, encB l = encB l' → l = l'
+  | [], [], _ => rfl
+  | [], b :: l', h => by
+      exfalso
+      have h' : (0 : Nat) = b.toNat + 1 + 257 * encB l' := h
+      omega
+  | b :: l, [], h => by
+      exfalso
+      have h' : b.toNat + 1 + 257 * encB l = 0 := h
+      omega
+  | b :: l, b' :: l', h => by
+      have h' : b.toNat + 1 + 257 * encB l = b'.toNat + 1 + 257 * encB l' := h
+      have hb : b.toNat < 256 := UInt8.toNat_lt b
+      have hb' : b'.toNat < 256 := UInt8.toNat_lt b'
+      have e1 : b.toNat = b'.toNat := by omega
+      have e2 : encB l = encB l' := by omega
+      rw [UInt8.toNat_inj.mp e1, encB_inj e2]
+
+/-- The code of a string: its UTF-8 bytes, encoded. -/
+def code (a : String) : Nat := encB a.toByteArray.data.toList
+
+/-- **`code` is injective** (choice-free: `String.toByteArray_inj`,
+`ByteArray.ext`, `Array.toList_inj`, `UInt8.toNat_inj`). -/
+theorem code_inj {a a' : String} (h : code a = code a') : a = a' :=
+  String.toByteArray_inj.mp (ByteArray.ext (Array.toList_inj.mp (encB_inj h)))
+
+/-- **The generator assignment for all variables**: `xω a = gen (code a)`. -/
+def xω (a : String) : PLLFormula := gen (code a)
+
+section Relativisationω
+
+variable (M : SubframeModel) (b : PLLFormula) (x : String → PLLFormula)
+
+/-- `relB_transfer` without the bound on the variables. -/
+theorem relB_transferω (K : SubframeModel) (φ : K.W → M.W)
+    (hbx : ∀ v a, M.force v b → M.force v (x a))
+    (hb : ∀ k, ¬ M.force (φ k) b)
+    (hmono : ∀ {k j}, K.le k j → M.le (φ k) (φ j))
+    (hback : ∀ k v, M.le (φ k) v → M.force v b ∨ ∃ j, K.le k j ∧ φ j = v)
+    (hatom : ∀ k a, (M.force (φ k) (x a) ↔ k ∈ K.V a)) :
+    ∀ A : PLLFormula, boxFree A = true → ∀ k, (M.force (φ k) (relB b x A) ↔ K.force k A)
+  | .prop a, _, k => hatom k a
+  | .falsePLL, _, k => ⟨hb k, False.elim⟩
+  | .and A B, hf, k => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      exact and_congr (relB_transferω K φ hbx hb hmono hback hatom A hf'.1 k)
+        (relB_transferω K φ hbx hb hmono hback hatom B hf'.2 k)
+  | .or A B, hf, k => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      exact or_congr (relB_transferω K φ hbx hb hmono hback hatom A hf'.1 k)
+        (relB_transferω K φ hbx hb hmono hback hatom B hf'.2 k)
+  | .ifThen A B, hf, k => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      have ihA := relB_transferω K φ hbx hb hmono hback hatom A hf'.1
+      have ihB := relB_transferω K φ hbx hb hmono hback hatom B hf'.2
+      show (∀ v, M.le (φ k) v → M.force v (relB b x A) → M.force v (relB b x B)) ↔
+        (∀ j, K.le k j → K.force j A → K.force j B)
+      constructor
+      · intro h j hj hA
+        exact (ihB j).mp (h (φ j) (hmono hj) ((ihA j).mpr hA))
+      · intro h v hv hA
+        rcases hback k v hv with hvb | ⟨j, hj, rfl⟩
+        · exact force_relB_of_b M b x hbx B v hvb
+        · exact (ihB j).mpr (h j hj ((ihA j).mp hA))
+  | .somehow _, hf, _ => nomatch hf
+
+/-- `relB_restrict` without the bound on the variables. -/
+theorem relB_restrictω [FinDec M] (hbx : ∀ v a, M.force v b → M.force v (x a)) :
+    ∀ A : PLLFormula, boxFree A = true →
+      ∀ w : (restrict M b x).W, (M.force w.1 (relB b x A) ↔ (restrict M b x).force w A) :=
+  relB_transferω M b x (restrict M b x) Subtype.val hbx (fun w => w.2) (fun h => h)
+    (fun _ v hwv => if hvb : M.force v b then Or.inl hvb else Or.inr ⟨⟨v, hvb⟩, hwv, rfl⟩)
+    (fun _ _ => Iff.rfl)
+
+end Relativisationω
+
+/-- `relB_preserves` without the bound on the variables. -/
+theorem relB_preservesω (b : PLLFormula) (x : String → PLLFormula)
+    (hbx : ∀ (M : SubframeModel) v a, M.force v b → M.force v (x a))
+    {A B : PLLFormula} (hA : boxFree A = true) (hB : boxFree B = true) (hd : Deriv [A] B) :
+    Deriv [relB b x A] (relB b x B) := by
+  obtain ⟨d⟩ := hd
+  have hsem : ∀ (M : SubframeModel) [FinDec M] (v : M.W),
+      M.force v (relB b x A) → M.force v (relB b x B) := by
+    intro M _ v hv
+    rcases Decidable.em (M.force v b) with hvb | hvb
+    · exact force_relB_of_b M b x (hbx M) B v hvb
+    · have hA' := (relB_restrictω M b x (hbx M) A hA ⟨v, hvb⟩).mp hv
+      exact (relB_restrictω M b x (hbx M) B hB ⟨v, hvb⟩).mpr
+        (SubframeModel.CF.soundness₁ d (restrict M b x) ⟨v, hvb⟩ hA')
+  have h2 : Deriv [] ((relB b x A).ifThen (relB b x B)) :=
+    SubframeModel.CF.completeness_imp hsem
+  exact Deriv.impElim (h2.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _))
+
+namespace Gad
+
+/-- The reading for `xω`: `D r k ⟺ k ⊮ a` for the variable `a` with code `r`. -/
+def Dω (K : SubframeModel) (r : Nat) (k : K.W) : Prop := ∀ a, code a = r → k ∉ K.V a
+
+theorem Dω_down (K : SubframeModel) : ∀ r {j k : K.W}, K.le j k → Dω K r k → Dω K r j :=
+  fun _ _ _ hjk hk a ha hj => hk a ha (K.hered hjk hj)
+
+/-- `w_k ⊩ gen r ⟺ ¬ D r k`, for every `r`. -/
+theorem w_gen {K : SubframeModel} {D : Nat → K.W → Prop}
+    (hD : ∀ r {j k : K.W}, K.le j k → D r k → D r j) (k : K.W) :
+    ∀ r, (MK hD).force (Pt.w k) (gen r) ↔ ¬ D r k
+  | 0 => w_gen0 hD k
+  | s + 1 => w_gen_succ hD k s
+
+variable {K : SubframeModel} [FinDec K]
+
+/-- **`xω` reads the valuation of every variable.** -/
+theorem w_readω (k : K.W) (a : String) :
+    (MK (Dω_down K)).force (Pt.w k) (xω a) ↔ k ∈ K.V a := by
+  refine (w_gen (Dω_down K) k (code a)).trans ⟨fun hn => ?_, fun hk hD => hD a rfl hk⟩
+  exact Decidable.byContradiction fun hk => hn fun a' ha' hk' => by
+    have e : a' = a := code_inj ha'
+    subst e
+    exact hk hk'
+
+/-- **The gadget transfer for `xω`**: for every ◯-free `A`,
+`w_k ⊩ relB σ³⊥ xω A ⟺ k ⊩ A`. -/
+theorem transferω : ∀ A : PLLFormula, boxFree A = true →
+    ∀ k : K.W, ((MK (Dω_down K)).force (Pt.w k) (relB b3 xω A) ↔ K.force k A) :=
+  relB_transferω (MK (Dω_down K)) b3 xω K Pt.w (fun v _ hv => b3_le_gen_sem _ v _ hv)
+    (w_not_b3 _) (fun h => h) (w_back _) w_readω
+
+end Gad
+
+/-- **The statement for every variable**: `∀ A B ◯-free, [A] ⊢ B ⟺ [relB σ³⊥ xω A] ⊢ relB σ³⊥ xω B`. -/
+def FreeOmega3 : Prop :=
+  ∀ A B : PLLFormula, boxFree A = true → boxFree B = true →
+    (Deriv [A] B ↔ Deriv [relB b3 xω A] (relB b3 xω B))
+
+theorem freeOmega3_reflects {A B : PLLFormula} (hA : boxFree A = true) (hB : boxFree B = true)
+    (hd : Deriv [relB b3 xω A] (relB b3 xω B)) : Deriv [A] B := by
+  obtain ⟨d⟩ := hd
+  have hsem : ∀ (K : SubframeModel) [FinDec K] (k : K.W), K.force k A → K.force k B := by
+    intro K _ k hk
+    exact (Gad.transferω B hB k).mp
+      (SubframeModel.CF.soundness₁ d (Gad.MK (Gad.Dω_down K)) (Gad.Pt.w k)
+        ((Gad.transferω A hA k).mpr hk))
+  have h2 : Deriv [] (A.ifThen B) := SubframeModel.CF.completeness_imp hsem
+  exact Deriv.impElim (h2.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _))
+
+/-- **PROVED: `FreeOmega3`.** -/
+theorem freeOmega3 : FreeOmega3 := fun _ _ hA hB =>
+  ⟨relB_preservesω b3 xω (fun M v _ hv => b3_le_gen_sem M v _ hv) hA hB,
+   freeOmega3_reflects hA hB⟩
+
+/-- **PROVED: `[σ³⊥, ⊤]` contains the free Heyting algebra on countably many
+generators** (every variable a generator; contrast `not_FreeIPLInAboveT3`, the
+same statement at `t3`, REFUTED). -/
+theorem freeHAωAbove_base3 : FreeHAωAbove (base 3) :=
+  ⟨xω, fun _ => gen_vf _, fun _ => b3_le_gen _, freeOmega3⟩
+
 end Base3
 end F0
 end PLLND
@@ -805,3 +979,12 @@ end PLLND
 #axioms_within PLLND.F0.Base3.freeFamily3 [propext, Quot.sound]
 #axioms_within PLLND.F0.Base3.freeHAnAbove_base3 [propext, Quot.sound]
 #axioms_within PLLND.F0.Base3.conjecture [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.encB_inj [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.code_inj [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.relB_transferω [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.relB_preservesω [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.w_readω [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.Gad.transferω [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.freeOmega3_reflects [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.freeOmega3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Base3.freeHAωAbove_base3 [propext, Quot.sound]

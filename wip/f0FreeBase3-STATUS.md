@@ -56,6 +56,10 @@ variable-free fragment is `{⊥, ⊤}`).
 | **`FreeFamily3`** | `freeFamily3` | **PROVED** |
 | **`∀ n, FreeHAnAbove (σ³⊥) n`** | `freeHAnAbove_base3` | **PROVED** |
 | **`Conjecture`** (`∀ n ∃ m, FreeHAnAbove (σᵐ⊥) n`) | `conjecture` (`m = 3`) | **PROVED** |
+| `code : String → Nat` injective (UTF-8 bytes) | `code_inj` (via `encB_inj`) | PROVED |
+| `relB_transfer`, `relB_preserves` without `varsBelow` | `relB_transferω`, `relB_preservesω` | PROVED |
+| `FreeOmega3`: `∀ A B ◯-free, [A] ⊢ B ⟺ [relB σ³⊥ xω A] ⊢ relB σ³⊥ xω B`, `xω a = gen (code a)` | `freeOmega3` | PROVED |
+| **`FreeHAωAbove (σ³⊥)`** | `freeHAωAbove_base3` | **PROVED** |
 
 ## The gadget design (pen, checked against the brief before building on it)
 
@@ -152,6 +156,17 @@ holds in every subframe model, and only `K` needs to be finite
 `x3 (pvar i) = gen i` uses `String.ofList_append`, `String.utf8ByteSize_append`
 (both choice-free) and `decide` on `"p"`.
 
+## Stage 2 (f): every variable a generator (PROVED)
+
+`FreeHAωAbove (σ³⊥)` (optional in the brief; done because the injection was
+cheap): `encB (b :: l) = b + 1 + 257 · encB l` on byte lists, `code a =
+encB a.toByteArray.data.toList`, injective by `String.toByteArray_inj`,
+`ByteArray.ext`, `Array.toList_inj`, `UInt8.toNat_inj` (all choice-free; no
+`String.toList`, no `String.length`).  `xω a = gen (code a)`; the empty string
+gets `x₀`.  Same gadget with `D r k ⟺ ∀ a, code a = r → k ⊮ a` (`Gad.Dω`);
+`Gad.w_readω` uses `code_inj`.  Contrast: the same statement at `t3`
+(`FreeIPLInAboveT3`) is REFUTED (`not_FreeIPLInAboveT3`, `wip/f0FreeIPL.lean`).
+
 ## Gates (watched failing, 2026-10-28, scratch gate file, `lake env lean`)
 
 * `#axioms_within free3 [propext]`: FAIL ("depends on Quot.sound"); the
@@ -161,6 +176,9 @@ holds in every subframe model, and only `K` needs to be finite
   `decide` (the root then forces `x₂`).
 * `TCc` with the non-`S` killer `kn` taken from above the copies: REJECTED
   (the copies then force `◯σ²⊥ ↠ σ²⊥`, hence `σ³⊥` and every generator).
+* `#axioms_within freeHAωAbove_base3 [propext]`: FAIL (Quot.sound).
+* `code "pq" = code "qp"` by `decide`: REJECTED ("is false"); control:
+  `idx "pq" = idx "qp"` by `decide` passes (`idx` is not injective).
 
 ## Skips and caps
 
@@ -177,3 +195,5 @@ on scratch files (probes, the Stage 2 draft, the gate file).
 * 2026-10-28: Stage 2, `Free3`, `FreeFamily3`, `∀ n, FreeHAnAbove (σ³⊥) n`
   and `Conjecture` PROVED (`lake build wip.f0FreeBase3` clean, every pin
   `[propext, Quot.sound]`); gates watched failing.
+* 2026-10-28: Stage 2 (f), `FreeHAωAbove (σ³⊥)` PROVED (`lake build
+  wip.f0FreeBase3` clean); gates watched failing.
