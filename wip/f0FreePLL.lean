@@ -308,6 +308,103 @@ theorem freeReadersIPC : FreeReadersIPC := fun _ _ hA hB =>
   ⟨relB_preservesω b3 xr (fun M v _ hv => b3_le_xr_sem M v _ hv) hA hB,
    freeReadersIPC_reflects hA hB⟩
 
+/-! ## Stage B: the designed cells (refutation stage, CLAUDE.md rules 7 and 9)
+
+Three PLL non-theorems in which `◯` does the work,
+
+    O1 = ◯p → p,    O2 = ◯p ∨ ¬◯p,    O3 = ◯(p ∨ q) → ◯p ∨ ◯q,
+
+with `p = a0`, `q = a1` (codes `0`, `1`, read by `gen 1`, `gen 2`).  Each has
+a designed subframe countermodel `K1`, `K2`, `K3` (`pll_O1` … `pll_O3`).
+Freeness needs each image `relB σ³⊥ xr Oᵢ` to be no theorem of PLL; the
+readers' gadget over `Kᵢ`, written as a table by `gadT` (the upper worlds
+`0 … 9` of `f0FreeBase3`'s tables, `e₀ n₀ L₀ L₁ L₂ f m₀ m₁ m₂ kn`, then one
+copy `10 + i` of each world `i` of `Kᵢ`, in `S` iff `i` is), refutes it at
+the copy of the root (`cell_O1` … `cell_O3`).  The base facts of
+`f0FreeBase3` (`baseFacts`) hold on each table, and the readers read the
+valuation at every copy (`readsB`).  All by `decide +kernel`. -/
+
+set_option maxRecDepth 100000
+
+/-- `K1`: one world, not in `S`, no atoms (`◯p` holds vacuously, `p` fails). -/
+def K1 : SubTab.SubCM := { n := 1, root := 0, le := [[true]], S := [false], val := [[]] }
+
+/-- `K2`: `k₀ ∈ S` below `k₁ ∉ S`, no atoms (`k₀ ⊮ ◯p`; `k₁ ⊩ ◯p`, so `k₀ ⊮ ¬◯p`). -/
+def K2 : SubTab.SubCM :=
+  { n := 2, root := 0, le := [[true, true], [false, true]], S := [true, false], val := [[], []] }
+
+/-- `K3`: `k₀ ∉ S` below two `S`-tops, `p` at `k₁`, `q` at `k₂`. -/
+def K3 : SubTab.SubCM :=
+  { n := 3, root := 0, le := [[true, true, true], [false, true, false], [false, false, true]],
+    S := [false, true, true], val := [[], [a0], [a1]] }
+
+/-- PLL: `⊬ ◯p → p`. -/
+theorem pll_O1 : ¬ Deriv [] O1 := SubTab.no.verdict O1 K1
+
+/-- PLL: `⊬ ◯p ∨ ¬◯p`. -/
+theorem pll_O2 : ¬ Deriv [] O2 := SubTab.no.verdict O2 K2
+
+/-- PLL: `⊬ ◯(p ∨ q) → ◯p ∨ ◯q`. -/
+theorem pll_O3 : ¬ Deriv [] O3 := SubTab.no.verdict O3 K3
+
+/-- The order rows of the upper worlds `0 … 9` (`e₀ n₀ L₀ L₁ L₂ f m₀ m₁ m₂ kn`),
+as in `f0FreeBase3`'s tables. -/
+def upLe : List (List Bool) :=
+  [[true, false, false, false, false, false, false, false, false, false],
+   [false, true, false, false, false, false, false, false, false, false],
+   [true, false, true, false, false, false, false, false, false, false],
+   [true, true, false, true, false, false, false, false, false, false],
+   [true, true, true, false, true, false, false, false, false, false],
+   [true, true, false, false, false, true, false, false, false, false],
+   [true, true, true, false, false, true, true, false, false, false],
+   [true, true, true, true, false, true, false, true, false, false],
+   [true, true, true, true, true, true, false, false, true, false],
+   [true, true, true, false, false, true, false, false, false, true]]
+
+/-- `S` on the upper worlds. -/
+def upS : List Bool := [false, true, true, true, true, false, true, true, true, false]
+
+/-- **The readers' gadget over a table `K`** (readers `m₁` for `a0`, `m₂` for
+`a1`): the copy `10 + i` of `i` is in `S` iff `i` is; it sees `e₀ n₀ L₀ f m₀ kn`
+always, `m₁` (and `L₁`) iff `i ⊮ a0`, `m₂` (and `L₁ L₂`) iff `i ⊮ a1`, and the
+copies of the successors of `i`. -/
+def gadT (K : SubTab.SubCM) : SubTab.SubCM :=
+  { n := 10 + K.n, root := 10 + K.root,
+    le := upLe.map (· ++ List.replicate K.n false) ++
+      (List.range K.n).map fun i =>
+        [true, true, true, !(K.vB a0 i) || !(K.vB a1 i), !(K.vB a1 i), true, true,
+          !(K.vB a0 i), !(K.vB a1 i), true] ++ (List.range K.n).map fun j => K.leB i j,
+    S := upS ++ (List.range K.n).map K.SB,
+    val := List.replicate (10 + K.n) [] }
+
+/-- The readers read the valuation at every copy, and the copies carry `K`'s `S`. -/
+def readsB (K : SubTab.SubCM) : Bool :=
+  (List.range K.n).all fun i =>
+    ((gadT K).forceB (10 + i) (xr a0) == K.vB a0 i) &&
+    ((gadT K).forceB (10 + i) (xr a1) == K.vB a1 i) &&
+    ((gadT K).SB (10 + i) == K.SB i)
+
+theorem baseFacts_K1 : baseFacts (gadT K1) = true := by decide +kernel
+
+theorem baseFacts_K2 : baseFacts (gadT K2) = true := by decide +kernel
+
+theorem baseFacts_K3 : baseFacts (gadT K3) = true := by decide +kernel
+
+theorem reads_K1 : readsB K1 = true := by decide +kernel
+
+theorem reads_K2 : readsB K2 = true := by decide +kernel
+
+theorem reads_K3 : readsB K3 = true := by decide +kernel
+
+/-- **Cell O1 PASSES**: `⊬ ◯y₀ ↠ y₀`, `y₀ = xr a0 = gen 1`. -/
+theorem cell_O1 : ¬ Deriv [] (relB b3 xr O1) := SubTab.no.verdict (relB b3 xr O1) (gadT K1)
+
+/-- **Cell O2 PASSES**: `⊬ ◯y₀ ∨ (◯y₀ ↠ σ³⊥)`. -/
+theorem cell_O2 : ¬ Deriv [] (relB b3 xr O2) := SubTab.no.verdict (relB b3 xr O2) (gadT K2)
+
+/-- **Cell O3 PASSES**: `⊬ ◯(y₀ ∨ y₁) ↠ ◯y₀ ∨ ◯y₁`, `y₁ = xr a1 = gen 2`. -/
+theorem cell_O3 : ¬ Deriv [] (relB b3 xr O3) := SubTab.no.verdict (relB b3 xr O3) (gadT K3)
+
 end FreePLL
 end F0
 end PLLND
@@ -325,3 +422,15 @@ end PLLND
 #axioms_within PLLND.F0.FreePLL.GadR.transferIPC [propext, Quot.sound]
 #axioms_within PLLND.F0.FreePLL.freeReadersIPC_reflects [propext, Quot.sound]
 #axioms_within PLLND.F0.FreePLL.freeReadersIPC [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.pll_O1 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.pll_O2 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.pll_O3 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.baseFacts_K1 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.baseFacts_K2 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.baseFacts_K3 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.reads_K1 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.reads_K2 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.reads_K3 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.cell_O1 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.cell_O2 [propext, Quot.sound]
+#axioms_within PLLND.F0.FreePLL.cell_O3 [propext, Quot.sound]

@@ -34,6 +34,9 @@ Designed cells (Stage B), atoms `a0 = ""` (code 0, read by `gen 1`) and
 | `w_k ⊩ gen (s+1) ⟺ ¬ Dr (s+1) k`; `w_k ⊩ xr a ⟺ k ⊩ a` | `GadR.w_gen_succ`, `GadR.w_read` | PROVED |
 | ◯-free transfer, every `S` on the copies | `GadR.transferIPC` | PROVED |
 | **`FreeReadersIPC`** (Stage A) | `freeReadersIPC` | **PROVED** |
+| `⊬ O1`, `⊬ O2`, `⊬ O3` in PLL | `pll_O1`, `pll_O2`, `pll_O3` | PROVED (1-, 2-, 3-world countermodels) |
+| Stage B images `relB σ³⊥ xr Oᵢ` no theorems | `cell_O1`, `cell_O2`, `cell_O3` | PROVED (gadget tables, 11, 12, 13 worlds) |
+| base facts and readings on the three tables | `baseFacts_K1/K2/K3`, `reads_K1/K2/K3` | PROVED |
 | `FreeReaders` | — | OPEN |
 | `FreePLLAbove (σ³⊥)` | — | OPEN |
 
@@ -50,8 +53,28 @@ of `f0FreeBase3` gives `transferIPC` for every `Sw`; the direction `⟸` uses
 `Sw = ∅`, the direction `⟹` is `relB_preservesω`.  No
 `wip/f0FreeAnyFamily` was on main (da627e0), so nothing to cite.
 
+## Stage B (rule 9): three designed cells, all PASS
+
+| cell | PLL formula | `K` | gadget `gadT K` | image | theorem |
+|------|-------------|-----|-----------------|-------|---------|
+| O1 | `◯p → p` | one world, `∉ S`, no atoms | 11 worlds | PASS (no theorem) | `cell_O1` |
+| O2 | `◯p ∨ ¬◯p` | `k₀ ∈ S` below `k₁ ∉ S` | 12 worlds | PASS | `cell_O2` |
+| O3 | `◯(p ∨ q) → ◯p ∨ ◯q` | `k₀ ∉ S` below `S`-tops `k₁ ⊩ p`, `k₂ ⊩ q` | 13 worlds | PASS | `cell_O3` |
+
+`p = a0 = ""`, `q = a1 = "\x00"`, so `xr p = gen 1`, `xr q = gen 2` (the
+kernel computes `code` on these literals; the code of `"p"` is 113, whose
+reader `gen 114` would be far too large to evaluate).  `gadT K` builds the
+table in Lean from `K`: the upper worlds `0 … 9` of `f0FreeBase3`
+(`e₀ n₀ L₀ L₁ L₂ f m₀ m₁ m₂ kn`), then the copy `10 + i` of each world `i`,
+in `S` iff `i ∈ S`, seeing `e₀ n₀ L₀ f m₀ kn` always, `m₁` and `L₁` iff
+`i ⊮ p`, `m₂`, `L₁`, `L₂` iff `i ⊮ q`.  On each table `f0FreeBase3`'s
+`baseFacts` holds, and `readsB`: at every copy `xr p`, `xr q` hold iff `p`,
+`q` hold at the world, and the copy is in `S` iff the world is.
+
 ## Log
 
 * 2026-10-28: Stage 0, statement written and checked (`lake env lean`),
   committed before any proof.
 * 2026-10-28: Stage A, `FreeReadersIPC` PROVED, pins `[propext, Quot.sound]`.
+* 2026-10-28: Stage B, three designed cells PASS (`decide +kernel` on the
+  gadget tables), base facts and readings kernel-checked.
