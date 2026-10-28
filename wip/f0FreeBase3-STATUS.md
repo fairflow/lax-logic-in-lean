@@ -29,6 +29,12 @@ Side cell: `⊢? (g1 ↠ g3) ∨ (g3 ↠ g1)`, `g1 = oddGap 0`, `g3 = oddGap 1`
 Fragment first (CLAUDE.md rule 8): degenerate, as in `f0FreePair` (the ◯-free
 variable-free fragment is `{⊥, ⊤}`).
 
+Naming: the brief called the second statement by a name containing a word
+barred from this public repository; it is `FreeFamily3` here (and
+`freeFamily3`, `freeFamily3_of_free3`, `freeHAnAbove_of_family`), the same
+statement verbatim.  The local commits were rewritten to carry the new name
+before anything was pushed.
+
 ## Status table
 
 | statement | theorem | status |
