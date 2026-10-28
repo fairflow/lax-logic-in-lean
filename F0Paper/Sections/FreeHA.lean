@@ -16,16 +16,18 @@ open PLLND.LaxInfinite (atomFree)
 The free Heyting algebra $`H_n` on $`n` generators, and $`H_\omega` on
 countably many, lie inside $`F_0` as Heyting subalgebras of one interval,
 $`[\sigma^{3}\bot, \top]`, where $`\sigma^{m}\bot` is the $`m`-th base of the
-nested copies of Section 9.  The result comes first, then why it is
+nested copies of Section 9; so does the free PLL-algebra on countably many
+generators.  The result comes first, then why it is
 unexpected, where the free structure stops, the generators, the construction,
 and the formal statement with the reasons for trusting it.  Every declaration
 here is choice-free; `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
 `wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean`,
-`wip/f0FreeAnyFamily.lean`, `wip/f0EmbedForms.lean`.
+`wip/f0FreeAnyFamily.lean`, `wip/f0EmbedForms.lean`, and `wip/f0FreePLL.lean`
+(PR #106).
 
 # Summary
 
-*IPC embeds faithfully into the closed fragment of PLL.*  There are
+*IPC embeds faithfully into the closed fragment $`F_0` of PLL.*  There are
 variable-free formulas $`x_0, x_1, x_2, \ldots` such that replacing each
 variable $`p_i` by $`x_i` and $`\bot` by $`\sigma^{3}\bot` preserves and
 reflects derivability between $`\bigcirc`-free formulas:
@@ -35,6 +37,22 @@ $$`A \vdash B \iff h(A) \vdash h(B), \qquad h(A) = A[p_i := x_i,\ \bot := \sigma
 PROVED (`freeHAnAbove_base3`, `freeHAωAbove_base3`; the formal statement is
 displayed below).  So intuitionistic propositional logic in countably many
 variables lives among the formulas built from $`\bot` alone.
+
+*More holds: PLL itself embeds faithfully into* $`F_0`.  Take as generators
+the readers alone, $`x^{r}(a) = x_{\mathrm{code}(a)+1}` for every variable
+$`a`, with no $`x_0` (`xr`; $`\mathrm{code}` is an injection of the variables
+into $`\mathbb{N}`, below), and send $`\bot` to $`\sigma^{3}\bot` and
+$`\bigcirc` to $`\bigcirc`.  Then for all formulas $`A`, $`B`, $`\bigcirc`
+included,
+
+$$`A \vdash B \iff A[a := x^{r}(a),\ \bot := \sigma^{3}\bot] \vdash B[a := x^{r}(a),\ \bot := \sigma^{3}\bot].`
+
+PROVED (`freeReaders`, `freePLLAbove_base3`; `wip/f0FreePLL.lean`, public
+PR #106, pins $`\mathsf{propext}`, $`\mathsf{Quot.sound}`; not on main when
+this version was built, so not printed here).  Algebraically: the free
+PLL-algebra on $`\omega` generators embeds into $`[\sigma^{3}\bot, \top]`,
+with the nucleus of $`F_0` restricted to the interval, while $`F_0` itself is
+the free PLL-algebra on no generators (pen reading, as for IPC below).
 
 * Algebraically, $`H_\omega` embeds as a Heyting subalgebra of the interval
   $`[\sigma^{3}\bot, \top]` of $`F_0`, and so does every $`H_n`; one family of
@@ -46,7 +64,9 @@ variables lives among the formulas built from $`\bot` alone.
   of a Heyting subalgebra of an interval of $`F_0` (pen argument).
 * $`F_0` is the free PLL-algebra, a Heyting algebra with a nucleus, on no
   generators (Section 2, pen argument).  So the free nucleated Heyting algebra
-  on no generators contains the free Heyting algebra on $`\omega` generators.
+  on no generators contains the free Heyting algebra on $`\omega` generators,
+  and in an interval, with its nucleus restricted, the free nucleated Heyting
+  algebra on $`\omega` generators.
 * Corollary: the conjecture
   $`\forall n\, \exists m.\ H_n \hookrightarrow [\sigma^{m}\bot, \top]` holds,
   with $`m = 3` for every $`n`.  PROVED (`conjecture`).
@@ -62,7 +82,7 @@ the Boolean algebra of finite and cofinite sets of natural numbers
 {pcite}`Boolos1993`.  $`F_0` is infinite and its order is rich (Sections 3
 to 9), but that one interval of it holds the free Heyting algebra on countably
 many generators says more: the closed fragment of PLL contains a faithful copy
-of the whole of IPC.
+of the whole of IPC, and of PLL itself.
 
 _The mechanism._  In a subframe model (Section 9: an intuitionistic Kripke model
 with a set $`S` of worlds, $`\bigcirc A` holding at $`w` when $`A` holds at
@@ -308,6 +328,23 @@ reading whether $`h` lies above.  PROVED:
 
 {leanStmt Pair.freePair}
 
+_PLL itself_ (`wip/f0FreePLL.lean`, PR #106).  Drop $`x_0`: the variable $`a`
+is read by the reader $`m_{\mathrm{code}(a)+1}` alone, and the copy keeps the
+$`S` of $`K`, now any finite subframe model: $`w_k \in S` iff $`k \in S`.  The
+killer $`m_0` lies above every copy as before.  The relativisation lemma gains
+a $`\bigcirc` case (`relB_transferO`), under the condition that
+$`\varphi(k) \in S` iff $`k \in S`: a world of $`S` above $`\varphi(k)` either
+forces $`b`, and with it every relativised formula, or is $`\varphi(j)` for
+some $`j \ge k` in $`S`.  Preservation is semantic again, on the worlds
+refuting $`\sigma^{3}\bot` with $`S` restricted to them.  Before the proof,
+three designed cells, $`\bigcirc p \twoheadrightarrow p`,
+$`\bigcirc p \lor \lnot\bigcirc p` and
+$`\bigcirc(p \lor q) \twoheadrightarrow \bigcirc p \lor \bigcirc q`, were shown
+to have images that are no theorems (`cell_O1`, `cell_O2`, `cell_O3`), and a
+gadget whose copies read $`S` as in the $`x_0` design was watched failing on
+the second.  PROVED (`freeReaders`, `freePLLAbove_base3`; pins
+$`\mathsf{propext}`, $`\mathsf{Quot.sound}`).
+
 # Any family, and every base above
 
 The choice of readers and killers does not matter.  Any $`n + 1`
@@ -392,6 +429,10 @@ The conjecture, with $`m = 3`.  PROVED:
 
 {leanStmt conjecture}
 
+For PLL the statement is `FreePLLAbove b`: `FreeHAωAbove b` with the side
+condition `boxFree` dropped, so that $`A` and $`B` range over all formulas
+(`wip/f0FreePLL.lean`, PR #106; PROVED for $`b = \sigma^{3}\bot`).
+
 Why the statement says what the summary claims:
 
 * (a) _Clause by clause._  `atomFree (x a)`: every generator is variable-free,
@@ -448,7 +489,8 @@ $$`\text{(H)} \Longrightarrow \text{(L)} \Longrightarrow \text{(O)}, \qquad \tex
 
 $`h` is one-to-one, not onto $`[\sigma^{3}\bot, \top]`.
 
-* (1) _$`\bigcirc x_1` is not in the range_ (pen argument).  In every gadget
+* (1) _$`\bigcirc x_1` is not in the range._  PROVED (`not_image_circ_x1`,
+  `sep_circ_x1`; `wip/f0FreePLL.lean`, PR #106).  In every gadget
   $`\bigcirc x_1` holds at $`w_k` iff $`k \Vdash p_0 \lor p_1`, because $`x_0`
   and $`\bigcirc` both read $`S`: the worlds of $`S` above $`w_k` are the copies
   $`w_j`, $`j \ge k`, with $`j \nVdash p_0`, and worlds forcing
@@ -459,12 +501,11 @@ $`h` is one-to-one, not onto $`[\sigma^{3}\bot, \top]`.
   them: a world $`w \notin S` below a world $`s \in S`, both below the
   killers, with the reader $`m_1` above $`w` but not above $`s`.  Then
   $`s \nVdash x_0` and $`s \Vdash x_1`, so $`w \Vdash \bigcirc x_1`, while
-  $`w \nVdash x_0` and $`w \nVdash x_1`.  So the range is not closed under
-  $`\bigcirc`.  _Conjecture_, OPEN: PLL itself embeds faithfully into $`F_0`,
-  with the generators $`x_1, x_2, \ldots` only, $`p_i \mapsto x_{i+1}`, and a
-  copy that keeps the $`S` of $`K`.  Pen sketch: the relativisation lemma
-  gains a $`\bigcirc` case, since every world of $`S` above a copy is a copy or
-  forces $`\sigma^{3}\bot`.
+  $`w \nVdash x_0` and $`w \nVdash x_1` (a 12-world model, kernel-checked).
+  So the range is not closed under $`\bigcirc`; only the direction from
+  $`\bigcirc x_1` to $`p_0 \lor p_1` is used.  The copy of PLL of the summary,
+  with the readers alone and $`\bigcirc \mapsto \bigcirc`, is closed under
+  $`\bigcirc` by construction.
 * (2) _The scaffolding._  The elements outside the range depend on the choice
   of readers and killers, and that choice is free: any $`n + 1`
   $`\sigma^{2}\bot`-maximal worlds of pairwise different types give a copy

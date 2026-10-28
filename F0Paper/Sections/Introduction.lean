@@ -28,8 +28,8 @@ a proper interval of itself, and much of its order is now known.
 _New in v0.6._  Section 10: the free Heyting algebra on countably many
 generators is a Heyting subalgebra of the interval $`[\sigma^{3}\bot, \top]`
 of $`F_0`, so intuitionistic propositional logic embeds faithfully into the
-variable-free formulas of PLL; with where the free structure stops below
-$`\sigma^{3}\bot`, and why.  Sections 10 to 13 of v0.5 are now Sections 11
+variable-free formulas of PLL, and so does PLL itself; with where the free
+structure stops below $`\sigma^{3}\bot`, and why.  Sections 10 to 13 of v0.5 are now Sections 11
 to 14.
 
 _New in v0.5_ (in the present numbering).  Section 11 asks which filters $`[p, \top]` are isomorphic to
@@ -88,7 +88,10 @@ any.  Sections 8 and 9 of v0.5 were Sections 9 and 10 of v0.4.1.
 * * $`H_2` lies in $`[t_3, \top]`, with bottom $`t_3`
   * REFUTED
   * 10
-* * $`H_3` lies in $`[\sigma^{2}\bot, \top]`; PLL embeds faithfully in $`F_0`
+* * PLL embeds faithfully in $`F_0`, with $`\bigcirc \mapsto \bigcirc`
+  * PROVED
+  * 10
+* * $`H_3` lies in $`[\sigma^{2}\bot, \top]`
   * OPEN
   * 14
 * * No proper filter is isomorphic to $`F_0` iff none above $`t_3` is

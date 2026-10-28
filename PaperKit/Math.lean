@@ -649,6 +649,7 @@ partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
     let hd ← if xs.isConstOf `PLLND.F0.Base3.x3 then pure "x"
       else if xs.isConstOf `PLLND.F0.Base3.xω then pure "x^{\\omega}"
       else if xs.isConstOf `PLLND.F0.Pair.xs then pure "y"
+      else if xs.isConstOf `PLLND.F0.FreePLL.xr then pure "x^{r}"
       else generic st 9 xs
     return some ((← form st 9 a) ++ "[q := " ++ hd ++ "(q),\\ \\bot := " ++ (← form st 1 b) ++ "]")
   | (`PLLND.F0.FreeIPL.relG, #[x, a]) =>
@@ -677,6 +678,16 @@ partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
   | (`PLLND.F0.Base3.gen, #[r]) => return some ("x_{" ++ (← generic st 0 r) ++ "}")
   | (`PLLND.F0.Base3.x3, #[a]) => return some ("x(" ++ (← generic st 0 a) ++ ")")
   | (`PLLND.F0.Base3.xω, #[a]) => return some ("x^{\\omega}(" ++ (← generic st 0 a) ++ ")")
+  | (`PLLND.F0.FreePLL.xr, #[a]) => return some ("x^{r}(" ++ (← generic st 0 a) ++ ")")
+  -- `wip/f0FreeAnyFamily.lean`, `wip/f0FreePLL.lean`: names with a Greek letter,
+  -- which the text italic lacks, and the free PLL-algebras
+  | (`PLLND.F0.AnyFamily.AllAbove3ω, #[]) => return some "\\mathit{AllAbove3}_{\\omega}"
+  | (`PLLND.F0.AnyFamily.SigShiftω, #[]) => return some "\\mathit{SigShift}_{\\omega}"
+  | (`PLLND.F0.FreePLL.FreePLLAbove, #[b]) =>
+    return some (wrap 5 ("\\mathrm{PLL}_{\\omega} \\hookrightarrow [" ++ (← form st 0 b) ++ ", \\top]"))
+  | (`PLLND.F0.FreePLL.FreePLLnAbove, #[b, n]) =>
+    return some (wrap 5 ("\\mathrm{PLL}_{" ++ (← generic st 0 n) ++ "} \\hookrightarrow [" ++
+      (← form st 0 b) ++ ", \\top]"))
   | (`PLLND.F0.Base3.phiK, #[k]) => return some ("\\varphi_{" ++ (← generic st 0 k) ++ "}")
   | (`PLLND.F0.Base3.sepC, #[r]) => return some ("c_{" ++ (← generic st 0 r) ++ "}")
   | (`PLLND.F0.FreeHAn.Yf, #[]) => return some "Y"

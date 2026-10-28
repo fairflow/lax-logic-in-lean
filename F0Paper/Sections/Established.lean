@@ -152,6 +152,11 @@ cuts, and _Mathlib's nuclei_ is `InfHomClass.toOrderHomClass`, through
   * {axiomsOf}`AnyFamily.anyFamily3 AnyFamily.freeHAnAbove_base3_of_distinct AnyFamily.sigShift AnyFamily.sigShiftω AnyFamily.allAbove3 AnyFamily.allAbove3ω`
   * –
   * 10
+* * PLL embeds faithfully in $`[\sigma^{3}\bot, \top]`, all formulas, with the readers as generators and $`\bigcirc \mapsto \bigcirc` (`freeReaders`, `freePLLAbove_base3`); $`\bigcirc x_1` is not in the range of the copy of IPC (`not_image_circ_x1`, `sep_circ_x1`)
+  * PROVED
+  * propext, Quot.sound: the pins of `wip/f0FreePLL.lean` (PR #106, not on main at this build; not computed here)
+  * –
+  * 10
 * * $`H_1 \hookrightarrow [t_3, \top]`; $`H_2 \hookrightarrow [\sigma^{2}\bot, \top]`
   * PROVED
   * {axiomsOf}`FreeIPL.freeIPL1 Pair.freePair Pair.freeHAnAbove_base2_two`

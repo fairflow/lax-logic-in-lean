@@ -77,13 +77,6 @@ proof sketch is given where one exists.
   OPEN.  The count does not obstruct, as $`k(\sigma^{2}\bot) = \infty`;
   $`H_2` is there (`freePair`), and every $`H_n` one level up, in
   $`[\sigma^{3}\bot, \top]` (Section 10).  No sketch.
-* _PLL in $`F_0`_: does PLL itself embed faithfully into $`F_0`, by
-  $`p_i \mapsto x_{i+1}`, $`\bot \mapsto \sigma^{3}\bot` and
-  $`\bigcirc \mapsto \bigcirc`, for all formulas?  OPEN.  Sketch (pen, not
-  checked): the generators $`x_1, x_2, \ldots` only, and a copy of the
-  countermodel that keeps its own $`S`; the relativisation lemma of Section 10
-  gains a $`\bigcirc` case, since every world of $`S` above a copy is a copy
-  or forces $`\sigma^{3}\bot`.
 
 # Pen arguments awaiting Lean
 
@@ -106,8 +99,6 @@ proof sketch is given where one exists.
 * _An order copy of every $`H_n` with bottom $`\bot`_: the (O)-form, by the
   shift of the bottom (`shift`) applied to `freeHAnAbove_base3` (Section 10);
   not stated as a theorem.
-* _$`\bigcirc x_1` is not in the range of the copy of $`H_\omega`_, so the
-  range is not closed under $`\bigcirc` (Section 10).
 * _The Heyting-embedding reading of `FreeHAnAbove`_: the Lindenbaum algebra of
   IPC is $`H_n` (textbook) and the relativisation is a one-to-one Heyting
   homomorphism (Section 10, point (c)).
@@ -120,7 +111,10 @@ with $`m = 3` for every $`n`, and $`H_\omega` lies in
 $`[\sigma^{3}\bot, \top]` as well; so do they in every
 $`[\sigma^{m}\bot, \top]`, $`m \ge 3`, and any $`n + 1`
 $`\sigma^{2}\bot`-maximal worlds of pairwise different types give $`H_n`
-(Section 10).
+(Section 10).  PLL itself embeds faithfully into $`F_0`, with the readers as
+generators and $`\bigcirc \mapsto \bigcirc`, and $`\bigcirc x_1` is not in
+the range of the copy of IPC: both PROVED in `wip/f0FreePLL.lean` (PR #106;
+Section 10).
 
 # Closed since v0.4.1
 

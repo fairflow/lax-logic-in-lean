@@ -34,8 +34,9 @@ the variable-free formulas of propositional lax logic: covers at the bottom,
 independence of the odd gaps, an explicit choice-free embedding of the
 rationals, unfilled cuts, the infinite downset of the sixth rung, nested copies
 of $`F_0` inside itself, the free Heyting algebra on countably many generators
-as a Heyting subalgebra of one interval of $`F_0`, so that intuitionistic logic
-embeds faithfully into the variable-free formulas of PLL, which filters are not
+as a Heyting subalgebra of one interval of $`F_0`, so that intuitionistic logic,
+and PLL itself, embed faithfully into the variable-free formulas of PLL, which
+filters are not
 isomorphic to $`F_0`, and the Dedekind–MacNeille completion, built from cuts as the reals are built from the
 rationals.  Every result shown is PROVED in Lean, sorry-free, or REFUTED by a
 kernel-checked counterexample; what is neither is OPEN, or marked as a pen
