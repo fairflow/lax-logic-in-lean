@@ -40,8 +40,9 @@ reflection (⟸).
 | `meet_counting`, `noMeetCopyH2_bot`, `noMeetCopyH2_t3` (`wip/f0MeetCount.lean`): no (L) | not (L) | 2 | `⊥`, `t3` | PROVED |
 | `shiftH2`, `shift2_orderEmb` (this module) | (O) | 2 | `⊥` | PROVED |
 | `shiftMeetFails` (this module): the (O) copy above does not preserve `∧` | not (L) for this map | 2 | `⊥` | PROVED |
-| (H) for `n ≥ 3` (`Conjecture` of `wip/f0FreeHAn.lean` beyond `n = 2`) | (H) | ≥ 3 | some `σᵐ⊥` | OPEN (an attempt over `σ³⊥` is in progress elsewhere) |
-| (O) for `n ≥ 3` with bottom `⊥` | (O) | ≥ 3 | `⊥` | OPEN; follows from (H) at any base by the shift |
+| `freeHAnAbove_base3 : ∀ n, FreeHAnAbove (base 3) n`, `conjecture : Conjecture`, `freeHAωAbove_base3 : FreeHAωAbove (base 3)` (`wip/f0FreeBase3.lean`, #103) | (H) | every `n`, and ω | `σ³⊥` | PROVED |
+| (H) for `n = 3` over `σ²⊥` (`FreeHAnAbove (base 2) 3`) | (H) | 3 | `σ²⊥` | OPEN |
+| (O) for every `n` with bottom `⊥` | (O) | every `n` | `⊥` | pen: `shift` applied to `freeHAnAbove_base3` (b' = ⊥ ≤ σ³⊥); not stated as a theorem |
 
 `¬ FreeHAnAbove t3 2` (variables `p`, `pp`) is not a named theorem; it is one
 line from `countingCriterion` and `typeBound_t3` (`4 ≤ 3`), and also follows
