@@ -21,7 +21,7 @@ unexpected, where the free structure stops, the generators, the construction,
 and the formal statement with the reasons for trusting it.  Every declaration
 here is choice-free; `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
 `wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean`,
-`wip/f0EmbedForms.lean`.
+`wip/f0FreeAnyFamily.lean`, `wip/f0EmbedForms.lean`.
 
 # Summary
 
@@ -50,6 +50,9 @@ variables lives among the formulas built from $`\bot` alone.
 * Corollary: the conjecture
   $`\forall n\, \exists m.\ H_n \hookrightarrow [\sigma^{m}\bot, \top]` holds,
   with $`m = 3` for every $`n`.  PROVED (`conjecture`).
+* Every base above serves as well: $`H_\omega` and every $`H_n` lie in
+  $`[\sigma^{m}\bot, \top]` for every $`m \ge 3`, by the $`\sigma`-shift of a
+  free copy.  PROVED (`allAbove3`, `allAbove3ω`, `sigShift`).
 
 # Why this is surprising
 
@@ -74,7 +77,8 @@ $`\bigcirc` is a source of variables.
 
 # Where the free structure begins
 
-For the bases $`\sigma^{m}\bot`, $`m = 1, 2, 3`, and $`n` generators: does
+For the bases $`\sigma^{m}\bot`, $`m = 1`, $`m = 2` and $`m \ge 3`, and $`n`
+generators: does
 $`[\sigma^{m}\bot, \top]` contain $`H_n` in the sense of the formal statement
 below ($`H_n \hookrightarrow [b, \top]`, `FreeHAnAbove`)?
 
@@ -91,10 +95,10 @@ below ($`H_n \hookrightarrow [b, \top]`, `FreeHAnAbove`)?
   * yes
   * yes, `freePair`, `freeHAnAbove_base2_two`
   * OPEN
-* * $`\sigma^{3}\bot`
+* * $`\sigma^{m}\bot`, $`m \ge 3`
   * yes
   * yes
-  * yes, and $`\omega`: `freeHAnAbove_base3`, `freeHAωAbove_base3`, `conjecture`
+  * yes, and $`\omega`: `freeHAnAbove_base3`, `freeHAωAbove_base3`, `conjecture` ($`m = 3`); `allAbove3`, `allAbove3ω` ($`m \ge 3`)
 :::
 
 A yes for $`n` generators gives a yes for fewer, by restriction to the first
@@ -304,6 +308,52 @@ reading whether $`h` lies above.  PROVED:
 
 {leanStmt Pair.freePair}
 
+# Any family, and every base above
+
+The choice of readers and killers does not matter.  Any $`n + 1`
+$`\sigma^{2}\bot`-maximal worlds of pairwise different types, in finite
+subframe models, give a copy of $`H_n` in $`[\sigma^{3}\bot, \top]`.  A given
+world refuting $`\bigcirc\sigma^{2}\bot` serves as the killer that refutes it,
+a given world forcing it as the other killer, and where there is none, $`m_0`
+or $`m'_0` is added; $`n - 1` of the remaining worlds are the readers, each
+with a separator that is a disjunction of one formula for each other
+distinguished world; the gadget is built over the disjoint sum of their models
+(`GadU`, `transferF`, `fromCells3`).  PROVED:
+
+{stmt}`AnyFamily.freeHAnAbove_base3_of_distinct`
+
+{leanStmt AnyFamily.freeHAnAbove_base3_of_distinct}
+
+With $`k(\sigma^{2}\bot) = \infty` (`base2_unbounded`) this gives
+`freeHAnAbove_base3` again (`freeHAnAbove_base3'`).
+
+_The_ $`\sigma`_-shift._  For a variable-free base $`b`, a free copy over $`b`
+gives one over $`\sigma^{k}(b)`, with the generators $`\sigma^{k}(x(q))`:
+$`\sigma^{k}` is faithful (Section 9) and commutes with the relativisation
+(`sigN_relB`).  PROVED:
+
+{stmt}`AnyFamily.SigShift`
+
+{leanDef AnyFamily.SigShift}
+
+{leanStmt AnyFamily.sigShift}
+
+Since $`\sigma^{k}(\sigma^{3}\bot) = \sigma^{3+k}\bot` (`sigN_base`), every base
+above $`\sigma^{3}\bot` in the sequence carries every $`H_n` and
+$`H_\omega`.  PROVED:
+
+{stmt}`AnyFamily.AllAbove3`
+
+{leanDef AnyFamily.AllAbove3}
+
+{leanStmt AnyFamily.allAbove3}
+
+{stmt}`AnyFamily.AllAbove3ω`
+
+{leanDef AnyFamily.AllAbove3ω}
+
+{leanStmt AnyFamily.allAbove3ω}
+
 # The formal statement
 
 $`[b, \top]` contains the free Heyting algebra on $`n` generators:
@@ -416,20 +466,22 @@ $`h` is one-to-one, not onto $`[\sigma^{3}\bot, \top]`.
   gains a $`\bigcirc` case, since every world of $`S` above a copy is a copy or
   forces $`\sigma^{3}\bot`.
 * (2) _The scaffolding._  The elements outside the range depend on the choice
-  of readers and killers, so no single complement is canonical.  Pen argument:
-  $`k(\sigma^{2}\bot) \ge n + 1`, witnessed by $`n + 1` cells of pairwise
-  different types, gives $`H_n \hookrightarrow [\sigma^{3}\bot, \top]` with
-  readers and killers taken from those cells
-  (`Distinct (σ²⊥) (n+1) → FreeHAnAbove (σ³⊥) n`; not mechanised).
+  of readers and killers, and that choice is free: any $`n + 1`
+  $`\sigma^{2}\bot`-maximal worlds of pairwise different types give a copy
+  of $`H_n` in $`[\sigma^{3}\bot, \top]`, PROVED (`anyFamily3`,
+  `freeHAnAbove_base3_of_distinct`, above).  So the copy, and with it the
+  complement of its range, rests on a choice, and no single complement is
+  canonical (remark).
 * (3) Below $`\sigma^{3}\bot` the free structure thins out, as the table of
   bases shows.
 
 # Supporting declarations
 
-{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.FreeIPL1InAboveT3 FreeIPL.freeIPL1 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.NoMeetCopyH2 MeetCount.noMeetCopyH2_bot MeetCount.noMeetCopyH2_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 Free3 free3_preserves free3_reflects free3 freeFamily3_of_free3 freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.FreeOmega3 Base3.freeOmega3 Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc EmbedForms.PairwiseHimp EmbedForms.pairwiseHimp EmbedForms.Shift EmbedForms.shift EmbedForms.ShiftH2 EmbedForms.shiftH2 EmbedForms.ShiftOrderEmb EmbedForms.shift2_orderEmb EmbedForms.ShiftMeetFails EmbedForms.shiftMeetFails}
+{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.FreeIPL1InAboveT3 FreeIPL.freeIPL1 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.NoMeetCopyH2 MeetCount.noMeetCopyH2_bot MeetCount.noMeetCopyH2_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 Free3 free3_preserves free3_reflects free3 freeFamily3_of_free3 freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.FreeOmega3 Base3.freeOmega3 Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc EmbedForms.PairwiseHimp EmbedForms.pairwiseHimp EmbedForms.Shift EmbedForms.shift EmbedForms.ShiftH2 EmbedForms.shiftH2 EmbedForms.ShiftOrderEmb EmbedForms.shift2_orderEmb EmbedForms.ShiftMeetFails EmbedForms.shiftMeetFails AnyFamily.AnyFamily3 AnyFamily.anyFamily3 AnyFamily.freeHAnAbove_base3' AnyFamily.sigN_relB AnyFamily.sigN_base AnyFamily.SigShiftω AnyFamily.sigShiftω}
 
 Pins: every declaration of `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
-`wip/f0FreePair.lean`, `wip/f0MeetCount.lean` and `wip/f0FreeBase3.lean` here
-within `propext`, `Quot.sound` (`#axioms_within`); in
+`wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean` and
+`wip/f0FreeAnyFamily.lean` here within `propext`, `Quot.sound`
+(`#axioms_within`); in
 `wip/f0EmbedForms.lean`, `pairwiseHimp` and `shift` within no axioms, the rest
 within `propext`, `Quot.sound`.

@@ -82,7 +82,7 @@ any.  Sections 8 and 9 of v0.5 were Sections 9 and 10 of v0.4.1.
 * * $`\sigma` is onto $`[t_3, \top]`; $`[t_3, \top]` is order-isomorphic to $`F_0`
   * REFUTED
   * 9
-* * IPC embeds faithfully in $`F_0`: $`H_\omega` and every $`H_n` lie in $`[\sigma^{3}\bot, \top]`, from one family of variable-free generators
+* * IPC embeds faithfully in $`F_0`: $`H_\omega` and every $`H_n` lie in $`[\sigma^{3}\bot, \top]`, from one family of variable-free generators, and in every $`[\sigma^{m}\bot, \top]`, $`m \ge 3`
   * PROVED
   * 10
 * * $`H_2` lies in $`[t_3, \top]`, with bottom $`t_3`

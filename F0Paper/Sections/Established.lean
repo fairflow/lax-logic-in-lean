@@ -147,6 +147,11 @@ cuts, and _Mathlib's nuclei_ is `InfHomClass.toOrderHomClass`, through
   * {axiomsOf}`Base3.conjecture`
   * –
   * 10
+* * Any $`n + 1` $`\sigma^{2}\bot`-maximal worlds of pairwise different types give $`H_n \hookrightarrow [\sigma^{3}\bot, \top]`; the $`\sigma`-shift of a free copy; $`H_n` and $`H_\omega` in every $`[\sigma^{m}\bot, \top]`, $`m \ge 3`
+  * PROVED
+  * {axiomsOf}`AnyFamily.anyFamily3 AnyFamily.freeHAnAbove_base3_of_distinct AnyFamily.sigShift AnyFamily.sigShiftω AnyFamily.allAbove3 AnyFamily.allAbove3ω`
+  * –
+  * 10
 * * $`H_1 \hookrightarrow [t_3, \top]`; $`H_2 \hookrightarrow [\sigma^{2}\bot, \top]`
   * PROVED
   * {axiomsOf}`FreeIPL.freeIPL1 Pair.freePair Pair.freeHAnAbove_base2_two`

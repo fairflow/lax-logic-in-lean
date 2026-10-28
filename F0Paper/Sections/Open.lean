@@ -117,7 +117,10 @@ proof sketch is given where one exists.
 The conjecture $`\forall n\, \exists m.\ H_n \hookrightarrow [\sigma^{m}\bot, \top]`,
 OPEN in the repository when it was stated (`wip/f0FreeHAn.lean`), is PROVED
 with $`m = 3` for every $`n`, and $`H_\omega` lies in
-$`[\sigma^{3}\bot, \top]` as well (Section 10).
+$`[\sigma^{3}\bot, \top]` as well; so do they in every
+$`[\sigma^{m}\bot, \top]`, $`m \ge 3`, and any $`n + 1`
+$`\sigma^{2}\bot`-maximal worlds of pairwise different types give $`H_n`
+(Section 10).
 
 # Closed since v0.4.1
 
