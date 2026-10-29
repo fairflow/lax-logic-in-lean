@@ -15,6 +15,7 @@ import F0Paper.Sections.Completion
 import F0Paper.Sections.Established
 import F0Paper.Sections.Open
 import F0Paper.Sections.References
+import F0Paper.Sections.Appendix
 import CLPPaper.Src
 import CLPPaper.Layout
 import PaperKit.Stamp
@@ -57,3 +58,4 @@ argument.  The last two sections list what is established and what is open.
 {include 0 F0Paper.Sections.Established}
 {include 0 F0Paper.Sections.Open}
 {include 0 F0Paper.Sections.References}
+{include 0 F0Paper.Sections.Appendix}

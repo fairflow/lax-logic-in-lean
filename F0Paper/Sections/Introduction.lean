@@ -25,6 +25,10 @@ of an order embedding of $`\mathbb{Q}` (Section 2 fixes this vocabulary).
 Neither holds: there are covers.  But $`\mathbb{Q}` does embed, $`F_0` embeds in
 a proper interval of itself, and much of its order is now known.
 
+_New in v0.7._  The definitions that neither the text nor a displayed result
+mentions, with the supporting lemmas whose statements use them, have moved
+from the tables at the ends of the sections to Appendix A.
+
 _New in v0.6._  Section 10: the free Heyting algebra on countably many
 generators is a Heyting subalgebra of the interval $`[\sigma^{3}\bot, \top]`
 of $`F_0`, so intuitionistic propositional logic embeds faithfully into the

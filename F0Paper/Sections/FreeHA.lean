@@ -405,7 +405,7 @@ The conjecture:
 
 One family of generators for every $`n`:
 
-{stmt}`FreeFamily3`
+{stmt (width := 80)}`FreeFamily3`
 
 {leanDef FreeFamily3}
 
@@ -534,12 +534,9 @@ $`h` is one-to-one, not onto $`[\sigma^{3}\bot, \top]`.
 
 # Supporting declarations
 
-{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.FreeIPL1InAboveT3 FreeIPL.freeIPL1 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.NoMeetCopyH2 MeetCount.noMeetCopyH2_bot MeetCount.noMeetCopyH2_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 Free3 free3_preserves free3_reflects free3 freeFamily3_of_free3 freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.FreeOmega3 Base3.freeOmega3 Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc EmbedForms.PairwiseHimp EmbedForms.pairwiseHimp EmbedForms.Shift EmbedForms.shift EmbedForms.ShiftH2 EmbedForms.shiftH2 EmbedForms.ShiftOrderEmb EmbedForms.shift2_orderEmb EmbedForms.ShiftMeetFails EmbedForms.shiftMeetFails AnyFamily.AnyFamily3 AnyFamily.anyFamily3 AnyFamily.freeHAnAbove_base3' AnyFamily.sigN_relB AnyFamily.sigN_base AnyFamily.SigShiftω AnyFamily.sigShiftω FreePLL.xr FreePLL.relB_transferO FreePLL.FreePLLnAbove FreePLL.freePLLnAbove_base3 FreePLL.sep_circ_x1 FreePLL.not_image_circ_x1 FreePLL.cell_O1 FreePLL.cell_O2 FreePLL.cell_O3}
+{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 free3_preserves free3_reflects freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc AnyFamily.freeHAnAbove_base3' AnyFamily.sigN_relB AnyFamily.sigN_base FreePLL.xr FreePLL.relB_transferO FreePLL.sep_circ_x1 FreePLL.not_image_circ_x1 FreePLL.cell_O1 FreePLL.cell_O2 FreePLL.cell_O3}
 
 Pins: every declaration of `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
 `wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean`,
 `wip/f0FreeAnyFamily.lean` and `wip/f0FreePLL.lean` here within `propext`,
-`Quot.sound`
-(`#axioms_within`); in
-`wip/f0EmbedForms.lean`, `pairwiseHimp` and `shift` within no axioms, the rest
-within `propext`, `Quot.sound`.
+`Quot.sound` (`#axioms_within`).

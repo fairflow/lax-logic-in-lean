@@ -21,6 +21,10 @@ s = re.sub(r'(<div class="namedocs" id="([^"]+)">\s*<span class="permalink-widge
 ids = {m.group(2): m.group(1) for m in re.finditer(r'<h[1-6] id="([^"]+)">\s*(\d+(?:\.\d+)*)\.', s)}
 s = re.sub(r'<a href=""><span class="number">(\d+(?:\.\d+)*)\.</span>',
            lambda m: '<a href="#%s"><span class="number">%s.</span>' % (ids.get(m.group(1), ''), m.group(1)), s)
+# an unnumbered part (the F0 paper's appendix, v0.7): matched by its title
+titles = {m.group(2).strip(): m.group(1) for m in re.finditer(r'<h[1-6] id="([^"]+)">\s*([^<\d][^<]*)<', s)}
+s = re.sub(r'<a href=""><span class="unnumbered"></span>([^<]+)</a>',
+           lambda m: '<a href="#%s"><span class="unnumbered"></span>%s</a>' % (titles.get(m.group(1).strip(), ''), m.group(1)), s)
 s = s.replace('<a href="" class="header-title">', '<a href="#" class="header-title">')
 s = s.replace('<a href="" class="toc-title">', '<a href="#" class="toc-title">')
 open(p, 'w', encoding='utf-8').write(s)

@@ -89,7 +89,7 @@ enumerations.  It gives an order embedding $`f_{\mathbb{Q}}` too.  PROVED, with
 
 # Supporting declarations
 
-{lemmaTable LPoly LPoly.den true_entails false_entails separate F0.F F_mono thr F_eval F_sep Dy Dy.lt Dy.formula formula_zero formula_one dyadic_vf qmF mink cell_third cell_five_eighths cell_three_sevenths mink_lt mink_onto Mink.sq qm qm_eq_mink qm_inj ratFormulaCF rat_vf_cf DyQ ratIso ratFormula rat_vf}
+{lemmaTable LPoly LPoly.den true_entails false_entails separate F0.F F_mono F_sep Dy Dy.lt Dy.formula formula_zero formula_one dyadic_vf qmF mink cell_third cell_five_eighths cell_three_sevenths mink_lt mink_onto Mink.sq qm qm_eq_mink qm_inj ratFormulaCF rat_vf_cf DyQ ratIso ratFormula rat_vf}
 
 Pins, as recorded (`#axioms_within`) and confirmed by `#print axioms`:
 `propext`, `Quot.sound` (or `propext` alone) for the dyadic construction and

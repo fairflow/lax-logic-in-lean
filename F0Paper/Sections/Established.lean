@@ -254,5 +254,5 @@ cuts, and _Mathlib's nuclei_ is `InfHomClass.toOrderHomClass`, through
   * 12
 :::
 
-Every other declaration in the paper is in the supporting tables at the ends
-of the sections, with its pin.
+Every other declaration in the paper is in a table of supporting
+declarations, with its pin.
