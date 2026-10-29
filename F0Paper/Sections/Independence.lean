@@ -45,7 +45,7 @@ soundness at the root.
 
 # Supporting declarations
 
-{lemmaTable cmM IsEdge levels root cmM_chainF forced_off fails_on indep_of_forcing}
+{lemmaTable cmM levels root forced_off fails_on indep_of_forcing}
 
 Pins: every declaration here is within `propext`, `Quot.sound`
 (`#axioms_within`), and `#print axioms` reports exactly these.  The single-edge

@@ -256,6 +256,9 @@ structure St where
   raw : Bool := false
   /-- rule schemata: no leading `∀` (the constructors of a derivation type) -/
   schematic : Bool := false
+  /-- the measure of a display row (`{stmt (width := n)}`, the F0 paper v0.7:
+  a display whose rows `visLen` underestimates) -/
+  width : Nat := rowMeasure
 
 /-- Named variable-free formulas: the six formulas of `wip/f0Covers.lean` are
 the rungs `t₀ … t₅` (`rnSub_0` … `rnSub_5`, all `rfl`). -/
@@ -627,6 +630,93 @@ partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
     if f.isConstOf `PLLND.F0.Normal.odd then return some "\\{t_{2k+1} : k \\in \\mathbb{N}\\}"
     return none
   | (`Set.Iic, #[_, _, a]) => return some ("{\\downarrow}" ++ (← generic st 9 a))
+  -- v0.6 (2026-10-28): free Heyting algebras in F0 (`wip/f0FreeHAn.lean`,
+  -- `f0FreeIPL`, `f0FreePair`, `f0FreeBase3`, `f0MeetCount`)
+  | (``Eq, #[_, a, b]) =>
+    -- the Boolean side conditions: ◯-free, the variables in use
+    unless b.consumeMData.isConstOf ``Bool.true do return none
+    match a.consumeMData.getAppFnArgs with
+    | (`PLLND.SemUI.boxFree, #[x]) =>
+      return some (wrap 5 ((← form st 4 x) ++ "\\ \\text{is}\\ \\bigcirc\\text{-free}"))
+    | (`PLLND.F0.FreeHAn.varsBelow, #[n, x]) =>
+      let vs ← if natLit? n == some 1 then pure "\\{p_{0}\\}"
+        else if natLit? n == some 2 then pure "\\{p_{0}, p_{1}\\}"
+        else do pure ("\\{p_{0}, \\ldots, p_{" ++ (← generic st 6 n) ++ " - 1}\\}")
+      return some (wrap 5 ("\\mathrm{var}(" ++ (← form st 0 x) ++ ") \\subseteq " ++ vs))
+    | (`PLLND.F0.FreeIPL.onlyP, #[x]) =>
+      return some (wrap 5 ("\\mathrm{var}(" ++ (← form st 0 x) ++ ") \\subseteq \\{p\\}"))
+    | _ => return none
+  -- the relativisation `A[a := x(a), ⊥ := b]`; the generator assignments by name
+  | (`PLLND.F0.FreeHAn.relB, #[b, x, a]) =>
+    let xs := x.consumeMData
+    let hd ← if xs.isConstOf `PLLND.F0.Base3.x3 then pure "x"
+      else if xs.isConstOf `PLLND.F0.Base3.xω then pure "x^{\\omega}"
+      else if xs.isConstOf `PLLND.F0.Pair.xs then pure "y"
+      else if xs.isConstOf `PLLND.F0.FreePLL.xr then pure "x^{r}"
+      else generic st 9 xs
+    return some ((← form st 9 a) ++ "[q := " ++ hd ++ "(q),\\ \\bot := " ++ (← form st 1 b) ++ "]")
+  | (`PLLND.F0.FreeIPL.relG, #[x, a]) =>
+    return some ((← form st 9 a) ++ "[q := " ++ (← generic st 9 x) ++ "(q),\\ \\bot := t_{3}]")
+  | (`PLLND.F0.FreeIPL.Rneg, #[a]) =>
+    return some (wrap 1 ((← form st 2 a) ++ " \\twoheadrightarrow t_{3}"))
+  | (`PLLND.F0.FreeIPL.sgn, #[s, x]) =>
+    return some ((← form st 9 x) ++ "^{" ++ (← generic st 0 s) ++ "}")
+  | (`PLLND.F0.Pair.pP, #[]) => return some "p_{0}"
+  | (`PLLND.F0.Pair.qP, #[]) => return some "p_{1}"
+  | (`PLLND.F0.Pair.negF, #[a]) => return some (wrap 4 ("\\lnot " ++ (← form st 4 a)))
+  -- the order of a subframe model, as in the semantics paper
+  | (``PLLND.SubframeModel.le, #[_, a, b]) =>
+    return some (wrap 5 ((← generic st 6 a) ++ " \\le " ++ (← generic st 6 b)))
+  | (`PLLND.F0.FreeIPL.h1, #[a]) =>
+    return some ("\\sigma(" ++ (← form st 9 a) ++ "[p := \\bigcirc\\bot])")
+  | (`PLLND.F0.FreeHAn.pvar, #[i]) => return some ("p_{" ++ (← generic st 0 i) ++ "}")
+  | (`PLLND.F0.FreeHAn.base, #[m]) => return some ("\\sigma^{" ++ (← generic st 0 m) ++ "}\\bot")
+  | (`PLLND.F0.Pair.b2, #[]) => return some "\\sigma^{2}\\bot"
+  | (`PLLND.F0.Base3.b3, #[]) => return some "\\sigma^{3}\\bot"
+  | (`PLLND.F0.FreeHAn.FreeHAnAbove, #[b, n]) =>
+    return some (wrap 5 ("H_{" ++ (← generic st 0 n) ++ "} \\hookrightarrow [" ++ (← form st 0 b) ++ ", \\top]"))
+  | (`PLLND.F0.FreeHAn.FreeHAωAbove, #[b]) =>
+    return some (wrap 5 ("H_{\\omega} \\hookrightarrow [" ++ (← form st 0 b) ++ ", \\top]"))
+  | (`PLLND.F0.FreeIPL.FreeIPLInAboveT3, #[]) => return some (wrap 5 "H_{\\omega} \\hookrightarrow [t_{3}, \\top]")
+  | (`PLLND.F0.Base3.gen, #[r]) => return some ("x_{" ++ (← generic st 0 r) ++ "}")
+  | (`PLLND.F0.Base3.x3, #[a]) => return some ("x(" ++ (← generic st 0 a) ++ ")")
+  | (`PLLND.F0.Base3.xω, #[a]) => return some ("x^{\\omega}(" ++ (← generic st 0 a) ++ ")")
+  | (`PLLND.F0.FreePLL.xr, #[a]) => return some ("x^{r}(" ++ (← generic st 0 a) ++ ")")
+  -- `wip/f0FreeAnyFamily.lean`, `wip/f0FreePLL.lean`: names with a Greek letter,
+  -- which the text italic lacks, and the free PLL-algebras
+  | (`PLLND.F0.AnyFamily.AllAbove3ω, #[]) => return some "\\mathit{AllAbove3}_{\\omega}"
+  | (`PLLND.F0.AnyFamily.SigShiftω, #[]) => return some "\\mathit{SigShift}_{\\omega}"
+  | (`PLLND.F0.FreePLL.FreePLLAbove, #[b]) =>
+    return some (wrap 5 ("\\mathrm{PLL}_{\\omega} \\hookrightarrow [" ++ (← form st 0 b) ++ ", \\top]"))
+  | (`PLLND.F0.FreePLL.FreePLLnAbove, #[b, n]) =>
+    return some (wrap 5 ("\\mathrm{PLL}_{" ++ (← generic st 0 n) ++ "} \\hookrightarrow [" ++
+      (← form st 0 b) ++ ", \\top]"))
+  | (`PLLND.F0.Base3.phiK, #[k]) => return some ("\\varphi_{" ++ (← generic st 0 k) ++ "}")
+  | (`PLLND.F0.Base3.sepC, #[r]) => return some ("c_{" ++ (← generic st 0 r) ++ "}")
+  | (`PLLND.F0.FreeHAn.Yf, #[]) => return some "Y"
+  | (`PLLND.F0.FreeHAn.xf, #[]) => return some (wrap 4 "\\bigcirc Y")
+  | (`PLLND.F0.FreeHAn.x0, #[]) => return some "y_{0}"
+  | (`PLLND.F0.FreeHAn.x1, #[]) => return some "y_{1}"
+  | (`PLLND.F0.Pair.xs, #[a]) => return some ("y(" ++ (← generic st 0 a) ++ ")")
+  | (`PLLND.F0.FreeHAn.ZL.relX, #[a]) =>
+    return some ((← form st 9 a) ++ "[p := \\bigcirc Y,\\ \\bot := t_{3}]")
+  -- the cells `Z_r`, their bottoms, the gadget `M(K)` and its worlds
+  | (`PLLND.F0.FreeHAn.ZL.M, #[n]) => return some ("Z_{" ++ (← generic st 0 n) ++ "}")
+  | (`PLLND.F0.Base3.Cell.bot, #[r]) => return some ("m_{" ++ (← generic st 0 r) ++ "}")
+  | (`PLLND.F0.Base3.Gad.MK, #[K, D, _]) =>
+    if D.consumeMData.getAppFn.isConstOf `PLLND.F0.Base3.Gad.Dp then
+      return some ("\\mathcal{M}(" ++ (← generic st 0 K) ++ ")")
+    return some ("\\mathcal{M}(" ++ (← generic st 0 K) ++ ", " ++ (← generic st 0 D) ++ ")")
+  | (`PLLND.F0.Base3.Gad.Pt.w, #[_, k]) => return some ("w_{" ++ (← generic st 0 k) ++ "}")
+  | (`PLLND.F0.Base3.Gad.Pt.kn, #[_]) => return some "m'_{0}"
+  -- type counts and meet-embeddings
+  | (`PLLND.F0.FreeHAn.TypeBound, #[b, K]) =>
+    return some (wrap 5 ("k(" ++ (← form st 0 b) ++ ") \\le " ++ (← generic st 6 K)))
+  | (`PLLND.F0.FreeHAn.Distinct, #[b, K]) =>
+    return some (wrap 5 ("k(" ++ (← form st 0 b) ++ ") \\ge " ++ (← generic st 6 K)))
+  | (`PLLND.F0.MeetCount.MeetEmb, #[n, f]) =>
+    return some (wrap 5 ((← generic st 6 f) ++ "\\ \\text{is a meet-embedding of}\\ H_{" ++
+      (← generic st 0 n) ++ "}"))
   | _ => return none
 
 /-- Propositions, terms and everything else. -/
@@ -1114,12 +1204,13 @@ partial def quant (st0 : St) (p : Nat) (e : Expr) : MetaM String :=
     else if st0.flat then
       return binder ++ " \\Longrightarrow ".intercalate (prems.toList ++ [concl])
     else
-      return fillRows binder ((prems.toList.map (· ++ " \\Longrightarrow")) ++ [concl])
+      return fillRows binder ((prems.toList.map (· ++ " \\Longrightarrow")) ++ [concl]) st0.width
 end
 
 /-- A definition is printed by its defining equation when its value is a
 proposition or a formula and it is not defined by recursion. -/
-def defEquation? (n : Name) (flat : Bool := false) : MetaM (Option String) := do
+def defEquation? (n : Name) (flat : Bool := false) (width : Nat := rowMeasure) :
+    MetaM (Option String) := do
   let env ← getEnv
   let some (.defnInfo dv) := env.find? n | return none
   let recursive := (dv.value.find? fun s => match s with
@@ -1133,15 +1224,15 @@ def defEquation? (n : Name) (flat : Bool := false) : MetaM (Option String) := do
     let isP := ty.isProp
     let isF := ty.isConstOf ``PLLFormula
     unless isP || isF do return none
-    let lhs ← generic {flat := flat} 0 lhsE
-    let rhs ← generic {flat := flat} 0 body
+    let lhs ← generic {flat := flat, width := width} 0 lhsE
+    let rhs ← generic {flat := flat, width := width} 0 body
     if lhs == rhs then return none
     let rel := if isP then " \\mathrel{:\\Longleftrightarrow} " else " \\mathrel{:=} "
     let s := lhs ++ rel ++ rhs
     if flat then return some s
     if s.startsWith "\\begin{aligned}" || (rhs.startsWith "\\begin{aligned}") then
       return some s
-    if visLen s > rowMeasure then return some (rows (breakRow s))
+    if visLen s > width then return some (rows (breakRow s width))
     return some s
 
 /-! ### Definitions and types that have no single defining equation (v0.4) -/
@@ -1314,35 +1405,38 @@ def stmtItems (n : Name) : MetaM (List String) := do
   | _ => return []
 
 /-- The statement of `n` as TeX, or `none` when there is nothing to print. -/
-def stmtOf (n : Name) : MetaM (Option String) := do
+def stmtOf (n : Name) (width : Nat := rowMeasure) : MetaM (Option String) := do
   let some ci := (← getEnv).find? n | throwError "unknown constant {n}"
   let judgement ← forallTelescope ci.type fun _ b => pure (isJudgement b)
   unless (← isProp ci.type) || judgement do
-    if let some s ← defEquation? n then return some s
+    if let some s ← defEquation? n (width := width) then return some s
     let items ← stmtItems n
     return if items.isEmpty then none else some (rows items)
-  let s ← generic {} 0 ci.type
-  if visLen s > rowMeasure && !s.startsWith "\\begin{aligned}" then
-    return some (rows (breakRow s))
+  let s ← generic {width := width} 0 ci.type
+  if visLen s > width && !s.startsWith "\\begin{aligned}" then
+    return some (rows (breakRow s width))
   return some s
 
 /-- The statement of `n` on one line (the tables of supporting declarations),
 as items set one after another, a line break allowed between them. -/
 def stmtFlat (n : Name) : MetaM (List String) := stmtItems n
 
+/-- `{stmt}`n``, or `{stmt (width := k)}`n`` for rows of about `k` estimated
+characters instead of `rowMeasure` (the F0 paper v0.7, 2026-10-29). -/
 structure StmtConfig where
-  ok : Unit := ()
+  width : Nat := rowMeasure
 
-instance {m : Type → Type} [Monad m] : FromArgs StmtConfig m := ⟨(fun _ => {}) <$> .done⟩
+instance : FromArgs StmtConfig DocElabM :=
+  ⟨(fun w => ({width := w} : StmtConfig)) <$> .namedD' `width rowMeasure⟩
 
 @[role]
 def stmt : RoleExpanderOf StmtConfig
-  | _, #[arg] => do
+  | cfg, #[arg] => do
     let `(inline|code( $name:str )) := arg
       | throwErrorAt arg "Expected a code literal with the declaration name"
     let identStx := mkIdentFrom arg name.getString.toName (canonical := true)
     let n ← realizeGlobalConstNoOverloadWithInfo identStx
-    match ← (stmtOf n : MetaM (Option String)) with
+    match ← (stmtOf n cfg.width : MetaM (Option String)) with
     | Option.some tex => `(Verso.Doc.Inline.math .display $(quote tex))
     | Option.none => `(Verso.Doc.Inline.concat #[])
   | _, _ => throwError "Expected exactly one code literal"

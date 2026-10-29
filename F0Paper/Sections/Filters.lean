@@ -172,7 +172,7 @@ not cover $`t_5`); (iii) fails at $`t_3` (the gap $`g_1` does not cover
 $`t_3`); (iv) fails at $`t_3` and $`t_5`.  PROVED.  Whether some $`p` above
 $`t_3` realises a shape and is isomorphic all the same, that is
 $`\mathit{AboveResidue}(t_3)`, is OPEN in each of the four cases
-(Section 13).
+(Section 14).
 
 # Supporting declarations
 

@@ -51,7 +51,13 @@ $`\vdash \chi`.  The proof is choice-free.  The subframe tableau decides PLL
 without `Classical.choice` (`SubTab.complete`): $`\chi` has a closed tableau, or
 a finite subframe countermodel $`M, r \nVdash \chi` (an intuitionistic Kripke
 model with a set $`S` of worlds, $`\bigcirc A` holding at $`x` when $`A` holds at
-every world of $`S` above $`x`).  Add two top worlds above $`M`: $`n_T \in S`,
+every world of $`S` above $`x`).  Completeness of PLL for finite models of
+this kind is known: the finite model property is due to {cite}`Goldblatt1981`
+and {cite}`FairtloughMendler1997`; the reading of $`\bigcirc` through a subset
+$`S` rests on the correspondence between nuclei and subframes
+{pcite}`BezhanishviliGhilardi2007`, and completeness for finite models with a
+set $`S` is stated explicitly in Theorem 3.4.5 of {cite}`Melzer2020`; see also
+{cite}`BezhanishviliBezhanishviliIlin2019`.  Add two top worlds above $`M`: $`n_T \in S`,
 where $`\lnot\bigcirc\bot` holds, and $`e_T \notin S`, where $`\bigcirc\bot` holds.
 Then $`t_3 = \sigma(\bot)` holds exactly at the tops, every $`\sigma(\psi)` holds
 at both (`top_sig`), and at old worlds $`\sigma(\psi)` holds where $`\psi` does
@@ -127,7 +133,7 @@ the pairs $`(c_1, g_1)`, where $`c_1 = \bigcirc t_3`, and $`(t_5, t_6)` are
 disjoint and share no member (`two_disjoint_pairs_above_t3`).  A member lying
 in every disjoint pair (`HasCore`) is carried across an order isomorphism
 (`hasCore_of_iso`); $`F_0` has one (`rnclass_core`), $`[t_3, \top]` has none
-(`ici_no_core`).  PROVED, so the order isomorphism is REFUTED.  Section 10
+(`ici_no_core`).  PROVED, so the order isomorphism is REFUTED.  Section 11
 asks the same question of the other filters.
 
 {stmt}`NotIso.t3_filter_not_iso`

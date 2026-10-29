@@ -10,9 +10,13 @@
 # `lake build` (which does not build F0Paper: it is outside defaultTargets):
 #     scripts/f0-paper.sh --open
 # Runs from any directory (it cds to the repo root); incremental after the
-# first run.  The paper imports wip/ modules (wip.f0Covers, f0Indep, f0Dyadic,
-# f0Rat, gapWidth, embedNeg, ladder8, floor), which `lake build F0Paper`
-# builds as dependencies.
+# first run.  The paper imports the wip/ modules listed in F0Paper/Math.lean
+# (v0.7: the f0* modules of the sections, from f0Covers to f0FreePLL, and
+# gapWidth, embedNeg, ladder8, floor), which `lake build F0Paper` builds as
+# dependencies.  Sections are F0Paper/Sections/*.lean, in the order of
+# F0Paper/Paper.lean; since v0.7 the last is Appendix.lean (Appendix A, the
+# definitions the text does not mention), which one {include} line and one
+# sentence of the Introduction attach.
 #
 # Served URLs:  http://127.0.0.1:8097/f0-paper.pdf
 #               http://127.0.0.1:8097/f0-paper/html-single/   (one page)
@@ -36,8 +40,12 @@ if [ "${1:-}" != "--serve-only" ]; then
   export F0_SRC_SHA F0_SRC_REPO
   # no blank recto pages in print (the rest of the layout is CLPPaper/Layout.lean);
   # graphicx for the figures, longtable for the tables (F0Paper/Blocks.lean);
-  # ragged bottoms, so that the page before a large figure is not stretched
-  VERSO_TEX_EXTRA='\let\cleardoublepage\clearpage\usepackage{graphicx}\usepackage{longtable}\raggedbottom' \
+  # ragged bottoms, so that the page before a large figure is not stretched;
+  # a section that opens with a table ("Supporting declarations", and every
+  # section of the appendix) needs ten lines left on the page, or starts the
+  # next: longtable breaks the page when its first row does not fit, which
+  # left the heading of 10.10 of v0.6 at the foot of a page (v0.7)
+  VERSO_TEX_EXTRA='\let\cleardoublepage\clearpage\usepackage{graphicx}\usepackage{longtable}\raggedbottom\usepackage{etoolbox}\makeatletter\NewCommandCopy\fzOrigSection\section\RenewDocumentCommand\section{s o m}{\ifboolexpr{test {\ifstrequal{#3}{Supporting declarations}} or test {\ifdefequal{\@chapapp}{\appendixname}}}{\needspace{10\baselineskip}}{}\IfBooleanTF{#1}{\fzOrigSection*{#3}}{\IfValueTF{#2}{\fzOrigSection[#2]{#3}}{\fzOrigSection{#3}}}}\makeatother' \
     scripts/verso-paper.sh F0Paper F0PaperMain.lean docs/f0-paper docs/f0-paper.pdf
 fi
 case "${1:-}" in

@@ -61,6 +61,27 @@ if m:
   extra += m.group(0) + '\n'
   extra += r'\date{\sffamily\footnotesize\versoBuildStamp}' '\n'
 s = s.replace('\\begin{document}', extra + '\\begin{document}', 1)
+# a lettered appendix ({letteredAppendix} of PaperKit/Blocks.lean, the F0 paper
+# v0.7, 2026-10-29): the block's marker sits just after the heading of the
+# chapter that opens the appendices; \appendix, and a heading that reads
+# "Appendix A" above the title, go before that heading.  Verso puts a trailing
+# unnumbered part (`number := false`, so that the HTML does not number it
+# after the References) in \backmatter, where memoir numbers no chapter:
+# memoir's \mainmatter* numbers chapters again without restarting the page
+# numbers
+mk = '%PaperKit:appendix'
+if mk in s:
+  i = s.index(mk)
+  j = s.rfind('\\chapter{', 0, i)
+  s = s[:i] + s[i + len(mk):]
+  if j >= 0:
+    app = (r'\mainmatter*' '\n' + '\\appendix\n'
+      + r'\renewcommand*{\chapnamefont}{\sffamily\Large}' '\n'
+      + r'\renewcommand*{\printchaptername}{\chapnamefont\appendixname}' '\n'
+      + r'\renewcommand*{\chapternamenum}{\space}' '\n'
+      + r'\renewcommand*{\printchapternum}{\chapnamefont\thechapter}' '\n'
+      + r'\renewcommand*{\afterchapternum}{\par\nobreak\vskip 8pt}' '\n')
+    s = s[:j] + app + s[j:]
 open(p, 'w', encoding='utf-8').write(s)
 PY
 ( cd "$work"

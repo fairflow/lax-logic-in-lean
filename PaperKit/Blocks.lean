@@ -28,6 +28,12 @@ output):
   (`tools/F0/FigureData.lean`).
 * The Lean statement line is `\footnotesize` in the PDF and 90% in the HTML
   (v0.4; v0.3 had `\scriptsize` and 80%).
+* `{letteredAppendix}`: the first block of a chapter that opens the
+  appendices (the F0 paper v0.7, 2026-10-29).  In the PDF that chapter and
+  the ones after it are lettered, the heading reading "Appendix A":
+  `scripts/verso-tex-pdf.sh` moves `\appendix` before the chapter's heading,
+  which Verso has already written when the block is reached.  Nothing in the
+  HTML (mark the part `number := false` there).
 -/
 import Lean
 import Lean.DocString.Syntax
@@ -364,6 +370,23 @@ def listSize : RoleExpanderOf RoleCfg
     let some l := PaperKit.Math.listLit? dv.value | throwErrorAt arg "not a list literal"
     `(Verso.Doc.Inline.text $(quote (toString l.length)))
   | _, _ => throwError "Expected exactly one code literal"
+
+/-! ## A lettered appendix -/
+
+/-- The marker that `scripts/verso-tex-pdf.sh` replaces: `\appendix`, and the
+heading "Appendix A", before the heading of the chapter that contains it.  On
+lines of its own, so that the TeX compiles unchanged without the script. -/
+def appendixMarker : String := "%PaperKit:appendix"
+
+block_extension Block.letteredAppendix where
+  traverse _ _ _ := pure none
+  toTeX := some <| fun _ _ _ _ _ => pure (.raw ("\n" ++ appendixMarker ++ "\n"))
+  toHtml := some <| fun _ _ _ _ _ => pure .empty
+
+/-- The first block of the chapter that opens the appendices. -/
+@[block_command]
+def letteredAppendix : BlockCommandOf RoleCfg
+  | _ => `(Verso.Doc.Block.other Block.letteredAppendix #[])
 
 /-! ## Generated figures -/
 

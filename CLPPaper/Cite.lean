@@ -241,11 +241,13 @@ inline_extension Inline.extLink where
     | .error e => do reportError s!"extLink: bad data: {e}"; pure .empty
     | .ok (url, txt) => pure {{ <a href={{url}}><code>{{txt}}</code></a> }}
 
-/-- The pieces of one reference: plain text, emphasised text, or a DOI. -/
+/-- The pieces of one reference: plain text, emphasised text, a DOI, or a URL
+(a master's thesis without a DOI, 2026-10-29). -/
 inductive Piece where
   | t (s : String)
   | em (s : String)
   | doi (d : String)
+  | url (u : String)
 
 def fmtName (n : String × String) : String := if n.2.isEmpty then n.1 else n.1 ++ ", " ++ n.2
 
@@ -277,6 +279,12 @@ def Entry.pieces (e : Entry) : List Piece := Id.run do
     ps := ps ++ [.t (endDot title ++ " Technical report " ++ joinC [g "number", g "institution"] ++ ". ")]
   | "phdthesis" =>
     ps := ps ++ [.em (endDot title), .t (" PhD thesis, " ++ joinC [g "school"] ++ ". ")]
+  | "mastersthesis" =>
+    -- the F0 paper v0.7 (Melzer2020); its URL is linked when it has no DOI
+    ps := ps ++ [.em (endDot title), .t (" " ++ ((g "type").getD "Master's thesis") ++ ", " ++
+      joinC [g "school"] ++ ". ")]
+    if (e.get "doi").isNone then
+      if let some u := e.get "url" then ps := ps ++ [.url u]
   | "misc" | "unpublished" =>
     let arx := (e.get "eprint").map (s!"arXiv:{·}")
     let rest := joinC [arx, g "howpublished", g "publisher"]
@@ -294,6 +302,10 @@ def Piece.toTerm : Piece → MacroM Term
   | .doi d =>
     let url := "https://doi.org/" ++ d
     `(Verso.Doc.Inline.other {CLPPaper.Cite.Inline.extLink with data := Lean.ToJson.toJson (($(quote url), $(quote ("doi:" ++ d))) : String × String)} #[])
+  | .url u =>
+    let txt := if u.startsWith "https://" then (u.drop 8).toString
+      else if u.startsWith "http://" then (u.drop 7).toString else u
+    `(Verso.Doc.Inline.other {CLPPaper.Cite.Inline.extLink with data := Lean.ToJson.toJson (($(quote u), $(quote txt)) : String × String)} #[])
 
 block_extension Block.refList where
   traverse _ _ _ := pure none
