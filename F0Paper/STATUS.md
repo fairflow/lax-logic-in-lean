@@ -373,3 +373,81 @@ printed statements mention:
 | `AnyFamily.sigShiftω` | 10 | `AnyFamily.SigShiftω` |
 | `FreePLL.freePLLnAbove_base3` | 10 | `FreePLL.FreePLLnAbove` |
 | `PLLND.F0.Points.CF.onto` | 12 | `PLLND.F0.Points.CF` |
+
+## 2026-10-29 09:39 GMT: v0.7 rendered
+
+Appendix layout, what was looked at (about 15 minutes):
+
+* Our Verso papers (`CLPPaper/`, `SemPaper/`, `LaxPaper/`, `CurryPaper/`,
+  `PaperKit/`): none has an appendix.
+* Verso: no appendix support.  `Numbering.letter` exists but the traversal
+  always assigns `.nat`; a trailing `number := false` part is written in
+  `\backmatter`, where memoir numbers no chapter; a block after an
+  `{include}` is rejected, so `\appendix` cannot sit between two includes.
+* Published: arXiv 2604.03789 (Ju et al. 2026), Appendix G, "Correspondence
+  between Natural Language Proof and Formalization": a lettered appendix,
+  grouped by part of the proof, one table per group (informal component,
+  Lean declaration, file).  arXiv 2107.11674 (Isabelle, λ-calculus case
+  studies) describes its theory sessions instead of listing definitions.
+* Chosen: the first of these, in our own presentation.  One lettered chapter
+  after the References, "Appendix A, Supporting definitions and lemmas", one
+  section per body section in the body's order (A.1 Section 4, A.2 Section 5,
+  A.3 Section 10, A.4 Section 12), the same `{lemmaTable}` rows (name, printed
+  definition or statement, source line) with their pins and computed axioms.
+  It is one file, `F0Paper/Sections/Appendix.lean`; detaching it means
+  deleting its two lines in `Paper.lean` (import, include) and the "New in
+  v0.7" sentence of §1, the only place the body names it.
+
+Mechanism: `{letteredAppendix}` (`PaperKit/Blocks.lean`), the appendix's
+first block, writes a TeX marker; `scripts/verso-tex-pdf.sh` puts
+`\mainmatter*` (memoir: number chapters again, page numbers kept),
+`\appendix` and an "Appendix A" heading before that chapter's heading.  The
+HTML shows the part unnumbered (`number := false`); `verso-html-local.py`
+now resolves an unnumbered contents entry by its title (v0.6's
+`unresolved: 0 empty` would otherwise have become 1).
+
+Also in v0.7:
+
+* The 10.10 heading: longtable breaks the page itself when the first row of a
+  table does not fit, so the heading stayed at the foot of a page.  In the
+  F0 paper's preamble (`scripts/f0-paper.sh`), `\section` asks for ten lines
+  (`\needspace`) when its title is "Supporting declarations" or it is in the
+  appendix.  A patch of longtable's opening `\penalty\z@` was tried first and
+  watched not to suffice (same page breaks with and without it), so dropped.
+  Cost: 5.4, 6.1, 8.1, 11.4, 12.6 now start pages; the largest gap left is
+  about a third of page 27.
+* `FreeFamily3`: `{stmt (width := 80)}` (new optional width of `{stmt}`,
+  `PaperKit/Math.lean`, default unchanged, so other displays and the
+  semantics paper are unchanged); the display is now within the margins.
+* `scripts/f0-paper.sh`: comment updated (modules, sections, appendix).
+* Citations (manager's message of 2026-10-29): one sentence in §9 where
+  completeness for finite subframe models is first used, citing
+  `Goldblatt1981`, `FairtloughMendler1997`, `BezhanishviliGhilardi2007` (all
+  three already in `docs/references.bib`, unchanged), `Melzer2020` (Theorem
+  3.4.5) and `BezhanishviliBezhanishviliIlin2019` (both added by hand, with
+  the bibliographic data the manager checked, noted in each entry).  MacNab
+  is not cited by the new sentence (the existing `Macnab1981` citation in §2
+  is unchanged).  `CLPPaper/Cite.lean` gained a `mastersthesis` case (its URL
+  linked when there is no DOI); no entry of the CLP paper is of that type.
+* `VERSION` 0.7; "New in v0.7" in §1; §13's last sentence now reads "in a
+  table of supporting declarations" (true with or without the appendix).
+
+Checks (final build, commit `2286ce0`, stamp without `+`; PDF at
+`docs/f0-paper.pdf` in the worktree, not yet delivered):
+
+* `tex errors: 0`, `missing glyphs: 0`, 40 pages (v0.6: 38); html-single
+  `unresolved: 0 empty, 0 find/`.  Only `F0Paper.*`, `PaperKit.*`,
+  `CLPPaper.Cite` rebuilt.
+* Closure check `_out/check_closure.py` (B names as code spans of the running
+  text and of the pins paragraphs; B rows and moved lemma rows in body
+  tables; Lean-computed constants of every body row; B notations and rows in
+  the rendered TeX before `\appendix`; nothing dropped; one reference to the
+  appendix).  On v0.6: 82 failures (watched).  On v0.7: 0 failures, 260 body
+  rows, 32 appendix rows.  Its TeX layer watched failing on the TeX before
+  post-processing (no `\appendix` cut: 29 failures).
+* Barred-term scan (the terms of the brief, case-insensitive) of
+  `F0Paper/`, `PaperKit/`, `CLPPaper/Cite.lean`, the changed scripts and the
+  PDF text: no hit except this file's v0.5 section and, in the PDF,
+  "completions" in three cited titles (as in v0.6).
+  "dense": the same 13 lines as v0.6, all in the order sense.
+* Every page viewed (PNG at 70 dpi under `_out/png/`).
