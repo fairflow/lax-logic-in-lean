@@ -71,7 +71,7 @@ theorem saturated_and_liftClosed :
     ∃ D : FSeq → Prop, Saturated Gcc D ∧ LiftClosed Gcc D :=
   ⟨FDerivable Gcc, saturated_fderivable Gcc, liftClosed_fderivable Gcc⟩
 
-/-- info: 'FRJ.Gbu.X.saturated_and_liftClosed' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.X.saturated_and_liftClosed' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms saturated_and_liftClosed
 
@@ -232,7 +232,7 @@ theorem evalI_omegaX_goal : EvalI (LiftClosure Gx) omegaX (.circ rvx) := by
     fun {x} hx => absurd hx List.not_mem_nil,
     fun {x} hx => List.mem_append_right _ hx⟩
 
-/-- info: 'FRJ.Gbu.X.evalI_omegaX_goal' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.X.evalI_omegaX_goal' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalI_omegaX_goal
 

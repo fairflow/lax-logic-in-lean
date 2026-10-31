@@ -8,11 +8,15 @@ commit. The nightly (`scripts/nightly-integrity.sh`) failed on 2026-10-30 and
 They were the first full builds, and all four are old breakage, not
 regressions of `d5dcf0e`.
 
+Items 1 and 4 were fixed in the first commit. Items 2 and 3 were reported
+unchanged, then fixed in a second commit after Matthew approved (2026-10-31)
+option (b) for item 2 and the pin update for item 3.
+
 | # | failure | cause | action | result |
 |---|---|---|---|---|
 | 1 | `F0/Bridge.lean`: type mismatch at 19:71, `cases` at 19:9, pin at 25:0 | semantic merge conflict (`rn` became data) | fixed | builds; pin `[propext, Quot.sound]` passes unchanged; both dependants build |
-| 2 | `wip/frjw_gcc.lean`: unknown `V.WCounter.no_irregular_circ_imp_self` (44:28), `#guard_msgs` (60:0) | the lemma was withdrawn when `(Lift)` joined `FRJVi`; the statement it served is now REFUTED | none | open for Matthew; options below |
-| 3 | `wipx/frjx_screen.lean`: `#guard_msgs` at 75:0 and 236:0 | axiom sets shrank upstream (the 2026-09-03 import diet) | none | SUBSTANTIVE (an axiom list); old/new below |
+| 2 | `wip/frjw_gcc.lean`: unknown `V.WCounter.no_irregular_circ_imp_self` (44:28), `#guard_msgs` (60:0) | the lemma was withdrawn when `(Lift)` joined `FRJVi`; the conjunct it proved is REFUTED for the current `FRJVi` | fixed, option (b), approved | `duality_closed` withdrawn; first conjunct and the refutation of the second are pinned theorems; builds |
+| 3 | `wipx/frjx_screen.lean`: `#guard_msgs` at 75:0 and 236:0 | axiom sets shrank upstream (the 2026-09-03 import diet) | fixed, approved: pins ratcheted to the generated `[propext]` | builds; its dependants `frjx_plan`, `frjx_ports` FAIL on four more pins of the same kind (not fixed) |
 | 4 | `wipshared: some modules have bad imports` | five `wipshared` globs name files moved to `FRJ/Gbu/` | fixed | `lake query wipshared:modules` watched failing, now passes |
 
 ## 1. `F0/Bridge.lean`: FIXED
@@ -53,10 +57,10 @@ on main since `a9b25571`. Both build now, and `F0.Named.Part0`'s 22
 | `gtimeout 3600 lake build F0.Bridge` | 0 (8660 jobs; upstream replayed, `F0.Bridge` built, 34 s) |
 | `gtimeout 3600 lake build F0.Named.Part0 F0.Named` | 0 (8690 jobs; `F0.Named.Part0` 9.9 s, `F0.Named` 9.7 s) |
 
-## 2. `wip/frjw_gcc.lean`: NOT FIXED (needs Matthew)
+## 2. `wip/frjw_gcc.lean`: FIXED (option (b), approved 2026-10-31)
 
 Cause. `FRJ.W.duality_closed` (stage W4, `6ca588e7`, 2026-08-31, FRJW line)
-states
+stated
 
     Nonempty (FRJWi Gcc [] [] Gcc) ∧ (FRJVi Gcc [] [] Gcc → False)
 
@@ -75,68 +79,113 @@ constructor `liftI` and withdrew that lemma, replacing it in
         ∃ (t : Tag) (Γ : List Form), Nonempty (FRJVr G t Γ (.circ (.imp (.circ Z) Z)))
 
 The two lines met in the merge `5b895074` (2026-09-16); since then
-`frjw_gcc` names a declaration that exists nowhere (known since then:
+`frjw_gcc` named a declaration that exists nowhere (known since then:
 `docs/ledger-campaign-2026-09-16.md`, `docs/dangling-triage-2026-09-18.md`).
-The `#guard_msgs` failure at 60:0 is a consequence: elaboration recovers
-with `sorryAx`, so the pin reads `[propext, sorryAx, Quot.sound]`.
+The `#guard_msgs` failure at 60:0 was a consequence: elaboration recovers
+with `sorryAx`, so the pin read `[propext, sorryAx, Quot.sound]`.
 
-Can the use be restated against the superseding result with the statement
-intact? No. The superseding theorem concludes an existential, not `False`,
-and the second conjunct is false of the current calculus. One designed
-witness, `(Lift)` applied to the regular disproof `GccWitness` with the
-retained context empty, kernel-checked in a scratch file (not committed)
-with `gtimeout 600 lake env lean _out/frjw_gcc_conj2.lean`, exit 0:
+The statement could not be kept. The superseding theorem concludes an
+existential, not `False`, and the second conjunct is false of the current
+calculus: `liftI` applied to the regular disproof `GccWitness`, with the
+retained context empty, is an irregular FRJV disproof of `Gcc`. This was
+first kernel-checked in a scratch file (`gtimeout 600 lake env lean
+_out/frjw_gcc_conj2.lean`, exit 0, `[propext, Quot.sound]`).
 
-    theorem frjvi_Gcc_irregular : Nonempty (FRJVi Gbu.Gcc [] [] Gbu.Gcc) :=
-      ⟨.liftI Gbu.GccWitness.2 (fun _ hX => absurd hX List.not_mem_nil)⟩
-    theorem duality_closed_conj2_refuted : ¬ (FRJVi Gbu.Gcc [] [] Gbu.Gcc → False)
-    -- 'duality_closed_conj2_refuted' depends on axioms: [propext, Quot.sound]
+Fix (option (b)). `duality_closed` is withdrawn, not reused. In its place:
 
-So the conjunction `duality_closed` is REFUTED as stated, for the present
-`FRJVi`; its first conjunct (`gccIrregular`, pinned `[propext, Quot.sound]`,
-that pin passes) is untouched. This is the inversion that
-`wipx/frjx_ports.lean` (§ before `gbuInv10'`) and the docstring of
-`irregular_circ_imp_self_lifts` already record. (The "refuted" badge on the
-lemma in `docs/pll-calculus-ledger.html` is that page's badge for negative
-results, the same one `not_gbuIC_Gcc` carries; its location cell
-`wip/gbu_weakening.lean:211` is stale.)
+    theorem FRJ.W.gccIrregular_nonempty : Nonempty (FRJWi Gbu.Gcc [] [] Gbu.Gcc)
+      -- PROVED, pinned [propext, Quot.sound]
 
-Nothing in `wip/frjw_gcc.lean` was changed. Options, each Matthew's call:
+    theorem FRJ.W.not_frjvi_Gcc_impossible : ¬ (FRJVi Gbu.Gcc [] [] Gbu.Gcc → False)
+      -- PROVED, pinned [propext, Quot.sound]; it REFUTES the old second conjunct
 
-* (a) Restate `duality_closed` over what the current calculi prove, e.g.
-  replace the second conjunct by the lifting characterisation
+The first is the old first conjunct, statement unchanged (proof
+`⟨gccIrregular⟩`); the second is proved by
+`fun h => h (.liftI Gbu.GccWitness.2 (fun _ hX => absurd hX List.not_mem_nil))`.
+Each is pinned twice: an exact `#guard_msgs in #print axioms` pin (the
+file's convention; the old 60:0 pin now guards `gccIrregular_nonempty`) and
+`#axioms_within … [propext, Quot.sound]` (hence `import Meta.Audit`, which
+imports only `Lean`). The existing `gccIrregular` and its pin are
+unchanged. The module docstring and the `gccIrregular` docstring now say
+that the second conjunct held before `liftI` (993ea740, 2026-09-01), is
+REFUTED for the current `FRJVi`, and that
+`FRJ.V.WCounter.irregular_circ_imp_self_lifts` is the superseding positive
+result.
 
-      ∀ d : FRJVi Gcc [] [] Gcc, ∃ t Γ, Nonempty (FRJVr Gcc t Γ Gcc)
+Order of work: the file was first built with the two new `#print axioms`
+unguarded (exit 0, no errors; they printed `[propext, Quot.sound]`), and
+only then were the `#guard_msgs` docstrings written from that output.
 
-  (from `irregular_circ_imp_self_lifts`), and rewrite the W4 prose, which
-  presents FRJW's disproof as one "FRJV provably lacks". A statement change.
-* (b) Keep the first conjunct only (`gccIrregular`) and record the second as
-  REFUTED with the witness above. Also a statement change.
-* (c) Remove `wip.frjw_gcc` from the `wipshared` globs, leaving the file as
-  a historical record. Changes the nightly's build target.
-* (d) Leave it red; the nightly then reports it every night.
+| command | exit |
+|---|---|
+| `gtimeout 3600 lake build wip.frjw_gcc` (new prints unguarded) | 0 (976 jobs; the two `#axioms_within` pins pass) |
+| `gtimeout 3600 lake build wip.frjw_gcc` (guards added) | 0 (976 jobs; no message from the file) |
 
-## 3. `wipx/frjx_screen.lean`: NOT CHANGED (SUBSTANTIVE)
+`wip.frjw_gcc` has no dependants.
 
-| line | declaration | pinned (docstring) | generated | class |
-|---|---|---|---|---|
-| 75 | `FRJ.Gbu.X.saturated_and_liftClosed` | `[propext, Quot.sound]` | `[propext]` | SUBSTANTIVE (axiom list) |
-| 236 | `FRJ.Gbu.X.evalI_omegaX_goal` | `[propext, Quot.sound]` | `[propext]` | SUBSTANTIVE (axiom list) |
+Follow-ups, not edited here (each still names the withdrawn lemma or the
+old reading):
 
-Both changes remove an axiom; neither adds one. Cause: the import diet
-`e89f0035` (2026-09-03; `FRJ/Basic.lean` from `import Mathlib` to
-`import Batteries`) shrank upstream axiom sets, and its "pin ratchet"
-weakened 36 pins from `[propext, Quot.sound]` to `[propext]`, among them
-`FRJ.Gbu.saturated_fderivable` (`FRJ/Gbu/Search.lean`), on which
-`saturated_and_liftClosed` rests. `frjx_screen.lean` was on the FRJX line
-(`993ea740` is not an ancestor of `e89f0035`), so its pins were not
-ratcheted; the two lines met in `5b895074`. Nothing changed, by the
-classification rule of this repair. Updating the two docstrings to
-`[propext]` is what that ratchet's rule ("a pin may lose axioms, never gain
-them") would do; that is for Matthew to approve.
+* `LaxBlueprint/Chapters/FRJW.lean` (about line 70, the theorem "duality_hole",
+  and line 93, "proved 2026-08-31");
+* `docs/claims.tsv:335` and `docs/claim-reconciliation.md:51` (the
+  blueprint citation);
+* `docs/pll-calculus-ledger.html:469` (entry with a stale location
+  `wip/gbu_weakening.lean:211`; its "refuted" badge is that page's badge
+  for negative results);
+* `docs/frjw-plan.md:52` and `:89`, `docs/frjw-explainer.md:2279`,
+  `docs/frjw-complexity-comparison.md:725`, `docs/frj-fidelity.md:557`,
+  `docs/frjx-progress-2026-09-01.md:21`;
+* `wip/gbu_search_circ.lean:1250`, `wip/rbar.lean:6`, `wipx/frjx_plan.lean:18`
+  (prose);
+* `wipa/`…`wipd/frjx_screen.lean:69` use the lemma in code; these are the
+  frozen arms, outside every build target;
+* `HANDOFF.md:3278`, `:3327`, `docs/ledger-campaign-2026-09-16.md:141`,
+  `docs/dangling-triage-2026-09-18.md:164`, `:276` are dated records (a new
+  dated § rather than an edit, if any).
 
-Dependants `wipx.frjx_plan` and `wipx.frjx_ports` were skipped by Lake in
-the nightly and remain UNCHECKED. `wip.frjw_gcc` has no dependants.
+## 3. `wipx/frjx_screen.lean`: FIXED (approved 2026-10-31)
+
+| line | declaration | pinned (old docstring) | generated (new docstring) |
+|---|---|---|---|
+| 75 | `FRJ.Gbu.X.saturated_and_liftClosed` | `[propext, Quot.sound]` | `[propext]` |
+| 236 | `FRJ.Gbu.X.evalI_omegaX_goal` | `[propext, Quot.sound]` | `[propext]` |
+
+Classified SUBSTANTIVE (an axiom list) and first left unchanged. Both changes
+remove an axiom; neither adds one. Cause: the import diet `e89f0035`
+(2026-09-03; `FRJ/Basic.lean` from `import Mathlib` to `import Batteries`)
+shrank upstream axiom sets, and its pin ratchet ("a pin may lose axioms,
+never gain them") weakened 36 pins from `[propext, Quot.sound]` to
+`[propext]`, among them `FRJ.Gbu.saturated_fderivable`
+(`FRJ/Gbu/Search.lean`), on which `saturated_and_liftClosed` rests.
+`frjx_screen.lean` was on the FRJX line (`993ea740` is not an ancestor of
+`e89f0035`), so its pins were not ratcheted; the two lines met in
+`5b895074`.
+
+Fix, on Matthew's approval: the two docstrings now read `[propext]`; nothing
+else in the file changed.
+
+`gtimeout 3600 lake build wipx.frjx_screen wipx.frjx_plan wipx.frjx_ports`:
+exit 1.
+
+* `wipx.frjx_screen`: built (7.4 s), no errors.
+* `wipx.frjx_plan`: FAIL, one pin of the same kind; 13 `declaration uses
+  sorry` warnings (lines 78, 172, 186, 223, 232, 240, 249, 259, 285, 295,
+  305, 313, 321).
+* `wipx.frjx_ports`: FAIL, three pins of the same kind; 5 `declaration uses
+  sorry` warnings (lines 272, 279, 289, 328, 339).
+
+Not fixed, as instructed:
+
+| file:line | declaration | pinned | generated |
+|---|---|---|---|
+| `wipx/frjx_plan.lean:143` | `FRJ.Gbu.X.liftClosure_irr` | `[propext, Quot.sound]` | `[propext]` |
+| `wipx/frjx_ports.lean:427` | `FRJ.Gbu.X.gbuInv8'` | `[propext, Quot.sound]` | `[propext]` |
+| `wipx/frjx_ports.lean:431` | `FRJ.Gbu.X.gbuInv14'` | `[propext, Quot.sound]` | `[propext]` |
+| `wipx/frjx_ports.lean:435` | `FRJ.Gbu.X.unrefutedBelow_step'` | `[propext, Quot.sound]` | `[propext]` |
+
+Each removes `Quot.sound` and adds nothing, the same ratchet situation as
+item 3; updating them needs the same approval.
 
 ## 4. `wipshared: some modules have bad imports`: FIXED
 
@@ -170,6 +219,8 @@ consistent with the same cause.
 
 ## Not done
 
-* No `wipshared` build: it would fail at items 2 and 3 regardless.
-* `wipx.frjx_plan`, `wipx.frjx_ports`: UNCHECKED (item 3).
+* No `wipshared` build: `wipx.frjx_plan` and `wipx.frjx_ports` still fail
+  (item 3), so the nightly will stay red on those two until their four
+  pins are approved and updated.
+* The follow-up documents of item 2 are not edited.
 * Nothing pushed; no upstream set.
