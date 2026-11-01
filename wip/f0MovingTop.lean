@@ -58,6 +58,27 @@ The target (OPEN at Stage 1), with `b = t6 ∨ σ³⊥` and the readers `y = xr`
     PLLBelowTopReduced : ∀ C,  [b] ⊢ relB σ³⊥ y C  ⟹  ⊢ C          (equivalent, by GenIff)
     refutation cells:    [b] ⊢? relB σ³⊥ y Oᵢ,   O1 = ◯p → p,  O2 = ◯p ∨ ¬◯p,  O3 = ◯(p ∨ q) → ◯p ∨ ◯q
 
+## Statements added at Stage 2 (the manager, 2026-11-01): the new target
+
+The copy of PLL below `⊤` by composition, and the tower built in the free PLL
+algebra and carried into F0 by `g = relB σ³⊥ y` (the shape of the `H_ω` tower).
+With `x_P p = (p ∨ t3) ∧ t6` and `τ_P = rel t3 t6 x_P` on ALL formulas
+(`τ_P A ⊣⊢ A^{t3} ∧ t6`, `A^{t3} = aTr t3 A` Friedman's A-translation):
+
+    (Q1) PLLSelf :         FreeInPLL t3 t6 x_P
+         PLLSelfReduced :  ∀ C,  [t6] ⊢ aTr t3 C  ⟹  ⊢ C
+    (Q2) PLLSelfTower :    ∀ d,  τ_Pᵈ faithful on PLL,  FreeInPLL (τ_Pᵈ⊥) (τ_Pᵈ⊤) (τ_Pᵈ ∘ p),
+                             τ_Pᵈ A ⊣⊢ rel (τ_Pᵈ⊥) (τ_Pᵈ⊤) (τ_Pᵈ ∘ p) A,
+                             [τ_Pᵈ⊥, τ_Pᵈ⊤] strictly nested at both ends
+    (Q3) PLLTowerInF0 :    ∀ d,  g ∘ τ_Pᵈ faithful on PLL, in [g τ_Pᵈ⊥, g τ_Pᵈ⊤] ⊆ [σ³⊥, ⊤],
+                             these intervals strictly nested, the depth-(d+1) copy inside
+                             the depth-d interval
+         TowerFirstStep :  g(τ_P ⊥) = σ⁴⊥,   g(τ_P ⊤) ⊣⊢ σ³ t6
+    (P1) PLLInT6 :         FreeInPLL (τ σ³⊥) t6 (τ ∘ y),   τ = relC t3 t6
+         BaseTauIncomparable :  [σ³⊥] ⊬ τ σ³⊥  and  [τ σ³⊥] ⊬ σ³⊥
+                             (so the intervals [τᵈ σ³⊥, τᵈ⊤] of the composite τᵈ ∘ g are not
+                             nested; that form of the tower is not stated)
+
 Status note: `wip/f0MovingTop-STATUS.md`.
 -/
 
@@ -261,6 +282,65 @@ def W4 : Prop := PLLBelowTop → IterCopy b3 bT yT
 /-- A refutation cell of the target: `[b] ⊬ relB σ³⊥ y C` (needed for every
 non-theorem `C`). -/
 def TargetCell (C : PLLFormula) : Prop := ¬ Deriv [bT] (relB b3 xr C)
+
+/-! ## The new target (added at Stage 2): the tower in the free PLL algebra -/
+
+/-- The generators `x_P p = (p ∨ t3) ∧ t6`. -/
+def xP (p : String) : PLLFormula := ((PLLFormula.prop p).or t3).and t6
+
+/-- `τ_P = rel t3 t6 x_P`, on all formulas. -/
+def tauP : PLLFormula → PLLFormula := rel t3 t6 xP
+
+/-- The iterates `τ_Pᵈ`. -/
+def tauPN : Nat → PLLFormula → PLLFormula
+  | 0, A => A
+  | d + 1, A => tauPN d (tauP A)
+
+/-- The faithful copy of PLL above `σ³⊥`, `g = relB σ³⊥ y`. -/
+def gR (A : PLLFormula) : PLLFormula := relB b3 xr A
+
+/-- **(Q1)** `τ_P` is a faithful copy of PLL in `[t3, t6]`. -/
+def PLLSelf : Prop := FreeInPLL t3 t6 xP
+
+/-- **(Q1), reduced by (R')** -/
+def PLLSelfReduced : Prop := ∀ C : PLLFormula, Deriv [t6] (aTr t3 C) → Deriv [] C
+
+/-- **(Q2)** the tower of copies of PLL inside the free PLL algebra. -/
+def PLLSelfTower : Prop :=
+  ∀ d : Nat,
+    (∀ A B : PLLFormula, Deriv [A] B ↔ Deriv [tauPN d A] (tauPN d B)) ∧
+    FreeInPLL (tauPN d .falsePLL) (tauPN d topF) (fun p => tauPN d (.prop p)) ∧
+    (∀ A : PLLFormula, Interd (tauPN d A)
+      (rel (tauPN d .falsePLL) (tauPN d topF) (fun p => tauPN d (.prop p)) A)) ∧
+    Deriv [tauPN d .falsePLL] (tauPN (d + 1) .falsePLL) ∧
+    ¬ Deriv [tauPN (d + 1) .falsePLL] (tauPN d .falsePLL) ∧
+    Deriv [tauPN (d + 1) topF] (tauPN d topF) ∧
+    ¬ Deriv [tauPN d topF] (tauPN (d + 1) topF)
+
+/-- **(Q3)** the tower carried into F0 by `g`. -/
+def PLLTowerInF0 : Prop :=
+  ∀ d : Nat,
+    (∀ A B : PLLFormula, Deriv [A] B ↔ Deriv [gR (tauPN d A)] (gR (tauPN d B))) ∧
+    (∀ A : PLLFormula, Deriv [gR (tauPN d .falsePLL)] (gR (tauPN d A)) ∧
+      Deriv [gR (tauPN d A)] (gR (tauPN d topF))) ∧
+    Deriv [b3] (gR (tauPN d .falsePLL)) ∧
+    Deriv [gR (tauPN d .falsePLL)] (gR (tauPN (d + 1) .falsePLL)) ∧
+    ¬ Deriv [gR (tauPN (d + 1) .falsePLL)] (gR (tauPN d .falsePLL)) ∧
+    Deriv [gR (tauPN (d + 1) topF)] (gR (tauPN d topF)) ∧
+    ¬ Deriv [gR (tauPN d topF)] (gR (tauPN (d + 1) topF)) ∧
+    (∀ A : PLLFormula, Deriv [gR (tauPN d .falsePLL)] (gR (tauPN (d + 1) A)) ∧
+      Deriv [gR (tauPN (d + 1) A)] (gR (tauPN d topF)))
+
+/-- **(Q3)** the first step is `[σ⁴⊥, σ³ t6]`. -/
+def TowerFirstStep : Prop :=
+  gR (tauPN 1 .falsePLL) = sigN 4 .falsePLL ∧ Interd (gR (tauPN 1 topF)) (sigN 3 t6)
+
+/-- **(P1)** the composite `τ ∘ g` is a faithful copy of PLL in `[τ σ³⊥, t6]`. -/
+def PLLInT6 : Prop := FreeInPLL (relC t3 t6 b3) t6 (fun p => relC t3 t6 (xr p))
+
+/-- Why the composite tower `τᵈ ∘ g` is not stated: its bottoms are incomparable. -/
+def BaseTauIncomparable : Prop :=
+  ¬ Deriv [b3] (relC t3 t6 b3) ∧ ¬ Deriv [relC t3 t6 b3] b3
 
 end MovingTop
 end F0
