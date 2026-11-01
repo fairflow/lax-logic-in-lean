@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 860" width="1000" height="860" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="860" fill="#ffffff"/>
+  <text x="20" y="30" font-size="18" font-weight="600" fill="#222">6. The PLL tower in F0: copies of PLL nested inside one another, strictly below ⊤ from depth 1</text>
+
+  <defs>
+    <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- ================= left: the free PLL algebra P ================= -->
+  <text x="230" y="70" font-size="15" font-weight="600" text-anchor="middle" fill="#226b3a">the free PLL algebra P</text>
+
+  <path d="M230,650 C 425,542 425,218 230,110 C 35,218 35,542 230,650 Z" fill="#e5f4e9" stroke="#2f8a4c" stroke-width="2"/>
+  <path d="M230,590 C 373,510 373,270 230,190 C 87,270 87,510 230,590 Z" fill="#fcf1dc" stroke="#c47f12" stroke-width="2"/>
+  <path d="M230,545 C 324,489 324,321 230,265 C 136,321 136,489 230,545 Z" fill="#f4e6f4" stroke="#9b3b9b" stroke-width="2"/>
+  <path d="M230,510 C 282,472 282,358 230,320 C 178,358 178,472 230,510 Z" fill="#f6f6f6" stroke="#888" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="230" y="420" font-size="16" text-anchor="middle" fill="#888">⋯</text>
+
+  <g fill="#333">
+    <circle cx="230" cy="650" r="4.5"/><circle cx="230" cy="110" r="4.5"/>
+    <circle cx="230" cy="590" r="4.5" fill="#c47f12"/><circle cx="230" cy="190" r="4.5" fill="#c47f12"/>
+    <circle cx="230" cy="545" r="4.5" fill="#9b3b9b"/><circle cx="230" cy="265" r="4.5" fill="#9b3b9b"/>
+  </g>
+  <g font-size="13.5">
+    <text x="240" y="667" fill="#226b3a" font-weight="700">⊥</text>
+    <text x="240" y="104" fill="#226b3a" font-weight="700">⊤</text>
+    <text x="240" y="606" fill="#9a620b" font-weight="700">t3 = τ<tspan baseline-shift="sub" font-size="10">P</tspan>(⊥)</text>
+    <text x="240" y="184" fill="#9a620b" font-weight="700">t6 = τ<tspan baseline-shift="sub" font-size="10">P</tspan>(⊤)</text>
+    <text x="240" y="561" fill="#7a2c7a" font-weight="700">τ<tspan baseline-shift="sub" font-size="10">P</tspan>(t3)</text>
+    <text x="240" y="259" fill="#7a2c7a" font-weight="700">τ<tspan baseline-shift="sub" font-size="10">P</tspan>(t6)</text>
+  </g>
+
+  <!-- the same generator followed down the tower -->
+  <g fill="#b22">
+    <circle cx="98" cy="380" r="4"/><circle cx="136" cy="392" r="4"/><circle cx="172" cy="402" r="4"/><circle cx="204" cy="410" r="3.5"/>
+  </g>
+  <path d="M98,380 L136,392 L172,402 L204,410" fill="none" stroke="#b22" stroke-width="1.3" stroke-dasharray="3 3"/>
+  <text x="52" y="346" font-size="12.5" fill="#b22">p, τ<tspan baseline-shift="sub" font-size="9">P</tspan>(p), τ<tspan baseline-shift="sub" font-size="9">P</tspan><tspan baseline-shift="super" font-size="9">2</tspan>(p), …</text>
+
+
+  <!-- ================= right: F0 ================= -->
+  <text x="725" y="70" font-size="15" font-weight="600" text-anchor="middle" fill="#1f4f9e">F0</text>
+  <path d="M725,690 C 972,571 972,214 725,95 C 478,214 478,571 725,690 Z" fill="#e6eefb" stroke="#3b6fc4" stroke-width="2"/>
+  <path d="M725,560 C 920,467 920,188 725,95 C 530,188 530,467 725,560 Z" fill="#e5f4e9" stroke="#2f8a4c" stroke-width="2"/>
+  <path d="M725,520 C 868,451 868,244 725,175 C 582,244 582,451 725,520 Z" fill="#fcf1dc" stroke="#c47f12" stroke-width="2"/>
+  <path d="M725,485 C 819,437 819,293 725,245 C 631,293 631,437 725,485 Z" fill="#f4e6f4" stroke="#9b3b9b" stroke-width="2"/>
+  <path d="M725,455 C 777,425 777,335 725,305 C 673,335 673,425 725,455 Z" fill="#f6f6f6" stroke="#888" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="725" y="384" font-size="16" text-anchor="middle" fill="#888">⋯</text>
+
+  <!-- base chain below the copy -->
+  <line x1="725" y1="690" x2="725" y2="560" stroke="#3b6fc4" stroke-width="1.6"/>
+  <g fill="#3b6fc4">
+    <circle cx="725" cy="690" r="4.5"/><circle cx="725" cy="646" r="4.5"/><circle cx="725" cy="603" r="4.5"/>
+  </g>
+  <g font-size="13" fill="#1f4f9e" text-anchor="end">
+    <text x="715" y="705">⊥</text>
+    <text x="715" y="650">σ⊥ = t3</text>
+    <text x="715" y="607">σ²⊥</text>
+  </g>
+  <circle cx="725" cy="560" r="5" fill="#2f8a4c"/>
+  <circle cx="725" cy="95" r="5" fill="#2f8a4c"/>
+  <circle cx="725" cy="520" r="4.5" fill="#c47f12"/><circle cx="725" cy="175" r="4.5" fill="#c47f12"/>
+  <circle cx="725" cy="485" r="4.5" fill="#9b3b9b"/><circle cx="725" cy="245" r="4.5" fill="#9b3b9b"/>
+
+  <g font-size="13">
+    <text x="736" y="575" fill="#226b3a" font-weight="700">σ³⊥</text>
+    <text x="736" y="88" fill="#226b3a" font-weight="700">⊤</text>
+    <text x="736" y="536" fill="#9a620b" font-weight="700">σ⁴⊥</text>
+    <text x="736" y="170" fill="#9a620b" font-weight="700">σ³ t6</text>
+    <text x="736" y="500" fill="#7a2c7a" font-weight="700">σ⁵⊥ ∧ σ³ t6</text>
+    <text x="736" y="240" fill="#7a2c7a" font-weight="700">σ⁴ t6 ∧ σ³ t6</text>
+  </g>
+
+  <!-- depth labels on the right -->
+  <g font-size="12" font-style="italic">
+    <text x="878" y="330" fill="#226b3a">g(P)</text>
+    <text x="826" y="372" fill="#9a620b">g τ<tspan baseline-shift="sub" font-size="9">P</tspan>(P)</text>
+  </g>
+
+  <g fill="#b22">
+    <circle cx="583" cy="340" r="4"/><circle cx="637" cy="352" r="4"/><circle cx="671" cy="362" r="4"/><circle cx="702" cy="370" r="3.5"/>
+  </g>
+  <path d="M583,340 L637,352 L671,362 L702,370" fill="none" stroke="#b22" stroke-width="1.3" stroke-dasharray="3 3"/>
+  <text x="462" y="650" font-size="12.5" fill="#b22">g τ<tspan baseline-shift="sub" font-size="9">P</tspan><tspan baseline-shift="super" font-size="9">d</tspan>(p): the same</text>
+  <text x="462" y="666" font-size="12.5" fill="#b22">generator in every copy</text>
+
+  <!-- ================= the map g (drawn last, on top) ================= -->
+  <path d="M415,300 C 470,265 530,268 588,318" fill="none" stroke="#333" stroke-width="1.8" marker-end="url(#arg)"/>
+  <text x="495" y="262" font-size="15" font-weight="700" text-anchor="middle" fill="#333">g</text>
+  <text x="470" y="345" font-size="11.5" text-anchor="middle" fill="#555">depth d ↦ depth d</text>
+
+  <!-- notes -->
+  <g font-size="13.5" fill="#222">
+    <text x="20" y="728">Left: τ<tspan baseline-shift="sub" font-size="10">P</tspan>(A) = A<tspan baseline-shift="super" font-size="10">t3</tspan> ∧ t6  (p ↦ (p ∨ t3) ∧ t6,  ⊥ ↦ t3,  → ↦ (· ↠ ·) ∧ t6,  ◯ ↦ ◯(·) ∧ t6) embeds P in its own interval [t3, t6];</text>
+    <text x="20" y="748">iterated, τ<tspan baseline-shift="sub" font-size="10">P</tspan><tspan baseline-shift="super" font-size="10">d</tspan> embeds P in [τ<tspan baseline-shift="sub" font-size="10">P</tspan><tspan baseline-shift="super" font-size="10">d</tspan>⊥, τ<tspan baseline-shift="sub" font-size="10">P</tspan><tspan baseline-shift="super" font-size="10">d</tspan>⊤], strictly nested at both ends.  Right: g, the existing faithful embedding of PLL into [σ³⊥, ⊤],</text>
+    <text x="20" y="768">carries the tower into F0. On closed formulas g = σ³ and τ<tspan baseline-shift="sub" font-size="10">P</tspan> = τ, so the ends are σ³(τ<tspan baseline-shift="super" font-size="10">d</tspan>⊥) and σ³(τ<tspan baseline-shift="super" font-size="10">d</tspan>⊤). Only the outermost copy reaches ⊤.</text>
+    <text x="20" y="796" fill="#555">Status: all PROVED, axioms [propext, Quot.sound]: g (freePLLAbove_base3), the step τ<tspan baseline-shift="sub" font-size="10">P</tspan> (pllSelf), its tower (pllSelfTower),</text>
+    <text x="20" y="816" fill="#555">the transport (pllTowerInF0) and the first step g(τ<tspan baseline-shift="sub" font-size="10">P</tspan>⊥) = σ⁴⊥ (towerFirstStep); the depth-2 ends are shown up to ⊣⊢ (relClosed).</text>
+    <text x="20" y="836" fill="#555">The first PLL target, the readers cut at t6 ∨ σ³⊥, is REFUTED (not_pllBelowTop).</text>
+  </g>
+</svg>
