@@ -10,13 +10,15 @@ regressions of `d5dcf0e`.
 
 Items 1 and 4 were fixed in the first commit. Items 2 and 3 were reported
 unchanged, then fixed in a second commit after Matthew approved (2026-10-31)
-option (b) for item 2 and the pin update for item 3.
+option (b) for item 2 and the pin update for item 3. The four pins of
+the same kind in item 3's dependants were updated in a third commit,
+approved by Matthew 2026-11-01.
 
 | # | failure | cause | action | result |
 |---|---|---|---|---|
 | 1 | `F0/Bridge.lean`: type mismatch at 19:71, `cases` at 19:9, pin at 25:0 | semantic merge conflict (`rn` became data) | fixed | builds; pin `[propext, Quot.sound]` passes unchanged; both dependants build |
 | 2 | `wip/frjw_gcc.lean`: unknown `V.WCounter.no_irregular_circ_imp_self` (44:28), `#guard_msgs` (60:0) | the lemma was withdrawn when `(Lift)` joined `FRJVi`; the conjunct it proved is REFUTED for the current `FRJVi` | fixed, option (b), approved | `duality_closed` withdrawn; first conjunct and the refutation of the second are pinned theorems; builds |
-| 3 | `wipx/frjx_screen.lean`: `#guard_msgs` at 75:0 and 236:0 | axiom sets shrank upstream (the 2026-09-03 import diet) | fixed, approved: pins ratcheted to the generated `[propext]` | builds; its dependants `frjx_plan`, `frjx_ports` FAIL on four more pins of the same kind (not fixed) |
+| 3 | `wipx/frjx_screen.lean`: `#guard_msgs` at 75:0 and 236:0 | axiom sets shrank upstream (the 2026-09-03 import diet) | fixed, approved: six pins ratcheted to the generated `[propext]` (two in the file 2026-10-31, four in its dependants 2026-11-01) | `frjx_screen`, `frjx_plan`, `frjx_ports` all build (exit 0) |
 | 4 | `wipshared: some modules have bad imports` | five `wipshared` globs name files moved to `FRJ/Gbu/` | fixed | `lake query wipshared:modules` watched failing, now passes |
 
 ## 1. `F0/Bridge.lean`: FIXED
@@ -144,7 +146,7 @@ old reading):
   `docs/dangling-triage-2026-09-18.md:164`, `:276` are dated records (a new
   dated § rather than an edit, if any).
 
-## 3. `wipx/frjx_screen.lean`: FIXED (approved 2026-10-31)
+## 3. `wipx/frjx_screen.lean` and its dependants: FIXED (approved 2026-10-31 and 2026-11-01)
 
 | line | declaration | pinned (old docstring) | generated (new docstring) |
 |---|---|---|---|
@@ -165,8 +167,8 @@ never gain them") weakened 36 pins from `[propext, Quot.sound]` to
 Fix, on Matthew's approval: the two docstrings now read `[propext]`; nothing
 else in the file changed.
 
-`gtimeout 3600 lake build wipx.frjx_screen wipx.frjx_plan wipx.frjx_ports`:
-exit 1.
+First build, `gtimeout 3600 lake build wipx.frjx_screen wipx.frjx_plan
+wipx.frjx_ports` (2026-10-31): exit 1.
 
 * `wipx.frjx_screen`: built (7.4 s), no errors.
 * `wipx.frjx_plan`: FAIL, one pin of the same kind; 13 `declaration uses
@@ -175,7 +177,7 @@ exit 1.
 * `wipx.frjx_ports`: FAIL, three pins of the same kind; 5 `declaration uses
   sorry` warnings (lines 272, 279, 289, 328, 339).
 
-Not fixed, as instructed:
+The four failing pins (left unchanged on 2026-10-31):
 
 | file:line | declaration | pinned | generated |
 |---|---|---|---|
@@ -185,7 +187,24 @@ Not fixed, as instructed:
 | `wipx/frjx_ports.lean:435` | `FRJ.Gbu.X.unrefutedBelow_step'` | `[propext, Quot.sound]` | `[propext]` |
 
 Each removes `Quot.sound` and adds nothing, the same ratchet situation as
-item 3; updating them needs the same approval.
+the two `frjx_screen` pins.
+
+Fix, approved by Matthew 2026-11-01: these four docstrings now read
+`[propext]`; nothing else in `frjx_plan.lean` or `frjx_ports.lean`
+changed (the pin of `FRJ.Gbu.X.regSoundWorld_liftClosure`,
+`frjx_plan.lean:109`, which passes at `[propext, Quot.sound]`, is
+untouched).
+
+| command | exit |
+|---|---|
+| `gtimeout 3600 lake build wipx.frjx_screen wipx.frjx_plan wipx.frjx_ports` (2026-11-01) | 0 (973 jobs) |
+
+Warnings in that build, per file: `frjx_screen.lean` none (up to date
+from the 2026-10-31 build, which printed none); `frjx_plan.lean` 13
+`declaration uses sorry` (the lines listed above); `frjx_ports.lean` 5
+`declaration uses sorry` (the lines listed above) and 1 unused-variable
+lint (353:17). The `sorry`s are the blueprint obligations of these
+`wipx/` campaign files, unchanged by this repair.
 
 ## 4. `wipshared: some modules have bad imports`: FIXED
 
@@ -219,8 +238,8 @@ consistent with the same cause.
 
 ## Not done
 
-* No `wipshared` build: `wipx.frjx_plan` and `wipx.frjx_ports` still fail
-  (item 3), so the nightly will stay red on those two until their four
-  pins are approved and updated.
+* No `wipshared` build. Every module that failed or was skipped in the
+  2026-10-30/31 nightlies has now built on this branch; the next nightly
+  after merge is the whole-library check.
 * The follow-up documents of item 2 are not edited.
 * Nothing pushed; no upstream set.
