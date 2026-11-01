@@ -1676,6 +1676,239 @@ end Endpoints
 end F0
 end PLLND
 
+namespace PLLND
+namespace F0
+namespace Endpoints
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF)
+open PLLND.LaxInfinite (atomFree)
+open SubframeModel.CF (FinDec)
+
+/-! ### (T1): the realization `MinR`
+
+Two new worlds: `false` (outside `S`) above every world, `true` (in `S`) above
+the worlds that see a world with no `S` above it. -/
+
+section MinR
+
+variable (M : SubframeModel)
+
+def minLe : M.W ⊕ Bool → M.W ⊕ Bool → Prop
+  | .inl x, .inl y => M.le x y
+  | .inl _, .inr false => True
+  | .inl x, .inr true => SeesE M x
+  | .inr b, .inr b' => b = b'
+  | .inr _, .inl _ => False
+
+theorem minLe_trans : ∀ {u v w : M.W ⊕ Bool}, minLe M u v → minLe M v w → minLe M u w
+  | .inl _, .inl _, .inl _, h₁, h₂ => M.trans h₁ h₂
+  | .inl _, .inl _, .inr false, _, _ => trivial
+  | .inl _, .inl _, .inr true, h₁, h₂ => seesE_mono M h₁ h₂
+  | .inl _, .inr b, .inr b', h₁, h₂ => by
+      have e' : b = b' := h₂
+      subst e'
+      exact h₁
+  | .inr _, .inr _, .inr _, h₁, h₂ => Eq.trans h₁ h₂
+  | .inl _, .inr _, .inl _, _, h₂ => False.elim h₂
+  | .inr _, .inl _, _, h₁, _ => False.elim h₁
+  | .inr _, .inr _, .inl _, _, h₂ => False.elim h₂
+
+theorem minLe_refl : ∀ w : M.W ⊕ Bool, minLe M w w
+  | .inl x => M.refl x
+  | .inr _ => rfl
+
+def minS : M.W ⊕ Bool → Prop
+  | .inl x => x ∈ M.S
+  | .inr b => b = true
+
+def minV (p : String) : M.W ⊕ Bool → Prop
+  | .inl x => x ∈ M.V p
+  | .inr _ => True
+
+theorem minV_hered {p : String} : ∀ {u v : M.W ⊕ Bool}, minLe M u v → minV M p u → minV M p v
+  | .inl _, .inl _, h, hu => M.hered h hu
+  | .inl _, .inr _, _, _ => trivial
+  | .inr _, .inr _, _, _ => trivial
+  | .inr _, .inl _, h, _ => False.elim h
+
+/-- **The realization `MinR M`.** -/
+def MinR : SubframeModel where
+  W := M.W ⊕ Bool
+  le := minLe M
+  S := fun w => minS M w
+  V p := fun w => minV M p w
+  refl := minLe_refl M
+  trans h₁ h₂ := minLe_trans M h₁ h₂
+  hered h hu := minV_hered M h hu
+
+theorem minR_e_false : (MinR M).force (Sum.inr false) e := fun w hw hS => by
+  rcases w with _ | b
+  · exact False.elim hw
+  · have e' : false = b := hw
+    subst e'
+    exact Bool.noConfusion (hS : false = true)
+
+theorem minR_not_e_true : ¬ (MinR M).force (Sum.inr true) e := fun h =>
+  h (Sum.inr true) (rfl : true = true) (rfl : true = true)
+
+theorem minR_t3_new : ∀ b : Bool, (MinR M).force (Sum.inr b) t3
+  | false => Or.inl (minR_e_false M)
+  | true => Or.inr fun w hw he => by
+      rcases w with _ | b
+      · exact False.elim hw
+      · have e' : true = b := hw
+        subst e'
+        exact minR_not_e_true M he
+
+theorem minR_not_t3 [FinDec M] (x : M.W) : ¬ (MinR M).force (Sum.inl x) t3
+  | Or.inl he => by
+      obtain ⟨y, hxy, hterm⟩ := exists_terminal M x
+      rcases Decidable.em (∃ s ∈ FinDec.elems (M := M), M.le y s ∧ s ∈ M.S)
+        with ⟨s, _, hys, hs⟩ | hno
+      · exact he (Sum.inl s) (M.trans hxy hys) hs
+      · exact he (Sum.inr true)
+          ⟨y, hxy, fun z hyz hz => hno ⟨z, FinDec.complete z, hyz, hz⟩⟩ (rfl : true = true)
+  | Or.inr hn => hn (Sum.inr false) trivial (minR_e_false M)
+
+theorem minR_realizes [FinDec M] : Realizes (MinR M) M Sum.inl t3 where
+  le_iff _ _ := Iff.rfl
+  up _ w _ := by
+    rcases w with y | b
+    · exact Or.inl ⟨y, rfl⟩
+    · exact Or.inr (minR_t3_new M b)
+  S_iff _ := Iff.rfl
+  V_iff _ _ := Iff.rfl
+  not_a := minR_not_t3 M
+
+/-- **`b′` holds on the old worlds of `MinR M`.** -/
+theorem minR_bP [FinDec M] (x : M.W) : (MinR M).force (Sum.inl x) bP := by
+  intro w _ hg
+  rcases w with y | b
+  · refine Or.inr fun u hu h3 => ?_
+    rcases u with z | b
+    · exact absurd h3 (minR_not_t3 M z)
+    · cases b with
+      | false => exact minR_e_false M
+      | true =>
+          exfalso
+          obtain ⟨z, hyz, hz⟩ := (hu : SeesE M y)
+          have hc : (MinR M).force (Sum.inl z) (PLLFormula.somehow t3) := fun w hw hS => by
+            rcases w with z' | b'
+            · exact absurd (hS : z' ∈ M.S) (hz z' hw)
+            · exact minR_t3_new M b'
+          exact minR_not_t3 M z (hg (Sum.inl z) hyz hc)
+  · exact Or.inl (minR_t3_new M b)
+
+end MinR
+
+/-- **PROVED**: PLL embeds in `[t3, b′]` by the A-translation. -/
+theorem selfStep_t3_bP : SelfStep t3 bP :=
+  (selfIffReduced t3 bP t3_bP).mpr (reduced_of_realize fun M _ r =>
+    ⟨MinR M, Sum.inl, minR_realizes M, minR_bP M r⟩)
+
+/-- **(T1) PROVED** -/
+theorem topT3Alt : TopT3Alt := ⟨selfStep_t3_bP, nd_t6_bP, nd_bP_t6⟩
+
+/-- **PROVED**: the tops over `t3` are not closed under `∧`. -/
+theorem topsT3NotMeet : TopsT3NotMeet :=
+  ⟨t6, bP, copyT3T6, selfToCopy _ _ selfStep_t3_bP, meetNotTop⟩
+
+/-- **PROVED**: there is no least top over `t3`. -/
+theorem noLeastTopT3 : NoLeastTopT3 := by
+  rintro ⟨b₀, hb₀, hc₀, hleast⟩
+  have h6 := hleast t6 t3_t6 copyT3T6
+  have hP := hleast bP t3_bP (selfToCopy _ _ selfStep_t3_bP)
+  have hta := (copyIffTopAvoid t3 b₀ hb₀).mp hc₀
+  exact meetNotTop ((copyIffTopAvoid t3 _ (Deriv.andIntro t3_t6 t3_bP)).mpr fun C hC h =>
+    hta C hC (Deriv.cutHead (Deriv.andIntro h6 hP) h))
+
+end Endpoints
+end F0
+end PLLND
+
+/-! ## Addition (Matthew via the manager, 2026-11-01): the limit of the `t6` tower
+
+Statements committed with their cells, before any proof.  `τ = relC t3 t6`,
+`τᵈ = tauN t3 t6 d`, `U_d = ⊤ ∧ t6 ∧ σt6 ∧ ⋯ ∧ σ^{d-1} t6`.
+
+    (L1) TowerEnds :     τᵈ⊤ ⊣⊢ U_d   and   τᵈ⊥ ⊣⊢ σᵈ⊥ ∧ U_d
+    (L2) Closing :       y, z closed,  (∀ d, [y] ⊢ τᵈ⊤),  (∀ d, [τᵈ⊥] ⊢ z)  ⟹  [y] ⊢ z
+         InAll x :       ∀ d,  [τᵈ⊥] ⊢ x ⊢ τᵈ⊤
+         InAllUnique :   x, x′ closed,  InAll x,  InAll x′  ⟹  x ⊣⊢ x′
+         InAllFixed :    x closed,  InAll x  ⟹  τx ⊣⊢ x
+    (L3) FixedIffInAll : TauFixedPoint  ⟺  ∃ x closed, InAll x
+    (L4) NoTauFixedPoint :  ¬ TauFixedPoint          (the conjecture; OPEN)
+         cells:          x ∈ {⊤, t6, U₂}:  [x] ⊬ τx -/
+
+namespace PLLND
+namespace F0
+namespace Endpoints
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF)
+open PLLND.LaxInfinite (atomFree)
+
+/-- `U_d = ⊤ ∧ t6 ∧ σt6 ∧ ⋯ ∧ σ^{d-1} t6`. -/
+def Ud : Nat → PLLFormula
+  | 0 => topF
+  | d + 1 => (Ud d).and (sigN d t6)
+
+/-- **(L1)** -/
+def TowerEnds : Prop :=
+  ∀ d : Nat, Interd (tauN t3 t6 d topF) (Ud d) ∧
+    Interd (tauN t3 t6 d .falsePLL) ((sigN d .falsePLL).and (Ud d))
+
+/-- **(L2)** -/
+def Closing : Prop :=
+  ∀ y z : PLLFormula, atomFree y = true → atomFree z = true →
+    (∀ d, Deriv [y] (tauN t3 t6 d topF)) → (∀ d, Deriv [tauN t3 t6 d .falsePLL] z) → Deriv [y] z
+
+/-- `x` lies in every interval of the tower. -/
+def InAll (x : PLLFormula) : Prop :=
+  ∀ d : Nat, Deriv [tauN t3 t6 d .falsePLL] x ∧ Deriv [x] (tauN t3 t6 d topF)
+
+def InAllUnique : Prop :=
+  ∀ x x' : PLLFormula, atomFree x = true → atomFree x' = true → InAll x → InAll x' → Interd x x'
+
+def InAllFixed : Prop :=
+  ∀ x : PLLFormula, atomFree x = true → InAll x → Interd (relC t3 t6 x) x
+
+/-- **(L3)** -/
+def FixedIffInAll : Prop := TauFixedPoint ↔ ∃ x : PLLFormula, atomFree x = true ∧ InAll x
+
+/-- **(L4)**, the conjecture (OPEN). -/
+def NoTauFixedPoint : Prop := ¬ TauFixedPoint
+
+/-! ### The L4 cells: three named candidates are not fixed points -/
+
+section LCells
+
+set_option maxRecDepth 100000
+
+theorem notFixed_top : ¬ Deriv [topF] (relC t3 t6 topF) := fun h =>
+  (SubTab.no.verdict (topF.ifThen (relC t3 t6 topF)) Tchain) (Deriv.impIntro h)
+
+theorem notFixed_t6 : ¬ Deriv [t6] (relC t3 t6 t6) := fun h =>
+  (SubTab.no.verdict (t6.ifThen (relC t3 t6 t6)) (extT Tchain [])) (Deriv.impIntro h)
+
+theorem notFixed_U2 : ¬ Deriv [Ud 2] (relC t3 t6 (Ud 2)) := fun h =>
+  (SubTab.no.verdict ((Ud 2).ifThen (relC t3 t6 (Ud 2))) (extT (extT Tchain []) []))
+    (Deriv.impIntro h)
+
+/-- The gate of the L4 tables, watched failing: they do not refute the derivable
+`[τx] ⊢ x`. -/
+theorem gate_L : Tchain.refutes ((relC t3 t6 topF).ifThen topF) = false ∧
+    (extT Tchain []).refutes ((relC t3 t6 t6).ifThen t6) = false ∧
+    (extT (extT Tchain []) []).refutes ((relC t3 t6 (Ud 2)).ifThen (Ud 2)) = false := by
+  decide +kernel
+
+end LCells
+
+end Endpoints
+end F0
+end PLLND
+
 /-! ## Axiom pins: the cells -/
 
 #axioms_within PLLND.F0.Endpoints.nd_ne [propext, Quot.sound]
@@ -1772,3 +2005,17 @@ end PLLND
 #axioms_within PLLND.F0.Endpoints.meet_sig_nne [propext, Quot.sound]
 #axioms_within PLLND.F0.Endpoints.meetNotTop [propext, Quot.sound]
 #axioms_within PLLND.F0.Endpoints.gate_T [propext, Quot.sound]
+
+/-! ## Axiom pins: T1 and the L cells -/
+
+#axioms_within PLLND.F0.Endpoints.minR_not_t3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.minR_realizes [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.minR_bP [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfStep_t3_bP [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.topT3Alt [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.topsT3NotMeet [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.noLeastTopT3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.notFixed_top [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.notFixed_t6 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.notFixed_U2 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.gate_L [propext, Quot.sound]

@@ -181,3 +181,33 @@ Builds: `gtimeout 3600 lake build wip.f0Endpoints`, exit 0, 42 s.  Probes
 (`lake env lean _out/ep_proofsA/B/C/T.lean`, 900 s cap): A exit 0; B exit 1
 twice (set-builder syntax, implicit arguments, a continuation line), then 0;
 C exit 0 with one unused-section-variable warning (fixed), T exit 0.
+
+## Stage 3, part 2 (2026-11-01 17:26 GMT): T1 proved; L statements and cells
+
+| statement | status | theorem |
+|---|---|---|
+| (T1) `TopT3Alt` | PROVED | `topT3Alt` (`selfStep_t3_bP`) |
+| (T2) `MeetNotTop` | PROVED | `meetNotTop` |
+| `TopsT3NotMeet` | PROVED | `topsT3NotMeet` (`t6`, `b′`) |
+| `NoLeastTopT3` | PROVED | `noLeastTopT3` |
+
+So over the base `t3` the admissible tops (`CopyStep t3 b`, `[t3] ⊢ b`) are
+upward closed, contain the incomparable `t6` and `b′ = (◯t3 ↠ t3) ↠ t5`
+(each with a faithful copy of PLL by the A-translation), are not closed under
+`∧`, and have no least element.  `t6` is the least top of the gadget `ext`
+(`extTops`); `b′` comes from the realization `MinR` (the non-`S` top above every
+world, the `S`-top only above the worlds seeing a world with no `S` above it).
+
+The L addition (statements committed with cells, before any proof):
+`TowerEnds` (L1), `Closing` (L2), `InAll`, `InAllUnique`, `InAllFixed`,
+`FixedIffInAll` (L3), `NoTauFixedPoint` (L4, the conjecture, OPEN).
+
+| cell | verdict | object |
+|---|---|---|
+| `[⊤] ⊬ τ⊤` | PROVED (`notFixed_top`) | `Tchain` |
+| `[t6] ⊬ τt6` | PROVED (`notFixed_t6`) | `ext Tchain` |
+| `[U₂] ⊬ τU₂` | PROVED (`notFixed_U2`) | `ext (ext Tchain)` |
+| gate: the tables on the derivable `[τx] ⊢ x` | rejected (`gate_L`) | |
+
+Build: `gtimeout 3600 lake build wip.f0Endpoints -q`, exit 0, 18 s (olean
+written 17:26:10).  Probes `_out/ep_proofsT1.lean`, `_out/ep_L.lean`: exit 0.
