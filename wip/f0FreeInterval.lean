@@ -53,6 +53,29 @@ for all formulas, `◯` included, with the `◯` clause of `rel`.
   so `¬ FreeIn a a x` (`cell_diag`), and the core lemma without `[ζ] ⊬ ξ` is
   REFUTED (`not_coreNoStrict`).
 
+## Stage 3: results (IPC fragment, CLAUDE.md rule 8)
+
+**PROVED**, pins `[propext, Quot.sound]`, no `Classical.choice`, no `sorry`,
+no `native_decide`: `CoreLemma` (`coreLemma`), `Nest` (`nest`), `MainTheorem`
+(`mainTheorem`), `Bridge` (`bridge`), `Bridge3` (`bridge3`), `NestTwo`
+(`nestTwo`); with `freeHAωIn_base3 : FreeHAωIn σ³⊥ ⊤` and the depth-one
+corollary `nestOne`.  `NestPLL` stays OPEN (not in scope).
+
+* `rel_iff_relB`: at a world forcing `b`, `rel a b x A ⟺ relB a x A` (◯-free `A`).
+* `⟹` (`rel_preserves`): `relB_preservesω` of `f0FreeBase3`, through
+  `rel_iff_relB`, since every `rel`-image lies below `b` (`force_rel_b`).
+* `⟸` of the core lemma (`core_reflects`), the gluing (`Glue.G`): a finite
+  countermodel `N` of `[ζ] ⊢ ξ`, a world `w` maximal among those forcing `ζ`
+  and refuting `ξ` (`exists_max_not`), and any finite `K`; the copy of `K`
+  sits below the strict successors of `w`, the old atoms take `w`'s values
+  (`Glue.collapse`), `ρ p` holds at the copy of `u` iff `u ⊩ p` and at every
+  world of `N`.  Then `relB_transferω` reads `K` off the copy.
+* Composition (`rel_comp`, all formulas, `◯` included):
+  `rel (rel ξ) (rel ζ) (rel ∘ y) A ⟺ rel (rel ξ ζ y A)` in every model.
+* Fresh renamings exist (`fresh_freshRen`, `p ↦ pvar (bound + code p)`).
+* Cross-check: `Nest` with the cell's renaming gives cell (i) again
+  (`cell1_by_theorem`).
+
 Status note: `wip/f0FreeInterval-STATUS.md`.
 -/
 
@@ -539,6 +562,554 @@ theorem cell3_base3 :
 
 end Cells
 
+/-! ## Stage 3 (a): semantics of the interval translation -/
+
+/-- Soundness for a one-hypothesis sequent, `Prop` level. -/
+theorem sem_of_deriv {φ ψ : PLLFormula} (h : Deriv [φ] ψ) (M : SubframeModel) (v : M.W)
+    (hv : M.force v φ) : M.force v ψ :=
+  let ⟨d⟩ := h
+  SubframeModel.CF.soundness₁ d M v hv
+
+/-- Completeness for a one-hypothesis sequent, over the finite decidable models. -/
+theorem deriv_of_sem {φ ψ : PLLFormula}
+    (h : ∀ (M : SubframeModel) [FinDec M] (v : M.W), M.force v φ → M.force v ψ) :
+    Deriv [φ] ψ := by
+  have h2 : Deriv [] (φ.ifThen ψ) := SubframeModel.CF.completeness_imp h
+  exact Deriv.impElim (h2.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _))
+
+/-- Derivability respects forcing-equivalence in every model. -/
+theorem deriv_congr {φ φ' ψ ψ' : PLLFormula}
+    (hφ : ∀ (M : SubframeModel) (v : M.W), M.force v φ ↔ M.force v φ')
+    (hψ : ∀ (M : SubframeModel) (v : M.W), M.force v ψ ↔ M.force v ψ') :
+    Deriv [φ] ψ ↔ Deriv [φ'] ψ' :=
+  ⟨fun h => deriv_of_sem fun M _ v hv => (hψ M v).mp (sem_of_deriv h M v ((hφ M v).mpr hv)),
+   fun h => deriv_of_sem fun M _ v hv => (hψ M v).mpr (sem_of_deriv h M v ((hφ M v).mp hv))⟩
+
+section Model
+
+variable (M : SubframeModel) (a b : PLLFormula) (x : String → PLLFormula)
+
+/-- **Every `rel`-image lies below `b`**, given `a ≤ b` and `x p ≤ b`. -/
+theorem force_rel_b (hab : ∀ v, M.force v a → M.force v b)
+    (hxb : ∀ v p, M.force v (x p) → M.force v b) :
+    ∀ (A : PLLFormula) (v : M.W), M.force v (rel a b x A) → M.force v b
+  | .prop p, v, h => hxb v p h
+  | .falsePLL, v, h => hab v h
+  | .and A _, v, h => force_rel_b hab hxb A v h.1
+  | .or A B, v, h => h.elim (force_rel_b hab hxb A v) (force_rel_b hab hxb B v)
+  | .ifThen _ _, _, h => h.2
+  | .somehow _, _, h => h.2
+
+/-- **At a world forcing `b`, `rel` and `relB` agree** on ◯-free formulas:
+
+    v ⊩ b   ⟹   (v ⊩ rel a b x A  ⟺  v ⊩ relB a x A). -/
+theorem rel_iff_relB : ∀ (A : PLLFormula), boxFree A = true → ∀ (v : M.W), M.force v b →
+    (M.force v (rel a b x A) ↔ M.force v (relB a x A))
+  | .prop _, _, _, _ => Iff.rfl
+  | .falsePLL, _, _, _ => Iff.rfl
+  | .and A B, hf, v, hv => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      exact and_congr (rel_iff_relB A hf'.1 v hv) (rel_iff_relB B hf'.2 v hv)
+  | .or A B, hf, v, hv => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      exact or_congr (rel_iff_relB A hf'.1 v hv) (rel_iff_relB B hf'.2 v hv)
+  | .ifThen A B, hf, v, hv => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      show ((∀ u, M.le v u → M.force u (rel a b x A) → M.force u (rel a b x B)) ∧ M.force v b) ↔
+        (∀ u, M.le v u → M.force u (relB a x A) → M.force u (relB a x B))
+      constructor
+      · intro h u hu hA
+        have hub := SubframeModel.force_mono M b hu hv
+        exact (rel_iff_relB B hf'.2 u hub).mp (h.1 u hu ((rel_iff_relB A hf'.1 u hub).mpr hA))
+      · intro h
+        refine ⟨fun u hu hA => ?_, hv⟩
+        have hub := SubframeModel.force_mono M b hu hv
+        exact (rel_iff_relB B hf'.2 u hub).mpr (h u hu ((rel_iff_relB A hf'.1 u hub).mp hA))
+  | .somehow _, hf, _, _ => nomatch hf
+
+/-- **Composition**: carrying the interval `[ξ, ζ]` with generators `y` into the
+copy `rel a b x` is, up to forcing-equivalence, the interval translation for
+`[rel ξ, rel ζ]` with the generators `rel a b x ∘ y`, for ALL formulas (`◯`
+included):
+
+    v ⊩ rel (rel ξ) (rel ζ) (rel ∘ y) A   ⟺   v ⊩ rel (rel ξ ζ y A). -/
+theorem rel_comp (ξ ζ : PLLFormula) (y : String → PLLFormula)
+    (hab : ∀ v, M.force v a → M.force v b) (hxb : ∀ v p, M.force v (x p) → M.force v b) :
+    ∀ (A : PLLFormula) (v : M.W),
+      M.force v (rel (rel a b x ξ) (rel a b x ζ) (fun p => rel a b x (y p)) A) ↔
+        M.force v (rel a b x (rel ξ ζ y A))
+  | .prop _, _ => Iff.rfl
+  | .falsePLL, _ => Iff.rfl
+  | .and A B, v => and_congr (rel_comp ξ ζ y hab hxb A v) (rel_comp ξ ζ y hab hxb B v)
+  | .or A B, v => or_congr (rel_comp ξ ζ y hab hxb A v) (rel_comp ξ ζ y hab hxb B v)
+  | .ifThen A B, v => by
+      have hb := force_rel_b M a b x hab hxb ζ v
+      show ((∀ u, M.le v u →
+          M.force u (rel (rel a b x ξ) (rel a b x ζ) (fun p => rel a b x (y p)) A) →
+          M.force u (rel (rel a b x ξ) (rel a b x ζ) (fun p => rel a b x (y p)) B)) ∧
+          M.force v (rel a b x ζ)) ↔
+        (((∀ u, M.le v u → M.force u (rel a b x (rel ξ ζ y A)) →
+          M.force u (rel a b x (rel ξ ζ y B))) ∧ M.force v b) ∧ M.force v (rel a b x ζ))
+      constructor
+      · intro h
+        refine ⟨⟨fun u hu hA => ?_, hb h.2⟩, h.2⟩
+        exact (rel_comp ξ ζ y hab hxb B u).mp (h.1 u hu ((rel_comp ξ ζ y hab hxb A u).mpr hA))
+      · intro h
+        refine ⟨fun u hu hA => ?_, h.2⟩
+        exact (rel_comp ξ ζ y hab hxb B u).mpr (h.1.1 u hu ((rel_comp ξ ζ y hab hxb A u).mp hA))
+  | .somehow A, v => by
+      have hb := force_rel_b M a b x hab hxb ζ v
+      show ((∀ u, M.le v u → u ∈ M.S →
+          M.force u (rel (rel a b x ξ) (rel a b x ζ) (fun p => rel a b x (y p)) A)) ∧
+          M.force v (rel a b x ζ)) ↔
+        (((∀ u, M.le v u → u ∈ M.S → M.force u (rel a b x (rel ξ ζ y A))) ∧ M.force v b) ∧
+          M.force v (rel a b x ζ))
+      constructor
+      · intro h
+        exact ⟨⟨fun u hu hS => (rel_comp ξ ζ y hab hxb A u).mp (h.1 u hu hS), hb h.2⟩, h.2⟩
+      · intro h
+        exact ⟨fun u hu hS => (rel_comp ξ ζ y hab hxb A u).mpr (h.1.1 u hu hS), h.2⟩
+
+end Model
+
+/-- **Preservation (`⟹`)**: for `a ≤ x p ≤ b` in every model, the interval
+translation of a derivable ◯-free sequent is derivable (through
+`relB_preservesω` of `f0FreeBase3`, the relativisation lemma). -/
+theorem rel_preserves (a b : PLLFormula) (x : String → PLLFormula)
+    (hax : ∀ (M : SubframeModel) v p, M.force v a → M.force v (x p))
+    (hxb : ∀ (M : SubframeModel) v p, M.force v (x p) → M.force v b)
+    {A B : PLLFormula} (hA : boxFree A = true) (hB : boxFree B = true) (hd : Deriv [A] B) :
+    Deriv [rel a b x A] (rel a b x B) := by
+  have hR := relB_preservesω a x (fun M v p hv => hax M v p hv) hA hB hd
+  refine deriv_of_sem fun M _ v hv => ?_
+  have hb := force_rel_b M a b x (fun u hu => hxb M u "" (hax M u "" hu)) (hxb M) A v hv
+  exact (rel_iff_relB M a b x B hB v hb).mpr
+    (sem_of_deriv hR M v ((rel_iff_relB M a b x A hA v hb).mp hv))
+
+/-! ## Stage 3 (b): syntactic side conditions -/
+
+theorem or_eq_false_split {p q : Bool} (h : (p || q) = false) : p = false ∧ q = false := by
+  cases p <;> cases q <;> first | exact ⟨rfl, rfl⟩ | exact absurd h (by decide)
+
+theorem boxFree_coreGen {ξ ζ : PLLFormula} (hξ : boxFree ξ = true) (hζ : boxFree ζ = true)
+    (ρ : String → String) (p : String) : boxFree (coreGen ξ ζ ρ p) = true := by
+  show ((true && boxFree ξ) && boxFree ζ) = true
+  rw [hξ, hζ]
+  rfl
+
+theorem boxFree_rel {a b : PLLFormula} {x : String → PLLFormula} (hb : boxFree b = true)
+    (ha : boxFree a = true) (hx : ∀ p, boxFree (x p) = true) :
+    ∀ A : PLLFormula, boxFree A = true → boxFree (rel a b x A) = true
+  | .prop p, _ => hx p
+  | .falsePLL, _ => ha
+  | .and A B, hf => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      show (boxFree (rel a b x A) && boxFree (rel a b x B)) = true
+      rw [boxFree_rel hb ha hx A hf'.1, boxFree_rel hb ha hx B hf'.2]
+      rfl
+  | .or A B, hf => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      show (boxFree (rel a b x A) && boxFree (rel a b x B)) = true
+      rw [boxFree_rel hb ha hx A hf'.1, boxFree_rel hb ha hx B hf'.2]
+      rfl
+  | .ifThen A B, hf => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      show ((boxFree (rel a b x A) && boxFree (rel a b x B)) && boxFree b) = true
+      rw [boxFree_rel hb ha hx A hf'.1, boxFree_rel hb ha hx B hf'.2, hb]
+      rfl
+  | .somehow _, hf => nomatch hf
+
+theorem atomFree_rel {a b : PLLFormula} {x : String → PLLFormula} (ha : atomFree a = true)
+    (hb : atomFree b = true) (hx : ∀ p, atomFree (x p) = true) :
+    ∀ A : PLLFormula, atomFree (rel a b x A) = true
+  | .prop p => hx p
+  | .falsePLL => ha
+  | .and A B => by
+      show (atomFree (rel a b x A) && atomFree (rel a b x B)) = true
+      rw [atomFree_rel ha hb hx A, atomFree_rel ha hb hx B]
+      rfl
+  | .or A B => by
+      show (atomFree (rel a b x A) && atomFree (rel a b x B)) = true
+      rw [atomFree_rel ha hb hx A, atomFree_rel ha hb hx B]
+      rfl
+  | .ifThen A B => by
+      show ((atomFree (rel a b x A) && atomFree (rel a b x B)) && atomFree b) = true
+      rw [atomFree_rel ha hb hx A, atomFree_rel ha hb hx B, hb]
+      rfl
+  | .somehow A => by
+      show (atomFree (rel a b x A) && atomFree b) = true
+      rw [atomFree_rel ha hb hx A, hb]
+      rfl
+
+/-! ## Stage 3 (c): a maximal world refuting `ξ` -/
+
+/-- **Above every world refuting `ξ` there is one maximal among them**: every
+successor either forces `ξ` or lies below it (descent on the number of proper
+successors, as `FreeIPL.exists_rmax_aux`). -/
+theorem exists_max_not (M : SubframeModel) [FinDec M] (ξ : PLLFormula) :
+    ∀ (n : Nat) (w : M.W), Normal.nProper M w ≤ n → ¬ M.force w ξ →
+      ∃ m, M.le w m ∧ ¬ M.force m ξ ∧ ∀ v, M.le m v → M.force v ξ ∨ M.le v m := by
+  intro n
+  induction n with
+  | zero =>
+      intro w hn hw
+      refine ⟨w, M.refl w, hw, fun v hv => ?_⟩
+      rcases Decidable.em (M.le v w) with hvw | hvw
+      · exact Or.inr hvw
+      · exact absurd (Nat.lt_of_lt_of_le (Normal.nProper_lt M hv hvw) hn) (Nat.not_lt_zero _)
+  | succ k ih =>
+      intro w hn hw
+      rcases Decidable.em (∃ v ∈ FinDec.elems (M := M), M.le w v ∧ ¬ M.force v ξ ∧ ¬ M.le v w)
+        with hex | hno
+      · obtain ⟨v, _, hv, hvξ, hvw⟩ := hex
+        obtain ⟨m, hvm, hm⟩ :=
+          ih v (Nat.le_of_lt_succ (Nat.lt_of_lt_of_le (Normal.nProper_lt M hv hvw) hn)) hvξ
+        exact ⟨m, M.trans hv hvm, hm⟩
+      · refine ⟨w, M.refl w, hw, fun v hv => ?_⟩
+        rcases Decidable.em (M.force v ξ) with hvξ | hvξ
+        · exact Or.inl hvξ
+        · rcases Decidable.em (M.le v w) with hvw | hvw
+          · exact Or.inr hvw
+          · exact absurd ⟨v, FinDec.complete v, hv, hvξ, hvw⟩ hno
+
+/-! ## Stage 3 (d): the gluing
+
+`N` a model, `w` a world maximal among those refuting `ξ` (`hmax`), `K` any
+model, `ρ` a renaming.  The glued model has a copy `inl u` of each world of
+`K` and a copy `inr n` of each world of `N`; `inl u ≤ inr n` iff `n ≥ w` and
+`n ⊩ ξ` (the strict successors of `w`).  The old atoms take `w`'s values on the
+copy of `K`; the atom `ρ p` holds at `inl u` iff `u ⊩ p`, and at every `inr n`.
+`S` is `K`'s on the copy and `N`'s on `N` (the copy keeps `K`'s `S`, which the
+`◯` case of the PLL stage will read). -/
+
+namespace Glue
+
+variable (N : SubframeModel) (w : N.W) (ξ : PLLFormula) (K : SubframeModel)
+  (ρ : String → String)
+
+/-- The order of the glued model. -/
+def Le : K.W ⊕ N.W → K.W ⊕ N.W → Prop
+  | .inl u, .inl u' => K.le u u'
+  | .inl _, .inr n => N.le w n ∧ N.force n ξ
+  | .inr n, .inr n' => N.le n n'
+  | .inr _, .inl _ => False
+
+/-- `S`: `K`'s on the copy, `N`'s on `N`. -/
+def SG : K.W ⊕ N.W → Prop
+  | .inl u => u ∈ K.S
+  | .inr n => n ∈ N.S
+
+/-- The valuation of the glued model. -/
+def VG (c : String) : K.W ⊕ N.W → Prop
+  | .inl u => (∃ p, ρ p = c ∧ u ∈ K.V p) ∨ ((∀ p, ρ p ≠ c) ∧ w ∈ N.V c)
+  | .inr n => (∃ p, ρ p = c) ∨ n ∈ N.V c
+
+theorem Le.refl : ∀ g : K.W ⊕ N.W, Le N w ξ K g g
+  | .inl u => K.refl u
+  | .inr n => N.refl n
+
+theorem Le.trans : ∀ {g₁ g₂ g₃ : K.W ⊕ N.W}, Le N w ξ K g₁ g₂ → Le N w ξ K g₂ g₃ →
+    Le N w ξ K g₁ g₃
+  | .inl _, .inl _, .inl _, h₁, h₂ => K.trans h₁ h₂
+  | .inl _, .inl _, .inr _, _, h₂ => h₂
+  | .inl _, .inr _, .inr _, h₁, h₂ =>
+      ⟨N.trans h₁.1 h₂, SubframeModel.force_mono N ξ h₂ h₁.2⟩
+  | .inr _, .inr _, .inr _, h₁, h₂ => N.trans h₁ h₂
+  | .inl _, .inr _, .inl _, _, h₂ => False.elim h₂
+  | .inr _, .inl _, _, h₁, _ => False.elim h₁
+  | .inr _, .inr _, .inl _, _, h₂ => False.elim h₂
+
+theorem VG.hered {c : String} : ∀ {g g' : K.W ⊕ N.W}, Le N w ξ K g g' →
+    VG N w K ρ c g → VG N w K ρ c g'
+  | .inl _, .inl _, h, hg => hg.elim (fun ⟨p, e, hu⟩ => Or.inl ⟨p, e, K.hered h hu⟩) Or.inr
+  | .inl _, .inr _, h, hg =>
+      hg.elim (fun ⟨p, e, _⟩ => Or.inl ⟨p, e⟩) (fun ⟨_, hw⟩ => Or.inr (N.hered h.1 hw))
+  | .inr _, .inr _, h, hg => hg.elim Or.inl (fun hn => Or.inr (N.hered h hn))
+  | .inr _, .inl _, h, _ => False.elim h
+
+/-- **The glued model.** -/
+def G : SubframeModel where
+  W := K.W ⊕ N.W
+  le := Le N w ξ K
+  S := fun g => SG N K g
+  V c := fun g => VG N w K ρ c g
+  refl := Le.refl N w ξ K
+  trans h₁ h₂ := Le.trans N w ξ K h₁ h₂
+  hered h hg := VG.hered N w ξ K ρ h hg
+
+/-- The collapse map: the copy of `K` to `w`, the copy of `N` to itself. -/
+def fG : K.W ⊕ N.W → N.W
+  | .inl _ => w
+  | .inr n => n
+
+variable {N w ξ K ρ}
+
+/-- **The collapse lemma**: on ◯-free formulas without the fresh atoms, the
+glued model at `g` agrees with `N` at its collapse (`w` maximal among the
+worlds refuting `ξ`). -/
+theorem collapse (hmax : ∀ v, N.le w v → N.force v ξ ∨ N.le v w) :
+    ∀ (φ : PLLFormula), boxFree φ = true → (∀ p, occ (ρ p) φ = false) →
+      ∀ g, ((G N w ξ K ρ).force g φ ↔ N.force (fG N w K g) φ)
+  | .prop c, _, ho, g => by
+      have hc : ∀ p, ρ p ≠ c := fun p e => by
+        have h1 : decide (c = ρ p) = false := ho p
+        exact absurd e.symm (of_decide_eq_false h1)
+      cases g with
+      | inl u =>
+          show VG N w K ρ c (.inl u) ↔ w ∈ N.V c
+          exact ⟨fun h => h.elim (fun ⟨p, e, _⟩ => absurd e (hc p)) (fun h => h.2),
+            fun h => Or.inr ⟨hc, h⟩⟩
+      | inr n =>
+          show VG N w K ρ c (.inr n) ↔ n ∈ N.V c
+          exact ⟨fun h => h.elim (fun ⟨p, e⟩ => absurd e (hc p)) id, Or.inr⟩
+  | .falsePLL, _, _, _ => Iff.rfl
+  | .and A B, hf, ho, g => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      have hoA : ∀ p, occ (ρ p) A = false := fun p => (or_eq_false_split (ho p)).1
+      have hoB : ∀ p, occ (ρ p) B = false := fun p => (or_eq_false_split (ho p)).2
+      exact and_congr (collapse hmax A hf'.1 hoA g) (collapse hmax B hf'.2 hoB g)
+  | .or A B, hf, ho, g => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      have hoA : ∀ p, occ (ρ p) A = false := fun p => (or_eq_false_split (ho p)).1
+      have hoB : ∀ p, occ (ρ p) B = false := fun p => (or_eq_false_split (ho p)).2
+      exact or_congr (collapse hmax A hf'.1 hoA g) (collapse hmax B hf'.2 hoB g)
+  | .ifThen A B, hf, ho, g => by
+      have hf' := Bool.and_eq_true_iff.mp (hf : (boxFree A && boxFree B) = true)
+      have hoA : ∀ p, occ (ρ p) A = false := fun p => (or_eq_false_split (ho p)).1
+      have hoB : ∀ p, occ (ρ p) B = false := fun p => (or_eq_false_split (ho p)).2
+      have ihA := collapse hmax A hf'.1 hoA
+      have ihB := collapse hmax B hf'.2 hoB
+      cases g with
+      | inl u =>
+          show (∀ g', Le N w ξ K (.inl u) g' → (G N w ξ K ρ).force g' A →
+              (G N w ξ K ρ).force g' B) ↔ (∀ v, N.le w v → N.force v A → N.force v B)
+          constructor
+          · intro h v hv hA
+            rcases hmax v hv with hvξ | hvw
+            · exact (ihB (.inr v)).mp (h (.inr v) ⟨hv, hvξ⟩ ((ihA (.inr v)).mpr hA))
+            · have hwA : N.force w A := SubframeModel.force_mono N A hvw hA
+              have hwB : N.force w B :=
+                (ihB (.inl u)).mp (h (.inl u) (K.refl u) ((ihA (.inl u)).mpr hwA))
+              exact SubframeModel.force_mono N B hv hwB
+          · intro h g' hg' hA
+            cases g' with
+            | inl u' => exact (ihB (.inl u')).mpr (h w (N.refl w) ((ihA (.inl u')).mp hA))
+            | inr n => exact (ihB (.inr n)).mpr (h n hg'.1 ((ihA (.inr n)).mp hA))
+      | inr n =>
+          show (∀ g', Le N w ξ K (.inr n) g' → (G N w ξ K ρ).force g' A →
+              (G N w ξ K ρ).force g' B) ↔ (∀ v, N.le n v → N.force v A → N.force v B)
+          constructor
+          · intro h v hv hA
+            exact (ihB (.inr v)).mp (h (.inr v) hv ((ihA (.inr v)).mpr hA))
+          · intro h g' hg' hA
+            cases g' with
+            | inl _ => exact False.elim hg'
+            | inr n' => exact (ihB (.inr n')).mpr (h n' hg' ((ihA (.inr n')).mp hA))
+  | .somehow _, hf, _, _ => nomatch hf
+
+end Glue
+
+/-! ## Stage 3 (e): the core lemma -/
+
+section Core
+
+variable {ξ ζ : PLLFormula} {ρ : String → String}
+
+/-- The core generators lie in `[ξ, ζ]`. -/
+theorem core_bounds (hle : Deriv [ξ] ζ) (p : String) :
+    Deriv [ξ] (coreGen ξ ζ ρ p) ∧ Deriv [coreGen ξ ζ ρ p] ζ :=
+  ⟨Deriv.andIntro (Deriv.orIntro2 (Deriv.iden (.head _))) hle,
+   Deriv.andElim2 (Deriv.iden (.head _))⟩
+
+/-- **The core lemma, `⟸`, by the gluing**: a finite countermodel `N` of
+`[ζ] ⊢ ξ` with a world `w` maximal among those forcing `ζ` and refuting `ξ`,
+and any finite model `K`; in the glued model the copy of `u` forces
+`rel ξ ζ y A` iff `u ⊩ A` (`relB_transferω` of `f0FreeBase3`, after
+`rel_iff_relB` at the `ζ`-worlds). -/
+theorem core_reflects (hξ : boxFree ξ = true) (hζ : boxFree ζ = true) (hle : Deriv [ξ] ζ)
+    (hstrict : ¬ Deriv [ζ] ξ) (hfr : Fresh ρ ξ ζ) {A B : PLLFormula} (hA : boxFree A = true)
+    (hB : boxFree B = true)
+    (hd : Deriv [rel ξ ζ (coreGen ξ ζ ρ) A] (rel ξ ζ (coreGen ξ ζ ρ) B)) : Deriv [A] B := by
+  have h0 : ¬ Deriv [] (ζ.ifThen ξ) := fun h =>
+    hstrict (Deriv.impElim (h.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _)))
+  obtain ⟨N, hN, k, hk⟩ := SubframeModel.CF.exists_countermodel h0
+  obtain ⟨w₁, hkw₁, hw₁ζ, hw₁ξ⟩ := SubframeModel.CF.exists_of_not_force_imp hk
+  obtain ⟨w, hw₁w, hwξ, hmax⟩ := exists_max_not N ξ _ w₁ (Nat.le_refl _) hw₁ξ
+  have hwζ : N.force w ζ := SubframeModel.force_mono N ζ hw₁w hw₁ζ
+  have hoξ : ∀ p, occ (ρ p) ξ = false := fun p => (hfr.2 p).1
+  have hoζ : ∀ p, occ (ρ p) ζ = false := fun p => (hfr.2 p).2
+  refine deriv_of_sem fun K _ u hu => ?_
+  let Gm := Glue.G N w ξ K ρ
+  have cξ := Glue.collapse (K := K) (ρ := ρ) hmax ξ hξ hoξ
+  have cζ := Glue.collapse (K := K) (ρ := ρ) hmax ζ hζ hoζ
+  have hb : ∀ u' : K.W, ¬ Gm.force (.inl u') ξ := fun u' h => hwξ ((cξ (.inl u')).mp h)
+  have hz : ∀ u' : K.W, Gm.force (.inl u') ζ := fun u' => (cζ (.inl u')).mpr hwζ
+  have hbx : ∀ (v : Gm.W) p, Gm.force v ξ → Gm.force v (coreGen ξ ζ ρ p) := fun v _ hv =>
+    ⟨Or.inr hv, sem_of_deriv hle Gm v hv⟩
+  have hback : ∀ (u' : K.W) (v : Gm.W), Gm.le (.inl u') v →
+      Gm.force v ξ ∨ ∃ j, K.le u' j ∧ Sum.inl j = v := by
+    intro u' v hv
+    cases v with
+    | inl j => exact Or.inr ⟨j, hv, rfl⟩
+    | inr n => exact Or.inl ((cξ (.inr n)).mpr hv.2)
+  have hatom : ∀ (u' : K.W) p, (Gm.force (.inl u') (coreGen ξ ζ ρ p) ↔ u' ∈ K.V p) := by
+    intro u' p
+    constructor
+    · intro h
+      rcases h.1 with hv | hv
+      · rcases hv with ⟨p', e, hu'⟩ | ⟨hne, _⟩
+        · rw [hfr.1 p' p e] at hu'
+          exact hu'
+        · exact absurd rfl (hne p)
+      · exact absurd hv (hb u')
+    · intro h
+      exact ⟨Or.inl (Or.inl ⟨p, rfl, h⟩), hz u'⟩
+  have htr := relB_transferω Gm ξ (coreGen ξ ζ ρ) K Sum.inl hbx hb (fun h => h) hback hatom
+  have hrA : Gm.force (.inl u) (rel ξ ζ (coreGen ξ ζ ρ) A) :=
+    (rel_iff_relB Gm ξ ζ _ A hA (.inl u) (hz u)).mpr ((htr A hA u).mpr hu)
+  have hrB := sem_of_deriv hd Gm (.inl u) hrA
+  exact (htr B hB u).mp ((rel_iff_relB Gm ξ ζ _ B hB (.inl u) (hz u)).mp hrB)
+
+/-- **PROVED: the core lemma (★).** -/
+theorem coreLemma : CoreLemma := by
+  intro ξ ζ ρ hξ hζ hle hstrict hfr
+  refine ⟨fun p => (core_bounds hle p).1, fun p => (core_bounds hle p).2, fun A B hA hB => ?_⟩
+  refine ⟨rel_preserves ξ ζ (coreGen ξ ζ ρ)
+      (fun M v _ hv => ⟨Or.inr hv, sem_of_deriv hle M v hv⟩) (fun _ _ _ hv => hv.2) hA hB,
+    core_reflects hξ hζ hle hstrict hfr hA hB⟩
+
+end Core
+
+/-! ## Stage 3 (f): fresh renamings exist -/
+
+/-- A bound on the UTF-8 sizes of the atoms of a formula. -/
+def atomBound : PLLFormula → Nat
+  | .prop c => c.utf8ByteSize
+  | .falsePLL => 0
+  | .and A B => atomBound A + atomBound B
+  | .or A B => atomBound A + atomBound B
+  | .ifThen A B => atomBound A + atomBound B
+  | .somehow A => atomBound A
+
+theorem occ_size (c : String) : ∀ φ : PLLFormula, occ c φ = true → c.utf8ByteSize ≤ atomBound φ
+  | .prop a, h => by
+      have e : a = c := of_decide_eq_true h
+      subst e
+      exact Nat.le_refl _
+  | .falsePLL, h => Bool.noConfusion h
+  | .and A B, h => by
+      have h' : (occ c A || occ c B) = true := h
+      rw [Bool.or_eq_true] at h'
+      rcases h' with hA | hB
+      · exact Nat.le_trans (occ_size c A hA) (Nat.le_add_right _ _)
+      · exact Nat.le_trans (occ_size c B hB) (Nat.le_add_left _ _)
+  | .or A B, h => by
+      have h' : (occ c A || occ c B) = true := h
+      rw [Bool.or_eq_true] at h'
+      rcases h' with hA | hB
+      · exact Nat.le_trans (occ_size c A hA) (Nat.le_add_right _ _)
+      · exact Nat.le_trans (occ_size c B hB) (Nat.le_add_left _ _)
+  | .ifThen A B, h => by
+      have h' : (occ c A || occ c B) = true := h
+      rw [Bool.or_eq_true] at h'
+      rcases h' with hA | hB
+      · exact Nat.le_trans (occ_size c A hA) (Nat.le_add_right _ _)
+      · exact Nat.le_trans (occ_size c B hB) (Nat.le_add_left _ _)
+  | .somehow A, h => occ_size c A h
+
+/-- **A fresh renaming**: `p ↦ pvar (atomBound ξ + atomBound ζ + code p)`. -/
+def freshRen (ξ ζ : PLLFormula) (p : String) : String :=
+  pvar (atomBound ξ + atomBound ζ + Base3.code p)
+
+theorem freshRen_occ {ξ ζ : PLLFormula} (p : String) {φ : PLLFormula}
+    (hφ : atomBound φ ≤ atomBound ξ + atomBound ζ) : occ (freshRen ξ ζ p) φ = false := by
+  cases h : occ (freshRen ξ ζ p) φ with
+  | false => rfl
+  | true =>
+      have h1 := occ_size _ φ h
+      unfold freshRen at h1
+      rw [utf8ByteSize_pvar] at h1
+      exact absurd (Nat.le_trans h1 (Nat.le_trans hφ (Nat.le_add_right _ _)))
+        (Nat.not_succ_le_self _)
+
+/-- **PROVED: every pair has a fresh renaming.** -/
+theorem fresh_freshRen (ξ ζ : PLLFormula) : Fresh (freshRen ξ ζ) ξ ζ :=
+  ⟨fun _ _ h => Base3.code_inj (Nat.add_left_cancel (pvar_inj h)),
+   fun p => ⟨freshRen_occ p (Nat.le_add_right _ _), freshRen_occ p (Nat.le_add_left _ _)⟩⟩
+
+/-! ## Stage 3 (g): transport, nesting, the main theorem -/
+
+/-- **PROVED: `Nest`** (transport through `rel_comp`, the core lemma, and the
+faithfulness of the outer copy). -/
+theorem nest : Nest := by
+  intro a b x ξ ζ ρ hF hξ hζ hle hstrict hfr
+  obtain ⟨hax, hxb, hfaith⟩ := hF
+  obtain ⟨hyl, hyu, hyf⟩ := coreLemma ξ ζ ρ hξ hζ hle hstrict hfr
+  have sax : ∀ (M : SubframeModel) v p, M.force v a → M.force v (x p) := fun M v p h =>
+    sem_of_deriv (hax p) M v h
+  have sxb : ∀ (M : SubframeModel) v p, M.force v (x p) → M.force v b := fun M v p h =>
+    sem_of_deriv (hxb p) M v h
+  have sab : ∀ (M : SubframeModel) v, M.force v a → M.force v b := fun M v h =>
+    sxb M v "" (sax M v "" h)
+  refine ⟨fun p => rel_preserves a b x sax sxb hξ (boxFree_coreGen hξ hζ ρ p) (hyl p),
+    fun p => rel_preserves a b x sax sxb (boxFree_coreGen hξ hζ ρ p) hζ (hyu p),
+    fun A B hA hB => ?_⟩
+  have hyb : ∀ p, boxFree (coreGen ξ ζ ρ p) = true := boxFree_coreGen hξ hζ ρ
+  refine (hyf A B hA hB).trans ((hfaith _ _ (boxFree_rel hζ hξ hyb A hA)
+    (boxFree_rel hζ hξ hyb B hB)).trans (deriv_congr ?_ ?_))
+  · exact fun M v => (rel_comp M a b x ξ ζ (coreGen ξ ζ ρ) (sab M) (sxb M) A v).symm
+  · exact fun M v => (rel_comp M a b x ξ ζ (coreGen ξ ζ ρ) (sab M) (sxb M) B v).symm
+
+/-- **PROVED: the main theorem.** -/
+theorem mainTheorem : MainTheorem := by
+  intro a b x ξ ζ ha hb hx hF hξ hζ hle hstrict
+  exact ⟨nestGen a b x ξ ζ (freshRen ξ ζ), fun p => atomFree_rel ha hb hx _,
+    nest a b x ξ ζ _ hF hξ hζ hle hstrict (fresh_freshRen ξ ζ)⟩
+
+/-! ## Stage 3 (h): the bridge from the base-3 copy, and depth two -/
+
+theorem force_topF (M : SubframeModel) (v : M.W) : M.force v topF := fun _ _ h => h
+
+/-- **PROVED: the bridge.** -/
+theorem bridge : Bridge := by
+  intro b x hbx hf
+  refine ⟨hbx, fun _ => Deriv.impIntro (Deriv.iden (.head _)), fun A B hA hB => ?_⟩
+  exact (hf A B hA hB).trans (deriv_congr
+    (fun M v => (rel_iff_relB M b topF x A hA v (force_topF M v)).symm)
+    (fun M v => (rel_iff_relB M b topF x B hB v (force_topF M v)).symm))
+
+/-- **PROVED: `FreeIn σ³⊥ ⊤ xω`** (from `freeOmega3` of `f0FreeBase3`). -/
+theorem bridge3 : Bridge3 := bridge (base 3) xω (fun _ => b3_le_gen _) freeOmega3
+
+/-- `FreeHAωAbove b` gives `FreeHAωIn b ⊤`. -/
+theorem freeHAωIn_of_above {b : PLLFormula} (h : FreeHAωAbove b) : FreeHAωIn b topF :=
+  let ⟨x, hvf, hle, hf⟩ := h
+  ⟨x, hvf, bridge b x hle hf⟩
+
+/-- **PROVED: `FreeHAωIn σ³⊥ ⊤`**, from `freeHAωAbove_base3`. -/
+theorem freeHAωIn_base3 : FreeHAωIn (base 3) topF := freeHAωIn_of_above freeHAωAbove_base3
+
+/-- **PROVED, depth one inside the base-3 copy**: for ◯-free `ξ`, `ζ` with
+`[ξ] ⊢ ζ` and `[ζ] ⊬ ξ`, `[rel σ³⊥ ⊤ xω ξ, rel σ³⊥ ⊤ xω ζ]` contains `H_ω`. -/
+theorem nestOne (ξ ζ : PLLFormula) (hξ : boxFree ξ = true) (hζ : boxFree ζ = true)
+    (hle : Deriv [ξ] ζ) (hstrict : ¬ Deriv [ζ] ξ) :
+    FreeHAωIn (rel (base 3) topF xω ξ) (rel (base 3) topF xω ζ) :=
+  mainTheorem _ _ _ ξ ζ b3_vf rfl (fun _ => gen_vf _) bridge3 hξ hζ hle hstrict
+
+/-- **PROVED: `NestTwo`**, depth two inside the base-3 copy. -/
+theorem nestTwo : NestTwo := by
+  intro ξ₁ ζ₁ ξ₂ ζ₂ ρ₁ h1 h2 h3 h4 h5 h6 h7 h8 h9
+  have hx : ∀ p, atomFree (xω p) = true := fun _ => gen_vf _
+  exact mainTheorem _ _ _ ξ₂ ζ₂ (atomFree_rel b3_vf rfl hx ξ₁) (atomFree_rel b3_vf rfl hx ζ₁)
+    (fun p => atomFree_rel b3_vf rfl hx _) (nest _ _ _ ξ₁ ζ₁ ρ₁ bridge3 h1 h2 h3 h4 h5) h6 h7 h8 h9
+
+/-- Cross-check of cell (i) against the theorem: the PROVED `Nest`, with the
+cell's own renaming, gives `cell1_neg` again from the IPC fact `ipc_lem`. -/
+theorem cell1_by_theorem :
+    ¬ Deriv [rel Cells.a1F Cells.b1F Cells.x1 topF] (rel Cells.a1F Cells.b1F Cells.x1 Cells.lemF) :=
+  fun h => Cells.ipc_lem (((nest _ _ _ Cells.ξc Cells.ζc Cells.ρc1 bridge3 rfl rfl Cells.hyp1_le
+    Cells.hyp1_strict Cells.fresh_c1).2.2 topF Cells.lemF rfl rfl).mpr h)
+
 end Interval
 end F0
 end PLLND
@@ -571,3 +1142,33 @@ end PLLND
 #axioms_within PLLND.F0.Interval.cell_diag [propext, Quot.sound]
 #axioms_within PLLND.F0.Interval.not_coreNoStrict [propext, Quot.sound]
 #axioms_within PLLND.F0.Interval.cell3_base3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.sem_of_deriv [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.deriv_of_sem [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.deriv_congr [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.force_rel_b [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.rel_iff_relB [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.rel_comp [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.rel_preserves [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.or_eq_false_split [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.boxFree_coreGen [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.boxFree_rel [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.atomFree_rel [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.exists_max_not [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.Glue.Le.trans [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.Glue.VG.hered [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.Glue.collapse [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.core_bounds [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.core_reflects [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.coreLemma [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.occ_size [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.freshRen_occ [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.fresh_freshRen [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.nest [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.mainTheorem [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.bridge [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.bridge3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.freeHAωIn_of_above [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.freeHAωIn_base3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.nestOne [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.nestTwo [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.cell1_by_theorem [propext, Quot.sound]
