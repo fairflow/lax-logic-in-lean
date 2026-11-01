@@ -106,7 +106,7 @@ generators: does
 $`[\sigma^{m}\bot, \top]` contain $`H_n` in the sense of the formal statement
 below ($`H_n \hookrightarrow [b, \top]`, `FreeHAnAbove`)?
 
-:::f0table (widths := "0.17 0.2 0.33 0.28")
+:::f0table (widths := "0.16 0.18 0.29 0.27")
 * * Base
   * $`n = 1`
   * $`n = 2`
@@ -684,9 +684,6 @@ the top of the interval.
 
 {lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 free3_preserves free3_reflects freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc AnyFamily.freeHAnAbove_base3' AnyFamily.sigN_relB AnyFamily.sigN_base FreePLL.xr FreePLL.relB_transferO FreePLL.sep_circ_x1 FreePLL.not_image_circ_x1 FreePLL.cell_O1 FreePLL.cell_O2 FreePLL.cell_O3 Endpoints.ClosedStep Endpoints.NoClosedStepT3 Endpoints.noClosedStepT3 Interval.FreeHAωIn Interval.Fresh Interval.occ Interval.coreGen Interval.nestGen Interval.rel_comp Interval.Nest Interval.nest Interval.CoreNoStrict Interval.not_coreNoStrict Interval.Bridge3 Interval.bridge3 Interval.ICopy Interval.ICopy.step Interval.freshRen Interval.atomBound Interval.tower Interval.TowerHyp Interval.freeHAωIn_tower Interval.RelConnectives Interval.compT Interval.coreT Interval.TowerRel Interval.TowerOpsAgree MovingTop.xP MovingTop.tauP MovingTop.tauPN MovingTop.orig_aTr MovingTop.gR MovingTop.TowerFirstStep MovingTop.towerFirstStep Endpoints.SelfTower Endpoints.selfTower Endpoints.SelfToClosed Endpoints.selfToClosed MovingTop.bT MovingTop.yT MovingTop.t6_gen2}
 
-Pins: each row's pin is computed when the document is built.  The modules
-bound them by `#axioms_within`: every declaration of `wip/f0FreeIPL.lean`,
-`wip/f0FreeHAn.lean`, `wip/f0FreePair.lean`, `wip/f0MeetCount.lean`,
-`wip/f0FreeBase3.lean`, `wip/f0FreeAnyFamily.lean`, `wip/f0FreePLL.lean`,
-`wip/f0FreeInterval.lean`, `wip/f0MovingTop.lean` and `wip/f0Endpoints.lean`
-here within \[pext,Q\].
+Pins: each row's pin is computed when the document is built.  In its module
+every theorem here is pinned by `#axioms_within` at \[pext,Q\];
+`wip/f0FreeInterval.lean` is also swept whole at \[pext,Q\] (`#axiom_sweep`).

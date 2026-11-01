@@ -240,12 +240,14 @@ $`b \nvdash C[\bot := a]`.  PROVED.
 
 {leanDef Endpoints.NecCells}
 
-So $`\bigcirc a \vdash a` excludes a copy for every top (`NecBox`, `necBox`; the case
-$`\bigcirc a \dashv\vdash a`, $`b = \top` is `box_fixed_not_injective`), and
-so does $`b \vdash T^{n}(a)` for any $`n`, where $`T^{n}(a) = \sigma^{n}(\bot)[\bot := a]` (`NecPow`, `necPow`).  The base cells, one designed
-countermodel or derivation each (`BaseNo`, `BaseYes`):
+So $`\bigcirc a \vdash a` excludes a copy for every top (`NecBox`,
+`necBox`), and so does $`b \vdash T^{n}(a)` for any $`n`, where
+$`T^{n}(a) = \sigma^{n}(\bot)[\bot := a]` (`NecPow`, `necPow`).  The case
+$`\bigcirc a \dashv\vdash a`, $`b = \top` of the first is the lemma
+`box_fixed_not_injective`.  The base cells, one designed countermodel or
+derivation each (`BaseNo`, `BaseYes`):
 
-:::f0table (widths := "0.2 0.38 0.38")
+:::f0table (widths := "0.2 0.36 0.38")
 * * Base $`a`
   * Copy of $`F_0` in $`[a, \top]`
   * Declarations
@@ -307,7 +309,7 @@ Write $`L_n = \sigma^{n}(F_0) \setminus \sigma^{n+1}(F_0)` for the $`n`-th
 shell of the nested copies.  Then $`\sigma` maps $`L_n` one-to-one onto
 $`L_{n+1}`.  PROVED.
 
-{stmt}`InsideOut.Stmt.ShellShift`
+{stmt (width := 80)}`InsideOut.Stmt.ShellShift`
 
 {leanStmt InsideOut.shell_shift}
 
@@ -338,11 +340,7 @@ $`x \ne \top`.  PROVED.
 
 {lemmaTable Sig.aTr Sig.subBot Sig.sig Sig.sigN Sig.aTr_top Sig.subBot_deriv Sig.subBot_top Sig.cell_corr Sig.sig_reflects Sig.sig_reflects_ctx Sig.sigN_reflects Sig.sigN_bot_le Sig.sigN_bot_strict Sig.sig_t3 Sig.box_fixed_not_injective SubTab.complete Sig.top_sig Sig.orig_sig SigOnto.sig_t2 SigOnto.t3_lt_t5_lt_g1 NotIso.disjoint_pair_has_negOBot NotIso.two_disjoint_pairs_above_t3 NotIso.Disj NotIso.Core NotIso.HasCore NotIso.hasCore_of_iso NotIso.rnclass_core NotIso.ici_no_core MovingTop.relC MovingTop.CopyF0In MovingTop.TopAvoid Interval.FreeInPLL MovingTop.t3_t6 MovingTop.nd_t6 MovingTop.SigAvoidT6 MovingTop.sigAvoidT6 MovingTop.t6_ext MovingTop.t5_sig2_imp MovingTop.nd_t3 MovingTop.CopyT3T5 MovingTop.not_copyT3T5 MovingTop.tauN MovingTop.W2 MovingTop.w2 MovingTop.StrictNestOf MovingTop.strictNestOf Endpoints.CopyStep Endpoints.selfGen Endpoints.tauS Endpoints.SelfStep Endpoints.NecBox Endpoints.necBox Endpoints.Tpow Endpoints.NecPow Endpoints.necPow Endpoints.BaseNo Endpoints.BaseYes Endpoints.baseNo_e Endpoints.baseNo_ne Endpoints.baseNo_t4 Endpoints.baseNo_t6 Endpoints.baseNo_c1 Endpoints.baseYes_t3 Endpoints.baseYes_t5 Endpoints.baseYes_s2 Endpoints.g1 Endpoints.aK Endpoints.baseYes_aK Endpoints.selfStep_t5 Endpoints.selfStep_s2 Endpoints.selfStep_aK Endpoints.ExtTop Endpoints.bP Endpoints.t3_bP Endpoints.nd_bP_t6 Endpoints.nd_t6_bP Endpoints.meet_sig_nne Endpoints.MeetNotTop Endpoints.meetNotTop Endpoints.TopsT3NotMeet Endpoints.topsT3NotMeet Endpoints.tauSN Endpoints.SelfTowerAt Endpoints.selfStep_t5_t56 Endpoints.tower_t5 InsideOut.inSig InsideOut.inLim InsideOut.shell}
 
-Pins: each row's pin is computed when the document is built.  The modules
-bound them by `#axioms_within`: every declaration of `wip/f0SelfSim.lean`,
-`wip/f0SigOnto.lean`, `wip/f0NotIso.lean`, `wip/f0MovingTop.lean` and
-`wip/f0Endpoints.lean` here within \[pext,Q\], confirmed by `#print axioms`
-(`t3_filter_not_iso` included; `sig_t3` holds by `rfl` and uses no axioms),
-and the F0 part of `wip/f0InsideOut.lean` within \[pext,Q\];
-`SubTab.complete` and subframe soundness are pinned to \[pext,Q\] in the
-library.
+Pins: each row's pin is computed when the document is built.  In its module
+every theorem here is pinned by `#axioms_within` at \[pext,Q\] (`sig_t3`
+holds by `rfl` and uses no axioms); the library pins `SubTab.complete` and
+subframe soundness at \[pext,Q\].

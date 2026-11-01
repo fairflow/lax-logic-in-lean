@@ -35,8 +35,8 @@ output):
   `{pinKey}` (a block) prints the key; `{pinsOf}`n₁ n₂`` prints the
   abbreviated pin of the named declarations, computed as `{axiomsOf}`; and
   `set_option paperkit.pins true` gives every `{lemmaTable}` row its
-  computed pin, in a fourth column after the source link (default `false`:
-  the tables of the semantics paper are unchanged).  First used by the F0 paper v0.8.
+  computed pin, in a column before the source link (default `false`: the
+  tables of the semantics paper are unchanged).  First used by the F0 paper v0.8.
 * `{letteredAppendix}`: the first block of a chapter that opens the
   appendices (the F0 paper v0.7, 2026-10-29).  In the PDF that chapter and
   the ones after it are lettered, the heading reading "Appendix A":
@@ -215,15 +215,17 @@ block_extension Block.f0Lemmas where
       for (nm, f, label, path, line, w, pin) in rows do
         let url ← (srcUrl path line : IO String)
         let lab := if w then (texName label).replace ":" "\\allowbreak{}:" else texName label
+        -- the pin before the source link, which stays the last column (a long
+        -- label runs into the margin, as before, not into the pin)
         let pinTeX := if pins then " & " ++ texEsc pin else ""
         body := body ++ "\\texttt{" ++ texName nm ++ "} & " ++
           -- items apart by a stretchable space, where a line may break
           "\\hskip 0.7em plus 0.4em\\relax ".intercalate (f.map fun s => "$" ++ s ++ "$") ++
-          " & \\oldhref{" ++ texUrl url ++ "}{\\texttt{" ++ lab ++ "}}" ++ pinTeX ++ "\\\\\n"
+          pinTeX ++ " & \\oldhref{" ++ texUrl url ++ "}{\\texttt{" ++ lab ++ "}}\\\\\n"
       let cols := if pins then
           "\\setlength{\\tabcolsep}{4pt}\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.22\\linewidth}" ++
-          ">{\\raggedright\\arraybackslash}p{0.5\\linewidth}>{\\raggedleft\\arraybackslash}p{0.14\\linewidth}" ++
-          ">{\\raggedleft\\arraybackslash}p{0.085\\linewidth}@{}}\n"
+          ">{\\raggedright\\arraybackslash}p{0.49\\linewidth}>{\\raggedright\\arraybackslash}p{0.09\\linewidth}" ++
+          ">{\\raggedleft\\arraybackslash}p{0.14\\linewidth}@{}}\n"
         else if wide then
           "\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.21\\linewidth}" ++
           ">{\\raggedright\\arraybackslash}p{0.48\\linewidth}>{\\raggedleft\\arraybackslash}p{0.27\\linewidth}@{}}\n"
@@ -245,13 +247,14 @@ block_extension Block.f0Lemmas where
           cells := cells.push {{ <code class="math inline">{{s}}</code> }}
           cells := cells.push (Html.text true " ")
         let pinHtml : Html := if pin.isEmpty then .empty else {{ <td class="f0-pin">{{pin}}</td> }}
-        trs := trs.push {{ <tr><td><code>{{nm}}</code></td><td>{{cells}}</td><td><a href={{url}}><code>{{label}}</code></a></td>{{pinHtml}}</tr> }}
+        trs := trs.push {{ <tr><td><code>{{nm}}</code></td><td>{{cells}}</td>{{pinHtml}}<td><a href={{url}}><code>{{label}}</code></a></td></tr> }}
       pure {{ <table class="f0-lemmas"><tbody>{{trs}}</tbody></table> }}
   extraCss := [r#"
 table.f0-lemmas { border-collapse: collapse; font-size: 85%; margin: 0.6em 0 1.2em 0; width: 100%; }
 table.f0-lemmas td { border-top: 1px solid #ddd; padding: 0.2em 0.5em; vertical-align: top; }
 table.f0-lemmas td:first-child { white-space: nowrap; }
-table.f0-lemmas td:nth-child(3), table.f0-lemmas td:last-child { text-align: right; white-space: nowrap; }
+table.f0-lemmas td:last-child { text-align: right; white-space: nowrap; }
+table.f0-lemmas td.f0-pin { white-space: nowrap; }
 table.f0-lemmas a { text-decoration: none; }
 table.f0-lemmas td code.math { margin-right: 0.6em; }
 table.f0-lemmas .f0-pin { font-size: 90%; color: #555; }

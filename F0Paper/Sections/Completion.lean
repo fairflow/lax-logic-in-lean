@@ -486,8 +486,8 @@ $`\top`, $`t_6` and $`U_2` are not fixed points (`notFixed_top`,
 {lemmaTable instHeyting le_himp_iff_rn circNucleus box_inf MacNeille.instFrame cutHimp mem_left_cutHimp principalHom extNucleus extNucleus_apply extNucleus_comm le_extNucleus leastExt dmNucleus dmNucleus_principal le_dmNucleus PLLND.F0.Points.gaps PLLND.F0.Points.exists_nonprincipal PLLND.F0.Points.fq_lt PLLND.F0.Points.X PLLND.F0.Points.X_injective PLLND.F0.Normal.ρF PLLND.F0.Normal.dF PLLND.F0.Normal.F7 PLLND.F0.Normal.IsFilter PLLND.F0.Normal.F7_isFilter PLLND.F0.Normal.lowerBounds_F7 PLLND.F0.Normal.upperBounds_lowerBounds_F7 PLLND.F0.Normal.t7_not_mem_F7 PLLND.F0.Normal.bot_not_mem_F7 PLLND.F0.Normal.force_d_x PLLND.F0.Normal.force_ρ_succ_x PLLND.F0.Normal.exists_force_chain PLLND.F0.Normal.toConstraint_force_fd PLLND.SubframeModel.CF.completeness Endpoints.Ud Endpoints.InAll Endpoints.InAllUnique Endpoints.inAllUnique MovingTop.TauFixedPoint Endpoints.notFixed_top Endpoints.notFixed_t6 Endpoints.notFixed_U2}
 
 Pins: each row's pin is computed when the document is built.  The modules
-bound them by `#axioms_within`, each watched failing at a tighter set: \[pext,Q\] for `instHeyting`, `le_himp_iff_rn`, `circNucleus`, `box_inf` and
-every declaration of `wip/f0Normal.lean`; \[pext,C,Q\] for the rest of `wip/f0MacNeille.lean`, `wip/f0Nuclear.lean`,
-`wip/f0MacNeilleNonUnique.lean` and `wip/f0MacNeillePoints.lean`, by the routes
-traced above; \[pext,Q\] for the declarations of `wip/f0MovingTop.lean` and
-`wip/f0Endpoints.lean`.
+bound them by `#axioms_within`: \[pext,Q\] for `instHeyting`,
+`le_himp_iff_rn`, `circNucleus`, `box_inf`, every declaration of
+`wip/f0Normal.lean` and those of the last subsection; \[pext,C,Q\] for the
+rest, by the routes traced above.  Every bound outside the last subsection was
+watched failing at a tighter set.

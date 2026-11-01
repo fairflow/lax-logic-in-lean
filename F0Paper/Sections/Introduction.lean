@@ -63,7 +63,7 @@ any.  Sections 8 and 9 of v0.5 were Sections 9 and 10 of v0.4.1.
 
 {pinKey}
 
-:::f0table (widths := "0.6 0.11 0.14 0.06")
+:::f0table (widths := "0.59 0.11 0.14 0.06")
 * * Result
   * Status
   * Pin

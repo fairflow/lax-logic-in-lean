@@ -21,7 +21,7 @@ _Mathlib's sets_ is `Set.instCompleteAtomicBooleanAlgebra`, through the order on
 cuts, and _Mathlib's nuclei_ is `InfHomClass.toOrderHomClass`, through
 `Nucleus.monotone` (Section 12).  A dash: no choice.
 
-:::f0table (widths := "0.45 0.09 0.1 0.27 0.05")
+:::f0table (widths := "0.41 0.09 0.1 0.24 0.04")
 * * Result
   * Status
   * Pin
