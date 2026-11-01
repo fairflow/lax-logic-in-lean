@@ -43,3 +43,63 @@ cells `⊬ ◯a ↠ a`, `⊬ (◯a ↠ a) ↠ a` decide which.
 
 Build: `gtimeout 3600 lake build wip.f0Endpoints`, exit 0, 69 s (it built
 `wip.f0InsideOut`, `wip.f0FreeInterval`, `wip.f0MovingTop` on the way).
+
+## Stage 2 (2026-11-01 16:59 GMT): the designed cells, kernel-checked
+
+Countermodels are `SubCM` tables judged by `SubTab.no` (`decide` in the
+kernel); derivations are semantic (`Interval.deriv_of_sem`).  Every table was
+designed from the pen analysis; no decider was run.  Tables: `K0` (one world
+outside `S`), `KS` (one world in `S`), `Pin` (an `S`-world below a non-`S`
+top), `Rout = Tfork` (a non-`S` root below an `S`-top and a non-`S` top), `Rin`
+(the same, root in `S`), `DOut`/`DIn` (`ext (ext K0)`, `ext (ext KS)`),
+`Klem`, `Klin`, `FreePLL.K1`–`K3`, and their `ext`, `ext ∘ ext` tables.
+
+### K2: the base table (`b = ⊤`)
+
+| `a` | verdict | object |
+|---|---|---|
+| `◯⊥` | REFUTED, `C = ¬◯⊥`: `⊢ ◯◯⊥ ↠ ◯⊥`, `⊬ ¬◯⊥` (`baseNo_e`; also (Na)) | derivation; `K0` |
+| `¬◯⊥` | REFUTED, `C = ¬¬◯⊥`: `⊢ (◯¬◯⊥ ↠ ¬◯⊥) ↠ ¬◯⊥`, `⊬ ¬¬◯⊥` (`baseNo_ne`) | derivation; `KS` |
+| `t4` | REFUTED, `C = ¬◯⊥`: `⊢ ◯t4 ↠ t4` (`baseNo_t4`; also (Na)) | derivation; `K0` |
+| `t5` | both cells pass: `⊬ ◯t5 ↠ t5`, `⊬ (◯t5 ↠ t5) ↠ t5` (`baseYes_t5`) | `Rout`, `Rin` |
+| `t6` | REFUTED, `C = ¬◯⊥`: `⊢ ◯t6 ↠ t6` (`baseNo_t6`; `t6` is a fixed point of `◯`, so (Na)) | derivation; `K0` |
+| `σ²⊥` | both cells pass (`baseYes_s2`) | `DOut`, `DIn` |
+| `◯t3` | REFUTED, `C = ¬◯⊥` (`baseNo_c1`; (Na)) | derivation; `K0` |
+| `aK = t6 ∧ g1` | both cells pass (`baseYes_aK`) | `Rout`, `Pin` |
+| `t3` | both cells pass (`baseYes_t3`), the known case | `Rout`, `Pin` |
+
+A gadget for `t5` (b = ⊤) is the one of `ext`, `{nT, eT}`; for `σ²⊥` the four
+tops of `ext ∘ ext`.  For `aK` there is none (pen, `NoGadgetAK`): a gadget `G`
+forcing `aK` everywhere forces it at the root of `1_in ⊕ G` when that root
+refutes `t4`, and otherwise `G ⊨ ◯⊥` everywhere, so `aK` holds at the root of
+`1_out ⊕ G`.  Since `aK` passes both cells, K2 as briefed is REFUTED at `aK`
+once `BaseCriterion` (the ⟸ direction) and `NoGadgetAK` are proved.
+
+### K3: three tops strictly below `t6`
+
+`b₁ = t6 ∧ σ²⊥`, `b₂ = t6 ∧ σt6`, `b₃ = t6 ∧ (g1 ↠ t5)`: `[t3] ⊢ bᵢ`
+(`t3_b1`–`t3_b3`), `[bᵢ] ⊢ t6`, and `[t6] ⊬ bᵢ` on `ext Tfork`, `ext Tchain`,
+`ext KS` (`nd_t6_b1`–`nd_t6_b3`): each fails in an `ext` model, so none is an
+`ext`-top.  All PASS (t6 survives as the least `ext`-top).
+
+### K4: 18 cells, all PASS
+
+`[b] ⊬ aTr a C` for `(a, b) ∈ {(t3, t6), (t3, ⊤), (σ²⊥, ⊤)}` and
+`C ∈ {p ∨ ¬p, ¬¬p → p, (p → q) ∨ (q → p), O1, O2, O3}` (`k4_…`), on `ext K`
+and `ext (ext K)`.
+
+### K5
+
+The designed generators `p ↦ ◯t3 ∧ t6`, `q ↦ g1 ∧ t6` (the one-generator copy
+`p ↦ ◯t3` of `freeIPL1` with its relative complement) give `[rel ⊤] ⊢ rel
+¬(p ∧ q)` while `[⊤] ⊬ ¬(p ∧ q)` (`k5_cell`).  Pen, for every closed `x` and
+every `b`: `noFreeHA2` gives a sign pattern `ε` with `⊢ (x₀^ε₁ ∧ x₁^ε₂) ↠ t3`,
+and `rel t3 b x (p^ε) ⊢ x₀^ε`, so `[rel ⊤] ⊢ rel ¬(p^ε₁ ∧ q^ε₂)`; so
+`NoClosedStepT3` (K5 REFUTED for every top).
+
+Gates watched failing: `gate_base`, `gate_k3`, `gate_k4` (`refutes … = false`
+on derivable cells).
+
+Build: `gtimeout 3600 lake build wip.f0Endpoints`, exit 0, 15 s.  Probe:
+`_out/ep_cells.lean` (`lake env lean`, 900 s cap): first run exit 1 (three
+`verdict` applications missing parentheses), second run exit 0.
