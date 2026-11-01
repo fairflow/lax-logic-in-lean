@@ -98,3 +98,84 @@ in models of `t6`, `gen r` for `r ≥ 2` reads the `t3`-maximal worlds refuting
 
 Build: `gtimeout 3600 lake build wip.f0MovingTop`, exit 0, 17 s.  All pins
 `[propext, Quot.sound]`.
+
+## Stage 3 (2026-11-01 15:31 GMT): proofs
+
+Every theorem is sorry-free and pinned by `#axioms_within … [propext, Quot.sound]`.
+
+| statement | status | theorem |
+|---|---|---|
+| (R) `RelClosed` | PROVED | `relClosed` |
+| `CopyIffTopAvoid` | PROVED | `copyIffTopAvoid` |
+| (R') `RelGen` | PROVED | `relGen` |
+| `GenIff` | PROVED | `genIff` |
+| (N) `CopyAtBot` | PROVED | `copyAtBot` |
+| (T5) `T5Cell` | PROVED | `t5Cell` |
+| (T5) `TopAvoidT3T5`, `CopyT3T5` | REFUTED | `not_topAvoidT3T5`, `not_copyT3T5` |
+| (T6) `SigAvoidT6` (every formula) | PROVED | `sigAvoidT6` |
+| (T6) `TopAvoidT3T6`, `T6Below` | PROVED | `topAvoidT3T6`, `t6Below` |
+| (W1) `CopyT3T6` | PROVED | `copyT3T6` |
+| (T6n) `TopAvoidN` | PROVED | `topAvoidN` |
+| (C) `NotCofinal`, `BasesOnlyTop` | PROVED | `notCofinal`, `basesOnlyTop` |
+| (F) `IterBounds`, `FixedInAll`, `SigFixedTop` | PROVED | `iterBounds`, `fixedInAll`, `sigFixedTop` |
+| (F) `TauFixedPoint` | OPEN, not attempted | — |
+| (W2) `IterRel`, `W2` | PROVED | `iterRel`, `w2` |
+| (W3) `StrictNestOf`, `W3` | PROVED | `strictNestOf`, `w3` |
+| (W4) `IterCopyOf`, `W4` | PROVED (`W4` is conditional on a REFUTED statement) | `iterCopyOf`, `w4` |
+| target `PLLBelowTop`, `PLLBelowTopReduced` | REFUTED | `not_pllBelowTop`, `not_pllBelowTopReduced` |
+| (Q1) `PLLSelfReduced`, `PLLSelf` | PROVED | `pllSelfReduced`, `pllSelf` |
+| (Q2) `PLLSelfTower` | PROVED | `pllSelfTower` |
+| (Q3) `PLLTowerInF0`, `TowerFirstStep` | PROVED | `pllTowerInF0`, `towerFirstStep` |
+| (P1) `PLLInT6` | PROVED | `pllInT6` |
+| `BaseTauIncomparable` | PROVED | `baseTauIncomparable` |
+
+Proof notes.
+
+* (T6), (Q1): the proof of `sig_reflects` with the hypothesis `t6` carried
+  into `ext M`: `t6` holds at every world of `ext M` (`t6_ext`: at an old
+  world `t5` fails, since `t3` fails there and `t4` fails by `nT`).  For (Q1),
+  `orig_aTr`: at old worlds of `ext M`, `aTr t3 ψ` holds exactly where `ψ`
+  holds in `M` (`p ∨ t3` reads `p`, since `t3` fails at old worlds); the
+  tops satisfy every `aTr t3` formula (`top_aTr`).  Then `GenIff` with
+  `x p = p ∨ t3`, `relB t3 x = aTr t3` (`relB_eq_aTr`).
+* (T6n): simpler than the brief's pen argument.  `[t6 ∨ σⁿ⊥] ⊢ X` gives
+  `[t6] ⊢ X`, and `C[⊥ := σⁿ⊥] = σⁿ C` (`sigN_eq_subBot`), so
+  `σⁿ C = σ(σⁿ⁻¹ C)` and `SigAvoidT6`, `sigN_reflects` give `⊢ C`; no
+  countermodel construction is needed.  `⊬ t6 ∨ σⁿ⊥` by the disjunction
+  property (`PLLND.disjunction_property`, cut elimination).
+* (W2), (Q2): `rel_comp` of `wip/f0FreeInterval.lean`, hypotheses `t3 ≤ t6`
+  and `x p ≤ t6` at every world; the base case `rel ⊥ ⊤ (p ↦ p) A ⊣⊢ A`.
+* (P1): a syntactic identity, `rel (rel a b x c) b (rel a b x ∘ y) A =
+  rel a b x (relB c y A)` (`rel_relB`), then `freeReaders` and `copyT3T6`.
+* (Q3): `freeReaders` composed with (Q2); `[σ³⊥] ⊢ g A` by `force_relB_of_b`.
+  First step: `g(τ_P ⊥) = σ⁴⊥` (an equation), `g(τ_P ⊤) ⊣⊢ σ³ t6`.
+
+Gates watched failing (`_out/gatewatch.lean`, imports the built module,
+`lake env lean`, exit 1 with exactly the four intended errors): the narrowed
+pins `pllSelf [propext]`, `copyT3T6 [Quot.sound]`, `not_pllBelowTop []`,
+`pllTowerInF0 [propext]`.  Actual sets by `#print axioms`: `[propext,
+Quot.sound]` for `pllSelf`, `pllSelfTower`, `pllTowerInF0`, `pllInT6`,
+`copyT3T6`, `not_pllBelowTop`, `topAvoidN`, `sigFixedTop`, `w4`;
+`[propext]` for `towerFirstStep`.  The cell gates are in the module
+(`gate_t5`, `gate_T1`, `gate_q1`).
+
+Corrections to the pen arguments of the brief.
+
+* (T6n) needs no new countermodel (above).  The brief's suggested first check
+  `[σⁿ⊥] ⊢ t6` already fails at `n = 2` (`nd_sig2_t6`), so the `∨` is needed.
+* The target `FreeInPLL σ³⊥ (t6 ∨ σ³⊥) (y ∧ b)` is REFUTED, not merely
+  unproved by the gadget: the gadget's failure (`t6` fails at every copy,
+  through `L₀` of `ZL 0`) reflects a real collapse of the readers under `t6`.
+* The manager's P2 (the composite tower `τᵈ ∘ g` in `[τᵈ σ³⊥, τᵈ⊤]`) is not
+  nested: `BaseTauIncomparable`.  Replaced by (Q1)–(Q3).
+
+Builds (all `gtimeout 3600 lake build wip.f0MovingTop`, exit 0): Stage 1
+41 s (built `wip.f0FreeInterval`, `wip.f0InsideOut` on the way), Stage 2
+17 s, Stage 3 22 s.  Probes (`lake env lean _out/probe*.lean`, untrusted
+decider runs): one capped run, `_out/probe1.lean` at `gtimeout 600` (exit 124,
+no output; it contained the same target cells as `_out/probe3.lean`), and
+one killed run, `_out/probe3.lean` (exit 137, memory): the subframe tableau on
+`b ↠ y q` and the O-cells of the target, whose formulas carry `phiK 3`,
+`phiK 4`.  Those verdicts were obtained instead from the derivation
+(`bT_O3`) and the designed tables `T1`, `T2`, checked in the interpreter
+(`_out/probe4.lean`) before the kernel.  No other skip or cap.
