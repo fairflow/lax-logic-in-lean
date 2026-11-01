@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 620" width="940" height="620" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <rect x="0" y="0" width="940" height="620" fill="#ffffff"/>
+  <text x="20" y="28" font-size="18" font-weight="600" fill="#222">2. Inside out: D(0) ∈ D(1) ∈ D(2) ∈ D(3) ∈ ⋯ ∈ D(ω)   (ZF, no anti-foundation)</text>
+
+  <!-- nested boxes, outermost D(omega) -->
+  <rect x="20" y="48" width="620" height="552" rx="14" fill="#f2f2f2" stroke="#666" stroke-width="2"/>
+  <rect x="40" y="100" width="580" height="490" rx="12" fill="#f8f8f8" stroke="#999" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <rect x="60" y="132" width="540" height="448" rx="12" fill="#f4e6f4" stroke="#9b3b9b" stroke-width="2"/>
+  <rect x="100" y="202" width="460" height="368" rx="12" fill="#fcf1dc" stroke="#c47f12" stroke-width="2"/>
+  <rect x="140" y="272" width="380" height="288" rx="12" fill="#e5f4e9" stroke="#2f8a4c" stroke-width="2"/>
+  <rect x="180" y="342" width="300" height="208" rx="12" fill="#e6eefb" stroke="#3b6fc4" stroke-width="2"/>
+
+  <!-- pill style: rect + text; colours by shell -->
+  <!-- D(omega) band -->
+  <text x="36" y="76" font-size="16" font-weight="700" fill="#333">D(ω)</text>
+  <text x="96" y="76" font-size="12.5" fill="#555">colours: σ<tspan baseline-shift="super" font-size="9">ω</tspan>(F0) = ⋂ σⁿ(F0) = {⊤}</text>
+  <g><rect x="560" y="60" width="40" height="24" rx="12" fill="#666"/><text x="580" y="77" font-size="13" text-anchor="middle" fill="#fff">⊤</text></g>
+  <text x="56" y="120" font-size="12.5" fill="#777" font-style="italic">D(4), D(5), …  (each a member of D(ω))</text>
+
+  <!-- D(3) band -->
+  <text x="76" y="158" font-size="16" font-weight="700" fill="#7a2c7a">D(3)</text>
+  <text x="76" y="182" font-size="12.5" fill="#555">colours: σ³(F0)</text>
+  <g font-size="13" text-anchor="middle" fill="#fff">
+    <rect x="420" y="146" width="40" height="24" rx="12" fill="#9b3b9b"/><text x="440" y="163">L₃</text>
+    <rect x="466" y="146" width="40" height="24" rx="12" fill="#bbb"/><text x="486" y="163" fill="#333">⋯</text>
+    <rect x="512" y="146" width="40" height="24" rx="12" fill="#666"/><text x="532" y="163">⊤</text>
+  </g>
+
+  <!-- D(2) band -->
+  <text x="116" y="228" font-size="16" font-weight="700" fill="#9a620b">D(2)</text>
+  <text x="116" y="252" font-size="12.5" fill="#555">colours: σ²(F0)</text>
+  <g font-size="13" text-anchor="middle" fill="#fff">
+    <rect x="334" y="216" width="40" height="24" rx="12" fill="#c47f12"/><text x="354" y="233">L₂</text>
+    <rect x="380" y="216" width="40" height="24" rx="12" fill="#9b3b9b"/><text x="400" y="233">L₃</text>
+    <rect x="426" y="216" width="40" height="24" rx="12" fill="#bbb"/><text x="446" y="233" fill="#333">⋯</text>
+    <rect x="472" y="216" width="40" height="24" rx="12" fill="#666"/><text x="492" y="233">⊤</text>
+  </g>
+
+  <!-- D(1) band -->
+  <text x="156" y="298" font-size="16" font-weight="700" fill="#226b3a">D(1)</text>
+  <text x="156" y="322" font-size="12.5" fill="#555">colours: σ(F0)</text>
+  <g font-size="13" text-anchor="middle" fill="#fff">
+    <rect x="248" y="286" width="40" height="24" rx="12" fill="#2f8a4c"/><text x="268" y="303">L₁</text>
+    <rect x="294" y="286" width="40" height="24" rx="12" fill="#c47f12"/><text x="314" y="303">L₂</text>
+    <rect x="340" y="286" width="40" height="24" rx="12" fill="#9b3b9b"/><text x="360" y="303">L₃</text>
+    <rect x="386" y="286" width="40" height="24" rx="12" fill="#bbb"/><text x="406" y="303" fill="#333">⋯</text>
+    <rect x="432" y="286" width="40" height="24" rx="12" fill="#666"/><text x="452" y="303">⊤</text>
+  </g>
+
+  <!-- D(0) -->
+  <text x="196" y="368" font-size="16" font-weight="700" fill="#1f4f9e">D(0)</text>
+  <text x="196" y="392" font-size="12.5" fill="#555">colours: all of F0</text>
+  <g font-size="13" text-anchor="middle" fill="#fff">
+    <rect x="196" y="404" width="40" height="24" rx="12" fill="#3b6fc4"/><text x="216" y="421">L₀</text>
+    <rect x="242" y="404" width="40" height="24" rx="12" fill="#2f8a4c"/><text x="262" y="421">L₁</text>
+    <rect x="288" y="404" width="40" height="24" rx="12" fill="#c47f12"/><text x="308" y="421">L₂</text>
+    <rect x="334" y="404" width="40" height="24" rx="12" fill="#9b3b9b"/><text x="354" y="421">L₃</text>
+    <rect x="380" y="404" width="40" height="24" rx="12" fill="#bbb"/><text x="400" y="421" fill="#333">⋯</text>
+    <rect x="426" y="404" width="40" height="24" rx="12" fill="#666"/><text x="446" y="421">⊤</text>
+  </g>
+  <text x="196" y="458" font-size="12.5" fill="#333">no members of the form (0, D(m)):</text>
+  <text x="196" y="476" font-size="12.5" fill="#333">D(0) is the innermost set</text>
+  <text x="196" y="506" font-size="12.5" fill="#555">(F0, the OUTER ring of figure 1)</text>
+
+  <!-- notes -->
+  <g font-size="13.5" fill="#222">
+    <text x="660" y="76" font-weight="600">The definition</text>
+    <text x="660" y="100">D(n) = {(0, D(m)) : m &lt; n}</text>
+    <text x="660" y="120">      ∪ {(1, x) : x ∈ σⁿ(F0)}</text>
+    <text x="660" y="140">      ∪ {(2, c, S_c ∩ σⁿ(F0)) : c}</text>
+    <text x="660" y="160">for n ∈ ω + 1, by recursion along ⊋.</text>
+
+    <text x="660" y="194" font-weight="600">Reading the picture</text>
+    <text x="660" y="218">Box inside box is accurate for the</text>
+    <text x="660" y="238">tag-0 part: D(m) ∈ D(n) for EVERY</text>
+    <text x="660" y="258">m &lt; n, directly (it is ω + 1 with tags).</text>
+
+    <text x="660" y="292">The colours are NOT inherited outward.</text>
+    <text x="660" y="312">x is a colour of D(n) exactly when</text>
+    <text x="660" y="332">n ≤ d(x), its depth. So each box's</text>
+    <text x="660" y="352">colours sit on its own strip, not</text>
+    <text x="660" y="372">inside the boxes it contains.</text>
+
+    <text x="660" y="406" font-weight="600">Pills</text>
+    <text x="660" y="430">L<tspan baseline-shift="sub" font-size="10">k</tspan> stands for the colours (1, x),</text>
+    <text x="660" y="450">one per element x of shell k.</text>
+    <text x="660" y="470">Inner boxes carry MORE colours:</text>
+    <text x="660" y="490">the set turned inside out.</text>
+
+    <text x="660" y="524" font-weight="600">Figure 1 against figure 2</text>
+    <text x="660" y="548">outer ring F0     →  innermost D(0)</text>
+    <text x="660" y="568">centre {⊤}        →  outermost D(ω)</text>
+  </g>
+</svg>
