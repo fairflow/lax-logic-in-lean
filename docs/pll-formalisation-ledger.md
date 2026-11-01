@@ -293,9 +293,11 @@ into F0: every `H_n`, and `H_ω`, a Heyting subalgebra of `[σ³⊥, ⊤]`),
 into F0 with `◯ ↦ ◯`). The proofs are the `wip/` theorems
 (`f0FreeBase3`, `f0FreePLL`, `f0FreeAnyFamily`; definitions `f0FreeHAn`),
 which stay in place — the F0 paper's open revision (#107) cites them by
-source line. Built by default as the `BeliefF0` library on the
-`SubTab`/`FRJGbu` pattern: in `defaultTargets`, not imported by the
-`LaxLogic` root, whose import closure stays free of `wip/`.
+source line. Built as the `BeliefF0` library: not imported by the
+`LaxLogic` root, whose import closure stays free of `wip/`, and not in
+`defaultTargets` (manager's call, 2026-11-01) — the nightly integrity
+build compiles every library, so the pins are checked nightly without the
+`wip/f0Free*` chain entering per-PR CI.
 
 ## 10. Realisability completeness (promoted 2026-07-17/18)
 
