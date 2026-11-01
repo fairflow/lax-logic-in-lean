@@ -76,6 +76,33 @@ corollary `nestOne`.  `NestPLL` stays OPEN (not in scope).
 * Cross-check: `Nest` with the cell's renaming gives cell (i) again
   (`cell1_by_theorem`).
 
+## Stage 4: every finite depth, and the operations, hereditarily
+
+**PROVED**, pins `[propext, Quot.sound]`: `NestAll` (`nestAll`; hence
+`freeHAωIn_tower`, `[a_d, b_d]` contains `H_ω` inside F0 for every `d`),
+`RelConnectives` (`rel_connectives`), `TowerRel` (`tower_rel`),
+`IntervalOpsAgree` (`interval_ops_agree`), `TowerOpsAgree` (`tower_ops_agree`),
+`HereditaryOps` (`hereditary_ops`).
+
+Connective preservation is built into `rel`: it sends `∧`, `∨` to themselves,
+`→` to `(· ↠ ·) ∧ b`, `◯` to `◯(·) ∧ b` and `⊥` to `a` by definition, with
+`rel ⊤ ⊣⊢ b` (`rel_connectives`).  `FreeIn` asks only for faithfulness, and
+the image is then a Heyting subalgebra of `[a, b]` under F0's interval
+operations (meet, join, `(u ↠ v) ∧ b`, bottom `a`, top `b`).  This holds
+hereditarily, at every depth.  The depth-`d` translation is a single `rel`
+into `[a_d, b_d]` (`tower_rel`).  Each step is a sub-interval
+`[a_{d+1}, b_{d+1}] ⊆ [a_d, b_d]`, and its operations computed inside
+`[a_d, b_d]` agree with those computed in F0 (`tower_ops_agree`).
+
+Credit: the interval translation is O'Connor's device.  M. O'Connor,
+"Embeddings into free Heyting algebras and translations into intuitionistic
+propositional logic", 2007, arXiv math/0702651: the proof of Theorem 14 (a
+lattice embedding of `H_ω` into `H₂`; the same translation first appears in
+the proof of Proposition 6) sends `⊥ ↦ φ`, generators to `(φ′ ∨ φ) ∧ ψ`, and
+`→` to `(→) ∧ ψ`, inside `H₂`.  What this file adds is the transport into F0,
+the closed fragment of PLL (the base-3 copy and the bridge), and the nesting
+at every depth.
+
 Status note: `wip/f0FreeInterval-STATUS.md`.
 -/
 
@@ -1219,6 +1246,95 @@ def TowerOpsAgree : Prop :=
 /-- **The hereditary operations**: (a), (b), (c) and (c) on the tower. -/
 def HereditaryOps : Prop := RelConnectives ∧ TowerRel ∧ IntervalOpsAgree ∧ TowerOpsAgree
 
+/-! ## Stage 4: the proofs -/
+
+/-- What the induction on the depth carries: faithfulness, variable-free
+generators, variable-free bounds. -/
+theorem tower_props (ξs ζs : Nat → PLLFormula) (h : TowerHyp ξs ζs) : ∀ d : Nat,
+    FreeIn (tower ξs ζs d).a (tower ξs ζs d).b (tower ξs ζs d).x ∧
+    (∀ p, atomFree ((tower ξs ζs d).x p) = true) ∧
+    atomFree (tower ξs ζs d).a = true ∧ atomFree (tower ξs ζs d).b = true
+  | 0 => ⟨bridge3, fun _ => gen_vf _, b3_vf, rfl⟩
+  | d + 1 => by
+      obtain ⟨hF, hx, ha, hb⟩ := tower_props ξs ζs h d
+      obtain ⟨h1, h2, h3, h4⟩ := h d
+      exact ⟨nest _ _ _ _ _ _ hF h1 h2 h3 h4 (fresh_freshRen _ _),
+        fun _ => atomFree_rel ha hb hx _, atomFree_rel ha hb hx _, atomFree_rel ha hb hx _⟩
+
+/-- **PROVED: `NestAll`**, every finite depth. -/
+theorem nestAll : NestAll := fun ξs ζs h d =>
+  ⟨(tower_props ξs ζs h d).1, (tower_props ξs ζs h d).2.1⟩
+
+/-- **PROVED: `[a_d, b_d]` contains `H_ω` inside F0, for every `d`.** -/
+theorem freeHAωIn_tower (ξs ζs : Nat → PLLFormula) (h : TowerHyp ξs ζs) (d : Nat) :
+    FreeHAωIn (tower ξs ζs d).a (tower ξs ζs d).b :=
+  ⟨(tower ξs ζs d).x, (tower_props ξs ζs h d).2.1, (tower_props ξs ζs h d).1⟩
+
+/-- **PROVED: (a)**, `rel` commutes with the connectives (`rfl`), `rel ⊤ ⊣⊢ b`. -/
+theorem rel_connectives : RelConnectives := fun _ _ _ =>
+  ⟨fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ => rfl, rfl,
+   Deriv.andElim2 (Deriv.iden (.head _)),
+   Deriv.andIntro (Deriv.impIntro (Deriv.iden (.head _))) (Deriv.iden (.head _))⟩
+
+/-- The bounds of a faithful copy, read in a model: `a ≤ b`, `x p ≤ b`. -/
+theorem freeIn_sem {a b : PLLFormula} {x : String → PLLFormula} (hF : FreeIn a b x)
+    (M : SubframeModel) :
+    (∀ v, M.force v a → M.force v b) ∧ (∀ v p, M.force v (x p) → M.force v b) :=
+  ⟨fun v h => sem_of_deriv (hF.2.1 "") M v (sem_of_deriv (hF.1 "") M v h),
+   fun v p h => sem_of_deriv (hF.2.1 p) M v h⟩
+
+/-- The depth-`d` translation is the composite, in every model (`rel_comp`,
+iterated):
+
+    v ⊩ rel a_d b_d x_d A   ⟺   v ⊩ compT d A. -/
+theorem tower_rel_force (ξs ζs : Nat → PLLFormula) (h : TowerHyp ξs ζs) :
+    ∀ (d : Nat) (A : PLLFormula) (M : SubframeModel) (v : M.W),
+      M.force v (rel (tower ξs ζs d).a (tower ξs ζs d).b (tower ξs ζs d).x A) ↔
+        M.force v (compT ξs ζs d A)
+  | 0, _, _, _ => Iff.rfl
+  | d + 1, A, M, v => by
+      have hs := freeIn_sem (tower_props ξs ζs h d).1 M
+      exact (rel_comp M (tower ξs ζs d).a (tower ξs ζs d).b (tower ξs ζs d).x (ξs d) (ζs d)
+        (coreGen (ξs d) (ζs d) (freshRen (ξs d) (ζs d))) hs.1 hs.2 A v).trans
+        (tower_rel_force ξs ζs h d (coreT ξs ζs d A) M v)
+
+/-- **PROVED: (b)**, the depth-`d` translation is one interval translation,
+up to `⊣⊢`. -/
+theorem tower_rel : TowerRel := fun ξs ζs h d A =>
+  ⟨deriv_of_sem fun M _ v hv => (tower_rel_force ξs ζs h d A M v).mp hv,
+   deriv_of_sem fun M _ v hv => (tower_rel_force ξs ζs h d A M v).mpr hv⟩
+
+/-- **PROVED: (c)**, the operations of a sub-interval agree. -/
+theorem interval_ops_agree : IntervalOpsAgree := fun _ _ _ _ hb =>
+  ⟨⟨Deriv.andIntro (Deriv.andElim1 (Deriv.andElim1 (Deriv.iden (.head _))))
+      (Deriv.andElim2 (Deriv.iden (.head _))),
+    Deriv.andIntro (Deriv.andIntro (Deriv.andElim1 (Deriv.iden (.head _)))
+      (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) hb)) (Deriv.andElim2 (Deriv.iden (.head _)))⟩,
+   ⟨Deriv.andIntro (Deriv.andElim1 (Deriv.andElim1 (Deriv.iden (.head _))))
+      (Deriv.andElim2 (Deriv.iden (.head _))),
+    Deriv.andIntro (Deriv.andIntro (Deriv.andElim1 (Deriv.iden (.head _)))
+      (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) hb)) (Deriv.andElim2 (Deriv.iden (.head _)))⟩⟩
+
+/-- **PROVED: (c) on the tower.** -/
+theorem tower_ops_agree : TowerOpsAgree := by
+  intro ξs ζs h d
+  obtain ⟨hF, _, _, _⟩ := tower_props ξs ζs h d
+  obtain ⟨h1, h2, h3, _⟩ := h d
+  obtain ⟨hax, hxb, _⟩ := hF
+  have sax : ∀ (M : SubframeModel) v p, M.force v (tower ξs ζs d).a →
+      M.force v ((tower ξs ζs d).x p) := fun M v p hv => sem_of_deriv (hax p) M v hv
+  have sxb : ∀ (M : SubframeModel) v p, M.force v ((tower ξs ζs d).x p) →
+      M.force v (tower ξs ζs d).b := fun M v p hv => sem_of_deriv (hxb p) M v hv
+  have hbb : Deriv [(tower ξs ζs (d + 1)).b] (tower ξs ζs d).b :=
+    deriv_of_sem fun M _ v hv => force_rel_b M _ _ _ (fun u hu => sxb M u "" (sax M u "" hu))
+      (sxb M) (ζs d) v hv
+  exact ⟨rel_preserves _ _ _ sax sxb rfl h1 (Deriv.falsoElim _ (Deriv.iden (.head _))),
+    rel_preserves _ _ _ sax sxb h1 h2 h3, hbb, fun u v => interval_ops_agree _ _ u v hbb⟩
+
+/-- **PROVED: the hereditary operations.** -/
+theorem hereditary_ops : HereditaryOps :=
+  ⟨rel_connectives, tower_rel, interval_ops_agree, tower_ops_agree⟩
+
 end Interval
 end F0
 end PLLND
@@ -1281,3 +1397,13 @@ end PLLND
 #axioms_within PLLND.F0.Interval.nestOne [propext, Quot.sound]
 #axioms_within PLLND.F0.Interval.nestTwo [propext, Quot.sound]
 #axioms_within PLLND.F0.Interval.cell1_by_theorem [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.tower_props [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.nestAll [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.freeHAωIn_tower [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.rel_connectives [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.freeIn_sem [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.tower_rel_force [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.tower_rel [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.interval_ops_agree [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.tower_ops_agree [propext, Quot.sound]
+#axioms_within PLLND.F0.Interval.hereditary_ops [propext, Quot.sound]

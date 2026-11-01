@@ -68,8 +68,9 @@ Supporting lemmas, all PROVED:
 No theorem is sorried; the one open statement (`NestPLL`) is a `Prop` definition.
 
 Estate check of the module: `#axiom_sweep [wip.f0FreeInterval] allowing [propext, Quot.sound]`
-passes on all 138 declarations; the same sweep with `allowing []` rejects 54
-of 138 (the gate watched failing).  No `Classical.choice`, no `sorry`, no
+passes on all 138 declarations at stage 3 and all 177 after stage 4; the same
+sweep with `allowing []` rejects 54 of 138 and 64 of 177 (the gate watched
+failing).  No `Classical.choice`, no `sorry`, no
 `native_decide`, no `omega`, no `simp` in the module.
 
 ## Stage 3: the proof (IPC fragment, CLAUDE.md rule 8)
@@ -140,17 +141,38 @@ Statements committed before any proof.  The tower over a sequence of pairs
     (a₀, b₀, x₀) = (σ³⊥, ⊤, xω)
     (a_{d+1}, b_{d+1}, x_{d+1}) = (rel_d ξ_d, rel_d ζ_d, nestGen a_d b_d x_d ξ_d ζ_d (freshRen ξ_d ζ_d))
 
-| statement | content | status |
-|-----------|---------|--------|
-| `NestAll` | `∀ d, FreeIn a_d b_d x_d ∧ ∀ p, x_d p variable-free` | OPEN (statement) |
-| `RelConnectives` | `rel` commutes with `∧ ∨`, `→ ↦ (· ↠ ·) ∧ b`, `◯ ↦ ◯(·) ∧ b`, `⊥ ↦ a`; `rel ⊤ ⊣⊢ b` | OPEN (statement) |
-| `TowerRel` | `rel_d A ⊣⊢ compT d A`, `compT d = rel σ³⊥ ⊤ xω ∘ coreT 0 ∘ … ∘ coreT (d-1)` | OPEN (statement) |
-| `IntervalOpsAgree` | `[b'] ⊢ b ⟹ ((u ↠ v) ∧ b) ∧ b' ⊣⊢ (u ↠ v) ∧ b'`, `(◯u ∧ b) ∧ b' ⊣⊢ ◯u ∧ b'` | OPEN (statement) |
-| `TowerOpsAgree` | `[a_{d+1}, b_{d+1}] ⊆ [a_d, b_d]`, and the two agreements with `b = b_d`, `b' = b_{d+1}` | OPEN (statement) |
-| `HereditaryOps` | the conjunction of the four above | OPEN (statement) |
+| statement | content | theorem | status |
+|-----------|---------|---------|--------|
+| **`NestAll`** | `∀ d, FreeIn a_d b_d x_d ∧ ∀ p, x_d p variable-free` | `nestAll` | **PROVED** |
+| `FreeHAωIn a_d b_d`, every `d` | corollary | `freeHAωIn_tower` | PROVED |
+| **`RelConnectives`** | `rel` commutes with `∧ ∨`, `→ ↦ (· ↠ ·) ∧ b`, `◯ ↦ ◯(·) ∧ b`, `⊥ ↦ a` (`rfl`); `rel ⊤ ⊣⊢ b` | `rel_connectives` | **PROVED** |
+| **`TowerRel`** | `rel_d A ⊣⊢ compT d A`, `compT d = rel σ³⊥ ⊤ xω ∘ coreT 0 ∘ … ∘ coreT (d-1)`, all `A` | `tower_rel` (via `tower_rel_force`) | **PROVED** |
+| **`IntervalOpsAgree`** | `[b'] ⊢ b ⟹ ((u ↠ v) ∧ b) ∧ b' ⊣⊢ (u ↠ v) ∧ b'`, `(◯u ∧ b) ∧ b' ⊣⊢ ◯u ∧ b'` | `interval_ops_agree` | **PROVED** |
+| **`TowerOpsAgree`** | `[a_d] ⊢ a_{d+1}`, `[a_{d+1}] ⊢ b_{d+1}`, `[b_{d+1}] ⊢ b_d`, and the two agreements with `b = b_d`, `b' = b_{d+1}` | `tower_ops_agree` | **PROVED** |
+| **`HereditaryOps`** | the conjunction of the four above | `hereditary_ops` | **PROVED** |
 
-`IntervalOpsAgree` uses only `[b'] ⊢ b`; the brief's `[u] ⊢ b'`, `[v] ⊢ b'` are
-not needed.
+All pins `[propext, Quot.sound]`.  `IntervalOpsAgree` uses only `[b'] ⊢ b`;
+the brief's `[u] ⊢ b'`, `[v] ⊢ b'` are not needed.  The induction carries
+variable-free bounds as well (`tower_props`), since the generators of depth
+`d + 1` are variable-free only if `a_d`, `b_d` are.
+
+Connective preservation is built into `rel`: it sends `∧`, `∨` to themselves,
+`→` to `(· ↠ ·) ∧ b`, `◯` to `◯(·) ∧ b` and `⊥` to `a` by definition, with
+`rel ⊤ ⊣⊢ b`.  `FreeIn` asks only for faithfulness, and the image is then a
+Heyting subalgebra of `[a, b]` under F0's interval operations (meet, join,
+`(u ↠ v) ∧ b`, bottom `a`, top `b`).  This holds hereditarily, at every depth.
+The depth-`d` translation is a single `rel` into `[a_d, b_d]`, and each step is
+a sub-interval whose operations, computed inside the previous interval, agree
+with those computed in F0.
+
+Credit: the interval translation is O'Connor's device.  M. O'Connor,
+"Embeddings into free Heyting algebras and translations into intuitionistic
+propositional logic", 2007, arXiv math/0702651: the proof of Theorem 14 (a
+lattice embedding of `H_ω` into `H₂`; the same translation first appears in
+the proof of Proposition 6) sends `⊥ ↦ φ`, generators to `(φ′ ∨ φ) ∧ ψ`, and
+`→` to `(→) ∧ ψ`, inside `H₂`.  What this development adds is the transport
+into F0, the closed fragment of PLL (the base-3 copy and the bridge), and the
+nesting at every depth.  (Checked against the arXiv PDF, 2026-11-01.)
 
 ## Builds
 
@@ -166,6 +188,8 @@ Build cache seeded by `cp -Rc` from `~/Lean/nightly/lax-logic-in-lean/.lake`
 | 1 | `gtimeout 3600 lake build wip.f0FreeInterval` | 0 | 14.9 s | 106,104 MB |
 | 2 | `gtimeout 3600 lake build wip.f0FreeInterval` | 0 | 15.6 s | 106,088 MB |
 | 3 | `gtimeout 3600 lake build wip.f0FreeInterval` | 0 | 14.3 s | 106,107 MB |
+| 4, statements | `gtimeout 3600 lake build wip.f0FreeInterval` | 0 | 17.2 s | 105,921 MB |
+| 4, proofs | `gtimeout 3600 lake build wip.f0FreeInterval` | 0 | 16.9 s | 105,914 MB |
 
 Proof bodies were developed first with `gtimeout … lake env lean` on scratch
 copies (about 12 s each).  Skips and caps: none.  No `lake exe` and no tool
