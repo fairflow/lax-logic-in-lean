@@ -423,14 +423,14 @@ theorem unrefutedBelow_step' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOve
 
 /-! ## Axiom pins for the ports closed in this session -/
 
-/-- info: 'FRJ.Gbu.X.gbuInv8'' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.X.gbuInv8'' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv8'
 
-/-- info: 'FRJ.Gbu.X.gbuInv14'' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.X.gbuInv14'' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv14'
 
-/-- info: 'FRJ.Gbu.X.unrefutedBelow_step'' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.X.unrefutedBelow_step'' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms unrefutedBelow_step'
