@@ -23,6 +23,7 @@ TeX Live 2025; LuaLaTeX for Unicode (see the TAPS note at the head of
 | `appendix.tex` | Appendices A–E in full (listings at `\scriptsize` — reference material) |
 | `figs/` | TikZ countermodel diagrams, copied from the build-regenerated `../docs/figures/*.tikz` with two mechanical patches (`∅`→`\varnothing`, `◯`→`\bigcirc` — raw Unicode fails in math mode); re-copy after regenerating the art |
 | `unicode.tex` | generated listings `literate` table, **currently unused** — kept solely for a possible future pdflatex/TAPS port (where listings + literate is the working combination) |
+| `latexmkrc` | regenerates `commitsha.tex` (git-ignored) before each build; it feeds the subtitle's version stamp — artefact commit and build date on page 1, the series convention adapted to acmart |
 | bibliography | `../docs/belief.bib` (119 entries; pruning is a later human step) |
 
 ## Provenance and editing discipline
