@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-11-01 17:02 GMT from `3891fe99` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-11-01 19:21 GMT from `ff865426` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**31021 declarations** in **628 modules**: 14160 theorems, 16861 definitions and data. **23 carry `sorryAx`** and **0 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**44531 declarations** in **835 modules**: 25340 theorems, 19191 definitions and data. **41 carry `sorryAx`** and **0 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -17,8 +17,12 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | area | decls | theorems | kernel-clean | `sorryAx` | native |
 |---|--:|--:|--:|--:|--:|
 | `BiLax` | 629 | 270 | 629 |  |  |
-| `CLPPaper` | 89 | 9 | 89 |  |  |
+| `CLPPaper` | 285 | 36 | 285 |  |  |
 | `Certified` | 1502 | 1130 | 1502 |  |  |
+| `CertifyAdoption` | 25 | 4 | 25 |  |  |
+| `CurryPaper` | 1 | 0 | 1 |  |  |
+| `F0` | 8565 | 8430 | 8565 |  |  |
+| `F0Paper` | 23 | 8 | 23 |  |  |
 | `FRJ.Basic` | 240 | 127 | 240 |  |  |
 | `FRJ.Bridge` | 15 | 12 | 15 |  |  |
 | `FRJ.BridgeV` | 2 | 2 | 2 |  |  |
@@ -59,8 +63,9 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.WitnessV2013` | 35 | 2 | 35 |  |  |
 | `FRJ.WitnessV2018` | 41 | 2 | 41 |  |  |
 | `FRJO` | 273 | 92 | 273 |  |  |
-| `LJF` | 1548 | 772 | 1548 |  |  |
-| `LaxBlueprint` | 10 | 0 | 10 |  |  |
+| `Harness` | 33 | 7 | 33 |  |  |
+| `LJF` | 1582 | 780 | 1582 |  |  |
+| `LaxBlueprint` | 12 | 0 | 12 |  |  |
 | `LaxLogic.Belief.BooleanIso` | 6 | 4 | 6 |  |  |
 | `LaxLogic.Belief.Collapse` | 5 | 4 | 5 |  |  |
 | `LaxLogic.Belief.Examples` | 7 | 6 | 7 |  |  |
@@ -118,9 +123,10 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.QLL.CLPAbstract` | 159 | 60 | 159 |  |  |
 | `LaxLogic.QLL.CLPBench` | 5 | 0 | 5 |  |  |
 | `LaxLogic.QLL.CLPCertify` | 7 | 0 | 7 |  |  |
+| `LaxLogic.QLL.CLPCompare` | 34 | 4 | 34 |  |  |
 | `LaxLogic.QLL.CLPCore` | 88 | 27 | 88 |  |  |
 | `LaxLogic.QLL.CLPEngine` | 91 | 22 | 91 |  |  |
-| `LaxLogic.QLL.CLPExamples` | 56 | 22 | 56 |  |  |
+| `LaxLogic.QLL.CLPExamples` | 84 | 40 | 84 |  |  |
 | `LaxLogic.QLL.CLPMachine` | 377 | 98 | 377 |  |  |
 | `LaxLogic.QLL.CLPOper` | 70 | 23 | 70 |  |  |
 | `LaxLogic.QLL.Certify` | 13 | 9 | 13 |  |  |
@@ -174,11 +180,13 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.Util.Turnstile` | 122 | 8 | 122 |  |  |
 | `LaxLogic.Util.TurnstileTests` | 1 | 1 | 1 |  |  |
 | `LaxPaper` | 10 | 0 | 10 |  |  |
-| `Meta` | 74 | 13 | 74 |  |  |
+| `Meta` | 133 | 16 | 133 |  |  |
+| `PaperKit` | 214 | 24 | 214 |  |  |
 | `RNDB` | 2149 | 95 | 2149 |  |  |
 | `Reject` | 224 | 116 | 224 |  |  |
 | `Rewrite` | 113 | 62 | 113 |  |  |
-| `tools` | 847 | 119 | 847 |  |  |
+| `SemPaper` | 11 | 0 | 11 |  |  |
+| `tools` | 949 | 128 | 949 |  |  |
 | `wip.G4conf` | 62 | 18 | 60 | 2 |  |
 | `wip.ascRefute` | 25 | 10 | 25 |  |  |
 | `wip.atomForce` | 6 | 6 | 6 |  |  |
@@ -224,6 +232,47 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.embedNeg` | 21 | 14 | 21 |  |  |
 | `wip.endpoint_refute` | 68 | 37 | 68 |  |  |
 | `wip.envDesc` | 12 | 11 | 12 |  |  |
+| `wip.esakiaNuclearBridgeProofs` | 13 | 10 | 13 |  |  |
+| `wip.esakiaNuclearCells` | 114 | 68 | 114 |  |  |
+| `wip.esakiaNuclearFin` | 97 | 6 | 97 |  |  |
+| `wip.esakiaNuclearFinBase` | 112 | 99 | 112 |  |  |
+| `wip.esakiaNuclearFinProofs` | 77 | 69 | 77 |  |  |
+| `wip.esakiaNuclearFinProofs2` | 19 | 19 | 19 |  |  |
+| `wip.esakiaNuclearFinProofs3` | 30 | 23 | 30 |  |  |
+| `wip.esakiaNuclearGen` | 56 | 9 | 56 |  |  |
+| `wip.esakiaNuclearGenBase` | 49 | 42 | 49 |  |  |
+| `wip.esakiaNuclearGenProofs` | 15 | 15 | 15 |  |  |
+| `wip.f0Covers` | 355 | 326 | 355 |  |  |
+| `wip.f0Dyadic` | 86 | 42 | 86 |  |  |
+| `wip.f0EmbedForms` | 25 | 19 | 25 |  |  |
+| `wip.f0Endpoints` | 273 | 172 | 273 |  |  |
+| `wip.f0FilterIso` | 241 | 177 | 241 |  |  |
+| `wip.f0FreeAnyFamily` | 133 | 80 | 133 |  |  |
+| `wip.f0FreeBase3` | 132 | 86 | 132 |  |  |
+| `wip.f0FreeHAn` | 110 | 68 | 110 |  |  |
+| `wip.f0FreeIPL` | 64 | 37 | 64 |  |  |
+| `wip.f0FreeInterval` | 151 | 82 | 151 |  |  |
+| `wip.f0FreePLL` | 71 | 47 | 71 |  |  |
+| `wip.f0FreePair` | 106 | 70 | 106 |  |  |
+| `wip.f0Hole` | 12 | 11 | 12 |  |  |
+| `wip.f0Indep` | 24 | 17 | 24 |  |  |
+| `wip.f0IndepCells` | 16 | 12 | 16 |  |  |
+| `wip.f0InsideOut` | 177 | 93 | 177 |  |  |
+| `wip.f0MacNeille` | 67 | 39 | 67 |  |  |
+| `wip.f0MacNeilleNonUnique` | 35 | 25 | 35 |  |  |
+| `wip.f0MacNeillePoints` | 59 | 27 | 59 |  |  |
+| `wip.f0MeetCount` | 65 | 44 | 65 |  |  |
+| `wip.f0Minkowski` | 66 | 51 | 66 |  |  |
+| `wip.f0MovingTop` | 178 | 120 | 178 |  |  |
+| `wip.f0Normal` | 128 | 83 | 128 |  |  |
+| `wip.f0NotIso` | 44 | 27 | 44 |  |  |
+| `wip.f0Nuclear` | 15 | 9 | 15 |  |  |
+| `wip.f0OddGaps` | 3 | 3 | 3 |  |  |
+| `wip.f0Rat` | 15 | 10 | 15 |  |  |
+| `wip.f0SelfSim` | 77 | 46 | 77 |  |  |
+| `wip.f0SigOnto` | 10 | 7 | 10 |  |  |
+| `wip.f0Structure` | 71 | 59 | 71 |  |  |
+| `wip.f0T6` | 75 | 41 | 75 |  |  |
 | `wip.families` | 42 | 40 | 42 |  |  |
 | `wip.fiveWorld` | 20 | 20 | 20 |  |  |
 | `wip.floor` | 18 | 17 | 18 |  |  |
@@ -231,6 +280,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.floorImp` | 7 | 2 | 7 |  |  |
 | `wip.floorRefute` | 16 | 10 | 16 |  |  |
 | `wip.freshAnt` | 10 | 4 | 10 |  |  |
+| `wip.frjw_gcc` | 3 | 2 | 3 |  |  |
 | `wip.frjx` | 83 | 9 | 83 |  |  |
 | `wip.g4confGap` | 14 | 8 | 14 |  |  |
 | `wip.gap2` | 24 | 23 | 24 |  |  |
@@ -277,6 +327,16 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.omegaFix` | 1 | 0 | 1 |  |  |
 | `wip.oracle2` | 64 | 8 | 64 |  |  |
 | `wip.overlap` | 22 | 19 | 22 |  |  |
+| `wip.p2llBoolSem` | 70 | 43 | 70 |  |  |
+| `wip.p2llInterp` | 8 | 5 | 8 |  |  |
+| `wip.p2llJND` | 162 | 60 | 162 |  |  |
+| `wip.p2llMutual` | 6 | 3 | 6 |  |  |
+| `wip.p2llND` | 207 | 79 | 207 |  |  |
+| `wip.p2llOrCell` | 1 | 1 | 1 |  |  |
+| `wip.p2llRoundTrip` | 34 | 23 | 34 |  |  |
+| `wip.p2llStatements` | 7 | 0 | 7 |  |  |
+| `wip.p2llSubConj` | 24 | 18 | 24 |  |  |
+| `wip.p2llSyntax` | 120 | 59 | 120 |  |  |
 | `wip.paramfork` | 159 | 123 | 159 |  |  |
 | `wip.pcll1pv_stage0` | 5 | 1 | 5 |  |  |
 | `wip.pcll1pv_stage1` | 6 | 5 | 6 |  |  |
@@ -393,6 +453,7 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.witTripleC` | 51 | 27 | 51 |  |  |
 | `wip.witness` | 16 | 14 | 16 |  |  |
 | `wip.wlanding` | 19 | 17 | 19 |  |  |
+| `wipx` | 75 | 55 | 57 | 18 |  |
 
 ## Axiom census
 
@@ -400,17 +461,17 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 13556 |
-| `propext`, `Quot.sound` | 8639 |
-| `propext` | 5957 |
-| `propext`, `Classical.choice`, `Quot.sound` | 2837 |
-| `sorryAx` | 8 |
+| *(none — axiom-free)* | 15980 |
+| `propext`, `Quot.sound` | 14175 |
+| `propext` | 11055 |
+| `propext`, `Classical.choice`, `Quot.sound` | 3258 |
+| `propext`, `sorryAx` | 22 |
+| `Quot.sound` | 13 |
+| `sorryAx` | 9 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
 | `propext`, `Classical.choice` | 6 |
-| `propext`, `sorryAx` | 5 |
-| `Classical.choice` | 2 |
+| `Classical.choice` | 3 |
 | `propext`, `sorryAx`, `Quot.sound` | 2 |
-| `Quot.sound` | 1 |
 
 ## OPEN: every declaration carrying `sorryAx`
 
@@ -439,6 +500,24 @@ Every distinct axiom set in the estate, most common first.
 | `LJFO.pll_ui_of_ljfo` | `wip.ui_routeB_blueprint` |
 | `LJFO.stabilisationAll` | `wip.ui_routeB_blueprint` |
 | `LJFO.stabilises_of_hasUI` | `wip.ui_routeB_blueprint` |
+| `FRJ.Gbu.X.cirr_and` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.cirr_circ` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.cirr_imp_clo` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.cirr_imp_notClo` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.cirr_prime` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.evalR_circ` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.evalR_or` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.gbuC_complete` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.gbuC_iff_pll` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.not_evalR_of_pll` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.provableGbuC_of_not_evalR` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.regSound_liftClosure` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.searchX` | `wipx.frjx_plan` |
+| `FRJ.Gbu.X.gbuInv10'` | `wipx.frjx_ports` |
+| `FRJ.Gbu.X.gbuSuccCirc'` | `wipx.frjx_ports` |
+| `FRJ.Gbu.X.refutedCleanly_at'` | `wipx.frjx_ports` |
+| `FRJ.Gbu.X.refutedCleanly_circ'` | `wipx.frjx_ports` |
+| `FRJ.Gbu.X.refutedCleanly_or'` | `wipx.frjx_ports` |
 
 ## `native_decide`-tainted declarations
 
