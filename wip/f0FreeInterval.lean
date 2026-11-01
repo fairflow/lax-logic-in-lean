@@ -1110,6 +1110,115 @@ theorem cell1_by_theorem :
   fun h => Cells.ipc_lem (((nest _ _ _ Cells.ξc Cells.ζc Cells.ρc1 bridge3 rfl rfl Cells.hyp1_le
     Cells.hyp1_strict Cells.fresh_c1).2.2 topF Cells.lemF rfl rfl).mpr h)
 
+/-! ## Stage 4: every finite depth, and the operations, hereditarily
+
+Statements committed before any proof (Matthew, 2026-11-01).
+
+The tower over a sequence of pairs `(ξ_d, ζ_d)`:
+
+    (a₀, b₀, x₀) = (σ³⊥, ⊤, xω)
+    (a_{d+1}, b_{d+1}, x_{d+1}) = (rel_d ξ_d, rel_d ζ_d, nestGen a_d b_d x_d ξ_d ζ_d (freshRen ξ_d ζ_d)),
+    rel_d = rel a_d b_d x_d.
+
+    NestAll :          ∀ d,  FreeIn a_d b_d x_d  ∧  ∀ p, x_d p variable-free
+    RelConnectives :   rel commutes with ∧, ∨, → ↦ (· ↠ ·) ∧ b, ◯ ↦ ◯(·) ∧ b, ⊥ ↦ a (by rfl),
+                         and rel ⊤ ⊣⊢ b
+    TowerRel :         rel_d A ⊣⊢ compT d A,  compT d = rel σ³⊥ ⊤ xω ∘ coreT 0 ∘ … ∘ coreT (d-1)
+    IntervalOpsAgree : [b'] ⊢ b  ⟹  ((u ↠ v) ∧ b) ∧ b' ⊣⊢ (u ↠ v) ∧ b'  and  (◯u ∧ b) ∧ b' ⊣⊢ ◯u ∧ b'
+    TowerOpsAgree :    [a_d] ⊢ a_{d+1},  [a_{d+1}] ⊢ b_{d+1},  [b_{d+1}] ⊢ b_d, and the interval
+                         operations of [a_{d+1}, b_{d+1}] computed inside [a_d, b_d] agree with
+                         those computed in F0
+    HereditaryOps :    RelConnectives ∧ TowerRel ∧ IntervalOpsAgree ∧ TowerOpsAgree
+
+`IntervalOpsAgree` needs only `[b'] ⊢ b`; the hypotheses `[u] ⊢ b'`, `[v] ⊢ b'`
+of the brief are not used. -/
+
+/-- An interval copy: bottom `a`, top `b`, generators `x`. -/
+structure ICopy where
+  a : PLLFormula
+  b : PLLFormula
+  x : String → PLLFormula
+
+/-- One nesting step, with the internally chosen fresh renaming `freshRen ξ ζ`. -/
+def ICopy.step (c : ICopy) (ξ ζ : PLLFormula) : ICopy :=
+  ⟨rel c.a c.b c.x ξ, rel c.a c.b c.x ζ, nestGen c.a c.b c.x ξ ζ (freshRen ξ ζ)⟩
+
+/-- **The tower** over the pairs `(ξs d, ζs d)`, starting from the base-3 copy
+`(σ³⊥, ⊤, xω)`. -/
+def tower (ξs ζs : Nat → PLLFormula) : Nat → ICopy
+  | 0 => ⟨base 3, topF, xω⟩
+  | d + 1 => (tower ξs ζs d).step (ξs d) (ζs d)
+
+/-- The hypotheses on the pairs: ◯-free, `[ξ_d] ⊢ ζ_d`, `[ζ_d] ⊬ ξ_d`. -/
+def TowerHyp (ξs ζs : Nat → PLLFormula) : Prop :=
+  ∀ d, boxFree (ξs d) = true ∧ boxFree (ζs d) = true ∧ Deriv [ξs d] (ζs d) ∧
+    ¬ Deriv [ζs d] (ξs d)
+
+/-- **NestAll**: at every depth the tower is a faithful interval copy of `H_ω`
+with variable-free generators. -/
+def NestAll : Prop :=
+  ∀ ξs ζs : Nat → PLLFormula, TowerHyp ξs ζs → ∀ d : Nat,
+    FreeIn (tower ξs ζs d).a (tower ξs ζs d).b (tower ξs ζs d).x ∧
+      ∀ p, atomFree ((tower ξs ζs d).x p) = true
+
+/-- **(a) The interval translation commutes with the connectives**, the
+implication and `◯` of `[a, b]` being `(· ↠ ·) ∧ b` and `◯(·) ∧ b`; `⊥ ↦ a`,
+and `rel ⊤ ⊣⊢ b`. -/
+def RelConnectives : Prop :=
+  ∀ (a b : PLLFormula) (x : String → PLLFormula),
+    (∀ A B, rel a b x (A.and B) = (rel a b x A).and (rel a b x B)) ∧
+    (∀ A B, rel a b x (A.or B) = (rel a b x A).or (rel a b x B)) ∧
+    (∀ A B, rel a b x (A.ifThen B) = ((rel a b x A).ifThen (rel a b x B)).and b) ∧
+    (∀ A, rel a b x (PLLFormula.somehow A) = (PLLFormula.somehow (rel a b x A)).and b) ∧
+    rel a b x .falsePLL = a ∧
+    Deriv [rel a b x topF] b ∧ Deriv [b] (rel a b x topF)
+
+/-- The core translation at depth `d`, `rel ξ_d ζ_d (coreGen ξ_d ζ_d (freshRen ξ_d ζ_d))`. -/
+def coreT (ξs ζs : Nat → PLLFormula) (d : Nat) : PLLFormula → PLLFormula :=
+  rel (ξs d) (ζs d) (coreGen (ξs d) (ζs d) (freshRen (ξs d) (ζs d)))
+
+/-- The composite `rel σ³⊥ ⊤ xω ∘ coreT 0 ∘ … ∘ coreT (d-1)`. -/
+def compT (ξs ζs : Nat → PLLFormula) : Nat → PLLFormula → PLLFormula
+  | 0 => rel (base 3) topF xω
+  | d + 1 => fun A => compT ξs ζs d (coreT ξs ζs d A)
+
+/-- **(b) The depth-`d` translation is one interval translation**, into
+`[a_d, b_d]`, up to `⊣⊢`, for every formula. -/
+def TowerRel : Prop :=
+  ∀ ξs ζs : Nat → PLLFormula, TowerHyp ξs ζs → ∀ (d : Nat) (A : PLLFormula),
+    Deriv [rel (tower ξs ζs d).a (tower ξs ζs d).b (tower ξs ζs d).x A] (compT ξs ζs d A) ∧
+    Deriv [compT ξs ζs d A] (rel (tower ξs ζs d).a (tower ξs ζs d).b (tower ξs ζs d).x A)
+
+/-- **(c) The interval operations of a sub-interval agree**: for `[b'] ⊢ b`,
+the implication and `◯` of `[·, b']` computed inside `[·, b]` are those
+computed in F0. -/
+def IntervalOpsAgree : Prop :=
+  ∀ b b' u v : PLLFormula, Deriv [b'] b →
+    (Deriv [((u.ifThen v).and b).and b'] ((u.ifThen v).and b') ∧
+      Deriv [(u.ifThen v).and b'] (((u.ifThen v).and b).and b')) ∧
+    (Deriv [((PLLFormula.somehow u).and b).and b'] ((PLLFormula.somehow u).and b') ∧
+      Deriv [(PLLFormula.somehow u).and b'] (((PLLFormula.somehow u).and b).and b'))
+
+/-- **(c) on the tower**: `[a_{d+1}, b_{d+1}] ⊆ [a_d, b_d]`, and its interval
+operations computed inside `[a_d, b_d]` agree with those computed in F0. -/
+def TowerOpsAgree : Prop :=
+  ∀ ξs ζs : Nat → PLLFormula, TowerHyp ξs ζs → ∀ d : Nat,
+    Deriv [(tower ξs ζs d).a] (tower ξs ζs (d + 1)).a ∧
+    Deriv [(tower ξs ζs (d + 1)).a] (tower ξs ζs (d + 1)).b ∧
+    Deriv [(tower ξs ζs (d + 1)).b] (tower ξs ζs d).b ∧
+    ∀ u v : PLLFormula,
+      (Deriv [((u.ifThen v).and (tower ξs ζs d).b).and (tower ξs ζs (d + 1)).b]
+          ((u.ifThen v).and (tower ξs ζs (d + 1)).b) ∧
+        Deriv [(u.ifThen v).and (tower ξs ζs (d + 1)).b]
+          (((u.ifThen v).and (tower ξs ζs d).b).and (tower ξs ζs (d + 1)).b)) ∧
+      (Deriv [((PLLFormula.somehow u).and (tower ξs ζs d).b).and (tower ξs ζs (d + 1)).b]
+          ((PLLFormula.somehow u).and (tower ξs ζs (d + 1)).b) ∧
+        Deriv [(PLLFormula.somehow u).and (tower ξs ζs (d + 1)).b]
+          (((PLLFormula.somehow u).and (tower ξs ζs d).b).and (tower ξs ζs (d + 1)).b))
+
+/-- **The hereditary operations**: (a), (b), (c) and (c) on the tower. -/
+def HereditaryOps : Prop := RelConnectives ∧ TowerRel ∧ IntervalOpsAgree ∧ TowerOpsAgree
+
 end Interval
 end F0
 end PLLND

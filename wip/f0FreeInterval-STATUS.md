@@ -132,6 +132,26 @@ of code `r`).
 
 No cell refutes a statement of stage 1: proceed to stage 3.
 
+## Stage 4: every finite depth, and the operations, hereditarily (Matthew, 2026-11-01)
+
+Statements committed before any proof.  The tower over a sequence of pairs
+`(ξ_d, ζ_d)`, each ◯-free with `[ξ_d] ⊢ ζ_d` and `[ζ_d] ⊬ ξ_d` (`TowerHyp`):
+
+    (a₀, b₀, x₀) = (σ³⊥, ⊤, xω)
+    (a_{d+1}, b_{d+1}, x_{d+1}) = (rel_d ξ_d, rel_d ζ_d, nestGen a_d b_d x_d ξ_d ζ_d (freshRen ξ_d ζ_d))
+
+| statement | content | status |
+|-----------|---------|--------|
+| `NestAll` | `∀ d, FreeIn a_d b_d x_d ∧ ∀ p, x_d p variable-free` | OPEN (statement) |
+| `RelConnectives` | `rel` commutes with `∧ ∨`, `→ ↦ (· ↠ ·) ∧ b`, `◯ ↦ ◯(·) ∧ b`, `⊥ ↦ a`; `rel ⊤ ⊣⊢ b` | OPEN (statement) |
+| `TowerRel` | `rel_d A ⊣⊢ compT d A`, `compT d = rel σ³⊥ ⊤ xω ∘ coreT 0 ∘ … ∘ coreT (d-1)` | OPEN (statement) |
+| `IntervalOpsAgree` | `[b'] ⊢ b ⟹ ((u ↠ v) ∧ b) ∧ b' ⊣⊢ (u ↠ v) ∧ b'`, `(◯u ∧ b) ∧ b' ⊣⊢ ◯u ∧ b'` | OPEN (statement) |
+| `TowerOpsAgree` | `[a_{d+1}, b_{d+1}] ⊆ [a_d, b_d]`, and the two agreements with `b = b_d`, `b' = b_{d+1}` | OPEN (statement) |
+| `HereditaryOps` | the conjunction of the four above | OPEN (statement) |
+
+`IntervalOpsAgree` uses only `[b'] ⊢ b`; the brief's `[u] ⊢ b'`, `[v] ⊢ b'` are
+not needed.
+
 ## Builds
 
 Registered in `lakefile.toml` (the `wip` glob list, after `wip.f0FreePLL`).
