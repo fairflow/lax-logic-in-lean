@@ -182,7 +182,8 @@ referee skims. One numbered theorem with four parts costs ~6 lines.
 2. **Conservativity over IPL** — one §2 clause + App A.
 3. **Small-algebra believer enumerations** — §3 paragraph (3-chain now;
    handover §3b-5 wants the 5-element non-linear Heyting algebra and
-   `decide`-grade 4-chain/2×2 — **OPEN, new mechanisation**, D3).
+   `decide`-grade 4-chain/2×2 — **DONE 2026-11-01**, see the D3 update
+   below; §3 gained the menagerie paragraph the same day).
 4. **𝕊 is Boolean** — one sentence (D5).
 5. **SN priority claim** — §9 sentence, now properly sourced by the bib
    update (`Lindley2005`, `DoczkalSchwinghammer2009`, `Prawitz1971`,
@@ -282,9 +283,16 @@ listings); references pp14–15. Two-column stays for camera-ready
   **Thm 5.1(i)–(iv)**; the obstruction becomes **Thm 5.2**; doxastic profile
   becomes **Prop 3.4**; μ/η non-isomorphism becomes **Prop 7.2**. To be
   implemented in the draft during the merge pass.
-- **D3 — examples: RULED 2026-07-19 — 3-chain only.** The clean-audit
-  3-chain enumeration is in §3; the `native_decide`-flagged 4-chain/2×2
-  counts and the 5-element Heyting algebra are OUT (no new mechanisation).
+- **D3 — examples: RULED 2026-07-19 — 3-chain only. SUPERSEDED 2026-11-01**
+  by Matthew's instruction to continue the handover (item 5 of §3b wanted
+  more examples): `LaxLogic/Belief/ExamplesClean.lean` now carries
+  kernel-computed believer menageries on bare carriers for the 3-chain,
+  4-chain, 2×2 and both five-element non-linear Heyting algebras — all
+  without choice, no `native_decide` anywhere (the two flagged counts are
+  deleted). Finding: the first believers neither closed nor open appear on
+  the four-element *chain* (exactly two), not with non-linearity; both
+  five-element non-linear algebras have eight believers, every one closed
+  or open. §3 paragraph added.
 - **D4 — try the scrub: ADOPTED — and DONE (2026-07-18), full success.**
   `PLLCraig.lean` rebuilt on `finUnion` + membership-form lemmas:
   `SCh.maehara`, `SC.maehara'`, `craig_interpolation'`, `craig_implication'`

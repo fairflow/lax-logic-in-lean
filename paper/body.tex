@@ -46,7 +46,9 @@ believer has this same form, differing only in the disjoined proposition, so
 there is no structural variety among them. A genuine spectrum of distinct
 believers appears only over intuitionistic logic ---
 open nuclei, invisible classically, model belief under a hypothesis,
-and the closed \ensuremath{\bigcirc}-fragment of even one free algebra is infinite --- and,
+and the closed \ensuremath{\bigcirc}-fragment of even the generator-free algebra is
+infinite --- indeed it contains a faithful copy of intuitionistic
+propositional logic --- and,
 by the context-completeness theorem descending from Curry\textquotesingle s problem, a
 proof of \ensuremath{\bigcirc M} contains the evidence for believing M. Belief
 backed by such evidence is \emph{evidential} belief, and evidential belief is
@@ -81,6 +83,44 @@ theorem, in three steps --- decoration, the finitised canonical model,
 and their composition. Section 7 runs the theory: executable
 countermodels read as belief states, and a proof compiled to its
 evidence. Sections 8--10 treat related work, method, and open problems.
+Table~\ref{tab:glance} indexes the results with their statuses and
+measured axiom pins.
+
+\begin{table}
+\caption{The results at a glance. PROVED means kernel-checked and
+\texttt{sorry}-free in the artefact; OPEN asserts nothing; a pin is
+the measured axiom set of the named theorems, abbreviated
+pext = \texttt{propext}, C = \texttt{Classical.choice},
+Q = \texttt{Quot.sound} (the same abbreviation key as the index of
+Appendix~\ref{app:index}).}
+\label{tab:glance}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+result & status & axioms & \S \\
+\midrule
+strong normalisation (\ensuremath{\top\top}-lifting, with sums) & PROVED & pext, C, Q & 2 \\
+Craig interpolation & PROVED & pext, Q & 2 \\
+decidability (repaired terminating calculus) & PROVED & pext, Q & 2 \\
+classical collapse; N(B) \ensuremath{\cong} B & PROVED & pext, C, Q & 3 \\
+open = closed \ensuremath{\Leftrightarrow} EM at a; \ensuremath{F_{0}} infinite & PROVED & pext, C, Q & 3 \\
+context completeness; no finite constraint set & PROVED & pext, C, Q & 3 \\
+the doxastic profile & PROVED & pext, C, Q & 3 \\
+IPC and PLL embed faithfully into \ensuremath{F_{0}} & PROVED & pext, Q & 3 \\
+believer menageries on five small algebras & PROVED & pext, Q & 3 \\
+the separations (i)--(iv) & PROVED & pext, C, Q; (ii) none & 5 \\
+the obstruction & PROVED & pext, Q & 5 \\
+adequacy and fullness & PROVED & pext, Q & 6 \\
+truth lemma, finite canonical model & PROVED & pext, Q & 6 \\
+emitter completeness & PROVED & pext, Q & 6 \\
+completeness of PLL for \ensuremath{\Vdash^{\mathrm{p}}} & PROVED & pext, Q & 6 \\
+\ensuremath{\mu}, \ensuremath{\eta} not mutually inverse & PROVED & pext; conv.\ pext, C, Q & 7 \\
+PLL + distribution complete for confluent models & PROVED & pext, C, Q & 10 \\
+PLL\ensuremath{{}^{\mathrm{u}}} = PLL + distribution? & OPEN & --- & 10 \\
+uniform interpolation & not settled in the literature & --- & 10 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{The mechanised base}\label{2-the-mechanised-base}
 
@@ -138,10 +178,10 @@ is provably incomplete and a small repair is both necessary and
 sufficient. Craig interpolation holds, by a Maehara induction over the
 cut-free calculus, stated choice-free through an explicitly
 constructive finite-set toolkit (\dref{craig-interpolation-},
-Appendix~\ref{app:base}); uniform interpolation, by contrast, remains
-open (Section 10). After an axiom-hygiene pass, the entire
+Appendix~\ref{app:base}); uniform interpolation, by contrast, is not
+settled in the literature (Section 10). After an axiom-hygiene pass, the entire
 proof-theoretic chain --- interpolation included --- audits at
-\texttt{[propext, Quot.sound]}: no choice.
+\texttt{[pext, Quot.sound]}: no choice.
 
 The semantics is that of \cite{FairtloughMendler1997}, Definitions 3.1--3.2, mechanised
 verbatim (\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}):
@@ -180,10 +220,17 @@ the constraint still verifies N. The
 fallible worlds --- worlds with inconsistent information, validating
 everything --- are what keep \ensuremath{\bigcirc\bot} satisfiable, and under (7) they are
 the semantic counterpart of an inconsistently held belief. Soundness for sequents is
-\dref{soundness} (\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}, audit \texttt{[propext]}); the classical
+\dref{soundness} (\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}, audit \texttt{[pext]}); the classical
 completeness theorem of \cite[\S4]{FairtloughMendler1997} is \dref{completeness}
 (\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Completeness.lean}), kept in the artefact deliberately, Zorn's
 lemma included, as the foil for Section 6.2.
+The nucleus reading of \ensuremath{\bigcirc} is itself mechanised at the
+level of these models in the companion paper~\cite{SemPaper}: the
+hereditary sets of any constraint model form a Heyting algebra on
+which \ensuremath{\bigcirc} acts as a literal nucleus, with
+\ensuremath{\lVert \bigcirc\varphi \rVert = j_{C}\,\lVert \varphi \rVert};
+the same paper classifies the closed, open and double-negation nucleus
+families by their Esakia duals.
 
 \section{Classical belief collapses; constructive belief is rich}\label{3-classical-belief-collapses-constructive-belief-is-rich}
 
@@ -225,6 +272,25 @@ lattice~\cite{Rieger1949,Nishimura1960}; nuclei over such
 non-complete Heyting algebras are studied
 in~\cite{Erne2022,ErnePicadoPultr2022}).
 
+Far more is true, and machine-checked. Write \ensuremath{F_{0}} for this
+closed fragment --- the Lindenbaum algebra of the variable-free
+formulas, the algebra written RN(\ensuremath{\bigcirc}, \{\}) above --- as
+in the companion paper devoted to its order structure~\cite{F0Paper}.
+The free Heyting algebra on countably many generators is a Heyting
+subalgebra of a single interval of \ensuremath{F_{0}}, so that
+intuitionistic propositional logic in countably many variables embeds
+faithfully into the variable-free formulas of PLL; and PLL itself
+embeds faithfully into \ensuremath{F_{0}}, with \ensuremath{\bigcirc}
+interpreted as \ensuremath{\bigcirc}
+(\dref{freeHAnAbove-base3}, \dref{freePLLAbove-base3}). Under reading
+(7): the generator-free modal degrees of the constructive believer do
+not merely form an infinite family; they contain all of intuitionistic
+propositional logic, and a copy of the logic of belief itself. The
+contrast is specifically lax, not generically intuitionistic: the
+closed fragment of intuitionistic logic is \{\ensuremath{\bot},
+\ensuremath{\top}\}, and that of the provability logic GL is the
+Boolean algebra of finite and cofinite sets~\cite{Boolos1993}.
+
 The smallest algebra already exhibits the separation, and the artefact
 enumerates it exactly (\texttt{Belief/\allowbreak{}Examples.lean}, kernel-checked by
 \texttt{decide}): on the three-element chain there are precisely four
@@ -232,6 +298,22 @@ believers (\dref{chain3-card}) --- the sceptic, the credulous believer, one
 dogmatic (closed) and one hypothetical (open) --- and the last two
 differ (\dref{chain3-open-ne-closed}). Hypothetical belief is a new
 attitude from the first non-Boolean algebra onwards.
+
+The artefact carries the enumeration through four further small
+algebras (\texttt{Belief/\allowbreak{}ExamplesClean.lean}; each count is
+a kernel computation over an explicit carrier, and every statement in
+the file audits without choice). The four-element chain has eight
+believers; the two-by-two Boolean algebra has four, every one of them
+both closed and open --- the collapse of Theorem~\ref{thm:collapse},
+computed; and two five-element non-linear Heyting algebras, the
+Boolean square with a new top and with a new bottom, have eight
+believers each, five closed and five open, the sceptic and the
+credulous believer lying in both families. One outcome corrected our
+expectation, in the manner of Section 9: the first believers that are
+neither dogmatic nor hypothetical appear not with non-linearity but on
+the four-element \emph{chain}, which has exactly two
+(\dref{c4-neither}), while on both five-element non-linear algebras
+every believer is closed or open (\dref{k5-menagerie}).
 
 \begin{theorem}[context completeness]\label{thm:ctx}
 PLL \ensuremath{\vdash \varphi} iff for every
@@ -390,7 +472,7 @@ The natural question is then whether \ensuremath{\Vdash^{\mathrm{s}}} is the com
 relation. It is not, and the reason is a theorem.
 
 \begin{theorem}[the obstruction; \dref{realS-fullness-obstruction}, audit
-\texttt{[propext, Quot.sound]}]\label{thm:obstruction}
+\texttt{[pext, Quot.sound]}]\label{thm:obstruction}
 There is a three-world constraint model on
 which no evidence assignment whatever is simultaneously atom-adequate
 (evidence only where the atom holds) and full for \ensuremath{\Vdash^{\mathrm{s}}} (every forced
@@ -476,7 +558,7 @@ the atom holds. All the evidence a completeness proof needs, it turns
 out, is one token per atom.
 
 \begin{theorem}[\dref{realP-adequate-and-full}, audit
-\texttt{[propext, Quot.sound]}]\label{thm:adequacy-fullness}
+\texttt{[pext, Quot.sound]}]\label{thm:adequacy-fullness}
 Over any checked finite frame with token
 evidence, and any applicative structure with two table-forming
 capacities against the world-coding: for every formula \ensuremath{\varphi},
@@ -666,7 +748,7 @@ principle appears anywhere above, and after the axiom-hygiene pass the
 entire chain of this subsection --- the decidability of consistency, the
 decided Lindenbaum fold (now, in fact, a computable function), the
 truth lemma, and the countermodel enumeration --- audits at
-\texttt{[propext, Quot.sound]}: no choice (what little classicality
+\texttt{[pext, Quot.sound]}: no choice (what little classicality
 survives in the artefact is a statement-vocabulary matter, discussed
 in Section 9). It is tempting, and would be wrong, to say that the
 logic proves its own completeness: the proof
@@ -731,7 +813,7 @@ with the closed form of the refutation lemma. Every quantifier ranges over concr
 as printable data, one token per atom, realisers in an explicit algebra
 of lookup tables --- and the backward case decision is made by the
 decision procedure, not by excluded middle. The theorem audits at
-\texttt{[propext, Quot.sound]}, enforced by build-time guards: the
+\texttt{[pext, Quot.sound]}, enforced by build-time guards: the
 completeness of PLL for realisability is, in the formal sense the audit
 measures, a choice-free theorem. PLL is complete for the semantics in
 which evidence may react to the future; incomplete, by Section 5, for
@@ -770,7 +852,11 @@ certificates. The cost profile is recorded honestly alongside it:
 successes are cheap, the worst case is exponential --- provability is
 already PSPACE-hard for the \ensuremath{\bigcirc}-free fragment --- and
 the frame battery is incomplete by design, a first filter rather than a
-complete refuter.
+complete refuter. A second certified decider now accompanies the
+searcher: a signed tableau over subframe models, deciding PLL with a
+kernel-checked certificate on either side and without choice,
+described in the companion paper~\cite{SemPaper}; the countermodels
+and extractions of this section are unchanged by it.
 
 For \ensuremath{\bigcirc p \vdash} p the emitter produces a five-world model, pinned in the
 artefact as data (\texttt{demoM}~\dref{demoM}), whose worlds read as belief states: a state
@@ -1137,8 +1223,8 @@ paper entire. The axiom footprint of each
 result is recorded: nothing at all for a handful of results (among them
 a well-foundedness theorem for the Kleene--Brouwer
 order~\cite{Kechris1995}, a standalone
-fully constructive result in the artefact); \texttt{[propext]} or
-\texttt{[propext, Quot.sound]} --- no choice --- for the proof theory, the
+fully constructive result in the artefact); \texttt{[pext]} or
+\texttt{[pext, Quot.sound]} --- no choice --- for the proof theory, the
 decoration half of completeness, the obstruction, and the executable
 countermodel certificates, the decidability of the logic, the finitised
 canonical model, and the completeness theorem itself; classical axioms
@@ -1225,8 +1311,10 @@ realisers meet the future as an input. The countermodels witnessing the
 canonical construction that produces them is the parent paper\textquotesingle s, with
 Zorn\textquotesingle s lemma traded for the logic\textquotesingle s own decision procedure.
 
-Open problems. The identification of PLL\ensuremath{{}^{\mathrm{u}}},
-the logic of rigid evidence --- for which the natural candidate
+Open problems. Each entry marked OPEN asserts nothing.
+
+\textbf{OPEN --- the logic of rigid evidence.} The identification of
+PLL\ensuremath{{}^{\mathrm{u}}} --- for which the natural candidate
 axiomatisation is the distribution scheme itself. The parent
 paper\textquotesingle s Theorem 4.5 ties
 \ensuremath{\bigcirc}(A \ensuremath{\vee} B) \ensuremath{\twoheadrightarrow}
@@ -1262,19 +1350,31 @@ validity over confluent constraint models --- that is, whether
 PLL\ensuremath{{}^{\mathrm{u}}} is precisely PLL +
 \ensuremath{\bigcirc}(A \ensuremath{\vee} B) \ensuremath{\twoheadrightarrow}
 (\ensuremath{\bigcirc}A \ensuremath{\vee} \ensuremath{\bigcirc}B).
-The exact relation of PLL-\ensuremath{\bigcirc} to IEL\ensuremath{{}^{-}} (conjecturally: idempotence). A
+\textbf{OPEN --- intuitionistic epistemic logic.} The exact relation
+of PLL-\ensuremath{\bigcirc} to IEL\ensuremath{{}^{-}} (conjecturally:
+idempotence).
+
+\textbf{OPEN --- Kleene tables.} A
 Kleene-algebra instantiation of the table capacities via partial
 computable functions~\cite{Kleene1945} (the choice-free statement
-needs care around partiality). The tripos-level formulation of the
+needs care around partiality).
+
+\textbf{OPEN --- the tripos.} The tripos-level formulation of the
 evidence
 semantics~\cite{Hyland1982,VanOosten2008,CohenGrunfeldKirstMiquey2025}.
-Uniform interpolation for PLL --- ordinary Craig interpolation is
-settled, choice-free, in the artefact (Section 2), while the uniform
-case is where the repaired terminating calculus supplies the height
-bound the published method lacked~\cite{Pitts1992}; the mechanised
-investigation continues, with the Coq/Rocq mechanisations of uniform
-interpolation for intuitionistic and intuitionistic modal
+
+\textbf{Uniform interpolation~\cite{Pitts1992} --- not settled in the
+literature.} Ordinary Craig interpolation is settled, choice-free, in
+the artefact (Section 2). The published uniform-interpolation proof
+for PLL rested on the equivalence of the terminating calculus with the
+cut-free one; the equivalence fails --- the counterexample is
+machine-checked in the artefact (Section 2) --- and the theorem is
+withdrawn in the August 2026 revision of the arXiv
+version~\cite{Iemhoff2024}. The literature currently contains no proof
+either way. The Coq/Rocq mechanisations of uniform interpolation for
+intuitionistic and intuitionistic modal
 logics~\cite{FereeVanDerGiessenVanGoolShillito2024,
 ShillitoVanDerGiessenGoreIemhoff2023,VanDerGiessenShillito2026}
-as the reference points, alongside a live Lean interpolation effort for
+are the reference points for any mechanised attempt, alongside a live
+Lean interpolation effort for
 PDL~\cite{GattingerLean4PDL}.

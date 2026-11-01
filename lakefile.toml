@@ -188,6 +188,19 @@ globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
          "LaxLogic.PLL.SubTab.Gates", "LaxLogic.PLL.SubTab.Facts",
          "LaxLogic.PLL.SubTab.Source"]
 
+# BeliefF0: the F0 free-algebra facts the Belief paper cites (faithful IPC
+# embedding, faithful PLL self-embedding), promoted 2026-11-01 as pinned
+# restatements whose proofs are the wip/ theorems (f0FreeBase3, f0FreePLL,
+# f0FreeAnyFamily; definitions f0FreeHAn).  The wip/ originals stay in
+# place — the F0 paper's open revision cites them by source line.  The
+# `LaxLogic` root module does not import this, keeping its closure free of
+# wip/.  NOT in defaultTargets (manager, 2026-11-01): the nightly integrity
+# build compiles every [[lean_lib]], so the pins are checked nightly without
+# the wip/f0Free* chain landing in every PR's CI.
+[[lean_lib]]
+name = "BeliefF0"
+globs = ["LaxLogic.Belief.F0Facts"]
+
 [[lean_exe]]
 name = "bilaxscreen"
 root = "BiLax.Screens"
