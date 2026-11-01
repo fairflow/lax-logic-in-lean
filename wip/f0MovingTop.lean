@@ -82,6 +82,8 @@ With `x_P p = (p ∨ t3) ∧ t6` and `τ_P = rel t3 t6 x_P` on ALL formulas
 Status note: `wip/f0MovingTop-STATUS.md`.
 -/
 
+set_option autoImplicit false
+
 open PLLFormula
 
 namespace PLLND
@@ -90,6 +92,7 @@ namespace MovingTop
 
 open SemUI Sig FreeHAn Base3 FreePLL
 open Interval (rel FreeInPLL topF)
+open Pair (b2)
 open PLLND.LaxInfinite (atomFree)
 
 /-! ## Definitions -/
@@ -342,6 +345,315 @@ def PLLInT6 : Prop := FreeInPLL (relC t3 t6 b3) t6 (fun p => relC t3 t6 (xr p))
 def BaseTauIncomparable : Prop :=
   ¬ Deriv [b3] (relC t3 t6 b3) ∧ ¬ Deriv [relC t3 t6 b3] b3
 
+/-! ## Stage 2: the designed cells
+
+Every countermodel is a `SubCM` table judged by `SubTab.no` in the kernel
+(`decide`); the closed tableau of (T5) is judged by `SubTab.yes'`.  The tables
+of (T5)–(T6), (C) and `BaseTauIncomparable` were produced by the subframe
+tableau (`SubTab.solve`, untrusted) and minimised (`minimiseCM`); the tables of
+the target and of (Q1) are designed (below). -/
+
+section Cells
+
+set_option maxRecDepth 100000
+
+/-- The closed tableau of `t5 ↠ σ²⊥` (subframe tableau, 6604 characters). -/
+def certT5 : PLLND.SubTab.TCert :=
+  (.impR (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).or (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).ifThen (PLLFormula.falsePLL.somehow))) ((((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow).or ((((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow).ifThen ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)))) (.orL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).ifThen (PLLFormula.falsePLL.somehow)) (.orL (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.orR (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow) ((((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow).ifThen ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))) (.boxR ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (.boxL PLLFormula.falsePLL .bot))) (.impL (PLLFormula.falsePLL.somehow) PLLFormula.falsePLL (.orR (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow) ((((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow).ifThen ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))) (.boxR ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (.impL (PLLFormula.falsePLL.somehow) PLLFormula.falsePLL (.orL (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.boxL PLLFormula.falsePLL .bot) (.orL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).ifThen (PLLFormula.falsePLL.somehow)) (.boxLoc PLLFormula.falsePLL (.ax ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)))) (.impL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (PLLFormula.falsePLL.somehow) (.ax ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))) (.boxL PLLFormula.falsePLL .bot)))) .bot))) .bot)) (.impL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (PLLFormula.falsePLL.somehow) (.orR (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.orR (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow) ((((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow).ifThen ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))) (.impR (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow) ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (.impL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (PLLFormula.falsePLL.somehow) (.orL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).ifThen (PLLFormula.falsePLL.somehow)) (.orL (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.ax ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))) (.impL (PLLFormula.falsePLL.somehow) PLLFormula.falsePLL (.ax ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))) .bot)) (.orR (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.boxR PLLFormula.falsePLL (.impL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (PLLFormula.falsePLL.somehow) (.orL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).ifThen (PLLFormula.falsePLL.somehow)) (.orL (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.boxL PLLFormula.falsePLL .bot) (.impL (PLLFormula.falsePLL.somehow) PLLFormula.falsePLL (.boxL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (.boxLoc PLLFormula.falsePLL (.ax ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))))) .bot)) (.boxL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (.orL (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.boxL PLLFormula.falsePLL .bot) (.impL (PLLFormula.falsePLL.somehow) PLLFormula.falsePLL (.boxLoc PLLFormula.falsePLL (.ax ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)))) .bot)))) (.boxL PLLFormula.falsePLL .bot))))) (.orL ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).ifThen (PLLFormula.falsePLL.somehow)) (.orL (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.ax ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))) (.impL (PLLFormula.falsePLL.somehow) PLLFormula.falsePLL (.ax (PLLFormula.falsePLL.somehow)) .bot)) (.orR (PLLFormula.falsePLL.somehow) ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) (.ax (PLLFormula.falsePLL.somehow)))))))) (.orR (((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow) ((((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)).somehow).ifThen ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL))) (.boxR ((PLLFormula.falsePLL.somehow).or ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL)) (.boxL PLLFormula.falsePLL .bot))))))
+
+/-- One world, outside `S`, no atoms. -/
+def K0 : PLLND.SubTab.SubCM := { n := 1, root := 0, le := [[true]], S := [false], val := [[]] }
+
+/-- The chain `r < s < e`, `s ∈ S`, `r, e ∉ S`: refutes `t6` at `r`, where `σ²⊥` and
+`σ³⊥` hold (subframe tableau, minimised). -/
+def Tchain : PLLND.SubTab.SubCM :=
+  { n := 3, root := 0, le := [[true, true, true], [false, true, true], [false, false, true]],
+    S := [false, true, false], val := [[], [], []] }
+
+/-- A root below an `S`-top and a non-`S` top: refutes `t3`. -/
+def Tfork : PLLND.SubTab.SubCM :=
+  { n := 3, root := 0, le := [[true, true, true], [false, true, false], [false, false, true]],
+    S := [false, true, false], val := [[], [], []] }
+
+/-- `[t6] ⊬ σ²⊥` (subframe tableau, 15 worlds, minimised to 7). -/
+def Tt6s2 : PLLND.SubTab.SubCM :=
+  { n := 7, root := 0, le := [[true, true, true, true, true, true, true], [false, true, true, true, false, false, false], [false, false, true, false, false, false, false], [false, false, false, true, false, false, false], [false, false, false, false, true, true, true], [false, false, false, false, false, true, false], [false, false, false, false, false, false, true]],
+    S := [false, true, false, true, false, false, true], val := [[], [], [], [], [], [], []] }
+
+/-- `[t6] ⊬ σ³⊥` (subframe tableau, 29 worlds, minimised to 12). -/
+def Tt6s3 : PLLND.SubTab.SubCM :=
+  { n := 12, root := 0, le := [[true, true, true, true, true, true, true, true, true, true, true, true], [false, true, true, true, true, false, false, false, false, false, false, false], [false, false, true, true, true, false, false, false, false, false, false, false], [false, false, false, true, false, false, false, false, false, false, false, false], [false, false, false, false, true, false, false, false, false, false, false, false], [false, false, false, false, false, true, true, true, true, true, true, true], [false, false, false, false, false, false, true, true, true, false, false, false], [false, false, false, false, false, false, false, true, false, false, false, false], [false, false, false, false, false, false, false, false, true, false, false, false], [false, false, false, false, false, false, false, false, false, true, true, true], [false, false, false, false, false, false, false, false, false, false, true, false], [false, false, false, false, false, false, false, false, false, false, false, true]],
+    S := [false, true, false, false, true, false, true, false, true, false, false, true], val := [[], [], [], [], [], [], [], [], [], [], [], []] }
+
+/-- `[τ σ³⊥] ⊬ σ³⊥` (subframe tableau, 34 worlds, minimised to 12; the same
+frame as `Tt6s3`). -/
+def Ttaub3 : PLLND.SubTab.SubCM := Tt6s3
+
+/-- **The target's O1 table** (designed): two tops `nT ∈ S`, `eT ∉ S` (worlds
+5, 6) over `r < m, k`, `m, k < s, e`, with `k, s ∈ S`; `t6` holds everywhere,
+`y₀ = gen 1` fails only at the root `r`, and `◯y₀` holds there. -/
+def T1 : PLLND.SubTab.SubCM :=
+  { n := 7, root := 0,
+    le := [[true, true, true, true, true, true, true],
+           [false, true, false, true, true, true, true],
+           [false, false, true, true, true, true, true],
+           [false, false, false, true, false, true, true],
+           [false, false, false, false, true, true, true],
+           [false, false, false, false, false, true, false],
+           [false, false, false, false, false, false, true]],
+    S := [false, false, true, true, false, true, false],
+    val := [[], [], [], [], [], [], []] }
+
+/-- **The target's O2 table** (designed): `T1` with a new root in `S`. -/
+def T2 : PLLND.SubTab.SubCM :=
+  { n := 8, root := 0,
+    le := [[true, true, true, true, true, true, true, true],
+           [false, true, true, true, true, true, true, true],
+           [false, false, true, false, true, true, true, true],
+           [false, false, false, true, true, true, true, true],
+           [false, false, false, false, true, false, true, true],
+           [false, false, false, false, false, true, true, true],
+           [false, false, false, false, false, false, true, false],
+           [false, false, false, false, false, false, false, true]],
+    S := [true, false, false, true, true, false, true, false],
+    val := [[], [], [], [], [], [], [], []] }
+
+/-- **The two tops of `ext`, as a table**: `nT ∈ S` and `eT ∉ S` above every
+world, the atoms `ats` true at both (the construction of `Sig.ext`). -/
+def extT (K : PLLND.SubTab.SubCM) (ats : List String) : PLLND.SubTab.SubCM :=
+  { n := K.n + 2, root := K.root,
+    le := ((List.range K.n).map fun i => (List.range K.n).map (K.leB i) ++ [true, true]) ++
+      [List.replicate K.n false ++ [true, false], List.replicate K.n false ++ [false, true]],
+    S := (List.range K.n).map K.SB ++ [true, false],
+    val := (List.range K.n).map (fun i => K.val.getD i []) ++ [ats, ats] }
+
+/-! ### (T5), (T6), (C) -/
+
+theorem t5_sig2_imp : Deriv [] (t5.ifThen (sigN 2 .falsePLL)) :=
+  PLLND.SubTab.yes'.verdict _ certT5
+
+/-- **(T5) PROVED**: `[t5] ⊢ σ²⊥`. -/
+theorem t5Cell : T5Cell :=
+  Deriv.impElim (Deriv.rename (fun _ h => absurd h List.not_mem_nil) t5_sig2_imp)
+    (Deriv.iden (.head _))
+
+/-- The gate of (T5), watched failing: the same tableau is rejected for `t6 ↠ σ²⊥`. -/
+theorem gate_t5 : PLLND.SubTab.check ⟨false, [], [t6.ifThen (sigN 2 .falsePLL)]⟩ certT5 = false := by
+  decide +kernel
+
+theorem nd_t3 : ¬ Deriv [] t3 := SubTab.no.verdict t3 Tfork
+
+/-- **(T5) REFUTED**: `TopAvoid t3 t5` fails at `C = t3` (`t3[⊥ := t3] = σ²⊥`). -/
+theorem not_topAvoidT3T5 : ¬ TopAvoidT3T5 := fun h => nd_t3 (h t3 rfl t5Cell)
+
+/-- `[t3] ⊢ t6`. -/
+theorem t3_t6 : Deriv [t3] t6 := Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
+theorem nd_t6 : ¬ Deriv [] t6 := SubTab.no.verdict t6 Tchain
+
+/-- **PROVED**: `[t3] ⊢ t6` and `⊬ t6`. -/
+theorem t6Below : T6Below := ⟨t3_t6, nd_t6⟩
+
+theorem nd_t6_sig2_imp : ¬ Deriv [] (t6.ifThen (sigN 2 .falsePLL)) := SubTab.no.verdict _ Tt6s2
+
+/-- (C), `n = 2`: `[t6] ⊬ σ²⊥`. -/
+theorem nd_t6_sig2 : ¬ Deriv [t6] (sigN 2 .falsePLL) := fun h => nd_t6_sig2_imp (Deriv.impIntro h)
+
+theorem nd_t6_sig3_imp : ¬ Deriv [] (t6.ifThen (sigN 3 .falsePLL)) := SubTab.no.verdict _ Tt6s3
+
+/-- (C), `n = 3`: `[t6] ⊬ σ³⊥`. -/
+theorem nd_t6_sig3 : ¬ Deriv [t6] (sigN 3 .falsePLL) := fun h => nd_t6_sig3_imp (Deriv.impIntro h)
+
+theorem nd_sig2_t6_imp : ¬ Deriv [] ((sigN 2 .falsePLL).ifThen t6) := SubTab.no.verdict _ Tchain
+
+/-- `[σ²⊥] ⊬ t6`, so `[σⁿ⊥] ⊢ t6` fails at `n = 2`. -/
+theorem nd_sig2_t6 : ¬ Deriv [sigN 2 .falsePLL] t6 := fun h => nd_sig2_t6_imp (Deriv.impIntro h)
+
+theorem nd_b3_t6_imp : ¬ Deriv [] (b3.ifThen t6) := SubTab.no.verdict _ Tchain
+
+/-- `[σ³⊥] ⊬ t6`. -/
+theorem nd_b3_t6 : ¬ Deriv [b3] t6 := fun h => nd_b3_t6_imp (Deriv.impIntro h)
+
+theorem nd_b3_taub3_imp : ¬ Deriv [] (b3.ifThen (relC t3 t6 b3)) := SubTab.no.verdict _ Tchain
+
+theorem nd_taub3_b3_imp : ¬ Deriv [] ((relC t3 t6 b3).ifThen b3) := SubTab.no.verdict _ Ttaub3
+
+/-- **PROVED**: the bottoms `σ³⊥` and `τ σ³⊥` are incomparable. -/
+theorem baseTauIncomparable : BaseTauIncomparable :=
+  ⟨fun h => nd_b3_taub3_imp (Deriv.impIntro h), fun h => nd_taub3_b3_imp (Deriv.impIntro h)⟩
+
+/-! ### The target: `[t6] ⊢ y q` for the code-1 atom `q`
+
+Under `t6`, `Y = t4 ∨ ¬t4` and `t3` hold at the same worlds, so `◯Y` and
+`◯t3` do; then `σ²⊥ ⊢ relX (rn 3)`, and the odd rung `φ₃ = relX (rn 7)` has
+the form `A ∨ (A ↠ relX (rn 3))`, which gives `(φ₃ ↠ σ²⊥) ↠ σ²⊥`, hence
+`(c₂ ↠ σ²⊥) ↠ σ²⊥` and `gen 2`. -/
+
+section Collapse
+
+variable (M : SubframeModel)
+
+theorem e_t4 {u : M.W} (h : M.force u e) : M.force u t4 :=
+  fun _ hw _ => SubframeModel.force_mono M e hw h
+
+theorem ne_not_t4 {u : M.W} (hn : M.force u ne) (h4 : M.force u t4) : False :=
+  hn u (M.refl u) (h4 u (M.refl u) (Or.inr hn))
+
+/-- `t3 ⊢ Y`. -/
+theorem t3_Y {v : M.W} (h : M.force v t3) : M.force v Yf := by
+  rcases (h : M.force v e ∨ M.force v ne) with he | hn
+  · exact Or.inl (e_t4 M he)
+  · exact Or.inr fun w hw h4 => ne_not_t4 M (SubframeModel.force_mono M ne hw hn) h4
+
+/-- `[t6] ⊢ Y ↠ t3`. -/
+theorem Y_t3 {v : M.W} (h6 : M.force v t6) (hY : M.force v Yf) : M.force v t3 := by
+  rcases (hY : M.force v t4 ∨ M.force v (t4.ifThen .falsePLL)) with h4 | hn4
+  · exact h6 v (M.refl v) (Or.inr h4)
+  · exact Or.inr fun w hw he => hn4 w hw (e_t4 M he)
+
+/-- `◯t3 ⊢ ◯Y`. -/
+theorem boxt3_xf {v : M.W} (h : M.force v (.somehow t3)) : M.force v xf :=
+  fun u hu hS => t3_Y M (h u hu hS)
+
+/-- `[t6] ⊢ ◯Y ↠ ◯t3`. -/
+theorem xf_boxt3 {v : M.W} (h6 : M.force v t6) (hx : M.force v xf) :
+    M.force v (.somehow t3) :=
+  fun u hu hS => Y_t3 M (SubframeModel.force_mono M t6 hu h6) (hx u hu hS)
+
+/-- `[t6] ⊢ σ²⊥ ↠ relX (rn 3)`. -/
+theorem b2_rX3 {v : M.W} (h6 : M.force v t6) (hb : M.force v b2) :
+    M.force v (ZL.relX (RNEmbed.rnP 1).1) := by
+  rcases (hb : M.force v (.somehow t3) ∨ M.force v ((PLLFormula.somehow t3).ifThen t3)) with hc | hg
+  · exact Or.inl (boxt3_xf M hc)
+  · exact Or.inr fun u hu hx => hg u hu (xf_boxt3 M (SubframeModel.force_mono M t6 hu h6) hx)
+
+/-- `[t6] ⊢ (φ₃ ↠ σ²⊥) ↠ σ²⊥`, `φ₃ = relX (rn 7)`. -/
+theorem phi3_b2 {v : M.W} (h6 : M.force v t6) :
+    M.force v (((phiK 3).ifThen b2).ifThen b2) := by
+  have e3 : phiK 3 = (ZL.relX (RNEmbed.rnP 2).1).or
+      ((ZL.relX (RNEmbed.rnP 2).1).ifThen (ZL.relX (RNEmbed.rnP 1).1)) := by
+    unfold phiK
+    rw [RNEmbed.rn_odd_eq]
+    rfl
+  rw [e3]
+  intro u hu H
+  refine H u (M.refl u) (Or.inr fun w hw hA => ?_)
+  exact b2_rX3 M (SubframeModel.force_mono M t6 (M.trans hu hw) h6) (H w hw (Or.inl hA))
+
+/-- **`[t6] ⊢ gen 2`**, semantically. -/
+theorem force_gen2 {v : M.W} (h6 : M.force v t6) : M.force v (gen 2) := by
+  refine Or.inr fun u hu H => ?_
+  exact phi3_b2 M h6 u hu fun w hw h3 => H w hw (Or.inl h3)
+
+end Collapse
+
+/-- **PROVED: `[t6] ⊢ y q`**, `q` the atom of code `1`. -/
+theorem t6_gen2 : Deriv [t6] (gen 2) :=
+  Interval.deriv_of_sem fun M _ _ hv => force_gen2 M hv
+
+theorem xr_a1 : xr a1 = gen 2 := rfl
+
+/-- **PROVED: `[t6 ∨ σ³⊥] ⊢ y q`**. -/
+theorem bT_xr_a1 : Deriv [bT] (xr a1) := by
+  rw [xr_a1]
+  exact Deriv.orElim (Deriv.iden (.head _)) (Deriv.toHead t6_gen2) (Deriv.toHead (b3_le_gen 2))
+
+/-- **Cell O3 FAILS (the cell holds)**: `[t6 ∨ σ³⊥] ⊢ relB σ³⊥ y (◯(p ∨ q) → ◯p ∨ ◯q)`. -/
+theorem bT_O3 : Deriv [bT] (relB b3 xr O3) := by
+  have h : Deriv ((PLLFormula.somehow ((xr a0).or (xr a1))) :: [bT]) (xr a1) :=
+    Deriv.rename (fun _ hx => .tail _ hx) bT_xr_a1
+  have h' : Deriv ((PLLFormula.somehow ((xr a0).or (xr a1))) :: [bT])
+      (PLLFormula.somehow (xr a1)) := h.elim fun d => ⟨.laxIntro d⟩
+  exact Deriv.impIntro (Deriv.orIntro2 h')
+
+/-- **REFUTED: the target cell at O3**. -/
+theorem not_targetCell_O3 : ¬ TargetCell O3 := fun h => h bT_O3
+
+/-- **Cell O1 PASSES**: `[t6 ∨ σ³⊥] ⊬ relB σ³⊥ y (◯p → p)` (table `T1`). -/
+theorem targetCell_O1 : TargetCell O1 := fun h =>
+  (SubTab.no.verdict (bT.ifThen (relB b3 xr O1)) T1) (Deriv.impIntro h)
+
+/-- **Cell O2 PASSES**: `[t6 ∨ σ³⊥] ⊬ relB σ³⊥ y (◯p ∨ ¬◯p)` (table `T2`). -/
+theorem targetCell_O2 : TargetCell O2 := fun h =>
+  (SubTab.no.verdict (bT.ifThen (relB b3 xr O2)) T2) (Deriv.impIntro h)
+
+/-- The gate of the target's tables, watched failing: neither refutes the
+derivable O3 cell. -/
+theorem gate_T1 : T1.refutes (bT.ifThen (relB b3 xr O3)) = false ∧
+    T2.refutes (bT.ifThen (relB b3 xr O3)) = false := by
+  decide +kernel
+
+theorem nd_top_q_imp : ¬ Deriv [] (topF.ifThen (.prop a1)) := SubTab.no.verdict _ K0
+
+/-- **REFUTED: the target `PLLBelowTop`**: the copy sends `q` to the top,
+`rel ⊤ ⊣⊢ b ⊢ y q ∧ b = rel q`, while `[⊤] ⊬ q`. -/
+theorem not_pllBelowTop : ¬ PLLBelowTop := fun ⟨_, _, hf⟩ => by
+  have h : Deriv [rel b3 bT yT topF] (rel b3 bT yT (.prop a1)) :=
+    Deriv.andIntro (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) bT_xr_a1)
+      (Deriv.andElim2 (Deriv.iden (.head _)))
+  exact nd_top_q_imp (Deriv.impIntro ((hf topF (.prop a1)).mpr h))
+
+/-- **REFUTED: the reduced target** (`C = O3`, `⊬ O3`). -/
+theorem not_pllBelowTopReduced : ¬ PLLBelowTopReduced := fun h => pll_O3 (h O3 bT_O3)
+
+/-! ### The cells of (Q1): `[t6] ⊬ aTr t3 C`, on the tables `ext K` -/
+
+theorem q1_cell_p : ¬ Deriv [t6] (aTr t3 pA) := fun h =>
+  (SubTab.no.verdict (t6.ifThen (aTr t3 pA)) (extT K0 [a0, a1])) (Deriv.impIntro h)
+
+theorem q1_cell_O1 : ¬ Deriv [t6] (aTr t3 O1) := fun h =>
+  (SubTab.no.verdict (t6.ifThen (aTr t3 O1)) (extT FreePLL.K1 [a0, a1])) (Deriv.impIntro h)
+
+theorem q1_cell_O2 : ¬ Deriv [t6] (aTr t3 O2) := fun h =>
+  (SubTab.no.verdict (t6.ifThen (aTr t3 O2)) (extT FreePLL.K2 [a0, a1])) (Deriv.impIntro h)
+
+theorem q1_cell_O3 : ¬ Deriv [t6] (aTr t3 O3) := fun h =>
+  (SubTab.no.verdict (t6.ifThen (aTr t3 O3)) (extT FreePLL.K3 [a0, a1])) (Deriv.impIntro h)
+
+/-- The gate of the (Q1) tables, watched failing: `ext K1` does not refute the
+image of the theorem `p → p`. -/
+theorem gate_q1 :
+    (extT FreePLL.K1 [a0, a1]).refutes (t6.ifThen (aTr t3 (pA.ifThen pA))) = false := by
+  decide +kernel
+
+end Cells
+
 end MovingTop
 end F0
 end PLLND
+
+/-! ## Axiom pins -/
+
+#axioms_within PLLND.F0.MovingTop.t5_sig2_imp [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.t5Cell [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.gate_t5 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.nd_t3 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.not_topAvoidT3T5 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.t3_t6 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.nd_t6 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.t6Below [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.nd_t6_sig2 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.nd_t6_sig3 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.nd_sig2_t6 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.nd_b3_t6 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.baseTauIncomparable [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.t3_Y [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.Y_t3 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.b2_rX3 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.phi3_b2 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.force_gen2 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.t6_gen2 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.xr_a1 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.bT_xr_a1 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.bT_O3 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.not_targetCell_O3 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.targetCell_O1 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.targetCell_O2 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.gate_T1 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.not_pllBelowTop [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.not_pllBelowTopReduced [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.q1_cell_p [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.q1_cell_O1 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.q1_cell_O2 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.q1_cell_O3 [propext, Quot.sound]
+#axioms_within PLLND.F0.MovingTop.gate_q1 [propext, Quot.sound]
