@@ -470,8 +470,8 @@ The pin key (Matthew's standing rule for all papers): one key defines pext =
 [pext], [pext,Q], [pext,C,Q].  In `PaperKit/Blocks.lean`, opt-in, defaults
 unchanged: `{pinKey}` (the key, the one place the full names appear),
 `{pinsOf}` (as `{axiomsOf}`, abbreviated), and `set_option paperkit.pins
-true`, which gives every `{lemmaTable}` row its computed pin in a fourth
-column.  The F0 paper sets the option in every section with a table; the
+true`, which gives every `{lemmaTable}` row its computed pin, in a column
+before the source link.  The F0 paper sets the option in every section with a table; the
 semantics paper does not, so its output is unchanged (not rebuilt here).  In
 the prose the full names became the abbreviations (pins) or "choice" (the
 axiom, in words); `Classical.propDecidable`, `Classical.skolem` and the like,
@@ -527,3 +527,49 @@ that, F7 failed on six definitions reached only through the equations of
 notation list: `Endpoints.aK` (its notation a_K in the table of bases).  The
 definitions named in the text are the statements of the theorems beside them
 in the tables (`NecBox` with `necBox`, …), as in v0.7.
+
+## 2026-11-01 18:42 GMT: v0.8 rendered
+
+Checks (build of `67920eb0`, stamp without `+`):
+
+* `tex errors: 0`, `missing glyphs: 0`, 50 pages (v0.7: 40); html-single
+  `unresolved: 0 empty, 0 find/`.  Only `PaperKit.*` and `F0Paper.*` were
+  rebuilt by the paper builds, besides the four new `wip` modules (built once,
+  as dependencies).  The first full build had one TeX error (a double
+  superscript from a translation of a translation, `rel_comp`; now bracketed)
+  and 54 pages with the pin under the source link; with the pin in its own
+  column, 50.
+* Closure check: 0 failures; B 15, moved lemma rows 17 (as v0.7), 369 body
+  table rows (v0.7: 260; 109 added, none lost or duplicated), 32 appendix
+  rows, 143 body table definitions, all A.  Watched failing: F7 on six
+  definitions before the classifier read equation lemmas, and F4 (29
+  failures) on the TeX before post-processing, as in v0.7.
+* Barred-term scan (byte-read, `scan.py`) of `F0Paper/`, `PaperKit/`,
+  `scripts/f0-paper.sh` and the PDF text: no new hit.  Pre-existing: "UI"
+  only as the sets $`U_i` of cuts in the PDF text, `⟦t₃⟧` in a code comment
+  of `PaperKit/Math.lean`, "private" in this file's v0.5 section.  "dense"
+  only in the order sense, all pre-existing; no spaced em dash.
+* Overfull boxes introduced by the new text fixed (pins paragraphs, a long
+  lemma name, three tables now within the text block); the source labels of
+  the tables run into the margin as in v0.7.
+* Every page viewed (60 dpi, contact sheets under `_out/pngv/`).
+
+Builds (each under `gtimeout`):
+
+| run | command | exit | time |
+|---|---|---|---|
+| 1 | `lake build wip.f0Endpoints wip.f0InsideOut -q` (built `f0FreeInterval`, `f0MovingTop`, `f0Endpoints`, `f0InsideOut`) | 0 | 88 s |
+| 2 | `lake build F0Paper.Math PaperKit.Blocks` | 0 | 73 s |
+| 3 | `lake build F0Paper.Math PaperKit.Blocks F0Paper.Blocks` | 0 | 78 s |
+| 4 | `lake build F0Paper.Sections.SelfSim` | 1 (bib key missing; unescaped `[`) | 40 s |
+| 5 | `lake build F0Paper` | 1 (unescaped `]`) | 82 s |
+| 6 | `lake build F0Paper` | 0 | 129 s |
+| 7 | `scripts/f0-paper.sh` | 0 (tex errors 1, 54 pp.) | 138 s |
+| 8 | `scripts/f0-paper.sh` | 0 (0, 50 pp.) | 242 s |
+| 9 | `scripts/f0-paper.sh` at `2ffea6de` | 0 (0, 50 pp.) | 165 s |
+| 10 | `scripts/f0-paper.sh` | 0 (0, 50 pp.) | 254 s |
+| 11 | `scripts/f0-paper.sh` at `67920eb0` | 0 (0, 50 pp.) | 143 s |
+
+Lean probes (`lake env lean`, untracked scratch): the printed statements of
+every cited name (exit 0, 16 s and 21 s); the closure classifier (exit 0,
+17–19 s, four runs).  No `lake exe`.
