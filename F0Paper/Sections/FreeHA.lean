@@ -11,6 +11,8 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed PLLND.F0.FreeHAn PLLND.F0.Base3
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "Free Heyting algebras in F0" =>
 
 The free Heyting algebra $`H_n` on $`n` generators, and $`H_\omega` on
@@ -19,10 +21,14 @@ $`[\sigma^{3}\bot, \top]`, where $`\sigma^{m}\bot` is the $`m`-th base of the
 nested copies of Section 9; so does the free PLL-algebra on countably many
 generators.  The result comes first, then why it is
 unexpected, where the free structure stops, the generators, the construction,
-and the formal statement with the reasons for trusting it.  Every declaration
-here is choice-free; `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
-`wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean`,
-`wip/f0FreeAnyFamily.lean`, `wip/f0EmbedForms.lean`, `wip/f0FreePLL.lean`.
+and the formal statement with the reasons for trusting it; then copies of
+$`H_\omega` in every non-degenerate interval of its copy, nested to every
+depth, and PLL in an interval of itself, with a tower of such copies carried
+into $`F_0`.  Every declaration here is choice-free; `wip/f0FreeIPL.lean`,
+`wip/f0FreeHAn.lean`, `wip/f0FreePair.lean`, `wip/f0MeetCount.lean`,
+`wip/f0FreeBase3.lean`, `wip/f0FreeAnyFamily.lean`, `wip/f0EmbedForms.lean`,
+`wip/f0FreePLL.lean`, `wip/f0FreeInterval.lean`, `wip/f0MovingTop.lean`,
+`wip/f0Endpoints.lean`.
 
 # Summary
 
@@ -124,7 +130,11 @@ variables, and a no gives a no for more (pen, one line each).  `freeIPL1`
 states the one-generator case at $`t_3` for the map
 $`h_1(A) = \sigma(A[p := \bigcirc\bot])`, which sends $`p` to
 $`\bigcirc t_3`; `noFreeHA2` shows that for every pair of variable-free
-formulas some signed conjunction lies below $`t_3`.
+formulas some signed conjunction lies below $`t_3`.  So no top helps over
+$`t_3`: for every $`b`, no variable-free generators give a faithful copy of
+PLL in $`[t_3, b]` (`NoClosedStepT3`, `noClosedStepT3`, by `noFreeHA2` for
+two generators; `ClosedStep` is the statement with variable-free generators).
+PROVED.
 
 _The obstruction._  A copy of $`H_n` that is one-to-one and preserves
 $`\land`, with bottom $`a`, needs $`k(a) \ge 2^{n}`: the $`2^{n}` signed
@@ -341,7 +351,7 @@ $`\bigcirc(p \lor q) \twoheadrightarrow \bigcirc p \lor \bigcirc q`, were shown
 to have images that are no theorems (`cell_O1`, `cell_O2`, `cell_O3`), and a
 gadget whose copies read $`S` as in the $`x_0` design was watched failing on
 the second.  PROVED (`freeReaders`, `freePLLAbove_base3`; pins
-$`\mathsf{propext}`, $`\mathsf{Quot.sound}`).
+\[pext,Q\]).
 
 # Any family, and every base above
 
@@ -461,7 +471,7 @@ Why the statement says what the summary claims:
   natural deduction of {cite}`FairtloughMendler1997` (Section 2;
   `docs/calculus-map.md`).  The semantics appears only inside the proofs.
 * (c) _From the Lean statement to a Heyting embedding of_ $`H_n`.
-  `conservativity_IPL` (mechanised, axioms {axiomsOf}`conservativity_IPL`)
+  `conservativity_IPL` (mechanised, pin {pinsOf}`conservativity_IPL`)
   makes $`\bigcirc`-free PLL derivability IPC derivability, and the Lindenbaum
   algebra of IPC on $`p_0, \ldots, p_{n-1}` is $`H_n` (textbook, not
   mechanised).  $`h` is a substitution, so it commutes with $`\land`, $`\lor`,
@@ -470,8 +480,7 @@ Why the statement says what the summary claims:
   $`\twoheadrightarrow` of $`F_0` since $`b \vdash a \twoheadrightarrow b`.  It is
   well defined on classes by ($`\Longrightarrow`) and one-to-one by
   ($`\Longleftarrow`): a Heyting embedding (pen, three lines).
-* (d) _Trust base._  The Lean kernel; the axioms $`\mathsf{propext}` and
-  $`\mathsf{Quot.sound}` (computed in Section 13); no `Classical.choice`, no
+* (d) _Trust base._  The Lean kernel; the pin \[pext,Q\] (computed in Section 13); no choice, no
   `sorry`, no `native_decide`.  The pins are enforced at build time by
   `#axioms_within` and were watched failing at tighter bounds.
 * (e) _Teeth._  The generators are explicit formulas; the same statement is
@@ -532,11 +541,152 @@ $`h` is one-to-one, not onto $`[\sigma^{3}\bot, \top]`.
 * (3) Below $`\sigma^{3}\bot` the free structure thins out, as the table of
   bases shows.
 
+# Every interval of the copy
+
+The copy of $`H_\omega` in $`[\sigma^{3}\bot, \top]` contains copies of
+$`H_\omega` in each of its non-degenerate intervals, to every depth, with the
+interval operations of $`F_0` (`wip/f0FreeInterval.lean`).  The device is
+that of {cite}`OConnor2007`: in the proof of his Theorem 14, a lattice
+embedding of $`H_\omega` into $`H_2` (the translation appears first in the
+proof of his Proposition 6), $`\bot` goes to $`\varphi`, the generators to
+$`(\varphi' \lor \varphi) \land \psi` and $`\to` to $`(\to) \land \psi`, inside
+$`H_2`.  New here are the transport into $`F_0` and the nesting to every
+depth.  The translation is the interval translation $`A^{x}_{[a,b]}` of
+Section 9; $`\mathit{FreeIn}(a, b, x)` (`FreeIn`) says that it is faithful on
+$`\bigcirc`-free formulas, with the generators in $`[a, b]`:
+
+{stmt}`Interval.FreeIn`
+
+_The core lemma_, in the free algebra: for $`\bigcirc`-free
+$`\xi \vdash \zeta` with $`\zeta \nvdash \xi`, and a renaming $`\rho` onto
+variables that occur in neither (`Fresh`), the generators
+$`(\rho(p) \lor \xi) \land \zeta` give a faithful copy of $`H_\omega` in
+$`[\xi, \zeta]`.  PROVED.
+
+{stmt (width := 78)}`Interval.CoreLemma`
+
+{leanStmt Interval.coreLemma}
+
+{leanDef Interval.CoreLemma}
+
+Reflection is by gluing: a finite countermodel $`K` of $`A \vdash B` is put
+below the strict successors of a world $`w` that is maximal among the worlds
+forcing $`\zeta` and refuting $`\xi` in a finite countermodel $`N` of
+$`\zeta \vdash \xi` (`Glue.G`, `exists_max_not`); collapsing the copy onto
+$`w` preserves $`\xi` and $`\zeta` (`Glue.collapse`), and the generators read
+$`K` at the copy (`core_reflects`).  Without $`\zeta \nvdash \xi` the lemma is
+REFUTED (`CoreNoStrict`, `not_coreNoStrict`).  A faithful interval copy carries the core copy
+into its own interval, since composing interval translations is an interval
+translation, for every formula (`rel_comp`; `Nest`, `nest`).  Inside $`F_0`, with
+variable-free bounds and generators, this gives the main theorem.  PROVED.
+
+{stmt (width := 78)}`Interval.MainTheorem`
+
+{leanStmt Interval.mainTheorem}
+
+{leanDef Interval.MainTheorem}
+
+The copy of $`H_\omega` above $`\sigma^{3}\bot` is an interval copy,
+$`\mathit{FreeIn}(\sigma^{3}\bot, \top, x^{\omega})` (`Bridge3`, `bridge3`), so $`H_\omega`
+lies, with variable-free generators, in every interval
+$`[\xi^{x^{\omega}}_{[\sigma^{3}\bot, \top]}, \zeta^{x^{\omega}}_{[\sigma^{3}\bot, \top]}]`
+with $`\xi \vdash \zeta`, $`\zeta \nvdash \xi`.  Iterating over a sequence of
+such pairs $`(\xi_d, \zeta_d)` gives the tower $`(a_0, b_0, x_0) = (\sigma^{3}\bot, \top, x^{\omega})`, $`a_{d+1} = (\xi_d)^{x_d}_{[a_d, b_d]}`,
+$`b_{d+1} = (\zeta_d)^{x_d}_{[a_d, b_d]}`, with the carried generators
+(`tower`).  It is a faithful interval copy of $`H_\omega` at every depth.
+PROVED.
+
+{stmt}`Interval.NestAll`
+
+{leanStmt Interval.nestAll}
+
+{leanDef Interval.NestAll}
+
+The image is a Heyting subalgebra of $`[a_d, b_d]` under the interval
+operations of $`F_0`: meet, join, $`(u \twoheadrightarrow v) \land b_d`, bottom
+$`a_d`, top $`b_d`; the translation sends $`\land`, $`\lor`,
+$`\twoheadrightarrow`, $`\bot` to these by definition (`RelConnectives`).  This
+holds hereditarily: the depth-$`d` translation is one interval translation
+into $`[a_d, b_d]` (`TowerRel`), each interval lies in the one before, and the
+operations of a sub-interval computed inside the larger interval agree with
+those computed in $`F_0` (`IntervalOpsAgree`, `TowerOpsAgree`).  PROVED.
+
+{stmt}`Interval.IntervalOpsAgree`
+
+{leanStmt Interval.hereditary_ops}
+
+{leanDef Interval.HereditaryOps}
+
+The same nesting for PLL, $`\bigcirc` included, is OPEN (`NestPLL`, Section 14).
+
+# PLL in an interval of itself
+
+PLL embeds faithfully into its own interval $`[t_3, t_6]`: with
+$`x_P(p) = (p \lor t_3) \land t_6`, the translation
+$`\tau_P(A) = A^{x_P}_{[t_3, t_6]} \dashv\vdash A^{t_3} \land t_6` preserves
+and reflects $`\vdash` between all formulas, $`\bigcirc` included
+(`wip/f0MovingTop.lean`).  The proof is that of reflection in Section 9: at
+the old worlds of $`\widehat{M}`, $`A^{t_3}` holds exactly where $`A` holds in
+$`M` (`orig_aTr`), and $`t_6` holds everywhere (`t6_ext`).  PROVED.
+
+{stmt}`MovingTop.PLLSelf`
+
+{leanStmt MovingTop.pllSelf}
+
+{leanDef MovingTop.PLLSelf}
+
+Its iterates give a tower of copies of PLL inside the free PLL-algebra:
+$`\tau_P^{d}` is faithful, it is the interval translation into
+$`[\tau_P^{d}(\bot), \tau_P^{d}(\top)]` with the generators
+$`\tau_P^{d}(p)`, and the intervals are strictly nested at both ends.  PROVED.
+
+{stmt (width := 80)}`MovingTop.PLLSelfTower`
+
+{leanStmt MovingTop.pllSelfTower}
+
+{leanDef MovingTop.PLLSelfTower}
+
+The readers carry the whole tower into $`F_0`.  With $`g(A) = A[q := x^{r}(q),\ \bot := \sigma^{3}\bot]`, the copy of PLL above, each
+$`g \circ \tau_P^{d}` is faithful, its image lies in
+$`[g(\tau_P^{d}(\bot)), g(\tau_P^{d}(\top))] \subseteq [\sigma^{3}\bot, \top]`,
+these intervals are strictly nested, and the copy of depth $`d + 1` lies in the
+interval of depth $`d`.  PROVED.
+
+{stmt (width := 80)}`MovingTop.PLLTowerInF0`
+
+{leanStmt MovingTop.pllTowerInF0}
+
+{leanDef MovingTop.PLLTowerInF0}
+
+The first step is $`[\sigma^{4}\bot, \sigma^{3}(t_6)]`:
+$`g(\tau_P(\bot)) = \sigma^{4}\bot`, an equation, and
+$`g(\tau_P(\top)) \dashv\vdash \sigma^{3}(t_6)` (`TowerFirstStep`, `towerFirstStep`).  The tower
+exists over every interval $`[a, b]` with $`\mathit{SelfStep}(a, b)`,
+$`a \nvdash \bot` and $`\nvdash b` (`SelfTower`, `selfTower`, in the form `SelfTowerAt`),
+and every such interval, carried by $`g`, has variable-free generators over
+$`\sigma^{3}(a)`: on variable-free formulas $`g` is $`\sigma^{3}`
+(`SelfToClosed`, `selfToClosed`).  PROVED.
+
+A copy below $`\top` by the readers themselves fails.  With
+$`b_T = t_6 \lor \sigma^{3}\bot` and the generators
+$`y_T(p) = x^{r}(p) \land b_T`, the statement that PLL embeds in
+$`[\sigma^{3}\bot, b_T]` is REFUTED: under $`t_6` the reader of the atom of
+code 1 collapses, $`t_6 \vdash x_2` (`t6_gen2`), so the copy sends that atom to
+the top of the interval.
+
+{stmt}`MovingTop.PLLBelowTop`
+
+{leanStmt MovingTop.not_pllBelowTop}
+
+{leanDef MovingTop.PLLBelowTop}
+
 # Supporting declarations
 
-{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 free3_preserves free3_reflects freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc AnyFamily.freeHAnAbove_base3' AnyFamily.sigN_relB AnyFamily.sigN_base FreePLL.xr FreePLL.relB_transferO FreePLL.sep_circ_x1 FreePLL.not_image_circ_x1 FreePLL.cell_O1 FreePLL.cell_O2 FreePLL.cell_O3}
+{lemmaTable relB pvar varsBelow FreeHAωAbove MeetCount.MeetEmb TypeBound Distinct ZL.relX ZL.bmax_m ladder sat_rn_odd_cf ZL.transfer ZL.cell_force base2_unbounded not_typeBound_base2 FreeIPL.FreeIPLInAboveT3 FreeIPL.noFreeHA2 FreeIPL.not_FreeIPLInAboveT3 Pair.FreePair Pair.freeHAnAbove_base2_two Pair.relB_preserves MeetCount.typeBound_bot MeetCount.typeBound_t3 MeetCount.countingCriterion x3 x3_pvar x3_vf b3_le_x3 free3_preserves free3_reflects freeHAnAbove_of_family conjecture_of_base3 Cell.b3_all Cell.sep_bot Cell.sepimp_bot Gad.Dp Gad.w_not_b3 Gad.w_gen0 Gad.w_gen_succ Gad.w_read Base3.code Base3.code_inj Base3.xω Base3.cell_Ca Base3.cell_Cb Base3.cell_Cc AnyFamily.freeHAnAbove_base3' AnyFamily.sigN_relB AnyFamily.sigN_base FreePLL.xr FreePLL.relB_transferO FreePLL.sep_circ_x1 FreePLL.not_image_circ_x1 FreePLL.cell_O1 FreePLL.cell_O2 FreePLL.cell_O3 Endpoints.ClosedStep Endpoints.NoClosedStepT3 Endpoints.noClosedStepT3 Interval.FreeHAωIn Interval.Fresh Interval.occ Interval.coreGen Interval.nestGen Interval.rel_comp Interval.Nest Interval.nest Interval.CoreNoStrict Interval.not_coreNoStrict Interval.Bridge3 Interval.bridge3 Interval.ICopy Interval.ICopy.step Interval.freshRen Interval.atomBound Interval.tower Interval.TowerHyp Interval.freeHAωIn_tower Interval.RelConnectives Interval.compT Interval.coreT Interval.TowerRel Interval.TowerOpsAgree MovingTop.xP MovingTop.tauP MovingTop.tauPN MovingTop.orig_aTr MovingTop.gR MovingTop.TowerFirstStep MovingTop.towerFirstStep Endpoints.SelfTower Endpoints.selfTower Endpoints.SelfToClosed Endpoints.selfToClosed MovingTop.bT MovingTop.yT MovingTop.t6_gen2}
 
-Pins: every declaration of `wip/f0FreeIPL.lean`, `wip/f0FreeHAn.lean`,
-`wip/f0FreePair.lean`, `wip/f0MeetCount.lean`, `wip/f0FreeBase3.lean`,
-`wip/f0FreeAnyFamily.lean` and `wip/f0FreePLL.lean` here within `propext`,
-`Quot.sound` (`#axioms_within`).
+Pins: each row's pin is computed when the document is built.  The modules
+bound them by `#axioms_within`: every declaration of `wip/f0FreeIPL.lean`,
+`wip/f0FreeHAn.lean`, `wip/f0FreePair.lean`, `wip/f0MeetCount.lean`,
+`wip/f0FreeBase3.lean`, `wip/f0FreeAnyFamily.lean`, `wip/f0FreePLL.lean`,
+`wip/f0FreeInterval.lean`, `wip/f0MovingTop.lean` and `wip/f0Endpoints.lean`
+here within \[pext,Q\].

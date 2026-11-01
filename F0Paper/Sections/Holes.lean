@@ -11,6 +11,8 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "A hole" =>
 
 The gaps $`g_k`, $`k \ge 1`, have no greatest lower bound, among all formulas
@@ -34,6 +36,5 @@ Section 12 fills both in the Dedekind–MacNeille completion.
 
 {lemmaTable Wit Wit_below_all_gaps L_no_greatest L_bounded}
 
-Pins (`#print axioms` under `#guard_msgs`): `propext`, `Classical.choice`,
-`Quot.sound` for all four and `gap_no_glb`, through the edged lifts and the
+Pins (`#print axioms` under `#guard_msgs`): \[pext,C,Q\] for all four and `gap_no_glb`, through the edged lifts and the
 ladder's truth sets; whether choice is needed has not been examined.

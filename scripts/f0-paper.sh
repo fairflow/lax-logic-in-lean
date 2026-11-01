@@ -11,9 +11,12 @@
 #     scripts/f0-paper.sh --open
 # Runs from any directory (it cds to the repo root); incremental after the
 # first run.  The paper imports the wip/ modules listed in F0Paper/Math.lean
-# (v0.7: the f0* modules of the sections, from f0Covers to f0FreePLL, and
-# gapWidth, embedNeg, ladder8, floor), which `lake build F0Paper` builds as
-# dependencies.  Sections are F0Paper/Sections/*.lean, in the order of
+# (v0.8: the f0* modules of the sections, from f0Covers to f0FreePLL, with
+# f0FreeInterval, f0MovingTop, f0Endpoints and f0InsideOut, and gapWidth,
+# embedNeg, ladder8, floor), which `lake build F0Paper` builds as
+# dependencies.  Since v0.8 the paper uses the pin key of PaperKit/Blocks.lean
+# ({pinKey}, {pinsOf}, `set_option paperkit.pins true` in every section with
+# a table).  Sections are F0Paper/Sections/*.lean, in the order of
 # F0Paper/Paper.lean; since v0.7 the last is Appendix.lean (Appendix A, the
 # definitions the text does not mention), which one {include} line and one
 # sentence of the Introduction attach.

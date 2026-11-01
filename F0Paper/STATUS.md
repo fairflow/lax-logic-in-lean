@@ -451,3 +451,79 @@ Checks (final build, commit `2286ce0`, stamp without `+`; PDF at
   "completions" in three cited titles (as in v0.6).
   "dense": the same 13 lines as v0.6, all in the order sense.
 * Every page viewed (PNG at 70 dpi under `_out/png/`).
+
+# v0.8: the moving top, the endpoints, nested intervals, the pin key
+
+## 2026-11-01 18:25 GMT: plan and changes
+
+Manager's brief of 2026-11-01, after Matthew's "paper III needs updating with
+the new information".  Agent worktree `agent-aa512ad2942c59573`, branch
+`f0-paper-v0.8` from `origin/f0-paper-v0.6` (`4bcd519b`, v0.7, PR #107), with
+`origin/main` (`c1a6703f`: #111 `wip/f0FreeInterval`, #112
+`wip/f0InsideOut`, #113 `wip/f0MovingTop`, #114 belief-sync) and
+`origin/f0-endpoints` (`18e69a28`, PR #115, `wip/f0Endpoints`) merged in; no
+conflict (the lakefile merged with every entry).  `.lake` cloned once from
+`~/Lean/nightly/lax-logic-in-lean`.  Nothing pushed, no upstream.
+
+The pin key (Matthew's standing rule for all papers): one key defines pext =
+`propext`, Q = `Quot.sound`, C = `Classical.choice`; pins are written
+[pext], [pext,Q], [pext,C,Q].  In `PaperKit/Blocks.lean`, opt-in, defaults
+unchanged: `{pinKey}` (the key, the one place the full names appear),
+`{pinsOf}` (as `{axiomsOf}`, abbreviated), and `set_option paperkit.pins
+true`, which gives every `{lemmaTable}` row its computed pin in a fourth
+column.  The F0 paper sets the option in every section with a table; the
+semantics paper does not, so its output is unchanged (not rebuilt here).  In
+the prose the full names became the abbreviations (pins) or "choice" (the
+axiom, in words); `Classical.propDecidable`, `Classical.skolem` and the like,
+names of Lean declarations on a trace, are kept.
+
+Sections:
+
+* §1: "New in v0.8"; At a glance gains the key and a Pin column (computed),
+  with rows for the new results and the three new OPEN problems.
+* §9: "A copy of F0 strictly below ⊤" (the interval translation, credited
+  to O'Connor; `relClosed`, `copyIffTopAvoid`, `copyT3T6`, `t5_sig2_imp`,
+  `not_copyT3T5`, `w2`, `w3`); "Which bases" (`baseCriterion`, `necCells`,
+  `necBox`, `necPow`, the table of base cells); "Tops over t3" (`extTops`,
+  `topT3Alt`, `meetNotTop`, `topsT3NotMeet`, `noLeastTopT3`,
+  `selfStep_t5_t56`, `tower_t5`); "The shells" (`shell_shift`, `lim_eq_top`,
+  `orbit_order_limit`; the set-theoretic construction of `wip/f0InsideOut.lean`
+  is not used).  The v0.7 sentence "Which bases work is OPEN" is gone.
+* §10: under the table of bases, `noClosedStepT3`; "Every interval of the
+  copy" (`coreLemma`, `mainTheorem`, `nestAll`, `hereditary_ops`; O'Connor
+  2007, arXiv math/0702651, Prop. 6 and the proof of Thm 14); "PLL in an
+  interval of itself" (`pllSelf`, `pllSelfTower`, `pllTowerInF0`,
+  `towerFirstStep`, `selfTower`, `selfToClosed`, `not_pllBelowTop`).
+* §12: "The bases and the t6 tower" (`basesOnlyTop`, `notCofinal`; the join
+  of the bases in F* is ⊤ though they are not cofinal, correcting v0.7's
+  "⊤ exactly when the bases are cofinal"; `towerEnds`, `closing`,
+  `inAllUnique`, `fixedIffInAll`; the readings in F* marked pen).
+* §13: twelve rows; the Axioms column is now Pin.
+* §14: removed "the upper bounds of the bases" and "which bases give a
+  faithful copy" (to "Closed since v0.7", with the correction); added
+  `TauFixedPoint`, `CopySelf` (PROVED at b = ⊤, `copySelf_top`), `NestPLL`;
+  two pen items added.
+* `docs/references.bib`: `OConnor2007` (arXiv record checked 2026-11-01).
+* Not included: the SVGs `docs/f0-moving-top/fig5-t6-copy.svg`,
+  `fig6-pll-tower.svg` and `docs/f0-inside-out/fig1`–`fig4`: their
+  coordinates are written by hand, against the rule that figures come from
+  Lean-certified data by a script.
+
+Notation (`PaperKit/Math.lean`, F0 cases only): the interval translation
+`A^x_{[a,b]}` (`Interval.rel`), `τ_{a,b}` (`relC`), `τ^d_{a,b}` (`tauN`),
+`τ_P`, `x_P`, `g`, `b_T`, `y_T`, `s_{a,b}`, `α_{a,b}`, `α^d_{a,b}`,
+`T^n(a)`, `U_d`, `a_K`, `b'`, `g_1`, `¬¬◯⊥`, `σⁿ(F0)`, `σ^ω(F0)`, `L_n`,
+the tower's `a_d`, `b_d`, `x_d`, `T_d`, `κ_d`, `ξ_d`, `ζ_d`, and
+`FreeHA_ωIn` (no ω in a text italic).
+
+Closure check (the v0.7 check carried over, scratch `check8.py`): B and the
+moved rows read from the appendix's tables; F5 against the 292 rows of v0.7
+(`git show 4bcd519b`); new F7: every definition of a body table is A by the
+v0.7 rule (named in the text, displayed or in a display, by notation, or by
+closure through printed rows).  The classifier now also takes the constants
+of the equation lemmas of a recursive definition (its printed row): without
+that, F7 failed on six definitions reached only through the equations of
+`tower`, `compT`, `tauPN`, `tauSN` (watched).  One hand entry added to the
+notation list: `Endpoints.aK` (its notation a_K in the table of bases).  The
+definitions named in the text are the statements of the theorems beside them
+in the tables (`NecBox` with `necBox`, …), as in v0.7.

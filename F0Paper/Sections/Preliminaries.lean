@@ -11,6 +11,8 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "Preliminaries" =>
 
 Everything in this section was in the repository before the work reported
@@ -131,7 +133,7 @@ point, say $`p < w < x`, and $`x \ge w \le w \lor y \ge y` with $`w \lor y < q`.
 Pins, as recorded in the files and confirmed by `#print axioms` (no pin
 recorded for `OI`, `OM`, `OSR`, `soundness`, `consequence_iff_derivable`,
 `sat_rn_odd`, `sat_rn_even`, `gap_incomparable`): none for `OI`, `OM`, `OSR`;
-`propext` for `box_mono`, `soundness`, `dichotomy`; `propext`, `Quot.sound` for
-`dichotomy_exclusive`; `propext`, `Classical.choice`, `Quot.sound` for the
+\[pext\] for `box_mono`, `soundness`, `dichotomy`; \[pext,Q\] for
+`dichotomy_exclusive`; \[pext,C,Q\] for the
 rest, through the proof of the ladder's truth sets (Section 4 re-proves the odd
 ones without choice).

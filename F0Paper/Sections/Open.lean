@@ -47,21 +47,8 @@ proof sketch is given where one exists.
 * _Is $`{\downarrow}t_8` finite?_  OPEN.  $`t_6 \nvdash t_8`, so the infinite
   chain below $`t_6` (Section 8) does not lie below $`t_8`, and $`t_8` fails on
   that countermodel's ladder.  No sketch.
-* _The upper bounds of the bases $`\sigma^{n}(\bot)` in $`F^{*}`._  The bases
-  increase strictly (`sigN_bot_strict`); their join in $`F^{*}` is $`\top`, a
-  principal point $`{\downarrow}c < \top`, or a limit point, and it is $`\top`
-  exactly when the bases are cofinal in $`F_0`.  OPEN.  A possible route to
-  $`\top`, not checked: as for the PROVED $`\bigvee_k \rho_k = \top`
-  (Section 12, step 4), show that every world of a finite subframe model with
-  decidable $`S` forces some $`\sigma^{n}(\bot)`.  At a maximal world
-  $`t_3 = \sigma(\bot)` holds, and
-  $`\sigma^{n+1}(\bot) = \sigma^{n}(\bot)[\bot := t_3]` should hold one level
-  further down; an upper bound of every base is then $`\top`, by completeness
-  for those models.
 * _How many filters are not normal?_  At least one ($`F_7`, PROVED);
   $`2^{\aleph_0}` is plausible, by varying $`F_7` with independent gaps.  OPEN.
-* _Which bases $`a` give a faithful copy $`\varphi \mapsto \varphi[\bot := a]`?_
-  $`\bigcirc a \ne a` is necessary, and $`a = t_3` works (Section 9).  OPEN.
 * _Which intervals sit at which level_ (Section 2)?  Known: covers and
   $`[\bot, t_n]`, $`n \le 5`, are at level 1; pairs in the odd-gap lattice have
   $`\aleph_0` pairwise $`\parallel` threads; $`[\sigma^{n}(\bot), \top]` is at
@@ -77,6 +64,36 @@ proof sketch is given where one exists.
   OPEN.  The count does not obstruct, as $`k(\sigma^{2}\bot) = \infty`;
   $`H_2` is there (`freePair`), and every $`H_n` one level up, in
   $`[\sigma^{3}\bot, \top]` (Section 10).  No sketch.
+* _Does $`\tau = \tau_{t_3,t_6}` have a fixed point in $`F_0`?_
+  (`TauFixedPoint`.)  OPEN; the conjecture is that it has none
+  (`NoTauFixedPoint`).  By Section 12 a fixed point would be the one element of
+  $`F_0` in every interval of the $`t_6` tower; $`\top`, $`t_6` and $`U_2` are
+  not fixed points.  Sketch: a fixed point $`x` satisfies
+  $`x \dashv\vdash \sigma^{d}(x) \land U_d` for every $`d`, so in a finite model
+  it agrees with “$`\sigma^{d}(t_6)` for every $`d`”, that is, with “$`t_6`
+  holds at every stage of removing the worlds that force $`t_3`”, and the number
+  of stages is unbounded over finite models.  A proof needs a depth measure on
+  variable-free formulas with invariance under depth-bounded bisimulation of
+  subframe models, without choice, and for each depth $`k` a pair of finite
+  models, $`k`-bisimilar at their roots, one with $`U_D` and not
+  $`\sigma^{D}(t_6)`, one with every $`\sigma^{d}(t_6)`.  The repository has
+  neither: its layered bisimulation is for constraint models and carries
+  choice.  The obvious pair, the $`D`-fold extensions by two top worlds of a
+  three-world chain and of a one-world model in $`S`, fails: the roots differ in membership of $`S`,
+  which a formula of depth 1 detects.
+* _Does a copy of $`F_0` in $`[a, b]` give a copy of PLL in $`[a, b]` by the
+  A-translation?_  (`CopySelf`: for variable-free $`a \vdash b`,
+  $`\mathit{CopyStep}(a, b)` implies $`\mathit{SelfStep}(a, b)`.)  PROVED at
+  $`b = \top`, from the base criterion (`copySelf_top`, Section 9); OPEN for
+  other tops.  Eighteen designed cells pass, at $`(t_3, t_6)`, $`(t_3, \top)`
+  and $`(\sigma^{2}\bot, \top)` (`k4_…`, `wip/f0Endpoints.lean`).  No sketch.
+* _Nested intervals for PLL_ (`NestPLL`): the nesting of Section 10 for all
+  formulas, $`\bigcirc` included, with the $`\bigcirc` clause of the interval
+  translation.  OPEN.  The design is ready for it: the glued copy keeps the
+  set $`S` of the countermodel, no generator reads $`S`, and the composition of
+  interval translations holds for every formula (`rel_comp`).  Missing: the
+  collapse and the transfer with the $`\bigcirc` clause, and preservation
+  through `relB_preservesO`.
 
 # Pen arguments awaiting Lean
 
@@ -102,6 +119,23 @@ proof sketch is given where one exists.
 * _The Heyting-embedding reading of `FreeHAnAbove`_: the Lindenbaum algebra of
   IPC is $`H_n` (textbook) and the relativisation is a one-to-one Heyting
   homomorphism (Section 10, point (c)).
+* _$`F_0 \setminus \{\top\}` is the disjoint union of the shells $`L_n`_
+  (Section 9), from `lim_eq_top` and the definitions.
+* _The readings in $`F^{*}` of Section 12_: the join of the bases is $`\top`,
+  from `basesOnlyTop`; the intervals of the $`t_6` tower close on one point,
+  from `closing`, and it lies in $`F_0` iff $`\tau` has a fixed point there,
+  from `fixedIffInAll`.
+
+# Closed since v0.7
+
+_Which bases $`a` give a faithful copy $`\varphi \mapsto \varphi[\bot := a]`?_
+Those with $`\nvdash \bigcirc a \twoheadrightarrow a` and
+$`\nvdash (\bigcirc a \twoheadrightarrow a) \twoheadrightarrow a`, and for them
+PLL embeds in $`[a, \top]` by the A-translation (`baseCriterion`, Section 9).
+_The upper bounds of the bases $`\sigma^{n}(\bot)` in $`F^{*}`_: their join is
+$`\top` (`basesOnlyTop`, Section 12).  v0.7 said that the join is $`\top`
+exactly when the bases are cofinal in $`F_0`; that is false, since the bases
+are not cofinal (`notCofinal`).
 
 # Closed since v0.5
 

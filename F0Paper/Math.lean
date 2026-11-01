@@ -2,7 +2,9 @@
 The F0 paper's environment for `{stmt}` and the tables: the shared notation
 table (`PaperKit/Math.lean`, where the F0 cases live; until 2026-10-24 that
 file was this one) and the modules of the F0 development whose declarations
-the paper displays.
+the paper displays (v0.8: `wip/f0FreeInterval.lean`, `f0MovingTop`,
+`f0Endpoints` and the F0 part of `f0InsideOut`, whose set-theoretic
+construction the paper does not use).
 -/
 import PaperKit.Math
 import wip.f0Covers
@@ -23,6 +25,10 @@ import wip.f0MeetCount
 import wip.f0EmbedForms
 import wip.f0FreeAnyFamily
 import wip.f0FreePLL
+import wip.f0FreeInterval
+import wip.f0MovingTop
+import wip.f0Endpoints
+import wip.f0InsideOut
 import wip.f0SigOnto
 import wip.f0NotIso
 import wip.gapWidth

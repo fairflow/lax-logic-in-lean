@@ -11,11 +11,13 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "Independence of the odd gaps" =>
 
 No finite conjunction of odd gaps entails a finite disjunction of others
 (with $`\bigwedge \emptyset = \top`, $`\bigvee \emptyset = \bot`).  PROVED,
-without `Classical.choice`; `wip/f0Indep.lean`.
+without choice; `wip/f0Indep.lean`.
 
 {stmt}`Indep`
 
@@ -47,7 +49,7 @@ soundness at the root.
 
 {lemmaTable cmM levels root forced_off fails_on indep_of_forcing}
 
-Pins: every declaration here is within `propext`, `Quot.sound`
+Pins: every declaration here is within \[pext,Q\]
 (`#axioms_within`), and `#print axioms` reports exactly these.  The single-edge
 lifts, whose frame law uses `Classical.byContradiction`, are not used, and the
 odd rungs' truth sets are re-proved without choice (`sat_rn_odd_cf`).  The case
