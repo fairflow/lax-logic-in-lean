@@ -63,16 +63,16 @@ As of 2026-11-01:
 
 | | |
 |---|--:|
-| declarations recorded | 31,021 in 628 modules |
-| theorems | 14,160 |
-| axiom-free | 13,556 |
-| `[propext, Quot.sound]` | 8,639 |
-| `[propext]` | 5,957 |
-| using `Classical.choice` | 2,845 |
-| carrying `sorryAx` | **23** |
+| declarations recorded | 44,531 in 835 modules |
+| theorems | 25,340 |
+| axiom-free | 15,980 |
+| `[propext, Quot.sound]` | 14,175 |
+| `[propext]` | 11,055 |
+| using `Classical.choice` | 3,267 |
+| carrying `sorryAx` | **41** |
 | `native_decide`-tainted | **0** |
 
-The 23 `sorryAx` declarations break down as: **17 in `wip/`**, where a `sorry`
+The 41 `sorryAx` declarations break down as: **35 in `wip/`**, where a `sorry`
 is permitted and is the point of a blueprint file; **4 in
 `LaxLogic/ToolkitTest/`**, which are deliberately holed fixtures the prover
 toolkit is measured against; **2 deliberate** in
