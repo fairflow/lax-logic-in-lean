@@ -70,10 +70,10 @@
     <text x="655" y="198" font-weight="600">Shells</text>
     <text x="655" y="222">L<tspan baseline-shift="sub" font-size="10">n</tspan> = σⁿ(F0) ∖ σⁿ⁺¹(F0), one ring each.</text>
     <text x="655" y="242">σ maps L<tspan baseline-shift="sub" font-size="10">n</tspan> one-to-one onto L<tspan baseline-shift="sub" font-size="10">n+1</tspan>:</text>
-    <text x="655" y="262">⊥ ↦ t3 ↦ σ²⊥ ↦ σ³⊥ ↦ ⋯ (red).  pen</text>
+    <text x="655" y="262">⊥ ↦ t3 ↦ σ²⊥ ↦ σ³⊥ ↦ ⋯ (red).  PROVED</text>
 
     <text x="655" y="296" font-weight="600">The centre</text>
-    <text x="655" y="320">⋂<tspan baseline-shift="sub" font-size="10">n</tspan> σⁿ(F0) = {⊤}.  pen</text>
+    <text x="655" y="320">⋂<tspan baseline-shift="sub" font-size="10">n</tspan> σⁿ(F0) = {⊤}.  PROVED</text>
     <text x="655" y="340">So F0 = L₀ ⊔ L₁ ⊔ L₂ ⊔ ⋯ ⊔ {⊤},</text>
     <text x="655" y="360">and each x ≠ ⊤ has a depth d(x):</text>
     <text x="655" y="380">the shell it lies in.</text>

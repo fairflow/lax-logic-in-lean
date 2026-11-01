@@ -55,9 +55,9 @@
   <!-- notes -->
   <g font-size="13.5" fill="#222">
     <text x="20" y="494">T_a(n) = {(0, T_a(m)) : m &lt; n} ∪ {(1, σⁿ(a))},   T_a(ω) = {(0, T_a(m)) : m &lt; ω}.   Each box carries ONE colour, σⁿ(a): the "same" element at level n.</text>
-    <text x="20" y="518">In F0 both orbits converge to ⊤ (pen). As sets, T_⊥(ω) ≠ T_◯⊥(ω): each contains its whole orbit, down to (1, a) inside T_a(0).</text>
-    <text x="20" y="542">Two orbits that meet (σᵐa = σⁿb) are shifts of one another; up to shift, the orbits correspond to the elements of L₀ (pen).</text>
+    <text x="20" y="518">In F0 both orbits converge to ⊤ (PROVED). As sets, T_⊥(ω) ≠ T_◯⊥(ω): each contains its whole orbit, down to (1, a) inside T_a(0).</text>
+    <text x="20" y="542">Two orbits that meet (σᵐa = σⁿb) are shifts of one another; up to shift, the orbits correspond to the elements of L₀ (PROVED).</text>
     <text x="20" y="566">In the full structure the limits become members of the outermost set:  D(ω) ∋ (3, T_a(ω))  for each chosen orbit a.</text>
-    <text x="20" y="590" fill="#555">Status: the definitions and their injectivity are being mechanised (wip/f0InsideOut.lean); the facts marked pen are not yet Lean-checked.</text>
+    <text x="20" y="590" fill="#555">Status: everything here is PROVED in wip/f0InsideOut.lean. The set-theoretic part uses Classical.choice, through Mathlib's ZFSet.</text>
   </g>
 </svg>

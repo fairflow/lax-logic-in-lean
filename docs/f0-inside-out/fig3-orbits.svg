@@ -92,9 +92,9 @@
 
   <!-- notes -->
   <g font-size="13.5" fill="#222">
-    <text x="30" y="450">Each ROW is one orbit; each COLUMN is one shell. σ maps each shell one-to-one onto the next (pen), so the rows fill</text>
+    <text x="30" y="450">Each ROW is one orbit; each COLUMN is one shell. σ maps each shell one-to-one onto the next (PROVED), so the rows fill</text>
     <text x="30" y="470">every shell exactly once: the orbits correspond to the elements of L₀, and every x ≠ ⊤ sits in exactly one row and column.</text>
-    <text x="30" y="494">Order limit: for every x ≠ ⊤, σⁿ(a) ⊢ x fails from some n on (pen), so the only candidate is ⊤, the same for every row: the order</text>
+    <text x="30" y="494">Order limit: for every x ≠ ⊤, σⁿ(a) ⊢ x fails from some n on (PROVED), so the only candidate is ⊤, the same for every row: the order</text>
     <text x="30" y="514">forgets which element you followed. The inside-out limit T_a(ω) (figure 4) keeps it: T_a(ω) = T_b(ω) only when a ⊣⊢ b.</text>
   </g>
 </svg>
