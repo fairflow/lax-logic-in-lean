@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-10-27 10:13 GMT from `356b569` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-11-01 17:02 GMT from `3891fe99` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**30714 declarations** in **626 modules**: 14047 theorems, 16667 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**31021 declarations** in **628 modules**: 14160 theorems, 16861 definitions and data. **23 carry `sorryAx`** and **0 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -63,7 +63,9 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxBlueprint` | 10 | 0 | 10 |  |  |
 | `LaxLogic.Belief.BooleanIso` | 6 | 4 | 6 |  |  |
 | `LaxLogic.Belief.Collapse` | 5 | 4 | 5 |  |  |
-| `LaxLogic.Belief.Examples` | 9 | 8 | 7 |  | 2 |
+| `LaxLogic.Belief.Examples` | 7 | 6 | 7 |  |  |
+| `LaxLogic.Belief.ExamplesClean` | 302 | 108 | 302 |  |  |
+| `LaxLogic.Belief.F0Facts` | 7 | 7 | 7 |  |  |
 | `LaxLogic.Belief.Falsum` | 4 | 2 | 4 |  |  |
 | `LaxLogic.Belief.Idealisation` | 4 | 4 | 4 |  |  |
 | `LaxLogic.Belief.Normality` | 2 | 2 | 2 |  |  |
@@ -398,9 +400,9 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 13358 |
-| `propext`, `Quot.sound` | 8627 |
-| `propext` | 5858 |
+| *(none — axiom-free)* | 13556 |
+| `propext`, `Quot.sound` | 8639 |
+| `propext` | 5957 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2837 |
 | `sorryAx` | 8 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
@@ -408,8 +410,6 @@ Every distinct axiom set in the estate, most common first.
 | `propext`, `sorryAx` | 5 |
 | `Classical.choice` | 2 |
 | `propext`, `sorryAx`, `Quot.sound` | 2 |
-| `propext`, `Classical.choice`, `Quot.sound`, `BeliefLax.boolean22_card._native.native_decide.ax_1_1` | 1 |
-| `propext`, `Classical.choice`, `Quot.sound`, `BeliefLax.chain4_card._native.native_decide.ax_1_1` | 1 |
 | `Quot.sound` | 1 |
 
 ## OPEN: every declaration carrying `sorryAx`
@@ -442,10 +442,5 @@ Every distinct axiom set in the estate, most common first.
 
 ## `native_decide`-tainted declarations
 
-These are checked by the compiler, not the kernel; they may not be cited as PROVED.
-
-| declaration | module |
-|---|---|
-| `BeliefLax.boolean22_card` | `LaxLogic.Belief.Examples` |
-| `BeliefLax.chain4_card` | `LaxLogic.Belief.Examples` |
+None.
 

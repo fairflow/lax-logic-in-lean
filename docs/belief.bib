@@ -188,8 +188,10 @@
              interpolation for PLL. Formal development: the present artefact
              contains a machine-checked counterexample to the calculus's
              completeness (and to cut/contraction admissibility) together with
-             a repaired calculus (\texttt{PLLG4Gap.lean}), communicated to the
-             author; the uniform-interpolation claim is therefore open as published}
+             a repaired calculus (\texttt{LaxLogic/PLL/G4/G4Gap.lean}),
+             communicated to the author; the uniform-interpolation theorem is
+             withdrawn in the August 2026 revision of the arXiv version
+             (2209.08976v2, 21 August 2026)}
 }
 
 @article{Iemhoff2022,
@@ -1442,4 +1444,50 @@
              commit and fill in; add \texttt{CITATION.cff}. Formal development:
              Lean~4 + Mathlib; axiom audit per theorem recorded in
              docs/pll-formalisation-ledger.md}
+}
+
+@misc{SemPaper,
+  author = {Fairtlough, Matthew},
+  title  = {Semantics and Decision for {PLL}},
+  howpublished = {In the artefact repository
+             \url{https://github.com/fairflow/lax-logic-in-lean}
+             (\texttt{SemPaper/}), version 0.2},
+  year   = {2026},
+  note   = {Companion paper, built from the compiled Lean library: constraint
+             and subframe semantics with the translations, soundness and
+             completeness (choice-free for finite decidable subframe models),
+             the subframe tableau deciding PLL with a kernel-checked
+             certificate on either side, the other certified deciders, the
+             algebra F\textsubscript{0}, and Esakia duality for Heyting
+             algebras with a nucleus}
+}
+
+@misc{F0Paper,
+  author = {Fairtlough, Matthew},
+  title  = {The Order of {F0}: Covers, Independence and the Rationals},
+  howpublished = {In the artefact repository
+             \url{https://github.com/fairflow/lax-logic-in-lean}
+             (\texttt{F0Paper/}), version 0.7},
+  year   = {2026},
+  note   = {Companion paper, built from the compiled Lean library: the order
+             of the closed fragment F\textsubscript{0} -- covers, independence
+             of the odd gaps, a choice-free embedding of the rationals, nested
+             copies of F\textsubscript{0} in itself, free Heyting algebras on
+             every finite number (and \(\omega\)) of generators inside one
+             interval, the faithful embeddings of IPC and of PLL itself, and
+             the Dedekind--MacNeille completion}
+}
+
+@book{Boolos1993,
+  author    = {Boolos, George},
+  title     = {The Logic of Provability},
+  publisher = {Cambridge University Press},
+  address   = {Cambridge},
+  year      = {1993},
+  doi       = {10.1017/CBO9780511625183},
+  note      = {Cited for the letterless (closed) fragment of GL: the
+             Lindenbaum algebra of the variable-free provability-logic
+             formulas is the Boolean algebra of finite and cofinite sets --
+             the contrast case for the infinite, free-Heyting-carrying closed
+             fragment of PLL}
 }

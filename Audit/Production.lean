@@ -59,11 +59,14 @@ BY MODULE so that every other declaration in `LaxLogic/` stays swept —
 widening `allowing` to admit `sorryAx` would have disabled the check for
 the whole estate, which is how a gate stops meaning anything.
 
-* `LaxLogic.Belief.Examples` — `chain4_card` and `boolean22_card` depend
-  on `native_decide`'s generated axiom.  `native_decide` taints, and the
-  mandate does not accept it as a proof: these two cardinality claims are
-  not machine-checked in the sense the rest of the estate is.  Either
-  re-prove by `decide`, or move them out of the library.
+* `LaxLogic.Belief.Examples` — RELEASED 2026-11-01.  The two `native_decide`
+  counts (`chain4_card`, `boolean22_card`) were deleted, re-proved by kernel
+  computation over bare inductive carriers in
+  `LaxLogic.Belief.ExamplesClean` (`C4.nuclei_card`, `B22.nuclei_card`,
+  pinned at `[propext]`), which also classifies every believer on the two
+  five-element non-linear Heyting algebras.  The remaining declarations of
+  `Examples` measure within `[propext, Classical.choice, Quot.sound]`; the
+  sweep re-covers the module from this commit on.
 
 * `LaxLogic.PLL.SemUI.SemUILayered` — RELEASED 2026-10-27, and swept again.
   It held ONE sorried declaration, `SemUI.amalgamation`, from the semantic
@@ -105,5 +108,5 @@ Each line here is a claim that something is not meeting the bar.  The
 list should get shorter. -/
 
 #axiom_sweep [LaxLogic, FRJ, Rewrite, LJF]
-  except [LaxLogic.Belief.Examples, LaxLogic.Obligation.Examples]
+  except [LaxLogic.Obligation.Examples]
   allowing [propext, Classical.choice, Quot.sound]

@@ -147,6 +147,30 @@ loop one level up: paper completeness REFUTED (#80/#81) → RefAt repair
 → `soundnessV` PROVED, completeness re-opened as OPEN — the disproof
 was the trigger for the calculus refinement, not the end of the line.
 
+## 5 · Fragment first, and designs that extend
+
+`CLAUDE.md` rule 8: a result of a modal route is proved for the ◯-free
+fragment (the IPC instance) first. The fragment carries the construction
+at a fraction of the cost. In the free-Heyting-algebra campaign
+(2026-10-28) the cells, separators, killers, gadget and relativisation
+lemma were all built and debugged on the IPC statement
+(`wip/f0FreeBase3.lean`, #103). The PLL theorem (`wip/f0FreePLL.lean`,
+#106) then needed one new ◯ case in the relativisation lemma.
+
+The rule does not by itself keep the fragment's design extendable.
+**When designing the ◯-free case, check every device for whether it
+consumes semantic structure that ◯ will need**: the set S of a subframe
+model, or the worlds above a point. The IPC construction used a
+generator x₀ = ◯σ³⊥ that reads S-membership on the copy of the
+countermodel. ◯ reads S too, so x₀ had to be dropped for PLL, and the
+IPC range with x₀ is not closed under ◯ (`not_image_circ_x1`). It was
+found only by asking what lies outside the range. A device that
+consumes what ◯ reads will not extend.
+
+For exposition the order reverses: state the general theorem and derive
+the fragment as a corollary (here `freeHAωAbove_of_freePLL`), and keep
+the development order in the record.
+
 ## Stop rules
 
 - A refuted statement ends its cycle immediately; do not continue a

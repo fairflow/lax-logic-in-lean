@@ -82,6 +82,7 @@ import LaxLogic.Belief.Idealisation
 import LaxLogic.Belief.Falsum
 import LaxLogic.Belief.OpenClosed
 import LaxLogic.Belief.Examples
+import LaxLogic.Belief.ExamplesClean
 import LaxLogic.Belief.Realisability
 import LaxLogic.PLL.Semantics.ConfluentComplete
 import LaxLogic.Belief.NucleusJoin

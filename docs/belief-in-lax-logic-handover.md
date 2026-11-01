@@ -206,16 +206,22 @@ truth, verified against the library 2026-07-18:
    `◯` validates K).
 4. **`◯⊥` facts — DONE.** `⊬ ¬◯⊥`, `⊬ ◯⊥`, and the credulous collapse
    (`BeliefFalsum.lean`).
-5. **Worked examples — PARTIAL; more wanted (Matthew, 2026-07-18).**
-   `BeliefExamples.lean` has: the 3-chain's complete nucleus enumeration
-   (`chain3_card = 4`, sceptic/credulous/closed/open all exhibited,
-   `chain3_open_ne_closed`) with clean axioms; `chain4_card = 8` and
-   `boolean22_card = 4` via `native_decide` (`ofReduceBool` flagged in the
-   index, per policy). STILL WANTED: a small **non-linear non-Boolean**
-   Heyting algebra with its full believer menagerie side by side (the
-   pentagon-free 5-element HA is the natural pick), RN truncations, and
-   ideally clean-axiom (`decide`, not `native_decide`) versions of the
-   4-chain/2×2 counts.
+5. **Worked examples — DONE (2026-11-01).**
+   `LaxLogic/Belief/ExamplesClean.lean` carries kernel-computed believer
+   menageries on bare carriers (no Mathlib vocabulary in the statements, so
+   no choice anywhere; 82 `#guard_msgs`-pinned audits, none worse than
+   `[propext, Quot.sound]`): 3-chain (4 believers), 4-chain (8), the 2×2
+   Boolean algebra (4, each both closed and open — the collapse computed),
+   and BOTH five-element non-linear Heyting algebras, the square with a new
+   top and with a new bottom (8 each: 5 closed, 5 open, sceptic and
+   credulous in both families, none neither). The two `native_decide`
+   counts of `Belief/Examples.lean` are deleted — the library's audit
+   sweep hold-out is released; the legacy 3-chain declarations stay (the
+   paper's Appendix E anchors them). FINDING, machine-checked against the
+   expectation recorded here: the first believers that are neither
+   dogmatic nor hypothetical appear on the four-element *chain* (exactly
+   two, `C4.neither_exact`), not with non-linearity. §3 of the paper now
+   says so. Still unclaimed: RN truncations (the "ideally" item), untouched.
 
 Everything here may be cited as established (rule 0(a) satisfied); the
 axiom audits are in the mechanisation index.

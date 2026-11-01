@@ -127,6 +127,8 @@ LaxBlueprint.Chapters.UI
 LaxLogic.Belief.BooleanIso
 LaxLogic.Belief.Collapse
 LaxLogic.Belief.Examples
+LaxLogic.Belief.ExamplesClean
+LaxLogic.Belief.F0Facts
 LaxLogic.Belief.Falsum
 LaxLogic.Belief.Idealisation
 LaxLogic.Belief.Normality

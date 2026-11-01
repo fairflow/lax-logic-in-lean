@@ -3,8 +3,11 @@
 *Companion to `docs/belief.bib` (compiled 2026-07-18, 115 entries + 4
 normalisation-literature entries added after the same-day source check
 (`Lindley2005`, `DoczkalSchwinghammer2009`, `Prawitz1971`, `deGroote2002`) =
-119, large-first —
-pruning is a later human step). Keys below are BibTeX keys in `belief.bib`.
+119; + 3 of 2026-11-01 — the two public companion papers (`SemPaper`,
+`F0Paper`, cited repository + version, no byline on the PDFs) and
+`Boolos1993` (the letterless-GL contrast for §3) = 122, large-first —
+pruning is a later human step; the `Iemhoff2024` note now records the
+August 2026 arXiv withdrawal of the uniform-interpolation theorem). Keys below are BibTeX keys in `belief.bib`.
 Verification policy is recorded at the head of the `.bib` file: every entry was
 checked against a publisher/primary record this session, or against one of the
 repo's own verified literature digs (`iel-justification-lit.md`,

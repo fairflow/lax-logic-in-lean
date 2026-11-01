@@ -15,14 +15,22 @@
 #   1. It skips the run when the data volume has less than NIGHTLY_MIN_MB free
 #      (default 30000): a full build writes fresh blocks for every module it
 #      rebuilds, and on 2026-10-22 a full check filled the disk.
-#   2. It builds every [[lean_lib]] of the checkout's lakefile.toml under
+#   2. It runs lake from inside the checkout, so that elan takes the toolchain
+#      from the checkout's lean-toolchain, and it refuses to build when
+#      `lean --version` there does not report that version.  On 2026-10-29 the
+#      script ran `lake --dir` from outside the checkout, elan fell back to its
+#      default `stable` (v4.35.0), and every package was rebuilt from source
+#      with the wrong compiler.
+#   3. It builds every [[lean_lib]] of the checkout's lakefile.toml under
 #      `nice` and `gtimeout` (NIGHTLY_TIMEOUT seconds, default 18000).  It
 #      builds libraries only: linking the ~110 executables costs ~16 GB.
-#   3. It runs scripts/check-ledger.sh if the checkout has it (0 clean,
+#   4. It runs scripts/check-ledger.sh if the checkout has it (0 clean,
 #      1 REGRESSION, 2 stale, 3 broken).
-#   4. It appends one row to <logdir>/summary.md and keeps the full log in
+#   5. It appends one row to <logdir>/summary.md and keeps the full log in
 #      <logdir>/<repository>-<date>.log.  A failed build, a ledger regression
 #      or a rise in `sorry` warnings posts a macOS notification.
+# NIGHTLY_DRY_RUN=1 runs the checks of 1 and 2, logs what it would build, and
+# stops before the build without writing a row.
 # The exit code is the build's.
 #
 # The body is one { } block, which zsh parses whole before running it, so a
@@ -69,6 +77,29 @@ if (( ${#LIBS} == 0 )); then
   exit 1
 fi
 print -r -- "libraries (${#LIBS}): ${LIBS[*]}" >> "$LOG"
+
+if ! cd "$WT"; then
+  print -r -- "FAIL: cannot enter $WT" >> "$LOG"
+  row "FAIL (cannot enter the checkout)" - - - -
+  notify "$REPO: cannot enter the checkout"
+  exit 1
+fi
+WANT=$(<lean-toolchain)
+WANT=${WANT##*:v}
+GOT=$(lean --version 2>&1)
+GOTV="?"
+[[ $GOT =~ 'version ([^,]+)' ]] && GOTV=$match[1]
+if [[ $GOTV != $WANT ]]; then
+  print -r -- "FAIL: lean-toolchain asks for $WANT; lean in the checkout reports: $GOT" >> "$LOG"
+  row "FAIL (toolchain: lean-toolchain $WANT, lean $GOTV)" - - - -
+  notify "$REPO: toolchain mismatch ($WANT wanted, $GOTV found)"
+  exit 1
+fi
+print -r -- "toolchain: $GOT" >> "$LOG"
+if [[ ${NIGHTLY_DRY_RUN:-0} == 1 ]]; then
+  print -r -- "DRY RUN: checks passed; no build" >> "$LOG"
+  exit 0
+fi
 
 T0=$SECONDS
 nice -n 10 gtimeout "${NIGHTLY_TIMEOUT:-18000}" lake --dir "$WT" build "${LIBS[@]}" >> "$LOG" 2>&1

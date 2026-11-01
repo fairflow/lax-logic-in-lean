@@ -139,7 +139,7 @@ theorem liftClosure_irr {G : Form} {St Th : List Form} {C : Form}
   | base hb => exact Or.inl hb
   | lift hreg hTh => exact Or.inr ⟨rfl, _, liftClosure_reg hreg, hTh⟩
 
-/-- info: 'FRJ.Gbu.X.liftClosure_irr' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.X.liftClosure_irr' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms liftClosure_irr
 

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 600" width="920" height="600" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <rect x="0" y="0" width="920" height="600" fill="#ffffff"/>
+  <text x="20" y="28" font-size="18" font-weight="600" fill="#222">4. One orbit turned inside out: T_a(0) ∈ T_a(1) ∈ T_a(2) ∈ ⋯ ∈ T_a(ω)</text>
+
+  <!-- left nest: a = ⊥ -->
+  <text x="230" y="54" font-size="15" font-weight="600" text-anchor="middle" fill="#333">a = ⊥</text>
+  <rect x="20" y="64" width="420" height="400" rx="14" fill="#fff6f6" stroke="#b22" stroke-width="2"/>
+  <rect x="38" y="104" width="384" height="352" rx="12" fill="#fafafa" stroke="#999" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <rect x="56" y="134" width="348" height="314" rx="12" fill="#f4e6f4" stroke="#9b3b9b" stroke-width="2"/>
+  <rect x="92" y="194" width="276" height="246" rx="12" fill="#fcf1dc" stroke="#c47f12" stroke-width="2"/>
+  <rect x="128" y="254" width="204" height="178" rx="12" fill="#e5f4e9" stroke="#2f8a4c" stroke-width="2"/>
+  <rect x="164" y="314" width="132" height="110" rx="12" fill="#e6eefb" stroke="#3b6fc4" stroke-width="2"/>
+
+  <g font-size="14" font-weight="700">
+    <text x="34" y="90" fill="#8a1a1a">T(ω)</text>
+    <text x="72" y="160" fill="#7a2c7a">T(3)</text>
+    <text x="108" y="220" fill="#9a620b">T(2)</text>
+    <text x="144" y="280" fill="#226b3a">T(1)</text>
+    <text x="180" y="340" fill="#1f4f9e">T(0)</text>
+  </g>
+  <text x="84" y="90" font-size="12.5" fill="#555">no colour of its own</text>
+  <text x="54" y="124" font-size="12" fill="#777" font-style="italic">T(4), T(5), …</text>
+  <g font-size="13" text-anchor="middle" fill="#fff">
+    <rect x="300" y="146" width="56" height="22" rx="11" fill="#9b3b9b"/><text x="328" y="162">σ³⊥</text>
+    <rect x="270" y="206" width="56" height="22" rx="11" fill="#c47f12"/><text x="298" y="222">σ²⊥</text>
+    <rect x="240" y="266" width="56" height="22" rx="11" fill="#2f8a4c"/><text x="268" y="282">t3</text>
+    <rect x="202" y="352" width="56" height="22" rx="11" fill="#3b6fc4"/><text x="230" y="368">⊥</text>
+  </g>
+
+  <!-- right nest: a = ◯⊥ -->
+  <text x="690" y="54" font-size="15" font-weight="600" text-anchor="middle" fill="#333">a = ◯⊥</text>
+  <rect x="480" y="64" width="420" height="400" rx="14" fill="#fff6f6" stroke="#b22" stroke-width="2"/>
+  <rect x="498" y="104" width="384" height="352" rx="12" fill="#fafafa" stroke="#999" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <rect x="516" y="134" width="348" height="314" rx="12" fill="#f4e6f4" stroke="#9b3b9b" stroke-width="2"/>
+  <rect x="552" y="194" width="276" height="246" rx="12" fill="#fcf1dc" stroke="#c47f12" stroke-width="2"/>
+  <rect x="588" y="254" width="204" height="178" rx="12" fill="#e5f4e9" stroke="#2f8a4c" stroke-width="2"/>
+  <rect x="624" y="314" width="132" height="110" rx="12" fill="#e6eefb" stroke="#3b6fc4" stroke-width="2"/>
+
+  <g font-size="14" font-weight="700">
+    <text x="494" y="90" fill="#8a1a1a">T(ω)</text>
+    <text x="532" y="160" fill="#7a2c7a">T(3)</text>
+    <text x="568" y="220" fill="#9a620b">T(2)</text>
+    <text x="604" y="280" fill="#226b3a">T(1)</text>
+    <text x="640" y="340" fill="#1f4f9e">T(0)</text>
+  </g>
+  <text x="544" y="90" font-size="12.5" fill="#555">no colour of its own</text>
+  <text x="514" y="124" font-size="12" fill="#777" font-style="italic">T(4), T(5), …</text>
+  <g font-size="13" text-anchor="middle" fill="#fff">
+    <rect x="752" y="146" width="64" height="22" rx="11" fill="#9b3b9b"/><text x="784" y="162">◯σ³⊥</text>
+    <rect x="722" y="206" width="64" height="22" rx="11" fill="#c47f12"/><text x="754" y="222">◯σ²⊥</text>
+    <rect x="696" y="266" width="56" height="22" rx="11" fill="#2f8a4c"/><text x="724" y="282">◯t3</text>
+    <rect x="662" y="352" width="56" height="22" rx="11" fill="#3b6fc4"/><text x="690" y="368">◯⊥</text>
+  </g>
+
+  <!-- notes -->
+  <g font-size="13.5" fill="#222">
+    <text x="20" y="494">T_a(n) = {(0, T_a(m)) : m &lt; n} ∪ {(1, σⁿ(a))},   T_a(ω) = {(0, T_a(m)) : m &lt; ω}.   Each box carries ONE colour, σⁿ(a): the "same" element at level n.</text>
+    <text x="20" y="518">In F0 both orbits converge to ⊤ (PROVED). As sets, T_⊥(ω) ≠ T_◯⊥(ω): each contains its whole orbit, down to (1, a) inside T_a(0).</text>
+    <text x="20" y="542">Two orbits that meet (σᵐa = σⁿb) are shifts of one another; up to shift, the orbits correspond to the elements of L₀ (PROVED).</text>
+    <text x="20" y="566">In the full structure the limits become members of the outermost set:  D(ω) ∋ (3, T_a(ω))  for each chosen orbit a.</text>
+    <text x="20" y="590" fill="#555">Status: everything here is PROVED in wip/f0InsideOut.lean. The set-theoretic part uses Classical.choice, through Mathlib's ZFSet.</text>
+  </g>
+</svg>

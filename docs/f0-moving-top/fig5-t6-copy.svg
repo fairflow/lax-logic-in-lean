@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="800" fill="#ffffff"/>
+  <text x="20" y="30" font-size="18" font-weight="600" fill="#222">5. A copy of F0 strictly below ⊤:  τ(F0) inside [t3, t6],  τ(A) = σ(A) ∧ t6</text>
+
+  <!-- ===== left panel: the bottom of F0 ===== -->
+  <text x="200" y="66" font-size="15" font-weight="600" text-anchor="middle" fill="#1f4f9e">F0, near the bottom</text>
+
+  <!-- the interval [t3, t6] as a lens -->
+  <ellipse cx="235" cy="370" rx="92" ry="24" transform="rotate(-63.43 235 370)" fill="#e5f4e9" stroke="#2f8a4c" stroke-width="2"/>
+
+  <!-- covers (PROVED) -->
+  <g stroke="#3b6fc4" stroke-width="2">
+    <line x1="200" y1="600" x2="130" y2="520"/>
+    <line x1="200" y1="600" x2="270" y2="520"/>
+    <line x1="130" y1="520" x2="200" y2="440"/>
+    <line x1="270" y1="520" x2="200" y2="440"/>
+    <line x1="130" y1="520" x2="70" y2="440"/>
+    <line x1="200" y1="440" x2="130" y2="360"/>
+    <line x1="70" y1="440" x2="130" y2="360"/>
+  </g>
+  <!-- towards ⊤ -->
+  <g stroke="#999" stroke-width="1.5" stroke-dasharray="3 5">
+    <line x1="130" y1="360" x2="190" y2="128"/>
+    <line x1="270" y1="300" x2="210" y2="128"/>
+  </g>
+  <text x="200" y="230" font-size="18" text-anchor="middle" fill="#888">⋮</text>
+
+  <g fill="#3b6fc4">
+    <circle cx="200" cy="600" r="5"/>
+    <circle cx="130" cy="520" r="5"/>
+    <circle cx="270" cy="520" r="5"/>
+    <circle cx="200" cy="440" r="5"/>
+    <circle cx="70" cy="440" r="5"/>
+    <circle cx="130" cy="360" r="5"/>
+    <circle cx="200" cy="116" r="5" fill="#444"/>
+  </g>
+  <circle cx="270" cy="300" r="6" fill="#2f8a4c"/>
+  <circle cx="200" cy="440" r="6" fill="#2f8a4c"/>
+
+  <g font-size="14" fill="#1f4f9e">
+    <text x="214" y="616">⊥</text>
+    <text x="80" y="525">◯⊥</text>
+    <text x="282" y="525">¬◯⊥</text>
+    <text x="212" y="458" fill="#226b3a" font-weight="700">t3</text>
+    <text x="20" y="432">t4 = ¬¬◯⊥</text>
+    <text x="40" y="352">t5 = ¬◯⊥ ∨ ¬¬◯⊥</text>
+    <text x="282" y="296" fill="#226b3a" font-weight="700">t6 = ¬¬◯⊥ ↠ ◯⊥</text>
+    <text x="212" y="112" fill="#333">⊤</text>
+  </g>
+  <text x="250" y="400" font-size="12" fill="#226b3a" font-style="italic">[t3, t6]</text>
+
+  <!-- zoom lines -->
+  <g stroke="#bbb" stroke-width="1.2" stroke-dasharray="6 5">
+    <line x1="206" y1="446" x2="690" y2="622"/>
+    <line x1="276" y1="296" x2="690" y2="88"/>
+  </g>
+
+  <!-- ===== right panel: zoom into [t3, t6] ===== -->
+  <path d="M700,630 C 975,525 975,190 700,80 C 425,190 425,525 700,630 Z" fill="#eef8f0" stroke="#2f8a4c" stroke-width="2.2"/>
+  <text x="700" y="660" font-size="14" text-anchor="middle" fill="#226b3a" font-weight="700">t3 = τ(⊥)</text>
+  <text x="700" y="68" font-size="14" text-anchor="middle" fill="#226b3a" font-weight="700">t6 = τ(⊤)</text>
+  <circle cx="700" cy="630" r="6" fill="#2f8a4c"/>
+  <circle cx="700" cy="80" r="6" fill="#2f8a4c"/>
+
+  <!-- the next interval [τ t3, τ t6], holding τ²(F0) -->
+  <ellipse cx="735" cy="405" rx="84" ry="22" transform="rotate(-63.43 735 405)" fill="#fcf1dc" stroke="#c47f12" stroke-width="2"/>
+  <ellipse cx="740" cy="400" rx="44" ry="10" transform="rotate(-63.43 740 400)" fill="none" stroke="#9b3b9b" stroke-width="1.4" stroke-dasharray="4 3"/>
+
+  <!-- the copy: same shape as the left panel -->
+  <g stroke="#2f8a4c" stroke-width="2">
+    <line x1="700" y1="630" x2="630" y2="555"/>
+    <line x1="700" y1="630" x2="770" y2="555"/>
+    <line x1="630" y1="555" x2="700" y2="480"/>
+    <line x1="770" y1="555" x2="700" y2="480"/>
+    <line x1="630" y1="555" x2="570" y2="480"/>
+    <line x1="700" y1="480" x2="630" y2="405"/>
+    <line x1="570" y1="480" x2="630" y2="405"/>
+  </g>
+  <g stroke="#9bc7a8" stroke-width="1.5" stroke-dasharray="3 5">
+    <line x1="630" y1="405" x2="692" y2="92"/>
+    <line x1="770" y1="330" x2="708" y2="92"/>
+  </g>
+  <text x="700" y="215" font-size="18" text-anchor="middle" fill="#9bc7a8">⋮</text>
+
+  <g fill="#2f8a4c">
+    <circle cx="630" cy="555" r="5"/>
+    <circle cx="770" cy="555" r="5"/>
+    <circle cx="570" cy="480" r="5"/>
+    <circle cx="630" cy="405" r="5"/>
+  </g>
+  <circle cx="700" cy="480" r="6" fill="#c47f12"/>
+  <circle cx="770" cy="330" r="6" fill="#c47f12"/>
+
+  <g font-size="13.5" fill="#226b3a">
+    <text x="548" y="560">τ(◯⊥)</text>
+    <text x="782" y="560">τ(¬◯⊥)</text>
+    <text x="712" y="498" fill="#9a620b" font-weight="700">τ(t3)</text>
+    <text x="508" y="472">τ(t4)</text>
+    <text x="560" y="398">τ(t5)</text>
+    <text x="782" y="326" fill="#9a620b" font-weight="700">τ(t6)</text>
+  </g>
+  <text x="800" y="420" font-size="12" fill="#9a620b" font-style="italic">[τ t3, τ t6]</text>
+  <text x="800" y="436" font-size="12" fill="#7a2c7a" font-style="italic">holds τ²(F0), and so on</text>
+
+  <g font-size="12.5" fill="#444">
+    <text x="822" y="600">⊥ ↦ t3</text>
+    <text x="822" y="618">∧, ∨ kept</text>
+    <text x="822" y="636">A → B ↦ (τA ↠ τB) ∧ t6</text>
+    <text x="822" y="654">◯A ↦ ◯τA ∧ t6</text>
+    <text x="822" y="676" fill="#666">e.g. τ(◯⊥) = ◯t3 ∧ t6</text>
+  </g>
+
+  <!-- notes -->
+  <g font-size="13.5" fill="#222">
+    <text x="20" y="704">Faithful:  [A] ⊢ B  ⟺  [τA] ⊢ τB.  PROVED (copyT3T6, [propext, Quot.sound]): t6 holds at every world of the model ext M behind sig_reflects, where σ(C) fails.</text>
+    <text x="20" y="728">Iterated:  [⊥, ⊤] ⊋ [t3, t6] ⊋ [τ t3, τ t6] ⊋ ⋯,  and τ<tspan baseline-shift="super" font-size="10">d</tspan> maps F0 into [τ<tspan baseline-shift="super" font-size="10">d</tspan>⊥, τ<tspan baseline-shift="super" font-size="10">d</tspan>⊤]: both ends move strictly at every depth (w2, w3: PROVED).</text>
+    <text x="20" y="752">Left: the solid blue lines are covers, PROVED (wip/f0Covers.lean). [t3, t6] is not a cover: it holds a whole copy of F0.</text>
+    <text x="20" y="776" fill="#555">The first candidate top fails: t5 = ¬◯⊥ ∨ ¬¬◯⊥ gives [t5] ⊢ σ²⊥ = σ(t3) (t5Cell, PROVED), so t5 is no top for a copy over t3.</text>
+  </g>
+</svg>

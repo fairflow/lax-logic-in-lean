@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 640" width="920" height="640" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <rect x="0" y="0" width="920" height="640" fill="#ffffff"/>
+  <text x="20" y="28" font-size="18" font-weight="600" fill="#222">1. The nesting: F0 ⊋ σ(F0) ⊋ σ²(F0) ⊋ ⋯, with ⋂<tspan baseline-shift="sub" font-size="12">n</tspan> σⁿ(F0) = {⊤}</text>
+
+  <!-- rings: shell colours L0 blue, L1 green, L2 amber, L3 purple, limit grey -->
+  <ellipse cx="330" cy="330" rx="300" ry="280" fill="#e6eefb" stroke="#3b6fc4" stroke-width="2"/>
+  <ellipse cx="330" cy="330" rx="235" ry="215" fill="#e5f4e9" stroke="#2f8a4c" stroke-width="2"/>
+  <ellipse cx="330" cy="330" rx="170" ry="155" fill="#fcf1dc" stroke="#c47f12" stroke-width="2"/>
+  <ellipse cx="330" cy="330" rx="110" ry="100" fill="#f4e6f4" stroke="#9b3b9b" stroke-width="2"/>
+  <ellipse cx="330" cy="330" rx="65" ry="58" fill="#f2f2f2" stroke="#777" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+  <!-- ring names -->
+  <text x="330" y="84" font-size="15" text-anchor="middle" fill="#1f4f9e" font-weight="600">F0 = σ⁰(F0)   (shell L₀)</text>
+  <text x="330" y="146" font-size="15" text-anchor="middle" fill="#226b3a" font-weight="600">σ(F0)   (shell L₁)</text>
+  <text x="330" y="202" font-size="15" text-anchor="middle" fill="#9a620b" font-weight="600">σ²(F0)   (L₂)</text>
+  <text x="330" y="256" font-size="14" text-anchor="middle" fill="#7a2c7a" font-weight="600">σ³(F0)   (L₃)</text>
+  <text x="330" y="300" font-size="16" text-anchor="middle" fill="#666">⋯</text>
+
+  <!-- centre: the limit -->
+  <circle cx="330" cy="330" r="6" fill="#444"/>
+  <text x="330" y="352" font-size="15" text-anchor="middle" fill="#333">⊤</text>
+
+  <!-- shell L0 elements -->
+  <g font-size="14" text-anchor="middle" fill="#1f4f9e">
+    <circle cx="232" cy="568" r="5" fill="#3b6fc4"/><text x="232" y="556">⊥</text>
+    <circle cx="285" cy="575" r="5" fill="#3b6fc4"/><text x="285" y="563">◯⊥</text>
+    <circle cx="340" cy="577" r="5" fill="#3b6fc4"/><text x="340" y="565">¬◯⊥</text>
+    <circle cx="398" cy="575" r="5" fill="#3b6fc4"/><text x="398" y="563">¬¬◯⊥</text>
+    <circle cx="452" cy="565" r="5" fill="#3b6fc4"/><text x="452" y="553">t5</text>
+  </g>
+  <!-- shell L1 elements -->
+  <g font-size="13" text-anchor="middle" fill="#226b3a">
+    <circle cx="262" cy="503" r="5" fill="#2f8a4c"/><text x="262" y="491">t3 = σ⊥</text>
+    <circle cx="332" cy="508" r="5" fill="#2f8a4c"/><text x="332" y="496">◯t3</text>
+    <circle cx="404" cy="503" r="5" fill="#2f8a4c"/><text x="404" y="491">◯t3 ↠ t3</text>
+  </g>
+  <!-- shell L2 elements -->
+  <g font-size="13" text-anchor="middle" fill="#9a620b">
+    <circle cx="298" cy="447" r="5" fill="#c47f12"/><text x="298" y="436">σ²⊥</text>
+    <circle cx="366" cy="447" r="5" fill="#c47f12"/><text x="366" y="436">◯σ²⊥</text>
+  </g>
+  <!-- shell L3 element -->
+  <g font-size="13" text-anchor="middle" fill="#7a2c7a">
+    <circle cx="330" cy="405" r="5" fill="#9b3b9b"/><text x="330" y="395">σ³⊥</text>
+  </g>
+
+  <!-- sigma arrows along the bases -->
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b22"/>
+    </marker>
+  </defs>
+  <g stroke="#b22" stroke-width="1.6" fill="none" stroke-dasharray="4 3" marker-end="url(#arr)">
+    <path d="M226,566 C190,540 220,515 254,506"/>
+    <path d="M256,500 C235,470 262,452 290,448"/>
+    <path d="M292,444 C285,420 305,408 322,406"/>
+  </g>
+  <text x="178" y="532" font-size="14" fill="#b22" font-style="italic">σ</text>
+  <text x="228" y="474" font-size="14" fill="#b22" font-style="italic">σ</text>
+  <text x="270" y="412" font-size="13" fill="#b22" font-style="italic">σ</text>
+
+  <!-- notes -->
+  <g font-size="13.5" fill="#222">
+    <text x="655" y="80" font-weight="600">The structure</text>
+    <text x="655" y="104">σ is ⊥ := t3, with t3 = ◯⊥ ∨ ¬◯⊥.</text>
+    <text x="655" y="124">σ is one-to-one; the copies σⁿ(F0)</text>
+    <text x="655" y="144">decrease strictly.  PROVED</text>
+    <text x="655" y="164" fill="#666">(sigN_faithful, copies_strict)</text>
+
+    <text x="655" y="198" font-weight="600">Shells</text>
+    <text x="655" y="222">L<tspan baseline-shift="sub" font-size="10">n</tspan> = σⁿ(F0) ∖ σⁿ⁺¹(F0), one ring each.</text>
+    <text x="655" y="242">σ maps L<tspan baseline-shift="sub" font-size="10">n</tspan> one-to-one onto L<tspan baseline-shift="sub" font-size="10">n+1</tspan>:</text>
+    <text x="655" y="262">⊥ ↦ t3 ↦ σ²⊥ ↦ σ³⊥ ↦ ⋯ (red).  PROVED</text>
+
+    <text x="655" y="296" font-weight="600">The centre</text>
+    <text x="655" y="320">⋂<tspan baseline-shift="sub" font-size="10">n</tspan> σⁿ(F0) = {⊤}.  PROVED</text>
+    <text x="655" y="340">So F0 = L₀ ⊔ L₁ ⊔ L₂ ⊔ ⋯ ⊔ {⊤},</text>
+    <text x="655" y="360">and each x ≠ ⊤ has a depth d(x):</text>
+    <text x="655" y="380">the shell it lies in.</text>
+
+    <text x="655" y="414" font-weight="600">Well-foundedness</text>
+    <text x="655" y="438">⊂ is NOT well-founded here:</text>
+    <text x="655" y="458">F0 ⊋ σ(F0) ⊋ σ²(F0) ⊋ ⋯ never stops.</text>
+    <text x="655" y="478">⊋ IS: from any ring, only finitely</text>
+    <text x="655" y="498">many steps lead outward to F0.</text>
+    <text x="655" y="518">Under ⊋ the rings form ω + 1.</text>
+
+    <text x="655" y="552" fill="#555" font-size="12.5">L₀ also reaches above t3: t5 lies</text>
+    <text x="655" y="570" fill="#555" font-size="12.5">above t3 yet outside σ(F0) (sig_not_onto).</text>
+  </g>
+</svg>

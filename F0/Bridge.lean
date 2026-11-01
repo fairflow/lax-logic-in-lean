@@ -16,9 +16,11 @@ open PLLND PLLND.SubTab
 /-- Transitivity of `⊢ · ↠ ·`. -/
 theorem holds_trans {A B C : PLLFormula} (h₁ : Holds (A.ifThen B)) (h₂ : Holds (B.ifThen C)) :
     Holds (A.ifThen C) := by
-  obtain ⟨d₁⟩ := rn (Γ' := [A]) (fun _ h => absurd h List.not_mem_nil) h₁
-  obtain ⟨d₂⟩ := rn (Γ' := [A]) (fun _ h => absurd h List.not_mem_nil) h₂
-  exact ⟨.impIntro (.impElim d₂ (.impElim d₁ (.iden List.mem_cons_self)))⟩
+  obtain ⟨e₁⟩ := h₁
+  obtain ⟨e₂⟩ := h₂
+  exact ⟨.impIntro (.impElim (rn (Γ' := [A]) (fun _ h => absurd h List.not_mem_nil) e₂)
+    (.impElim (rn (Γ' := [A]) (fun _ h => absurd h List.not_mem_nil) e₁)
+      (.iden List.mem_cons_self)))⟩
 
 end F0
 

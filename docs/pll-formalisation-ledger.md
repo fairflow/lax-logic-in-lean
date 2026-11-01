@@ -264,6 +264,41 @@ combinatory completeness `Poly.abs_spec` **[p,Q]**): promoted 2026-07-18 to
 — no choice; `bite_uniform_split`, `extract_sound`, `extractS_sound`,
 `force_somehow_iff_notnot` clean); design history in [`route-b-model.md`](route-b-model.md) §8.
 
+**2026-11-01 — the believer enumerations re-founded without `native_decide`
+(§3b-5 closed).** [`LaxLogic/Belief/ExamplesClean.lean`](../LaxLogic/Belief/ExamplesClean.lean)
+enumerates and classifies every believer on five finite Heyting algebras by
+kernel computation over bare inductive carriers (no Mathlib vocabulary in any
+statement): the chains `C3` (4 believers), `C4` (8), the Boolean square `B22`
+(4 = the carrier, the collapse computed, every believer closed *and* open),
+and the two five-element non-linear algebras `K5t`/`K5b` (8 each; 5 closed,
+5 open, 2 both, none neither; complete menageries pinned exactly,
+`nuclei_exact`; the double-negation believer = the open believer at `m`,
+`notnot_eq_openM`).  New finding: already on the four-element chain **two
+believers are neither dogmatic nor hypothetical** (`C4.neither_exact`).  All
+82 audits `#guard_msgs`-pinned in-file: counts and exhibits axiom-free or
+**[propext]**, bridges **[p,Q]** — no choice anywhere.  The two
+`native_decide` counts of `Examples.lean` (`chain4_card`, `boolean22_card`)
+were deleted, and the module left the `Audit/Production.lean` sweep's
+hold-out list, which is one entry shorter.
+
+**2026-11-01 — the F0 free-algebra facts promoted for the Belief paper
+(`BeliefF0` library).** Matthew's ruling of the same day: results the Belief
+paper cites are promoted out of `wip/`.
+[`LaxLogic/Belief/F0Facts.lean`](../LaxLogic/Belief/F0Facts.lean) restates,
+with `#guard_msgs`-pinned audits all at **[propext, Quot.sound]** — no
+choice: `freeHAnAbove_base3` and `freeHAωAbove_base3` (IPC embeds faithfully
+into F0: every `H_n`, and `H_ω`, a Heyting subalgebra of `[σ³⊥, ⊤]`),
+`conjecture` (∀n ∃m, with m = 3), `allAbove3`/`allAbove3ω` (every base
+`σᵐ⊥`, m ≥ 3), and `freePLLAbove_base3`/`freeReaders` (PLL embeds faithfully
+into F0 with `◯ ↦ ◯`). The proofs are the `wip/` theorems
+(`f0FreeBase3`, `f0FreePLL`, `f0FreeAnyFamily`; definitions `f0FreeHAn`),
+which stay in place — the F0 paper's open revision (#107) cites them by
+source line. Built as the `BeliefF0` library: not imported by the
+`LaxLogic` root, whose import closure stays free of `wip/`, and not in
+`defaultTargets` (manager's call, 2026-11-01) — the nightly integrity
+build compiles every library, so the pins are checked nightly without the
+`wip/f0Free*` chain entering per-PR CI.
+
 ## 10. Realisability completeness (promoted 2026-07-17/18)
 
 The `⊩ᵖ` programme, promoted to the library after all proofs closed.  The
