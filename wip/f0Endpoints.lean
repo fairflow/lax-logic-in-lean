@@ -146,6 +146,20 @@ terminal cluster of `M` is bisimilar to the matching side (`isBisimIn`,
 `isBisimOut`), so `a` fails exactly on `M`, and the induction of `orig_aTr`
 (`realize`) reads `M` off the image.
 
+**Tops over `t3`** (the manager's addition, statements below): `b′ = (◯t3 ↠ t3)
+↠ t5` is a top with a faithful copy of PLL (`topT3Alt`, by the realization
+`MinR`), incomparable with `t6`; `t6 ∧ b′` is not a top (`meetNotTop`); so the
+tops over `t3` are not closed under `∧` (`topsT3NotMeet`) and have no least
+element (`noLeastTopT3`).
+
+**The limit of the `t6` tower** (statements below): `τᵈ⊤ ⊣⊢ U_d`,
+`τᵈ⊥ ⊣⊢ σᵈ⊥ ∧ U_d` (`towerEnds`); closing (`closing`); the intersection of the
+intervals has at most one element and it is a fixed point (`inAllUnique`,
+`inAllFixed`); `TauFixedPoint ⟺ ∃ x closed in every interval`
+(`fixedIffInAll`).  `⊤`, `t6`, `U₂` are not fixed points (`notFixed_…`).
+
+**OPEN**: `CopySelf` for general `b`; `NoTauFixedPoint` (L4).
+
 Status note: `wip/f0Endpoints-STATUS.md`.
 -/
 
@@ -1909,6 +1923,147 @@ end Endpoints
 end F0
 end PLLND
 
+namespace PLLND
+namespace F0
+namespace Endpoints
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF)
+open PLLND.LaxInfinite (atomFree)
+
+/-! ### L1–L3: the ends of the tower and its intersection -/
+
+theorem Ud_af : ∀ d : Nat, atomFree (Ud d) = true
+  | 0 => rfl
+  | d + 1 => by
+      show (atomFree (Ud d) && atomFree (sigN d t6)) = true
+      rw [Ud_af d, sigN_vf d (φ := t6) rfl]
+      rfl
+
+theorem force_Ud (M : SubframeModel) (w : M.W) :
+    ∀ d : Nat, M.force w (Ud d) ↔ ∀ k, k < d → M.force w (sigN k t6)
+  | 0 => ⟨fun _ k hk => absurd hk (Nat.not_lt_zero k), fun _ _ _ h => h⟩
+  | d + 1 => by
+      show (M.force w (Ud d) ∧ M.force w (sigN d t6)) ↔ _
+      rw [force_Ud M w d]
+      constructor
+      · rintro ⟨h, hd⟩ k hk
+        rcases Nat.lt_succ_iff_lt_or_eq.mp hk with hk' | hk'
+        · exact h k hk'
+        · rw [hk']
+          exact hd
+      · intro h
+        exact ⟨fun k hk => h k (Nat.lt_succ_of_lt hk), h d (Nat.lt_succ_self d)⟩
+
+theorem force_sig_top (M : SubframeModel) (w : M.W) : M.force w (sig topF) := fun _ _ h => h
+
+theorem force_sig_Ud (M : SubframeModel) (w : M.W) : ∀ d : Nat,
+    M.force w (sig (Ud d)) ↔ (M.force w (sig topF) ∧ ∀ k, k < d → M.force w (sigN (k + 1) t6))
+  | 0 => ⟨fun h => ⟨h, fun k hk => absurd hk (Nat.not_lt_zero k)⟩, fun h => h.1⟩
+  | d + 1 => by
+      show (M.force w (sig (Ud d)) ∧ M.force w (sig (sigN d t6))) ↔ _
+      rw [force_sig_Ud M w d, ← InsideOut.sigN_succ]
+      constructor
+      · rintro ⟨⟨h0, h⟩, hd⟩
+        refine ⟨h0, fun k hk => ?_⟩
+        rcases Nat.lt_succ_iff_lt_or_eq.mp hk with hk' | hk'
+        · exact h k hk'
+        · rw [hk']
+          exact hd
+      · rintro ⟨h0, h⟩
+        exact ⟨⟨h0, fun k hk => h k (Nat.lt_succ_of_lt hk)⟩, h d (Nat.lt_succ_self d)⟩
+
+/-- `σ U_d ∧ t6 ⊣⊢ U_{d+1}`. -/
+theorem sig_Ud (d : Nat) : Interd ((sig (Ud d)).and t6) (Ud (d + 1)) := interd_of_sem fun M v => by
+  show (M.force v (sig (Ud d)) ∧ M.force v t6) ↔ M.force v (Ud (d + 1))
+  rw [force_sig_Ud M v d, force_Ud M v (d + 1)]
+  constructor
+  · rintro ⟨⟨_, h⟩, h6⟩ k hk
+    cases k with
+    | zero => exact h6
+    | succ k => exact h k (Nat.lt_of_succ_lt_succ hk)
+  · intro h
+    exact ⟨⟨force_sig_top M v, fun k hk => h (k + 1) (Nat.succ_lt_succ hk)⟩, h 0 (Nat.succ_pos d)⟩
+
+/-- **`τᵈ A ⊣⊢ σᵈ A ∧ U_d`** for closed `A`. -/
+theorem tauN_closed : ∀ (d : Nat) (A : PLLFormula), atomFree A = true →
+    Interd (tauN t3 t6 d A) ((sigN d A).and (Ud d))
+  | 0, A, _ => interd_and_top A
+  | d + 1, A, hA => by
+      rw [tauN_succ' t3 t6 d A]
+      have hX := tauN_af (a := t3) (b := t6) rfl rfl d A hA
+      have hY : atomFree ((sigN d A).and (Ud d)) = true := by
+        show (atomFree (sigN d A) && atomFree (Ud d)) = true
+        rw [sigN_vf d hA, Ud_af d]
+        rfl
+      have ih := tauN_closed d A hA
+      have h1 := relC_interd t3_t6 hX
+      have h2 : Interd (sig (tauN t3 t6 d A)) (sig ((sigN d A).and (Ud d))) :=
+        ⟨sig_mono hX hY ih.1, sig_mono hY hX ih.2⟩
+      refine h1.trans (interd_of_sem fun M v => ?_)
+      have e2 := sem_of_interd h2 M v
+      have e3 := sem_of_interd (sig_Ud d) M v
+      rw [InsideOut.sigN_succ]
+      show (M.force v (sig (tauN t3 t6 d A)) ∧ M.force v t6) ↔
+        (M.force v (sig (sigN d A)) ∧ M.force v (Ud (d + 1)))
+      rw [e2, ← e3]
+      show ((M.force v (sig (sigN d A)) ∧ M.force v (sig (Ud d))) ∧ M.force v t6) ↔
+        (M.force v (sig (sigN d A)) ∧ (M.force v (sig (Ud d)) ∧ M.force v t6))
+      exact and_assoc
+
+theorem force_sigN_top (M : SubframeModel) (v : M.W) (d : Nat) : M.force v (sigN d topF) := by
+  show M.force v (sigN d (PLLFormula.ifThen .falsePLL .falsePLL))
+  rw [sigN_imp]
+  exact fun _ _ h => h
+
+/-- **(L1) PROVED** -/
+theorem towerEnds : TowerEnds := fun d =>
+  ⟨(tauN_closed d topF rfl).trans (interd_of_sem fun M v =>
+      ⟨fun h => h.2, fun h => ⟨force_sigN_top M v d, h⟩⟩),
+   tauN_closed d .falsePLL rfl⟩
+
+/-- **(L2) PROVED**: in a finite model `σᴺ⊥` eventually holds everywhere
+(`cm_eventually`), and there the ends `σᴺ⊥ ∧ U_N` and `U_N` agree. -/
+theorem closing : Closing := by
+  intro y z _ _ hy hz
+  rcases SubTab.complete (y.ifThen z) with ⟨c, hc⟩ | ⟨m, hm⟩
+  · exact ctx_of_imp (SubTab.holds_of_check hc)
+  · obtain ⟨N, hN⟩ := InsideOut.cm_eventually (x := y.ifThen z) (m := m) hm
+    exfalso
+    apply hN N (Nat.le_refl N)
+    have hU : Deriv [y] (Ud N) := Deriv.cutHead (hy N) (towerEnds N).1.1
+    have hb : Deriv [(sigN N .falsePLL).and (Ud N)] z := Deriv.cutHead (towerEnds N).2.2 (hz N)
+    exact Deriv.impIntro (Deriv.cutHead
+      (Deriv.andIntro (Deriv.iden (.tail _ (.head _))) (Deriv.cutHead (Deriv.iden (.head _)) hU)) hb)
+
+/-- **PROVED**: the intersection of the intervals has at most one element. -/
+theorem inAllUnique : InAllUnique := fun x x' hx hx' h h' =>
+  ⟨closing x x' hx hx' (fun d => (h d).2) (fun d => (h' d).1),
+   closing x' x hx' hx (fun d => (h' d).2) (fun d => (h d).1)⟩
+
+theorem inAll_tau {x : PLLFormula} (hx : atomFree x = true) (h : InAll x) :
+    InAll (relC t3 t6 x) := by
+  intro d
+  cases d with
+  | zero => exact ⟨bot_le _, le_top _⟩
+  | succ d =>
+      rw [tauN_succ' t3 t6 d .falsePLL, tauN_succ' t3 t6 d topF]
+      exact ⟨relC_mono t3_t6 (tauN_af rfl rfl d _ rfl) hx (h d).1,
+        relC_mono t3_t6 hx (tauN_af rfl rfl d _ rfl) (h d).2⟩
+
+/-- **PROVED**: an element of the intersection is a fixed point. -/
+theorem inAllFixed : InAllFixed := fun x hx h =>
+  inAllUnique _ x (relC_af rfl rfl x) hx (inAll_tau hx h) h
+
+/-- **(L3) PROVED** -/
+theorem fixedIffInAll : FixedIffInAll :=
+  ⟨fun ⟨x, hx, hfix⟩ => ⟨x, hx, fun d => fixedInAll t3 t6 rfl rfl t3_t6 x hx hfix d⟩,
+   fun ⟨x, hx, h⟩ => ⟨x, hx, inAllFixed x hx h⟩⟩
+
+end Endpoints
+end F0
+end PLLND
+
 /-! ## Axiom pins: the cells -/
 
 #axioms_within PLLND.F0.Endpoints.nd_ne [propext, Quot.sound]
@@ -2019,3 +2174,13 @@ end PLLND
 #axioms_within PLLND.F0.Endpoints.notFixed_t6 [propext, Quot.sound]
 #axioms_within PLLND.F0.Endpoints.notFixed_U2 [propext, Quot.sound]
 #axioms_within PLLND.F0.Endpoints.gate_L [propext, Quot.sound]
+
+/-! ## Axiom pins: L1–L3 -/
+
+#axioms_within PLLND.F0.Endpoints.sig_Ud [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.tauN_closed [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.towerEnds [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.closing [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.inAllUnique [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.inAllFixed [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.fixedIffInAll [propext, Quot.sound]

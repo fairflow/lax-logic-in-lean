@@ -211,3 +211,54 @@ The L addition (statements committed with cells, before any proof):
 
 Build: `gtimeout 3600 lake build wip.f0Endpoints -q`, exit 0, 18 s (olean
 written 17:26:10).  Probes `_out/ep_proofsT1.lean`, `_out/ep_L.lean`: exit 0.
+
+## Stage 3, part 3 (2026-11-01 17:29 GMT): L1–L3 proved, L4 OPEN
+
+| statement | status | theorem |
+|---|---|---|
+| (L1) `TowerEnds`: `τᵈ⊤ ⊣⊢ U_d`, `τᵈ⊥ ⊣⊢ σᵈ⊥ ∧ U_d` | PROVED | `towerEnds` (from `tauN_closed`: `τᵈA ⊣⊢ σᵈA ∧ U_d`, closed `A`) |
+| (L2) `Closing` | PROVED | `closing` (`cm_eventually`: in a finite model `σᴺ⊥` holds everywhere for large `N`) |
+| `InAllUnique`, `InAllFixed` | PROVED | `inAllUnique`, `inAllFixed` |
+| (L3) `FixedIffInAll` | PROVED | `fixedIffInAll` |
+| (L4) `NoTauFixedPoint` | OPEN, no proof attempted | cells `notFixed_top`, `notFixed_t6`, `notFixed_U2` |
+
+So the intervals `[τᵈ⊥, τᵈ⊤] = [σᵈ⊥ ∧ U_d, U_d]` close on at most one element of
+F0, which is then the unique closed fixed point of `τ`; otherwise they close on a
+gap.
+
+**L4, where the route stops.**  Pen: a fixed point `x` satisfies
+`x ⊣⊢ σᵈx ∧ U_d` for every `d`, so in a finite model it agrees with "`σᵈ t6` for
+every `d`"; peeling `M ↦ M ∖ ⟦t3⟧` (the restriction lemma behind `realize`),
+that set is "`t6` holds at every peeling stage until the world forces `t3`",
+and the number of stages is unbounded over finite models.  A proof needs (i) a
+depth measure on closed formulas with invariance under depth-bounded
+bisimulation of subframe models, choice-free, and (ii) for each depth `k` a
+pair of finite models, `k`-bisimilar at the roots, one with `U_D` and not
+`σᴰ t6`, one with every `σᵈ t6`.  The repository has neither in usable form:
+its layered bisimulation (`LaxLogic/PLL/SemUI/SemUILayered.lean`) is for
+constraint models with a budget over a finite formula set and is pinned
+`[propext, Classical.choice, Quot.sound]`; `SubframeAmalg.lean` has budgeted
+bisimulations only inside its amalgamation construction.  The obvious pair
+`ext^D Tchain`, `ext^D KS` does not work: `U_D` holds at both roots, but the
+roots differ in `S`-membership, which a formula of depth 1 detects.  Stopped
+here, as instructed.
+
+Gates watched failing, round 2 (`_out/ep_gatewatch2.lean`, exit 1, exactly five
+errors): `closing [propext]`, `selfStep_t3_bP [Quot.sound]`,
+`noLeastTopT3 []`, `fixedIffInAll [propext]`, `towerEnds []`; actual sets
+`[propext, Quot.sound]`.
+
+## Builds, probes, caps
+
+| run | command | exit | time |
+|---|---|---|---|
+| build 1 (stage 1) | `gtimeout 3600 lake build wip.f0Endpoints` | 0 | 69 s (built `f0InsideOut`, `f0FreeInterval`, `f0MovingTop`) |
+| build 2 (stage 2) | same | 0 | 15 s |
+| build 3 (stage 3, part 1) | same | 0 | 42 s |
+| build 4 (T1, L statements) | same, `-q` | 0 | 18 s |
+| build 5 (L1–L3) | same, `-q` | 0 | 16 s |
+| probes | `lake env lean _out/ep_*.lean` under `gtimeout 900` | `ep_cells` 1 then 0; `ep_proofsB` 1, 1, then 0; all others 0 | each under 1 min |
+| gate watches | `_out/ep_gatewatch.lean`, `_out/ep_gatewatch2.lean` | 1 (as required) | |
+
+No decider run (`SubTab.solve`, `pllfast`, `plldecide`) was needed: every table
+was designed by hand.  No cap was hit, nothing was skipped.
