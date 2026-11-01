@@ -273,7 +273,12 @@ def namedForms : List (Name × String × Nat) :=
    (`PLLND.F0.T6.regE, "\\lnot\\lnot\\bigcirc\\bot \\twoheadrightarrow \\bigcirc\\bot", 1),
    -- `wip/f0NotIso.lean`: `c₁ = ◯t₃`, `g₁ = c₁ ↠ t₃`, and `t₆` again
    (`PLLND.F0.NotIso.c1F, "c_{1}", 9), (`PLLND.F0.NotIso.g1F, "g_{1}", 9),
-   (`PLLND.F0.NotIso.t6F, "t_{6}", 9)]
+   (`PLLND.F0.NotIso.t6F, "t_{6}", 9),
+   -- v0.8 (2026-11-01): `wip/f0FreeInterval.lean`, `f0MovingTop`, `f0Endpoints`
+   (`PLLND.F0.Interval.topF, "\\top", 9), (`PLLND.F0.MovingTop.t6, "t_{6}", 9),
+   (`PLLND.F0.MovingTop.bT, "b_{T}", 9), (`PLLND.F0.Endpoints.nne, "\\lnot\\lnot\\bigcirc\\bot", 4),
+   (`PLLND.F0.Endpoints.g1, "g_{1}", 9), (`PLLND.F0.Endpoints.aK, "a_{K}", 9),
+   (`PLLND.F0.Endpoints.bP, "b'", 9)]
 
 /-- The tables' lists of `wip/f0Covers.lean` are read as the sets they list. -/
 def tableLists : List Name :=
@@ -562,6 +567,14 @@ partial def semCase? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := d
 (`"f0"`), so that the semantics paper's output does not change. -/
 partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
   let wrap (q : Nat) (s : String) := if q < p then paren s else s
+  -- the generators of an interval translation (v0.8), by name as for `relB`
+  let genHead (x : Expr) : MetaM String := do
+    let xs := x.consumeMData
+    if xs.isConstOf `PLLND.F0.Base3.x3 then pure "x"
+    else if xs.isConstOf `PLLND.F0.Base3.xω then pure "x^{\\omega}"
+    else if xs.isConstOf `PLLND.F0.Pair.xs then pure "y"
+    else if xs.isConstOf `PLLND.F0.FreePLL.xr then pure "x^{r}"
+    else generic st 9 xs
   match e.getAppFnArgs with
   -- an element of a filter `[p, ⊤]` is written as the element of F0 it is
   | (``Subtype.val, #[_, _, a]) => return some (← generic st p a)
@@ -717,7 +730,83 @@ partial def f0Case? (st : St) (p : Nat) (e : Expr) : MetaM (Option String) := do
   | (`PLLND.F0.MeetCount.MeetEmb, #[n, f]) =>
     return some (wrap 5 ((← generic st 6 f) ++ "\\ \\text{is a meet-embedding of}\\ H_{" ++
       (← generic st 0 n) ++ "}"))
-  | _ => return none
+  -- v0.8 (2026-11-01): the interval translation `A^x_{[a,b]}` of
+  -- `wip/f0FreeInterval.lean`, its closed form `τ_{a,b}` and iterates
+  -- (`f0MovingTop`), the A-translation copies `α_{a,b}` (`f0Endpoints`)
+  | (`PLLND.F0.Interval.rel, #[a, b, x, A]) =>
+    -- a translated formula that is itself a translation is bracketed
+    let inner ← form st 9 A
+    let hd := A.consumeMData.getAppFn
+    let inner := if hd.isConstOf `PLLND.F0.Interval.rel || hd.isConstOf `PLLND.F0.Sig.aTr then
+      paren inner else inner
+    return some (inner ++ "^{" ++ (← genHead x) ++ "}_{[" ++ (← form st 0 a) ++
+      ",\\, " ++ (← form st 0 b) ++ "]}")
+  | (`PLLND.F0.Interval.rel, #[a, b, x]) =>
+    return some ("(\\cdot)^{" ++ (← genHead x) ++ "}_{[" ++ (← form st 0 a) ++ ",\\, " ++
+      (← form st 0 b) ++ "]}")
+  | (`PLLND.F0.Interval.FreeHAωIn, #[a, b]) =>
+    return some ("\\mathit{FreeHA}_{\\omega}\\mathit{In}(" ++ (← form st 0 a) ++ ", " ++ (← form st 0 b) ++ ")")
+  | (`PLLND.F0.Interval.compT, #[_, _, d, A]) =>
+    return some ("T_{" ++ (← generic st 0 d) ++ "}(" ++ (← form st 0 A) ++ ")")
+  | (`PLLND.F0.Interval.compT, #[_, _, d]) => return some ("T_{" ++ (← generic st 0 d) ++ "}")
+  | (`PLLND.F0.Interval.coreT, #[_, _, d, A]) =>
+    return some ("\\kappa_{" ++ (← generic st 0 d) ++ "}(" ++ (← form st 0 A) ++ ")")
+  -- the ends and generators of the tower at depth `d`: `a_d`, `b_d`, `x_d`
+  | (`PLLND.F0.Interval.ICopy.a, #[t]) | (`PLLND.F0.Interval.ICopy.b, #[t])
+  | (`PLLND.F0.Interval.ICopy.x, #[t]) | (`PLLND.F0.Interval.ICopy.x, #[t, _]) =>
+    match t.consumeMData.getAppFnArgs with
+    | (`PLLND.F0.Interval.tower, #[_, _, d]) =>
+      let fld := match e.getAppFn.constName? with
+        | Option.some `PLLND.F0.Interval.ICopy.a => "a"
+        | Option.some `PLLND.F0.Interval.ICopy.b => "b"
+        | _ => "x"
+      let base := fld ++ "_{" ++ (← generic st 0 d) ++ "}"
+      match e.getAppFnArgs with
+      | (`PLLND.F0.Interval.ICopy.x, #[_, q]) => return some (base ++ "(" ++ (← generic st 0 q) ++ ")")
+      | _ => return some base
+    | _ => return none
+  | (`PLLND.F0.MovingTop.relC, #[a, b, A]) =>
+    return some ("\\tau_{" ++ (← form st 0 a) ++ ",\\, " ++ (← form st 0 b) ++ "}(" ++ (← form st 0 A) ++ ")")
+  | (`PLLND.F0.MovingTop.tauN, #[a, b, d, A]) =>
+    return some ("\\tau^{" ++ (← generic st 0 d) ++ "}_{" ++ (← form st 0 a) ++ ",\\, " ++
+      (← form st 0 b) ++ "}(" ++ (← form st 0 A) ++ ")")
+  | (`PLLND.F0.MovingTop.tauP, #[A]) => return some ("\\tau_{P}(" ++ (← form st 0 A) ++ ")")
+  | (`PLLND.F0.MovingTop.tauP, #[]) => return some "\\tau_{P}"
+  | (`PLLND.F0.MovingTop.tauPN, #[d, A]) =>
+    return some ("\\tau_{P}^{" ++ (← generic st 0 d) ++ "}(" ++ (← form st 0 A) ++ ")")
+  | (`PLLND.F0.MovingTop.xP, #[q]) => return some ("x_{P}(" ++ (← generic st 0 q) ++ ")")
+  | (`PLLND.F0.MovingTop.xP, #[]) => return some "x_{P}"
+  | (`PLLND.F0.MovingTop.gR, #[A]) => return some ("g(" ++ (← form st 0 A) ++ ")")
+  | (`PLLND.F0.MovingTop.yT, #[q]) => return some ("y_{T}(" ++ (← generic st 0 q) ++ ")")
+  | (`PLLND.F0.MovingTop.yT, #[]) => return some "y_{T}"
+  | (`PLLND.F0.Endpoints.selfGen, #[a, b, q]) =>
+    return some ("s_{" ++ (← form st 0 a) ++ ",\\, " ++ (← form st 0 b) ++ "}(" ++ (← generic st 0 q) ++ ")")
+  | (`PLLND.F0.Endpoints.selfGen, #[a, b]) =>
+    return some ("s_{" ++ (← form st 0 a) ++ ",\\, " ++ (← form st 0 b) ++ "}")
+  | (`PLLND.F0.Endpoints.tauS, #[a, b, A]) =>
+    return some ("\\alpha_{" ++ (← form st 0 a) ++ ",\\, " ++ (← form st 0 b) ++ "}(" ++ (← form st 0 A) ++ ")")
+  | (`PLLND.F0.Endpoints.tauSN, #[a, b, d, A]) =>
+    return some ("\\alpha^{" ++ (← generic st 0 d) ++ "}_{" ++ (← form st 0 a) ++ ",\\, " ++
+      (← form st 0 b) ++ "}(" ++ (← form st 0 A) ++ ")")
+  | (`PLLND.F0.Endpoints.Tpow, #[a, n]) =>
+    return some ("T^{" ++ (← generic st 0 n) ++ "}(" ++ (← form st 0 a) ++ ")")
+  | (`PLLND.F0.Endpoints.Ud, #[d]) => return some ("U_{" ++ (← generic st 0 d) ++ "}")
+  -- the shells of `wip/f0InsideOut.lean`: `σⁿ(F0)`, `σ^ω(F0)`, `Lₙ`
+  | (`PLLND.F0.InsideOut.inSig, #[n, x]) =>
+    return some (wrap 5 ((← form st 1 x) ++ " \\in \\sigma^{" ++ (← generic st 0 n) ++ "}(F_0)"))
+  | (`PLLND.F0.InsideOut.inLim, #[x]) =>
+    return some (wrap 5 ((← form st 1 x) ++ " \\in \\sigma^{\\omega}(F_0)"))
+  | (`PLLND.F0.InsideOut.shell, #[n, x]) =>
+    return some (wrap 5 ((← form st 1 x) ++ " \\in L_{" ++ (← generic st 0 n) ++ "}"))
+  | _ =>
+    -- the sequences of the tower, `ξs d`, `ζs d`: `ξ_d`, `ζ_d`
+    match e.getAppFn, e.getAppArgs with
+    | .fvar id, #[d] =>
+      let nm := (← id.getDecl).userName.toString
+      if nm == "ξs" || nm == "ζs" then
+        return some ((if nm == "ξs" then "\\xi" else "\\zeta") ++ "_{" ++ (← generic st 0 d) ++ "}")
+      return none
+    | _, _ => return none
 
 /-- Propositions, terms and everything else. -/
 partial def generic (st0 : St) (p : Nat) (e : Expr) : MetaM String := do
