@@ -5,12 +5,16 @@ import Mathlib
 
 A believer is a nucleus `j` — inflationary, idempotent, meet-preserving.  On a
 finite `SemilatticeInf` this is a *decidable* predicate, so we enumerate the
-believers on small algebras and exhibit sceptic / credulous / intermediate ones
-side by side.
+believers on the 3-chain and exhibit sceptic / credulous / intermediate ones
+side by side, kernel-checked by `decide`.
 
-`decide` (kernel-checked, axiom-clean) is used where it is fast; the two
-enumerations over 256-element function spaces use `native_decide`, which adds the
-`Lean.ofReduceBool` axiom to *those two* audits — flagged, per the mandate.
+The larger enumerations (the 4-chain, the 2×2 Boolean algebra, and the two
+five-element non-linear Heyting algebras, with the closed/open/neither
+classification of every believer) are in `ExamplesClean.lean`, over bare
+inductive carriers whose audits avoid both `native_decide` and the choice
+that Mathlib's `Fin`/`Finset` vocabulary brings into statements.  The two
+`native_decide` counts this file carried until 2026-11-01 (`chain4_card`,
+`boolean22_card`) were replaced by the kernel-checked counts there.
 -/
 
 namespace BeliefLax
@@ -37,23 +41,7 @@ theorem chain3_open : IsNucleusFun (![0, 2, 2] : Fin 3 → Fin 3) := by decide
 /-- Open ≠ closed *already on the 3-chain* — constructive richness (cf. §3b-2). -/
 theorem chain3_open_ne_closed : (![0, 2, 2] : Fin 3 → Fin 3) ≠ ![1, 1, 2] := by decide
 
-/-! ### The 4-element chain `Fin 4`: eight believers -/
-
-/-- The 4-chain has exactly **eight** nuclei. -/
-theorem chain4_card :
-    (Finset.univ.filter fun j : Fin 4 → Fin 4 => IsNucleusFun j).card = 8 := by native_decide
-
-/-! ### The 2×2 Boolean algebra `Fin 2 × Fin 2` (non-linear): four believers -/
-
-/-- The 4-element Boolean algebra `2 × 2` has exactly **four** nuclei = its four
-elements — a machine-computed instance of the collapse `N(B) ≅ B` (§3b-1). -/
-theorem boolean22_card :
-    (Finset.univ.filter fun j : Fin 2 × Fin 2 → Fin 2 × Fin 2 => IsNucleusFun j).card = 4 := by
-  native_decide
-
 end BeliefLax
 
 #print axioms BeliefLax.chain3_card
 #print axioms BeliefLax.chain3_open_ne_closed
-#print axioms BeliefLax.chain4_card
-#print axioms BeliefLax.boolean22_card
