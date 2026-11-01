@@ -281,6 +281,22 @@ believers are neither dogmatic nor hypothetical** (`C4.neither_exact`).  All
 were deleted, and the module left the `Audit/Production.lean` sweep's
 hold-out list, which is one entry shorter.
 
+**2026-11-01 — the F0 free-algebra facts promoted for the Belief paper
+(`BeliefF0` library).** Matthew's ruling of the same day: results the Belief
+paper cites are promoted out of `wip/`.
+[`LaxLogic/Belief/F0Facts.lean`](../LaxLogic/Belief/F0Facts.lean) restates,
+with `#guard_msgs`-pinned audits all at **[propext, Quot.sound]** — no
+choice: `freeHAnAbove_base3` and `freeHAωAbove_base3` (IPC embeds faithfully
+into F0: every `H_n`, and `H_ω`, a Heyting subalgebra of `[σ³⊥, ⊤]`),
+`conjecture` (∀n ∃m, with m = 3), `allAbove3`/`allAbove3ω` (every base
+`σᵐ⊥`, m ≥ 3), and `freePLLAbove_base3`/`freeReaders` (PLL embeds faithfully
+into F0 with `◯ ↦ ◯`). The proofs are the `wip/` theorems
+(`f0FreeBase3`, `f0FreePLL`, `f0FreeAnyFamily`; definitions `f0FreeHAn`),
+which stay in place — the F0 paper's open revision (#107) cites them by
+source line. Built by default as the `BeliefF0` library on the
+`SubTab`/`FRJGbu` pattern: in `defaultTargets`, not imported by the
+`LaxLogic` root, whose import closure stays free of `wip/`.
+
 ## 10. Realisability completeness (promoted 2026-07-17/18)
 
 The `⊩ᵖ` programme, promoted to the library after all proofs closed.  The

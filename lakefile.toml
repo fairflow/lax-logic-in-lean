@@ -1,7 +1,7 @@
 name = "lax-logic"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["LaxLogic", "FRJGbu", "SubTab"]
+defaultTargets = ["LaxLogic", "FRJGbu", "SubTab", "BeliefF0"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -187,6 +187,17 @@ globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
          "LaxLogic.PLL.SubTab.Tableau", "LaxLogic.PLL.SubTab.Engine",
          "LaxLogic.PLL.SubTab.Gates", "LaxLogic.PLL.SubTab.Facts",
          "LaxLogic.PLL.SubTab.Source"]
+
+# BeliefF0: the F0 free-algebra facts the Belief paper cites (faithful IPC
+# embedding, faithful PLL self-embedding), promoted 2026-11-01 as pinned
+# restatements whose proofs are the wip/ theorems (f0FreeBase3, f0FreePLL,
+# f0FreeAnyFamily; definitions f0FreeHAn).  The wip/ originals stay in
+# place — the F0 paper's open revision cites them by source line.  An
+# explicit list in defaultTargets, as FRJGbu and SubTab: the `LaxLogic`
+# root module does not import this, keeping its closure free of wip/.
+[[lean_lib]]
+name = "BeliefF0"
+globs = ["LaxLogic.Belief.F0Facts"]
 
 [[lean_exe]]
 name = "bilaxscreen"
