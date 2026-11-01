@@ -121,6 +121,31 @@ K3: `[t3] ⊢ bᵢ ⊢ t6` and `[t6] ⊬ bᵢ` for `b₁, b₂, b₃` (`t3_b1` �
 K5: the designed generators `p ↦ ◯t3 ∧ t6`, `q ↦ g1 ∧ t6` fail
 (`k5_cell`).  Gates watched failing: `gate_base`, `gate_k3`, `gate_k4`.
 
+## Stage 3: proofs (pins `[propext, Quot.sound]`)
+
+**PROVED**: `SelfIffReduced` (`selfIffReduced`), `SelfToCopy`, `ClosedToCopy`,
+`TransportG`, `SelfToClosed`, `SelfTower` (`selfTower`); (Na) `necBox`, (Nb)
+`necPow`, (Nc) `necClosed`, `necCells`; (K1) `gadgetSelf`; (K1′)
+`twoSidedSelf`, `sidesOfNd`; **(K2′) `baseCriterion`**:
+
+    a closed:   CopyStep a ⊤  ⟺  SelfStep a ⊤  ⟺  ⊬ ◯a ↠ a  ∧  ⊬ (◯a ↠ a) ↠ a
+
+(K4 at `b = ⊤`, `copySelf_top`); `noGadgetAK`, hence **K2 as briefed REFUTED**
+(`not_baseGadget`); **(K3) `extTops`**; **K5 REFUTED for every top**
+(`noClosedStepT3`, `not_k5`).  Validation of K1: the gadget `G2` of `ext` for
+`(t3, t6)` (`gadget_t3_t6`, reproving `pllSelf`) and for `t5`
+(`selfStep_t5_t56`, a new strictly nested PLL tower in `[t5, t5 ∨ t6]`,
+`tower_t5`).
+
+The proof of `baseCriterion` (`ts_realizes`): from countermodels of the two
+formulas take a world maximal among the refuters of `a`, in `S` (`SideIn`) and
+with no `S` in its cluster (`SideOut`); above every world of a finite `M` that
+sees `S` put the strict successors of the first, above every world that sees a
+world with no `S` above it the strict successors of the second (`TS`); a
+terminal cluster of `M` is bisimilar to the matching side (`isBisimIn`,
+`isBisimOut`), so `a` fails exactly on `M`, and the induction of `orig_aTr`
+(`realize`) reads `M` off the image.
+
 Status note: `wip/f0Endpoints-STATUS.md`.
 -/
 
@@ -589,6 +614,1068 @@ end Endpoints
 end F0
 end PLLND
 
+/-! ## Stage 3: proofs -/
+
+namespace PLLND
+namespace F0
+namespace Endpoints
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF)
+open PLLND.LaxInfinite (atomFree)
+open SubframeModel.CF (FinDec)
+
+/-! ### Cheap implications -/
+
+/-- `relB a (p ↦ p ∨ a) = aTr a`. -/
+theorem relB_aTr (a : PLLFormula) :
+    ∀ C : PLLFormula, relB a (fun p => (PLLFormula.prop p).or a) C = aTr a C
+  | .prop _ => rfl
+  | .falsePLL => rfl
+  | .and A B => by
+      show (relB _ _ A).and (relB _ _ B) = (aTr a A).and (aTr a B)
+      rw [relB_aTr a A, relB_aTr a B]
+  | .or A B => by
+      show (relB _ _ A).or (relB _ _ B) = (aTr a A).or (aTr a B)
+      rw [relB_aTr a A, relB_aTr a B]
+  | .ifThen A B => by
+      show (relB _ _ A).ifThen (relB _ _ B) = (aTr a A).ifThen (aTr a B)
+      rw [relB_aTr a A, relB_aTr a B]
+  | .somehow A => by
+      show (relB _ _ A).somehow = (aTr a A).somehow
+      rw [relB_aTr a A]
+
+/-- **PROVED** `[a] ⊢ b ⟹ (SelfStep a b ⟺ SelfStepReduced a b)` (`genIff`). -/
+theorem selfIffReduced : SelfIffReduced := by
+  intro a b hab
+  have h := genIff a b (fun p => (PLLFormula.prop p).or a) hab
+    (fun _ => Deriv.orIntro2 (Deriv.iden (.head _)))
+  constructor
+  · intro hs C hC
+    exact h.mp hs C (by rw [relB_aTr]; exact hC)
+  · intro hr
+    exact h.mpr fun C hC => hr C (by rw [relB_aTr] at hC; exact hC)
+
+/-- Any faithful interval copy of PLL is a faithful copy of F0 on closed formulas. -/
+theorem copy_of_free {a b : PLLFormula} {x : String → PLLFormula} (h : FreeInPLL a b x) :
+    CopyStep a b := by
+  intro A B hA hB
+  have h' := h.2.2 A B
+  rw [rel_closed_indep a b x (fun _ => a) A hA, rel_closed_indep a b x (fun _ => a) B hB] at h'
+  exact h'
+
+/-- **PROVED** -/
+theorem selfToCopy : SelfToCopy := fun _ _ h => copy_of_free h
+
+/-- **PROVED** -/
+theorem closedToCopy : ClosedToCopy := fun _ _ ⟨_, _, h⟩ => copy_of_free h
+
+/-- The readers commute with the interval translation, syntactically. -/
+theorem gR_rel (a b : PLLFormula) (x : String → PLLFormula) :
+    ∀ A : PLLFormula, gR (rel a b x A) = rel (gR a) (gR b) (fun p => gR (x p)) A
+  | .prop _ => rfl
+  | .falsePLL => rfl
+  | .and A B => by
+      show (gR (rel a b x A)).and (gR (rel a b x B)) = _
+      rw [gR_rel a b x A, gR_rel a b x B]; rfl
+  | .or A B => by
+      show (gR (rel a b x A)).or (gR (rel a b x B)) = _
+      rw [gR_rel a b x A, gR_rel a b x B]; rfl
+  | .ifThen A B => by
+      show ((gR (rel a b x A)).ifThen (gR (rel a b x B))).and (gR b) = _
+      rw [gR_rel a b x A, gR_rel a b x B]; rfl
+  | .somehow A => by
+      show (gR (rel a b x A)).somehow.and (gR b) = _
+      rw [gR_rel a b x A]; rfl
+
+/-- **PROVED** transport by the readers. -/
+theorem transportG : TransportG := by
+  intro a b x ⟨hax, hxb, hf⟩
+  refine ⟨fun p => (g_faithful _ _).mp (hax p), fun p => (g_faithful _ _).mp (hxb p),
+    fun A B => ?_⟩
+  rw [← gR_rel, ← gR_rel]
+  exact (hf A B).trans (g_faithful _ _)
+
+theorem gR_closed {a : PLLFormula} (ha : atomFree a = true) : gR a = sigN 3 a := by
+  show relB b3 xr a = sigN 3 a
+  rw [relB_closed b3 xr a ha, sigN_eq_subBot 3 a]
+  rfl
+
+/-- **PROVED** `SelfStep a b ⟹ ClosedStep (σ³a) (σ³b)`. -/
+theorem selfToClosed : SelfToClosed := by
+  intro a b ha hb h
+  have ht := transportG a b (selfGen a b) h
+  rw [gR_closed ha, gR_closed hb] at ht
+  exact ⟨_, fun _ => g_af _, ht⟩
+
+/-! ### The tower -/
+
+section Tower
+
+variable {a b : PLLFormula}
+
+theorem tauSN_faithful (h : SelfStep a b) : ∀ (d : Nat) (A B : PLLFormula),
+    Deriv [A] B ↔ Deriv [tauSN a b d A] (tauSN a b d B)
+  | 0, _, _ => Iff.rfl
+  | d + 1, A, B => (h.2.2 A B).trans (tauSN_faithful h d (tauS a b A) (tauS a b B))
+
+theorem tauSN_succ' : ∀ (d : Nat) (A : PLLFormula), tauSN a b (d + 1) A = tauS a b (tauSN a b d A)
+  | 0, _ => rfl
+  | d + 1, A => tauSN_succ' d (tauS a b A)
+
+theorem tauS_interd (h : SelfStep a b) {A B : PLLFormula} (hi : Interd A B) :
+    Interd (tauS a b A) (tauS a b B) :=
+  ⟨(h.2.2 A B).mp hi.1, (h.2.2 B A).mp hi.2⟩
+
+theorem tauSN_rel (h : SelfStep a b) : ∀ (d : Nat) (A : PLLFormula), Interd (tauSN a b d A)
+    (rel (tauSN a b d .falsePLL) (tauSN a b d topF) (fun p => tauSN a b d (.prop p)) A)
+  | 0, A => interd_of_sem fun M v => by
+      have h0 := rel_iff_relB_gen M .falsePLL topF (fun p => .prop p) (fun p => .prop p)
+        (fun _ _ _ => Iff.rfl) A v (fun _ _ h => h)
+      rw [relB_id] at h0
+      exact h0.symm
+  | d + 1, A => by
+      have hab : Deriv [a] b := Deriv.cutHead (h.1 "") (h.2.1 "")
+      have hfun : (fun p => tauSN a b (d + 1) (.prop p)) = fun p => tauS a b (tauSN a b d (.prop p)) :=
+        funext fun p => tauSN_succ' d (.prop p)
+      rw [hfun, tauSN_succ' d A, tauSN_succ' d .falsePLL, tauSN_succ' d topF]
+      refine (tauS_interd h (tauSN_rel h d A)).trans (interd_of_sem fun M v => ?_)
+      exact (Interval.rel_comp M a b (selfGen a b) (tauSN a b d .falsePLL) (tauSN a b d topF)
+        (fun p => tauSN a b d (.prop p)) (hab_of hab M) (fun _ _ h => h.2) A v).symm
+
+end Tower
+
+/-- **PROVED** the tower for any `SelfStep` pair. -/
+theorem selfTower : SelfTower := by
+  intro a b _ _ h ha0 hb0 d
+  refine ⟨tauSN_faithful h d, ⟨fun p => (tauSN_faithful h d _ _).mp (bot_le _),
+      fun p => (tauSN_faithful h d _ _).mp (le_top _),
+      fun A B => (tauSN_faithful h d A B).trans
+        (deriv_iff_of_interd (tauSN_rel h d A) (tauSN_rel h d B))⟩,
+    (tauSN_faithful h d .falsePLL (tauS a b .falsePLL)).mp (bot_le _),
+    fun hd => ha0 ((tauSN_faithful h d (tauS a b .falsePLL) .falsePLL).mpr hd),
+    (tauSN_faithful h d (tauS a b topF) topF).mp (le_top _),
+    fun hd => hb0 (of_top (Deriv.andElim2 ((tauSN_faithful h d topF (tauS a b topF)).mpr hd)))⟩
+
+/-! ### Necessary conditions -/
+
+/-- **(Na) PROVED** -/
+theorem necBox : NecBox := by
+  intro a b h hc
+  have h1 : Deriv [relC a b (PLLFormula.somehow .falsePLL)] (relC a b .falsePLL) :=
+    Deriv.cutHead (Deriv.andElim1 (Deriv.iden (.head _))) h
+  exact nd_e_bot ((hc _ _ rfl rfl).mpr h1)
+
+/-- **(Nc) PROVED** -/
+theorem necClosed : NecClosed := fun a b hab hc C hC hnd h =>
+  hnd ((copyIffTopAvoid a b hab).mp hc C hC h)
+
+/-- **(Nb) PROVED** -/
+theorem necPow : NecPow := fun a b hab hc n h =>
+  necClosed a b hab hc _ (sigN_vf n rfl) (nd_sigN_bot n) h
+
+theorem nd_e : ¬ Deriv [] e := SubTab.no.verdict e KS
+
+/-- **(Nc), four instances, PROVED** -/
+theorem necCells : NecCells := fun a b hab hc =>
+  ⟨necClosed a b hab hc .falsePLL rfl nd_bot, necClosed a b hab hc e rfl nd_e,
+   necClosed a b hab hc ne rfl nd_ne, necClosed a b hab hc nne rfl nd_nne⟩
+
+/-- A refuted base is refuted under every top above it. -/
+theorem not_copy_of_baseNo {a : PLLFormula} (h : BaseNo a) (b : PLLFormula) (hab : Deriv [a] b) :
+    ¬ CopyStep a b := fun hc => by
+  obtain ⟨C, hC, hd, hnd⟩ := h
+  exact necClosed a b hab hc C hC hnd (Deriv.rename (fun _ hx => absurd hx List.not_mem_nil) hd)
+
+/-! ### A bisimulation for closed formulas, and the realization lemma -/
+
+/-- A bisimulation between subframe models (order and `S`; atoms not read). -/
+structure IsBisim (N K : SubframeModel) (B : N.W → K.W → Prop) : Prop where
+  forth : ∀ {w k w'}, B w k → N.le w w' → ∃ k', K.le k k' ∧ B w' k'
+  back : ∀ {w k k'}, B w k → K.le k k' → ∃ w', N.le w w' ∧ B w' k'
+  forthS : ∀ {w k w'}, B w k → N.le w w' → w' ∈ N.S → ∃ k', K.le k k' ∧ k' ∈ K.S ∧ B w' k'
+  backS : ∀ {w k k'}, B w k → K.le k k' → k' ∈ K.S → ∃ w', N.le w w' ∧ w' ∈ N.S ∧ B w' k'
+
+/-- **Closed formulas are invariant under bisimulation.** -/
+theorem bisim_force {N K : SubframeModel} {B : N.W → K.W → Prop} (hB : IsBisim N K B) :
+    ∀ φ : PLLFormula, atomFree φ = true → ∀ w k, B w k → (N.force w φ ↔ K.force k φ)
+  | .prop _, h, _, _, _ => nomatch h
+  | .falsePLL, _, _, _, _ => Iff.rfl
+  | .and A C, h, w, k, hb =>
+      and_congr (bisim_force hB A (and_split h).1 w k hb) (bisim_force hB C (and_split h).2 w k hb)
+  | .or A C, h, w, k, hb =>
+      or_congr (bisim_force hB A (or_split h).1 w k hb) (bisim_force hB C (or_split h).2 w k hb)
+  | .ifThen A C, h, w, k, hb => by
+      have hA := (imp_split h).1
+      have hC := (imp_split h).2
+      constructor
+      · intro hw k' hkk' hk
+        obtain ⟨w', hww', hb'⟩ := hB.back hb hkk'
+        exact (bisim_force hB C hC w' k' hb').mp (hw w' hww' ((bisim_force hB A hA w' k' hb').mpr hk))
+      · intro hk w' hww' hw
+        obtain ⟨k', hkk', hb'⟩ := hB.forth hb hww'
+        exact (bisim_force hB C hC w' k' hb').mpr (hk k' hkk' ((bisim_force hB A hA w' k' hb').mp hw))
+  | .somehow A, h, w, k, hb => by
+      constructor
+      · intro hw k' hkk' hS
+        obtain ⟨w', hww', hS', hb'⟩ := hB.backS hb hkk' hS
+        exact (bisim_force hB A h w' k' hb').mp (hw w' hww' hS')
+      · intro hk w' hww' hS
+        obtain ⟨k', hkk', hS', hb'⟩ := hB.forthS hb hww' hS
+        exact (bisim_force hB A h w' k' hb').mpr (hk k' hkk' hS')
+
+/-- **`M` realized in `N` as the refuters of `a`**: `ι` embeds `M`, every world
+above the image is in the image or forces `a`, `S` and atoms are kept, and `a`
+fails on the image. -/
+structure Realizes (N M : SubframeModel) (ι : M.W → N.W) (a : PLLFormula) : Prop where
+  le_iff : ∀ x y, N.le (ι x) (ι y) ↔ M.le x y
+  up : ∀ x w, N.le (ι x) w → (∃ y, w = ι y) ∨ N.force w a
+  S_iff : ∀ x, ι x ∈ N.S ↔ x ∈ M.S
+  V_iff : ∀ p x, ι x ∈ N.V p ↔ x ∈ M.V p
+  not_a : ∀ x, ¬ N.force (ι x) a
+
+/-- **The realization lemma** (the induction of `orig_aTr`, for any realization):
+on the image, `aTr a ψ` holds exactly where `ψ` holds in `M`. -/
+theorem realize {N M : SubframeModel} {ι : M.W → N.W} {a : PLLFormula} (hR : Realizes N M ι a) :
+    ∀ (ψ : PLLFormula) (x : M.W), N.force (ι x) (aTr a ψ) ↔ M.force x ψ
+  | .prop p, x =>
+      ⟨fun h => h.elim (hR.V_iff p x).mp fun h' => (hR.not_a x h').elim,
+       fun h => Or.inl ((hR.V_iff p x).mpr h)⟩
+  | .falsePLL, x => ⟨fun h => (hR.not_a x h).elim, False.elim⟩
+  | .and A B, x => and_congr (realize hR A x) (realize hR B x)
+  | .or A B, x => or_congr (realize hR A x) (realize hR B x)
+  | .ifThen A B, x =>
+      ⟨fun h y hxy hA => (realize hR B y).mp
+          (h (ι y) ((hR.le_iff x y).mpr hxy) ((realize hR A y).mpr hA)),
+       fun h w hw hA => by
+        rcases hR.up x w hw with ⟨y, rfl⟩ | haw
+        · exact (realize hR B y).mpr (h y ((hR.le_iff x y).mp hw) ((realize hR A y).mp hA))
+        · exact Interval.sem_of_deriv (aTr_top a B) N w haw⟩
+  | .somehow A, x =>
+      ⟨fun h y hxy hS => (realize hR A y).mp
+          (h (ι y) ((hR.le_iff x y).mpr hxy) ((hR.S_iff y).mpr hS)),
+       fun h w hw hSw => by
+        rcases hR.up x w hw with ⟨y, rfl⟩ | haw
+        · exact (realize hR A y).mpr (h y ((hR.le_iff x y).mp hw) ((hR.S_iff y).mp hSw))
+        · exact Interval.sem_of_deriv (aTr_top a A) N w haw⟩
+
+/-- **Realizations give the reduced step**: if every finite `M` is realized as
+the refuters of `a` with `b` at the image of a chosen world, then
+`[b] ⊢ aTr a C ⟹ ⊢ C`. -/
+theorem reduced_of_realize {a b : PLLFormula}
+    (h : ∀ (M : SubframeModel) [FinDec M] (r : M.W),
+      ∃ (N : SubframeModel) (ι : M.W → N.W), Realizes N M ι a ∧ N.force (ι r) b) :
+    SelfStepReduced a b := by
+  intro χ hd
+  rcases SubTab.complete χ with ⟨c, hc⟩ | ⟨m, hm⟩
+  · exact SubTab.holds_of_check hc
+  · exfalso
+    have hm0 : m.refutes χ = true := hm
+    simp only [SubTab.SubCM.refutes, Bool.and_eq_true, Bool.not_eq_true'] at hm0
+    have hr := (SubTab.SubCM.ok_parts hm0.1).1
+    obtain ⟨N, ι, hR, hb⟩ := h (m.toModel hm0.1) ⟨m.root, hr⟩
+    have hs := Interval.sem_of_deriv hd N (ι ⟨m.root, hr⟩) hb
+    have hf := (realize hR χ ⟨m.root, hr⟩).mp hs
+    have hbool := (SubTab.SubCM.forceB_iff hm0.1 χ ⟨m.root, hr⟩).mpr hf
+    rw [hm0.2] at hbool
+    exact Bool.false_ne_true hbool
+
+/-! ### K1: one gadget above every world -/
+
+/-- The new part of `glue M G` is a generated copy of `G`. -/
+theorem glue_new_bisim (M G : SubframeModel) :
+    IsBisim (glue M G) G (fun w g => w = Sum.inr g) where
+  forth {w k w'} hb hle := by
+    subst hb
+    cases w' with
+    | inl _ => exact False.elim hle
+    | inr g' => exact ⟨g', hle, rfl⟩
+  back {w k k'} hb hle := by
+    subst hb
+    exact ⟨Sum.inr k', hle, rfl⟩
+  forthS {w k w'} hb hle hS := by
+    subst hb
+    cases w' with
+    | inl _ => exact False.elim hle
+    | inr g' => exact ⟨g', hle, hS, rfl⟩
+  backS {w k k'} hb hle hS := by
+    subst hb
+    exact ⟨Sum.inr k', hle, hS, rfl⟩
+
+theorem glue_new_force {M G : SubframeModel} {φ : PLLFormula} (hφ : atomFree φ = true) (g : G.W) :
+    (glue M G).force (Sum.inr g) φ ↔ G.force g φ :=
+  bisim_force (glue_new_bisim M G) φ hφ _ g rfl
+
+/-- **(K1) PROVED** -/
+theorem gadgetSelf : GadgetSelf := by
+  intro G a b ha _ hab hG
+  refine (selfIffReduced a b hab).mpr (reduced_of_realize fun M _ _ =>
+    ⟨glue M G, Sum.inl, ?_, hG.2.2 M _⟩)
+  exact
+    { le_iff := fun _ _ => Iff.rfl
+      up := fun _ w _ => by
+        cases w with
+        | inl y => exact Or.inl ⟨y, rfl⟩
+        | inr g => exact Or.inr ((glue_new_force ha g).mpr (hG.2.1 g))
+      S_iff := fun _ => Iff.rfl
+      V_iff := fun _ _ => Iff.rfl
+      not_a := hG.1 M }
+
+/-! ### K5: no closed generators over `t3`, whatever the top -/
+
+theorem rel_sgn_le (b : PLLFormula) (x : String → PLLFormula) (ε : Bool) (q : String) :
+    Deriv [rel t3 b x (FreeIPL.sgnP ε (.prop q))] (FreeIPL.sgn ε (x q)) := by
+  cases ε
+  · exact Deriv.andElim1 (Deriv.iden (.head _))
+  · exact Deriv.iden (.head _)
+
+/-- **(K5) REFUTED, for every top**: `noFreeHA2` gives a signed conjunction of
+the two generators below `t3`, so the copy sends `¬(p^ε₁ ∧ q^ε₂)` to the top. -/
+theorem noClosedStepT3 : NoClosedStepT3 := by
+  intro b ⟨x, hx, _, _, hf⟩
+  obtain ⟨ε, hd⟩ := FreeIPL.noFreeHA2 (x "p") (x "q") (hx "p") (hx "q")
+  have h : Deriv [rel t3 b x topF] (rel t3 b x (FreeIPL.negConj ε)) := by
+    show Deriv [(t3.ifThen t3).and b]
+      ((((rel t3 b x (FreeIPL.sgnP ε.1 (.prop "p"))).and
+        (rel t3 b x (FreeIPL.sgnP ε.2 (.prop "q")))).ifThen t3).and b)
+    refine Deriv.andIntro (Deriv.impIntro ?_) (Deriv.andElim2 (Deriv.iden (.head _)))
+    have hc : Deriv [(rel t3 b x (FreeIPL.sgnP ε.1 (.prop "p"))).and
+        (rel t3 b x (FreeIPL.sgnP ε.2 (.prop "q")))]
+        ((FreeIPL.sgn ε.1 (x "p")).and (FreeIPL.sgn ε.2 (x "q"))) :=
+      Deriv.andIntro (Deriv.cutHead (Deriv.andElim1 (Deriv.iden (.head _))) (rel_sgn_le b x ε.1 "p"))
+        (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) (rel_sgn_le b x ε.2 "q"))
+    exact Deriv.rename (fun z hz => by rw [List.mem_singleton.mp hz]; exact .head _)
+      (Deriv.cutHead hc (ctx_of_imp hd))
+  exact FreeIPL.ipc_negConj ε ((hf _ _).mpr h)
+
+/-- **(K5) REFUTED** -/
+theorem not_k5 : ¬ K5 := noClosedStepT3 t6
+
+end Endpoints
+end F0
+end PLLND
+
+namespace PLLND
+namespace F0
+namespace Endpoints
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF)
+open PLLND.LaxInfinite (atomFree)
+open SubframeModel.CF (FinDec)
+
+/-! ### Finite-model search: witnesses from failed forcing -/
+
+theorem exists_of_not_imp {K : SubframeModel} [FinDec K] {r : K.W} {A B : PLLFormula}
+    (h : ¬ K.force r (A.ifThen B)) : ∃ y, K.le r y ∧ K.force y A ∧ ¬ K.force y B := by
+  rcases Decidable.em (∃ y ∈ FinDec.elems (M := K), K.le r y ∧ K.force y A ∧ ¬ K.force y B)
+    with ⟨y, _, hy⟩ | hno
+  · exact ⟨y, hy⟩
+  · exact absurd (fun y hy hA => Decidable.byContradiction fun hB =>
+      hno ⟨y, FinDec.complete y, hy, hA, hB⟩) h
+
+theorem exists_of_not_box {K : SubframeModel} [FinDec K] {r : K.W} {A : PLLFormula}
+    (h : ¬ K.force r (.somehow A)) : ∃ u, K.le r u ∧ u ∈ K.S ∧ ¬ K.force u A := by
+  rcases Decidable.em (∃ u ∈ FinDec.elems (M := K), K.le r u ∧ u ∈ K.S ∧ ¬ K.force u A)
+    with ⟨u, _, hu⟩ | hno
+  · exact ⟨u, hu⟩
+  · exact absurd (fun u hu hS => Decidable.byContradiction fun hA =>
+      hno ⟨u, FinDec.complete u, hu, hS, hA⟩) h
+
+/-- A world above `x` all of whose successors lie below it. -/
+theorem exists_terminal (M : SubframeModel) [FinDec M] (x : M.W) :
+    ∃ y, M.le x y ∧ ∀ z, M.le y z → M.le z y := by
+  obtain ⟨y, hxy, _, hmax⟩ := Interval.exists_max_not M .falsePLL _ x (Nat.le_refl _) id
+  exact ⟨y, hxy, fun z hz => (hmax z hz).elim False.elim id⟩
+
+/-! ### K1′: two gadgets, one for worlds in `S`, one for worlds outside -/
+
+section TwoSided
+
+variable (M K₁ K₂ : SubframeModel) (m₁ : K₁.W) (m₂ : K₂.W)
+
+/-- `x` sees a world in `S`. -/
+def SeesS (x : M.W) : Prop := ∃ y, M.le x y ∧ y ∈ M.S
+
+/-- `x` sees a world with no world of `S` above it. -/
+def SeesE (x : M.W) : Prop := ∃ y, M.le x y ∧ ∀ z, M.le y z → z ∉ M.S
+
+theorem seesS_mono {x y : M.W} (h : M.le x y) (hy : SeesS M y) : SeesS M x :=
+  let ⟨z, hz, hS⟩ := hy
+  ⟨z, M.trans h hz, hS⟩
+
+theorem seesE_mono {x y : M.W} (h : M.le x y) (hy : SeesE M y) : SeesE M x :=
+  let ⟨z, hz, hE⟩ := hy
+  ⟨z, M.trans h hz, hE⟩
+
+/-- The order of the two-sided extension: `K₁` strictly above `m₁` is seen from
+the worlds of `M` that see `S`, `K₂` strictly above `m₂` from those that see a
+world with no `S` above it. -/
+def tsLe : M.W ⊕ (K₁.W ⊕ K₂.W) → M.W ⊕ (K₁.W ⊕ K₂.W) → Prop
+  | .inl x, .inl y => M.le x y
+  | .inl x, .inr (.inl k) => SeesS M x ∧ K₁.le m₁ k ∧ ¬ K₁.le k m₁
+  | .inl x, .inr (.inr k) => SeesE M x ∧ K₂.le m₂ k ∧ ¬ K₂.le k m₂
+  | .inr (.inl k), .inr (.inl k') => K₁.le k k'
+  | .inr (.inr k), .inr (.inr k') => K₂.le k k'
+  | .inr (.inl _), .inl _ => False
+  | .inr (.inr _), .inl _ => False
+  | .inr (.inl _), .inr (.inr _) => False
+  | .inr (.inr _), .inr (.inl _) => False
+
+theorem tsLe_trans {u v w : M.W ⊕ (K₁.W ⊕ K₂.W)} (h₁ : tsLe M K₁ K₂ m₁ m₂ u v)
+    (h₂ : tsLe M K₁ K₂ m₁ m₂ v w) : tsLe M K₁ K₂ m₁ m₂ u w := by
+  rcases u with x | k | k <;> rcases v with y | l | l <;> rcases w with z | j | j <;>
+    first
+    | exact M.trans h₁ h₂
+    | exact K₁.trans h₁ h₂
+    | exact K₂.trans h₁ h₂
+    | exact ⟨seesS_mono M h₁ h₂.1, h₂.2⟩
+    | exact ⟨seesE_mono M h₁ h₂.1, h₂.2⟩
+    | exact ⟨h₁.1, K₁.trans h₁.2.1 h₂, fun h => h₁.2.2 (K₁.trans h₂ h)⟩
+    | exact ⟨h₁.1, K₂.trans h₁.2.1 h₂, fun h => h₁.2.2 (K₂.trans h₂ h)⟩
+    | exact False.elim h₁
+    | exact False.elim h₂
+
+def tsS : M.W ⊕ (K₁.W ⊕ K₂.W) → Prop
+  | .inl x => x ∈ M.S
+  | .inr (.inl k) => k ∈ K₁.S
+  | .inr (.inr k) => k ∈ K₂.S
+
+def tsV (p : String) : M.W ⊕ (K₁.W ⊕ K₂.W) → Prop
+  | .inl x => x ∈ M.V p
+  | .inr _ => True
+
+theorem tsV_hered {p : String} {u v : M.W ⊕ (K₁.W ⊕ K₂.W)} (h : tsLe M K₁ K₂ m₁ m₂ u v)
+    (hu : tsV M K₁ K₂ p u) : tsV M K₁ K₂ p v := by
+  rcases u with x | k | k <;> rcases v with y | l | l <;>
+    first
+    | exact M.hered h hu
+    | exact trivial
+    | exact False.elim h
+
+theorem tsLe_refl : ∀ w : M.W ⊕ (K₁.W ⊕ K₂.W), tsLe M K₁ K₂ m₁ m₂ w w
+  | .inl x => M.refl x
+  | .inr (.inl k) => K₁.refl k
+  | .inr (.inr k) => K₂.refl k
+
+/-- **The two-sided extension of `M`.** -/
+def TS : SubframeModel where
+  W := M.W ⊕ (K₁.W ⊕ K₂.W)
+  le := tsLe M K₁ K₂ m₁ m₂
+  S := {w | tsS M K₁ K₂ w}
+  V p := {w | tsV M K₁ K₂ p w}
+  refl := tsLe_refl M K₁ K₂ m₁ m₂
+  trans h₁ h₂ := tsLe_trans M K₁ K₂ m₁ m₂ h₁ h₂
+  hered h hu := tsV_hered M K₁ K₂ m₁ m₂ h hu
+
+/-- The copy of `K₁` is generated. -/
+def bisimK₁ : (TS M K₁ K₂ m₁ m₂).W → K₁.W → Prop
+  | .inr (.inl k), k' => k = k'
+  | _, _ => False
+
+/-- The copy of `K₂` is generated. -/
+def bisimK₂ : (TS M K₁ K₂ m₁ m₂).W → K₂.W → Prop
+  | .inr (.inr k), k' => k = k'
+  | _, _ => False
+
+theorem isBisimK₁ : IsBisim (TS M K₁ K₂ m₁ m₂) K₁ (bisimK₁ M K₁ K₂ m₁ m₂) where
+  forth {w k w'} hb hle := by
+    rcases w with _ | k₀ | _ <;> rcases w' with _ | k' | _ <;>
+      first
+      | exact False.elim hb
+      | exact False.elim hle
+      | exact ⟨k', by subst hb; exact hle, rfl⟩
+  back {w k k'} hb hle := by
+    rcases w with _ | k₀ | _ <;> first | exact False.elim hb | exact ⟨.inr (.inl k'), by subst hb; exact hle, rfl⟩
+  forthS {w k w'} hb hle hS := by
+    rcases w with _ | k₀ | _ <;> rcases w' with _ | k' | _ <;>
+      first
+      | exact False.elim hb
+      | exact False.elim hle
+      | exact ⟨k', by subst hb; exact hle, hS, rfl⟩
+  backS {w k k'} hb hle hS := by
+    rcases w with _ | k₀ | _ <;>
+      first | exact False.elim hb | exact ⟨.inr (.inl k'), by subst hb; exact hle, hS, rfl⟩
+
+theorem isBisimK₂ : IsBisim (TS M K₁ K₂ m₁ m₂) K₂ (bisimK₂ M K₁ K₂ m₁ m₂) where
+  forth {w k w'} hb hle := by
+    rcases w with _ | _ | k₀ <;> rcases w' with _ | _ | k' <;>
+      first
+      | exact False.elim hb
+      | exact False.elim hle
+      | exact ⟨k', by subst hb; exact hle, rfl⟩
+  back {w k k'} hb hle := by
+    rcases w with _ | _ | k₀ <;> first | exact False.elim hb | exact ⟨.inr (.inr k'), by subst hb; exact hle, rfl⟩
+  forthS {w k w'} hb hle hS := by
+    rcases w with _ | _ | k₀ <;> rcases w' with _ | _ | k' <;>
+      first
+      | exact False.elim hb
+      | exact False.elim hle
+      | exact ⟨k', by subst hb; exact hle, hS, rfl⟩
+  backS {w k k'} hb hle hS := by
+    rcases w with _ | _ | k₀ <;>
+      first | exact False.elim hb | exact ⟨.inr (.inr k'), by subst hb; exact hle, hS, rfl⟩
+
+/-- A terminal cluster seeing `S`, matched with the cluster of `m₁`. -/
+def bisimIn (y : M.W) : (TS M K₁ K₂ m₁ m₂).W → K₁.W → Prop
+  | .inl q, k => M.le y q ∧ K₁.le m₁ k ∧ K₁.le k m₁
+  | .inr (.inl k'), k => k' = k
+  | .inr (.inr _), _ => False
+
+/-- A terminal cluster with no `S`, matched with the cluster of `m₂`. -/
+def bisimOut (y : M.W) : (TS M K₁ K₂ m₁ m₂).W → K₂.W → Prop
+  | .inl q, k => M.le y q ∧ K₂.le m₂ k ∧ K₂.le k m₂
+  | .inr (.inr k'), k => k' = k
+  | .inr (.inl _), _ => False
+
+variable {M K₁ K₂ m₁ m₂}
+
+theorem isBisimIn [FinDec K₁] (hm₁ : m₁ ∈ K₁.S) {y s : M.W}
+    (hterm : ∀ z, M.le y z → M.le z y) (hys : M.le y s) (hs : s ∈ M.S) :
+    IsBisim (TS M K₁ K₂ m₁ m₂) K₁ (bisimIn M K₁ K₂ m₁ m₂ y) where
+  forth {w k w'} hb hle := by
+    rcases w with q | k₀ | k₀
+    · rcases w' with q' | k' | k'
+      · exact ⟨k, K₁.refl k, M.trans hb.1 hle, hb.2⟩
+      · exact ⟨k', K₁.trans hb.2.2 hle.2.1, rfl⟩
+      · exfalso
+        obtain ⟨z, hqz, hz⟩ := hle.1
+        exact hz s (M.trans (hterm z (M.trans hb.1 hqz)) hys) hs
+    · rcases w' with q' | k' | k'
+      · exact False.elim hle
+      · exact ⟨k', by subst hb; exact hle, rfl⟩
+      · exact False.elim hle
+    · exact False.elim hb
+  back {w k k'} hb hle := by
+    rcases w with q | k₀ | k₀
+    · rcases Decidable.em (K₁.le k' m₁) with hk | hk
+      · exact ⟨.inl q, M.refl q, hb.1, K₁.trans hb.2.1 hle, hk⟩
+      · exact ⟨.inr (.inl k'),
+          ⟨⟨s, M.trans (hterm q hb.1) hys, hs⟩, K₁.trans hb.2.1 hle, hk⟩, rfl⟩
+    · exact ⟨.inr (.inl k'), by subst hb; exact hle, rfl⟩
+    · exact False.elim hb
+  forthS {w k w'} hb hle hS := by
+    rcases w with q | k₀ | k₀
+    · rcases w' with q' | k' | k'
+      · exact ⟨m₁, hb.2.2, hm₁, M.trans hb.1 hle, K₁.refl m₁, K₁.refl m₁⟩
+      · exact ⟨k', K₁.trans hb.2.2 hle.2.1, hS, rfl⟩
+      · exfalso
+        obtain ⟨z, hqz, hz⟩ := hle.1
+        exact hz s (M.trans (hterm z (M.trans hb.1 hqz)) hys) hs
+    · rcases w' with q' | k' | k'
+      · exact False.elim hle
+      · exact ⟨k', by subst hb; exact hle, hS, rfl⟩
+      · exact False.elim hle
+    · exact False.elim hb
+  backS {w k k'} hb hle hS := by
+    rcases w with q | k₀ | k₀
+    · rcases Decidable.em (K₁.le k' m₁) with hk | hk
+      · exact ⟨.inl s, M.trans (hterm q hb.1) hys, hs, hys, K₁.trans hb.2.1 hle, hk⟩
+      · exact ⟨.inr (.inl k'),
+          ⟨⟨s, M.trans (hterm q hb.1) hys, hs⟩, K₁.trans hb.2.1 hle, hk⟩, hS, rfl⟩
+    · exact ⟨.inr (.inl k'), by subst hb; exact hle, hS, rfl⟩
+    · exact False.elim hb
+
+theorem isBisimOut [FinDec K₂] (hm₂ : ∀ w, K₂.le m₂ w → K₂.le w m₂ → w ∉ K₂.S) {y : M.W}
+    (hterm : ∀ z, M.le y z → M.le z y) (hno : ¬ SeesS M y) :
+    IsBisim (TS M K₁ K₂ m₁ m₂) K₂ (bisimOut M K₁ K₂ m₁ m₂ y) where
+  forth {w k w'} hb hle := by
+    rcases w with q | k₀ | k₀
+    · rcases w' with q' | k' | k'
+      · exact ⟨k, K₂.refl k, M.trans hb.1 hle, hb.2⟩
+      · exfalso
+        obtain ⟨z, hqz, hz⟩ := hle.1
+        exact hno ⟨z, M.trans hb.1 hqz, hz⟩
+      · exact ⟨k', K₂.trans hb.2.2 hle.2.1, rfl⟩
+    · exact False.elim hb
+    · rcases w' with q' | k' | k'
+      · exact False.elim hle
+      · exact False.elim hle
+      · exact ⟨k', by subst hb; exact hle, rfl⟩
+  back {w k k'} hb hle := by
+    rcases w with q | k₀ | k₀
+    · rcases Decidable.em (K₂.le k' m₂) with hk | hk
+      · exact ⟨.inl q, M.refl q, hb.1, K₂.trans hb.2.1 hle, hk⟩
+      · exact ⟨.inr (.inr k'),
+          ⟨⟨y, hterm q hb.1, fun z hyz hz => hno ⟨z, hyz, hz⟩⟩, K₂.trans hb.2.1 hle, hk⟩, rfl⟩
+    · exact False.elim hb
+    · exact ⟨.inr (.inr k'), by subst hb; exact hle, rfl⟩
+  forthS {w k w'} hb hle hS := by
+    rcases w with q | k₀ | k₀
+    · rcases w' with q' | k' | k'
+      · exact False.elim (hno ⟨q', M.trans hb.1 hle, hS⟩)
+      · exfalso
+        obtain ⟨z, hqz, hz⟩ := hle.1
+        exact hno ⟨z, M.trans hb.1 hqz, hz⟩
+      · exact ⟨k', K₂.trans hb.2.2 hle.2.1, hS, rfl⟩
+    · exact False.elim hb
+    · rcases w' with q' | k' | k'
+      · exact False.elim hle
+      · exact False.elim hle
+      · exact ⟨k', by subst hb; exact hle, hS, rfl⟩
+  backS {w k k'} hb hle hS := by
+    rcases w with q | k₀ | k₀
+    · rcases Decidable.em (K₂.le k' m₂) with hk | hk
+      · exact False.elim (hm₂ k' (K₂.trans hb.2.1 hle) hk hS)
+      · exact ⟨.inr (.inr k'),
+          ⟨⟨y, hterm q hb.1, fun z hyz hz => hno ⟨z, hyz, hz⟩⟩, K₂.trans hb.2.1 hle, hk⟩, hS, rfl⟩
+    · exact False.elim hb
+    · exact ⟨.inr (.inr k'), by subst hb; exact hle, hS, rfl⟩
+
+/-- **The two-sided extension realizes `M` as the refuters of `a`.** -/
+theorem ts_realizes [FinDec M] [FinDec K₁] [FinDec K₂] {a : PLLFormula} (ha : atomFree a = true)
+    (hm₁S : m₁ ∈ K₁.S) (hm₁a : ¬ K₁.force m₁ a) (hm₁up : ∀ w, K₁.le m₁ w → ¬ K₁.le w m₁ → K₁.force w a)
+    (hm₂S : ∀ w, K₂.le m₂ w → K₂.le w m₂ → w ∉ K₂.S) (hm₂a : ¬ K₂.force m₂ a)
+    (hm₂up : ∀ w, K₂.le m₂ w → ¬ K₂.le w m₂ → K₂.force w a) :
+    Realizes (TS M K₁ K₂ m₁ m₂) M Sum.inl a where
+  le_iff _ _ := Iff.rfl
+  up x w hw := by
+    rcases w with y | k | k
+    · exact Or.inl ⟨y, rfl⟩
+    · exact Or.inr ((bisim_force (isBisimK₁ M K₁ K₂ m₁ m₂) a ha (Sum.inr (Sum.inl k)) k
+        (show bisimK₁ M K₁ K₂ m₁ m₂ (Sum.inr (Sum.inl k)) k from rfl)).mpr
+        (hm₁up k hw.2.1 hw.2.2))
+    · exact Or.inr ((bisim_force (isBisimK₂ M K₁ K₂ m₁ m₂) a ha (Sum.inr (Sum.inr k)) k
+        (show bisimK₂ M K₁ K₂ m₁ m₂ (Sum.inr (Sum.inr k)) k from rfl)).mpr
+        (hm₂up k hw.2.1 hw.2.2))
+  S_iff _ := Iff.rfl
+  V_iff _ _ := Iff.rfl
+  not_a x hx := by
+    obtain ⟨y, hxy, hterm⟩ := exists_terminal M x
+    have hy := SubframeModel.force_mono (TS M K₁ K₂ m₁ m₂) a (u := Sum.inl x) (v := Sum.inl y) hxy hx
+    rcases Decidable.em (∃ s ∈ FinDec.elems (M := M), M.le y s ∧ s ∈ M.S) with ⟨s, _, hys, hs⟩ | hno
+    · have hb : bisimIn M K₁ K₂ m₁ m₂ y (Sum.inl y) m₁ := ⟨M.refl y, K₁.refl m₁, K₁.refl m₁⟩
+      exact hm₁a ((bisim_force (isBisimIn hm₁S hterm hys hs) a ha _ m₁ hb).mp hy)
+    · have hno' : ¬ SeesS M y := fun ⟨s, hys, hs⟩ => hno ⟨s, FinDec.complete s, hys, hs⟩
+      have hb : bisimOut M K₁ K₂ m₁ m₂ y (Sum.inl y) m₂ := ⟨M.refl y, K₂.refl m₂, K₂.refl m₂⟩
+      exact hm₂a ((bisim_force (isBisimOut (m₁ := m₁) hm₂S hterm hno') a ha _ m₂ hb).mp hy)
+
+end TwoSided
+
+/-- **(K1′) PROVED** -/
+theorem twoSidedSelf : TwoSidedSelf := by
+  intro a ha ⟨K₁, i₁, m₁, hm₁S, hm₁a, hm₁up⟩ ⟨K₂, i₂, m₂, hm₂S, hm₂a, hm₂up⟩
+  refine (selfIffReduced a topF (le_top a)).mpr (reduced_of_realize fun M _ r =>
+    ⟨TS M K₁ K₂ m₁ m₂, Sum.inl, ?_, Interval.force_topF _ _⟩)
+  exact ts_realizes ha hm₁S hm₁a hm₁up hm₂S hm₂a hm₂up
+
+/-- The root of a `SubCM` countermodel refutes the formula in its model. -/
+theorem root_refutes {φ : PLLFormula} {m : SubTab.SubCM} (hm : SubTab.no.check φ m = true) :
+    ∃ (h : m.okB = true) (hr : m.root < m.n), ¬ (m.toModel h).force ⟨m.root, hr⟩ φ := by
+  have hm0 : m.refutes φ = true := hm
+  simp only [SubTab.SubCM.refutes, Bool.and_eq_true, Bool.not_eq_true'] at hm0
+  have hr := (SubTab.SubCM.ok_parts hm0.1).1
+  refine ⟨hm0.1, hr, fun hf => ?_⟩
+  have hb := (SubTab.SubCM.forceB_iff hm0.1 φ ⟨m.root, hr⟩).mpr hf
+  rw [hm0.2] at hb
+  exact Bool.false_ne_true hb
+
+/-- **PROVED** the two sides from the two non-theorems. -/
+theorem sidesOfNd : SidesOfNd := by
+  intro a _
+  constructor
+  · intro hnd
+    rcases SubTab.complete (subBot a nne) with ⟨c, hc⟩ | ⟨m, hm⟩
+    · exact absurd (SubTab.holds_of_check hc) hnd
+    · obtain ⟨hok, hr, hroot⟩ := root_refutes hm
+      obtain ⟨y, _, hH, hya⟩ := exists_of_not_imp hroot
+      obtain ⟨z, hyz, hza, hmax⟩ :=
+        Interval.exists_max_not (m.toModel hok) a _ y (Nat.le_refl _) hya
+      have hbox : ¬ (m.toModel hok).force z (.somehow a) := fun hb => hza (hH z hyz hb)
+      obtain ⟨u, hzu, huS, hua⟩ := exists_of_not_box hbox
+      have huz : (m.toModel hok).le u z := (hmax u hzu).resolve_left hua
+      refine ⟨m.toModel hok, inferInstance, u, huS, hua, fun w huw hwu => ?_⟩
+      rcases hmax w ((m.toModel hok).trans hzu huw) with hw | hw
+      · exact hw
+      · exact absurd ((m.toModel hok).trans hw hzu) hwu
+  · intro hnd
+    rcases SubTab.complete (subBot a ne) with ⟨c, hc⟩ | ⟨m, hm⟩
+    · exact absurd (SubTab.holds_of_check hc) hnd
+    · obtain ⟨hok, hr, hroot⟩ := root_refutes hm
+      obtain ⟨y, _, hbox, hya⟩ := exists_of_not_imp hroot
+      obtain ⟨z, hyz, hza, hmax⟩ :=
+        Interval.exists_max_not (m.toModel hok) a _ y (Nat.le_refl _) hya
+      refine ⟨m.toModel hok, inferInstance, z, fun w hzw hwz hwS => ?_, hza, fun w hzw hwz => ?_⟩
+      · exact hza (SubframeModel.force_mono (m.toModel hok) a hwz
+          (hbox w ((m.toModel hok).trans hyz hzw) hwS))
+      · exact (hmax w hzw).resolve_right hwz
+
+/-- **(K2′) The base criterion, PROVED.** -/
+theorem baseCriterion : BaseCriterion := by
+  intro a ha
+  have hab : Deriv [a] topF := le_top a
+  have wk : ∀ {X : PLLFormula}, Deriv [] X → Deriv [topF] X :=
+    fun h => Deriv.rename (fun _ hx => absurd hx List.not_mem_nil) h
+  have h1 : CopyStep a topF → ¬ Deriv [] (subBot a ne) ∧ ¬ Deriv [] (subBot a nne) := fun hc =>
+    ⟨fun h => (necCells a topF hab hc).2.2.1 (wk h), fun h => (necCells a topF hab hc).2.2.2 (wk h)⟩
+  have h2 : ¬ Deriv [] (subBot a ne) ∧ ¬ Deriv [] (subBot a nne) → SelfStep a topF :=
+    fun ⟨n1, n2⟩ => twoSidedSelf a ha ((sidesOfNd a ha).1 n2) ((sidesOfNd a ha).2 n1)
+  exact ⟨⟨fun hc => h2 (h1 hc), selfToCopy a topF⟩, ⟨h1, fun hn => selfToCopy a topF (h2 hn)⟩⟩
+
+/-- **(K4) at `b = ⊤`, PROVED.** -/
+theorem copySelf_top {a : PLLFormula} (ha : atomFree a = true) (h : CopyStep a topF) :
+    SelfStep a topF :=
+  ((baseCriterion a ha).1).mp h
+
+/-- **The passing bases give PLL copies.** -/
+theorem selfStep_t5 : SelfStep t5 topF :=
+  ((baseCriterion t5 rfl).1).mp (((baseCriterion t5 rfl).2).mpr baseYes_t5)
+
+theorem selfStep_s2 : SelfStep (sigN 2 .falsePLL) topF :=
+  ((baseCriterion _ rfl).1).mp (((baseCriterion _ rfl).2).mpr baseYes_s2)
+
+theorem selfStep_aK : SelfStep aK topF :=
+  ((baseCriterion aK rfl).1).mp (((baseCriterion aK rfl).2).mpr baseYes_aK)
+
+/-! ### K2 as briefed: REFUTED at `aK` -/
+
+/-- One world, in `S` iff `s`. -/
+def one (s : Bool) : SubframeModel where
+  W := Unit
+  le _ _ := True
+  S := fun _ => s = true
+  V _ := fun _ => False
+  refl _ := trivial
+  trans _ _ := trivial
+  hered _ h := h
+
+/-- **PROVED: no gadget for `aK`.** -/
+theorem noGadgetAK : NoGadgetAK := by
+  intro G ⟨h1, h2, _⟩
+  have hnew : ∀ (s : Bool) (g : G.W), (glue (one s) G).force (Sum.inr g) aK :=
+    fun _ g => (glue_new_force rfl g).mpr (h2 g)
+  -- at the non-`S` root, from `t4` at the `S`-root
+  have hout : (glue (one true) G).force (Sum.inl ()) t4 → False := by
+    intro h4
+    have he : ∀ g : G.W, G.force g e := fun g => by
+      have h4g := SubframeModel.force_mono (glue (one true) G) t4 (u := Sum.inl ())
+        (v := Sum.inr g) trivial h4
+      have h3g : (glue (one true) G).force (Sum.inr g) t3 :=
+        (hnew true g).1 (Sum.inr g) ((glue (one true) G).refl _) (Or.inr h4g)
+      exact (glue_new_force rfl g).mp (h4g (Sum.inr g) ((glue (one true) G).refl _) h3g)
+    have heo : (glue (one false) G).force (Sum.inl ()) e := by
+      intro w _ hS
+      cases w with
+      | inl _ => exact Bool.noConfusion (hS : false = true)
+      | inr g =>
+          have heg : (glue (one false) G).force (Sum.inr g) e :=
+            (glue_new_force (M := one false) rfl g).mpr (he g)
+          exact heg (Sum.inr g) ((glue (one false) G).refl _) hS
+    have h3 : (glue (one false) G).force (Sum.inl ()) t3 := Or.inl heo
+    exact h1 (one false) () ⟨fun u hu _ => SubframeModel.force_mono _ t3 hu h3,
+      fun u hu _ => SubframeModel.force_mono _ t3 hu h3⟩
+  -- so `t4` fails at the `S`-root, and then `aK` holds there
+  apply h1 (one true) ()
+  refine ⟨fun w hw h5 => ?_, fun w hw hc => ?_⟩
+  · cases w with
+    | inl _ => exact h5.elim id fun h4 => (hout h4).elim
+    | inr g => exact (hnew true g).1 (Sum.inr g) ((glue (one true) G).refl _) h5
+  · cases w with
+    | inl _ => exact hc (Sum.inl ()) trivial rfl
+    | inr g => exact (hnew true g).2 (Sum.inr g) ((glue (one true) G).refl _) hc
+
+/-- **K2 as briefed is REFUTED**: `aK` gives a faithful copy of F0 (indeed of
+PLL) above it, but no gadget. -/
+theorem not_baseGadget : ¬ BaseGadget := fun h => by
+  obtain ⟨G, _, hG⟩ := (h aK rfl).mp (((baseCriterion aK rfl).2).mpr baseYes_aK)
+  exact noGadgetAK G hG
+
+/-! ### Validation of K1: the gadget of `ext` -/
+
+/-- The two tops of `ext`: `true ∈ S`, `false ∉ S`, incomparable. -/
+def G2 : SubframeModel where
+  W := Bool
+  le x y := x = y
+  S := fun x => x = true
+  V _ := fun _ => True
+  refl _ := rfl
+  trans h₁ h₂ := h₁.trans h₂
+  hered _ _ := trivial
+
+theorem G2_e_false : G2.force false e := fun w hw hS => by
+  have h : false = w := hw
+  subst h
+  exact Bool.noConfusion (hS : false = true)
+
+theorem G2_not_e_true : ¬ G2.force true e := fun h => h true rfl rfl
+
+theorem G2_t3 : ∀ g : G2.W, G2.force g t3
+  | false => Or.inl G2_e_false
+  | true => Or.inr fun w hw hw' => by
+      have h : true = w := hw
+      subst h
+      exact G2_not_e_true hw'
+
+theorem glue_G2_t3_new (M : SubframeModel) (g : G2.W) : (glue M G2).force (Sum.inr g) t3 :=
+  (glue_new_force (M := M) (G := G2) (φ := t3) rfl g).mpr (G2_t3 g)
+
+theorem glue_G2_not_e (M : SubframeModel) (x : M.W) : ¬ (glue M G2).force (Sum.inl x) e :=
+  fun h => h (Sum.inr true) trivial rfl
+
+theorem glue_G2_e_false (M : SubframeModel) :
+    (glue M G2).force (Sum.inr (show G2.W from false)) e :=
+  (glue_new_force (M := M) (G := G2) (φ := e) rfl false).mpr G2_e_false
+
+theorem glue_G2_not_t3 (M : SubframeModel) (x : M.W) : ¬ (glue M G2).force (Sum.inl x) t3
+  | Or.inl h => glue_G2_not_e M x h
+  | Or.inr h => h (Sum.inr false) trivial (glue_G2_e_false M)
+
+theorem glue_G2_not_t4 (M : SubframeModel) (x : M.W) : ¬ (glue M G2).force (Sum.inl x) t4 :=
+  fun h => G2_not_e_true ((glue_new_force (M := M) (G := G2) (φ := e) rfl true).mp
+    (h (Sum.inr true) trivial (glue_G2_t3_new M true)))
+
+theorem glue_G2_t6 (M : SubframeModel) (w : (glue M G2).W) : (glue M G2).force w t6 := by
+  intro u hu h5
+  rcases w with x | g₀ <;> rcases u with y | g
+  · exact h5.elim (fun h => (glue_G2_not_t3 M y h).elim) (fun h => (glue_G2_not_t4 M y h).elim)
+  · exact glue_G2_t3_new M g
+  · exact False.elim hu
+  · exact glue_G2_t3_new M g
+
+/-- **The gadget of `ext` for `(t3, t6)`.** -/
+theorem gadget_t3_t6 : IsGadget G2 t3 t6 :=
+  ⟨glue_G2_not_t3, G2_t3, glue_G2_t6⟩
+
+/-- **The gadget of `ext` for `(t5, ⊤)` and `(t5, t5 ∨ t6)`.** -/
+theorem gadget_t5 (b : PLLFormula) (hb : ∀ M w, (glue M G2).force w b) : IsGadget G2 t5 b :=
+  ⟨fun M x h => h.elim (glue_G2_not_t3 M x) (glue_G2_not_t4 M x), fun g => Or.inl (G2_t3 g), hb⟩
+
+/-- **K1 reproves `pllSelf`.** -/
+theorem selfStep_t3_t6 : SelfStep t3 t6 := gadgetSelf G2 t3 t6 rfl rfl t3_t6 gadget_t3_t6
+
+/-- **A new interval with a PLL tower**: `[t5, t5 ∨ t6]`. -/
+theorem selfStep_t5_t56 : SelfStep t5 (t5.or t6) :=
+  gadgetSelf G2 t5 (t5.or t6) rfl rfl (Deriv.orIntro1 (Deriv.iden (.head _)))
+    (gadget_t5 _ fun M w => Or.inr (glue_G2_t6 M w))
+
+theorem nd_t5 : ¬ Deriv [] t5 := SubTab.no.verdict t5 Rout
+
+theorem nd_t5_bot : ¬ Deriv [t5] .falsePLL := fun h =>
+  nd_t3_bot (Deriv.cutHead (Deriv.orIntro1 (Deriv.iden (.head _))) h)
+
+theorem nd_t56 : ¬ Deriv [] (t5.or t6) := fun h =>
+  (disjunction_property h).elim nd_t5 nd_t6
+
+/-- **PROVED: the strictly nested PLL tower in `[t5, t5 ∨ t6]`.** -/
+theorem tower_t5 : SelfTowerAt t5 (t5.or t6) :=
+  selfTower t5 (t5.or t6) rfl rfl selfStep_t5_t56 nd_t5_bot nd_t56
+
+end Endpoints
+end F0
+end PLLND
+
+namespace PLLND
+namespace F0
+namespace Endpoints
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF)
+open PLLND.LaxInfinite (atomFree)
+open SubframeModel.CF (FinDec)
+
+/-! ### K3: `t6` is the least top of the gadget `ext`
+
+A finite model of `t6` is bisimilar, for closed formulas, to `ext` of its
+`R`-part (the worlds refuting `t3` and forcing `t6`): under `t6` every such
+world sees a world forcing `◯⊥` and an `S`-world forcing `¬◯⊥`, which play
+`eT` and `nT`. -/
+
+/-- The `R`-part of a model under `t6`. -/
+def rPart (N : SubframeModel) : SubframeModel where
+  W := {w : N.W // ¬ N.force w t3 ∧ N.force w t6}
+  le x y := N.le x.1 y.1
+  S := fun x => x.1 ∈ N.S
+  V p := fun x => x.1 ∈ N.V p
+  refl x := N.refl x.1
+  trans h₁ h₂ := N.trans h₁ h₂
+  hered h hu := N.hered h hu
+
+/-- The bisimulation: an `R`-world with its copy, `¬◯⊥`-worlds with `nT`,
+`◯⊥`-worlds with `eT`. -/
+def bisimExt (N : SubframeModel) : N.W → XW (rPart N).W → Prop
+  | w, .orig x => w = x.1
+  | w, .nT => N.force w ne
+  | w, .eT => N.force w e
+
+section ExtBisim
+
+variable {N : SubframeModel} [FinDec N]
+
+omit [FinDec N] in
+theorem e_notS {w : N.W} (he : N.force w e) : w ∉ N.S := fun hS => he w (N.refl w) hS
+
+theorem sees_S_ne {w : N.W} (hn : N.force w ne) : ∃ s, N.le w s ∧ s ∈ N.S ∧ N.force s ne := by
+  have hne : ¬ N.force w e := fun he => hn w (N.refl w) he
+  obtain ⟨s, hws, hsS, _⟩ := exists_of_not_box hne
+  exact ⟨s, hws, hsS, SubframeModel.force_mono N ne hws hn⟩
+
+theorem rPart_sees_e (x : (rPart N).W) : ∃ u, N.le x.1 u ∧ N.force u e := by
+  have hn : ¬ N.force x.1 ne := fun h => x.2.1 (Or.inr h)
+  obtain ⟨u, hu, he, _⟩ := exists_of_not_imp hn
+  exact ⟨u, hu, he⟩
+
+theorem rPart_sees_ne (x : (rPart N).W) : ∃ u, N.le x.1 u ∧ N.force u ne := by
+  have h4 : ¬ N.force x.1 t4 := fun h => x.2.1 (x.2.2 x.1 (N.refl _) (Or.inr h))
+  obtain ⟨u, hu, h3, hne⟩ := exists_of_not_imp h4
+  exact ⟨u, hu, h3.resolve_left hne⟩
+
+theorem isBisimExt : IsBisim N (ext (rPart N)) (bisimExt N) where
+  forth {w k w'} hb hle := by
+    rcases k with x | _ | _
+    · have hw : w = x.1 := hb
+      subst hw
+      rcases Decidable.em (N.force w' t3) with h3 | h3
+      · rcases h3 with he | hn
+        · exact ⟨XW.eT, trivial, he⟩
+        · exact ⟨XW.nT, trivial, hn⟩
+      · exact ⟨XW.orig ⟨w', h3, SubframeModel.force_mono N t6 hle x.2.2⟩, hle, rfl⟩
+    · exact ⟨XW.nT, trivial, SubframeModel.force_mono N ne hle hb⟩
+    · exact ⟨XW.eT, trivial, SubframeModel.force_mono N e hle hb⟩
+  back {w k k'} hb hle := by
+    rcases k with x | _ | _
+    · have hw : w = x.1 := hb
+      subst hw
+      rcases k' with y | _ | _
+      · exact ⟨y.1, hle, rfl⟩
+      · obtain ⟨u, hu, hn⟩ := rPart_sees_ne x
+        exact ⟨u, hu, hn⟩
+      · obtain ⟨u, hu, he⟩ := rPart_sees_e x
+        exact ⟨u, hu, he⟩
+    · rcases k' with _ | _ | _
+      · exact False.elim hle
+      · exact ⟨w, N.refl w, hb⟩
+      · exact False.elim hle
+    · rcases k' with _ | _ | _
+      · exact False.elim hle
+      · exact False.elim hle
+      · exact ⟨w, N.refl w, hb⟩
+  forthS {w k w'} hb hle hS := by
+    rcases k with x | _ | _
+    · have hw : w = x.1 := hb
+      subst hw
+      rcases Decidable.em (N.force w' t3) with h3 | h3
+      · rcases h3 with he | hn
+        · exact absurd hS (e_notS he)
+        · exact ⟨XW.nT, trivial, trivial, hn⟩
+      · exact ⟨XW.orig ⟨w', h3, SubframeModel.force_mono N t6 hle x.2.2⟩, hle, hS, rfl⟩
+    · exact ⟨XW.nT, trivial, trivial, SubframeModel.force_mono N ne hle hb⟩
+    · exact absurd hS (e_notS (SubframeModel.force_mono N e hle hb))
+  backS {w k k'} hb hle hS := by
+    rcases k with x | _ | _
+    · have hw : w = x.1 := hb
+      subst hw
+      rcases k' with y | _ | _
+      · exact ⟨y.1, hle, hS, rfl⟩
+      · obtain ⟨u, hu, hn⟩ := rPart_sees_ne x
+        obtain ⟨s, hus, hsS, hsn⟩ := sees_S_ne hn
+        exact ⟨s, N.trans hu hus, hsS, hsn⟩
+      · exact False.elim hS
+    · rcases k' with _ | _ | _
+      · exact False.elim hle
+      · obtain ⟨s, hws, hsS, hsn⟩ := sees_S_ne hb
+        exact ⟨s, hws, hsS, hsn⟩
+      · exact False.elim hle
+    · rcases k' with _ | _ | _
+      · exact False.elim hle
+      · exact False.elim hle
+      · exact False.elim hS
+
+end ExtBisim
+
+/-- **(K3) PROVED**: `b` holds throughout every `ext M` iff `[t6] ⊢ b`. -/
+theorem extTops : ExtTops := by
+  intro b hb
+  constructor
+  · intro hext
+    refine Interval.deriv_of_sem fun N _ v hv => ?_
+    rcases Decidable.em (N.force v t3) with h3 | h3
+    · rcases h3 with he | hn
+      · exact (bisim_force isBisimExt b hb v XW.eT he).mpr (hext _ _)
+      · exact (bisim_force isBisimExt b hb v XW.nT hn).mpr (hext _ _)
+    · exact (bisim_force isBisimExt b hb v (XW.orig ⟨v, h3, hv⟩) rfl).mpr (hext _ _)
+  · intro hd M w
+    exact Interval.sem_of_deriv hd (ext M) w (t6_ext M w)
+
+/-- The K3 cells as statements about `ext`: none of `b₁, b₂, b₃` is an `ext`-top. -/
+theorem not_extTop_b1 : ¬ ExtTop b1 := fun h => nd_t6_b1 ((extTops b1 rfl).mp h)
+theorem not_extTop_b2 : ¬ ExtTop b2 := fun h => nd_t6_b2 ((extTops b2 rfl).mp h)
+theorem not_extTop_b3 : ¬ ExtTop b3K := fun h => nd_t6_b3 ((extTops b3K rfl).mp h)
+
+end Endpoints
+end F0
+end PLLND
+
+/-! ## Addition (the manager, 2026-11-01): tops over `t3` beyond `ext`
+
+Statements committed with their cells, before any proof:
+
+    b′ = (◯t3 ↠ t3) ↠ t5 = g1 ↠ t5
+    (T1)  TopT3Alt :      SelfStep t3 b′  ∧  [t6] ⊬ b′  ∧  [b′] ⊬ t6
+    (T2)  MeetNotTop :    ¬ CopyStep t3 (t6 ∧ b′)
+          TopsT3NotMeet : ∃ b b′,  CopyStep t3 b  ∧  CopyStep t3 b′  ∧  ¬ CopyStep t3 (b ∧ b′)
+          NoLeastTopT3 :  ¬ ∃ b₀,  [t3] ⊢ b₀  ∧  CopyStep t3 b₀  ∧
+                            ∀ b,  [t3] ⊢ b  ⟹  CopyStep t3 b  ⟹  [b₀] ⊢ b
+
+Pen: the realization of `M` that attaches the non-`S` top above every world and
+the `S`-top only above the worlds seeing a world with no `S` above it (`MinR`)
+makes the old worlds exactly the refuters of `t3` and forces `b′` on them;
+under `t6 ∧ b′` no `R`-world in `S` is terminal, so `σ(¬¬◯⊥) = g1 ↠ t3` follows. -/
+
+namespace PLLND
+namespace F0
+namespace Endpoints
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF)
+open PLLND.LaxInfinite (atomFree)
+
+/-- `b′ = g1 ↠ t5`. -/
+def bP : PLLFormula := g1.ifThen t5
+
+/-- **(T1)** -/
+def TopT3Alt : Prop := SelfStep t3 bP ∧ ¬ Deriv [t6] bP ∧ ¬ Deriv [bP] t6
+
+/-- **(T2)** -/
+def MeetNotTop : Prop := ¬ CopyStep t3 (t6.and bP)
+
+def TopsT3NotMeet : Prop :=
+  ∃ b b' : PLLFormula, CopyStep t3 b ∧ CopyStep t3 b' ∧ ¬ CopyStep t3 (b.and b')
+
+def NoLeastTopT3 : Prop :=
+  ¬ ∃ b₀ : PLLFormula, Deriv [t3] b₀ ∧ CopyStep t3 b₀ ∧
+    ∀ b : PLLFormula, Deriv [t3] b → CopyStep t3 b → Deriv [b₀] b
+
+/-! ### The cells -/
+
+theorem t3_bP : Deriv [t3] bP :=
+  Deriv.impIntro (Deriv.orIntro1 (Deriv.iden (.tail _ (.head _))))
+
+/-- `[b′] ⊬ t6`: an `S`-world below a non-`S` top forces `t4`, so `t5`, so `b′`,
+and refutes `t3`, so `t6`. -/
+theorem nd_bP_t6 : ¬ Deriv [bP] t6 := fun h =>
+  (SubTab.no.verdict (bP.ifThen t6) Pin) (Deriv.impIntro h)
+
+/-- `[t6] ⊬ b′` (`ext KS`). -/
+theorem nd_t6_bP : ¬ Deriv [t6] bP := fun h =>
+  (SubTab.no.verdict (t6.ifThen bP) (extT KS [])) (Deriv.impIntro h)
+
+/-- **The T2 cell**: `[t6 ∧ b′] ⊢ σ(¬¬◯⊥) = g1 ↠ t3`, while `⊬ ¬¬◯⊥`. -/
+theorem meet_sig_nne : Deriv [t6.and bP] (subBot t3 nne) :=
+  Deriv.impIntro (Deriv.impElim (Deriv.andElim1 (Deriv.iden (.tail _ (.head _))))
+    (Deriv.impElim (Deriv.andElim2 (Deriv.iden (.tail _ (.head _)))) (Deriv.iden (.head _))))
+
+/-- **(T2) PROVED** -/
+theorem meetNotTop : MeetNotTop := fun hc =>
+  nd_nne ((copyIffTopAvoid t3 _ (Deriv.andIntro t3_t6 t3_bP)).mp hc nne rfl meet_sig_nne)
+
+/-- The gate of the T tables, watched failing: they do not refute `[t3] ⊢ b′`. -/
+theorem gate_T : Pin.refutes (t3.ifThen bP) = false ∧ (extT KS []).refutes (t3.ifThen bP) = false := by
+  decide +kernel
+
+end Endpoints
+end F0
+end PLLND
+
 /-! ## Axiom pins: the cells -/
 
 #axioms_within PLLND.F0.Endpoints.nd_ne [propext, Quot.sound]
@@ -633,3 +1720,55 @@ end PLLND
 #axioms_within PLLND.F0.Endpoints.k4_s2_top_O3 [propext, Quot.sound]
 #axioms_within PLLND.F0.Endpoints.gate_k4 [propext, Quot.sound]
 #axioms_within PLLND.F0.Endpoints.k5_cell [propext, Quot.sound]
+
+/-! ## Axiom pins: the proofs -/
+
+#axioms_within PLLND.F0.Endpoints.selfIffReduced [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.copy_of_free [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfToCopy [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.closedToCopy [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.gR_rel [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.transportG [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfToClosed [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.tauSN_rel [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfTower [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.necBox [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.necClosed [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.necPow [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.necCells [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.not_copy_of_baseNo [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.bisim_force [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.realize [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.reduced_of_realize [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.glue_new_force [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.gadgetSelf [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.noClosedStepT3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.not_k5 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.exists_of_not_imp [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.exists_of_not_box [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.exists_terminal [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.ts_realizes [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.twoSidedSelf [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.sidesOfNd [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.baseCriterion [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.copySelf_top [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfStep_t5 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfStep_s2 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfStep_aK [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.noGadgetAK [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.not_baseGadget [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.gadget_t3_t6 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfStep_t3_t6 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.selfStep_t5_t56 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.tower_t5 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.isBisimExt [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.extTops [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.not_extTop_b1 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.not_extTop_b2 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.not_extTop_b3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.t3_bP [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.nd_bP_t6 [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.nd_t6_bP [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.meet_sig_nne [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.meetNotTop [propext, Quot.sound]
+#axioms_within PLLND.F0.Endpoints.gate_T [propext, Quot.sound]
