@@ -264,6 +264,23 @@ combinatory completeness `Poly.abs_spec` **[p,Q]**): promoted 2026-07-18 to
 — no choice; `bite_uniform_split`, `extract_sound`, `extractS_sound`,
 `force_somehow_iff_notnot` clean); design history in [`route-b-model.md`](route-b-model.md) §8.
 
+**2026-11-01 — the believer enumerations re-founded without `native_decide`
+(§3b-5 closed).** [`LaxLogic/Belief/ExamplesClean.lean`](../LaxLogic/Belief/ExamplesClean.lean)
+enumerates and classifies every believer on five finite Heyting algebras by
+kernel computation over bare inductive carriers (no Mathlib vocabulary in any
+statement): the chains `C3` (4 believers), `C4` (8), the Boolean square `B22`
+(4 = the carrier, the collapse computed, every believer closed *and* open),
+and the two five-element non-linear algebras `K5t`/`K5b` (8 each; 5 closed,
+5 open, 2 both, none neither; complete menageries pinned exactly,
+`nuclei_exact`; the double-negation believer = the open believer at `m`,
+`notnot_eq_openM`).  New finding: already on the four-element chain **two
+believers are neither dogmatic nor hypothetical** (`C4.neither_exact`).  All
+82 audits `#guard_msgs`-pinned in-file: counts and exhibits axiom-free or
+**[propext]**, bridges **[p,Q]** — no choice anywhere.  The two
+`native_decide` counts of `Examples.lean` (`chain4_card`, `boolean22_card`)
+were deleted, and the module left the `Audit/Production.lean` sweep's
+hold-out list, which is one entry shorter.
+
 ## 10. Realisability completeness (promoted 2026-07-17/18)
 
 The `⊩ᵖ` programme, promoted to the library after all proofs closed.  The
