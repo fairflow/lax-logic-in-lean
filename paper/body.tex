@@ -90,31 +90,32 @@ measured axiom pins.
 \caption{The results at a glance. PROVED means kernel-checked and
 \texttt{sorry}-free in the artefact; OPEN asserts nothing; a pin is
 the measured axiom set of the named theorems, abbreviated
-p = \texttt{propext}, C = \texttt{Classical.choice},
-Q = \texttt{Quot.sound}.}
+pext = \texttt{propext}, C = \texttt{Classical.choice},
+Q = \texttt{Quot.sound} (the same abbreviation key as the index of
+Appendix~\ref{app:index}).}
 \label{tab:glance}
 \small
 \begin{tabular}{@{}llll@{}}
 \toprule
 result & status & axioms & \S \\
 \midrule
-strong normalisation (\ensuremath{\top\top}-lifting, with sums) & PROVED & p, C, Q & 2 \\
-Craig interpolation & PROVED & p, Q & 2 \\
-decidability (repaired terminating calculus) & PROVED & p, Q & 2 \\
-classical collapse; N(B) \ensuremath{\cong} B & PROVED & p, C, Q & 3 \\
-open = closed \ensuremath{\Leftrightarrow} EM at a; \ensuremath{F_{0}} infinite & PROVED & p, C, Q & 3 \\
-context completeness; no finite constraint set & PROVED & p, C, Q & 3 \\
-the doxastic profile & PROVED & p, C, Q & 3 \\
-IPC and PLL embed faithfully into \ensuremath{F_{0}} & PROVED & p, Q & 3 \\
-believer menageries on five small algebras & PROVED & p, Q & 3 \\
-the separations (i)--(iv) & PROVED & p, C, Q; (ii) none & 5 \\
-the obstruction & PROVED & p, Q & 5 \\
-adequacy and fullness & PROVED & p, Q & 6 \\
-truth lemma, finite canonical model & PROVED & p, Q & 6 \\
-emitter completeness & PROVED & p, Q & 6 \\
-completeness of PLL for \ensuremath{\Vdash^{\mathrm{p}}} & PROVED & p, Q & 6 \\
-\ensuremath{\mu}, \ensuremath{\eta} not mutually inverse & PROVED & p; conv.\ p, C, Q & 7 \\
-PLL + distribution complete for confluent models & PROVED & p, C, Q & 10 \\
+strong normalisation (\ensuremath{\top\top}-lifting, with sums) & PROVED & pext, C, Q & 2 \\
+Craig interpolation & PROVED & pext, Q & 2 \\
+decidability (repaired terminating calculus) & PROVED & pext, Q & 2 \\
+classical collapse; N(B) \ensuremath{\cong} B & PROVED & pext, C, Q & 3 \\
+open = closed \ensuremath{\Leftrightarrow} EM at a; \ensuremath{F_{0}} infinite & PROVED & pext, C, Q & 3 \\
+context completeness; no finite constraint set & PROVED & pext, C, Q & 3 \\
+the doxastic profile & PROVED & pext, C, Q & 3 \\
+IPC and PLL embed faithfully into \ensuremath{F_{0}} & PROVED & pext, Q & 3 \\
+believer menageries on five small algebras & PROVED & pext, Q & 3 \\
+the separations (i)--(iv) & PROVED & pext, C, Q; (ii) none & 5 \\
+the obstruction & PROVED & pext, Q & 5 \\
+adequacy and fullness & PROVED & pext, Q & 6 \\
+truth lemma, finite canonical model & PROVED & pext, Q & 6 \\
+emitter completeness & PROVED & pext, Q & 6 \\
+completeness of PLL for \ensuremath{\Vdash^{\mathrm{p}}} & PROVED & pext, Q & 6 \\
+\ensuremath{\mu}, \ensuremath{\eta} not mutually inverse & PROVED & pext; conv.\ pext, C, Q & 7 \\
+PLL + distribution complete for confluent models & PROVED & pext, C, Q & 10 \\
 PLL\ensuremath{{}^{\mathrm{u}}} = PLL + distribution? & OPEN & --- & 10 \\
 uniform interpolation & not settled in the literature & --- & 10 \\
 \bottomrule
@@ -180,7 +181,7 @@ constructive finite-set toolkit (\dref{craig-interpolation-},
 Appendix~\ref{app:base}); uniform interpolation, by contrast, is not
 settled in the literature (Section 10). After an axiom-hygiene pass, the entire
 proof-theoretic chain --- interpolation included --- audits at
-\texttt{[propext, Quot.sound]}: no choice.
+\texttt{[pext, Quot.sound]}: no choice.
 
 The semantics is that of \cite{FairtloughMendler1997}, Definitions 3.1--3.2, mechanised
 verbatim (\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}):
@@ -219,7 +220,7 @@ the constraint still verifies N. The
 fallible worlds --- worlds with inconsistent information, validating
 everything --- are what keep \ensuremath{\bigcirc\bot} satisfiable, and under (7) they are
 the semantic counterpart of an inconsistently held belief. Soundness for sequents is
-\dref{soundness} (\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}, audit \texttt{[propext]}); the classical
+\dref{soundness} (\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Kripke.lean}, audit \texttt{[pext]}); the classical
 completeness theorem of \cite[\S4]{FairtloughMendler1997} is \dref{completeness}
 (\texttt{PLL/\allowbreak{}Semantics/\allowbreak{}Completeness.lean}), kept in the artefact deliberately, Zorn's
 lemma included, as the foil for Section 6.2.
@@ -471,7 +472,7 @@ The natural question is then whether \ensuremath{\Vdash^{\mathrm{s}}} is the com
 relation. It is not, and the reason is a theorem.
 
 \begin{theorem}[the obstruction; \dref{realS-fullness-obstruction}, audit
-\texttt{[propext, Quot.sound]}]\label{thm:obstruction}
+\texttt{[pext, Quot.sound]}]\label{thm:obstruction}
 There is a three-world constraint model on
 which no evidence assignment whatever is simultaneously atom-adequate
 (evidence only where the atom holds) and full for \ensuremath{\Vdash^{\mathrm{s}}} (every forced
@@ -557,7 +558,7 @@ the atom holds. All the evidence a completeness proof needs, it turns
 out, is one token per atom.
 
 \begin{theorem}[\dref{realP-adequate-and-full}, audit
-\texttt{[propext, Quot.sound]}]\label{thm:adequacy-fullness}
+\texttt{[pext, Quot.sound]}]\label{thm:adequacy-fullness}
 Over any checked finite frame with token
 evidence, and any applicative structure with two table-forming
 capacities against the world-coding: for every formula \ensuremath{\varphi},
@@ -747,7 +748,7 @@ principle appears anywhere above, and after the axiom-hygiene pass the
 entire chain of this subsection --- the decidability of consistency, the
 decided Lindenbaum fold (now, in fact, a computable function), the
 truth lemma, and the countermodel enumeration --- audits at
-\texttt{[propext, Quot.sound]}: no choice (what little classicality
+\texttt{[pext, Quot.sound]}: no choice (what little classicality
 survives in the artefact is a statement-vocabulary matter, discussed
 in Section 9). It is tempting, and would be wrong, to say that the
 logic proves its own completeness: the proof
@@ -812,7 +813,7 @@ with the closed form of the refutation lemma. Every quantifier ranges over concr
 as printable data, one token per atom, realisers in an explicit algebra
 of lookup tables --- and the backward case decision is made by the
 decision procedure, not by excluded middle. The theorem audits at
-\texttt{[propext, Quot.sound]}, enforced by build-time guards: the
+\texttt{[pext, Quot.sound]}, enforced by build-time guards: the
 completeness of PLL for realisability is, in the formal sense the audit
 measures, a choice-free theorem. PLL is complete for the semantics in
 which evidence may react to the future; incomplete, by Section 5, for
@@ -1222,8 +1223,8 @@ paper entire. The axiom footprint of each
 result is recorded: nothing at all for a handful of results (among them
 a well-foundedness theorem for the Kleene--Brouwer
 order~\cite{Kechris1995}, a standalone
-fully constructive result in the artefact); \texttt{[propext]} or
-\texttt{[propext, Quot.sound]} --- no choice --- for the proof theory, the
+fully constructive result in the artefact); \texttt{[pext]} or
+\texttt{[pext, Quot.sound]} --- no choice --- for the proof theory, the
 decoration half of completeness, the obstruction, and the executable
 countermodel certificates, the decidability of the logic, the finitised
 canonical model, and the completeness theorem itself; classical axioms

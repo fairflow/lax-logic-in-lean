@@ -1,4 +1,7 @@
 # Regenerate the artefact commit stamp (paper subtitle) before each build.
-# A trailing newline would become a spurious space under \input, hence printf.
-system("printf '%s' \"$(git rev-parse --short=10 HEAD)\" > commitsha.tex") == 0
+# The file defines \artefactshavalue, loaded at preamble level by belief.tex.
+# Perl q[...] (no interpolation) is load-bearing: in a double-quoted string
+# Perl interpolates "$(" as its group-id list variable, which is exactly the
+# mangled-subtitle bug this line replaces (caught by Matthew, 2026-11-01).
+system(q[printf '%s%s%s' '\newcommand{\artefactshavalue}{' "$(git rev-parse --short=10 HEAD)" '}' > commitsha.tex]) == 0
   or warn "commitsha.tex not regenerated (git unavailable?)\n";

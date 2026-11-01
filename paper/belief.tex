@@ -78,12 +78,13 @@
 \acmConference[CPP '27]{Certified Programs and Proofs}{January 2027}{TBD}
 
 \title{Belief in Lax Logic}
-%% Version stamp (series convention, 2026-11-01): the artefact commit is
-%% regenerated into commitsha.tex by paper/latexmkrc at each build; a plain
+%% Version stamp (series convention, 2026-11-01): commitsha.tex, regenerated
+%% by paper/latexmkrc at each build, defines \artefactshavalue; a plain
 %% `lualatex' run without latexmk falls back to "unknown".
-\newcommand{\artefactsha}{\InputIfFileExists{commitsha.tex}{}{unknown}}
+\InputIfFileExists{commitsha.tex}{}{}
+\providecommand{\artefactshavalue}{unknown}
 \subtitle{Machine-checked draft \textperiodcentered{} artefact commit
-  \texttt{\artefactsha} \textperiodcentered{} built \today}
+  \texttt{\artefactshavalue} \textperiodcentered{} built \today}
 
 \author{Matthew Fairtlough}
 \email{matthew@fairflow.co.uk}
