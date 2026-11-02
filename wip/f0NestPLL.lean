@@ -68,6 +68,30 @@ every variable-free `x` with `[u] ⊢ x ⊢ v` is `⊣⊢ u` or `⊣⊢ v`.
 Status of every statement at Stage 1: OPEN (statements only, no theorem, no
 `sorry`).
 
+## Results (Stage 3)
+
+All pins `[propext, Quot.sound]`; no `Classical.choice`, no `sorry`, no
+`native_decide`.  `#axiom_sweep [wip.f0NestPLL] allowing [propext, Quot.sound]`
+passes on all 127 declarations; with `allowing []` 70 escape (the gate watched
+failing).
+
+**PROVED**: (P1) `coreLemmaPLL`; (P2) `nestPLL`, hence `Interval.NestPLL`
+(`nestPLL_interval`); (P3) `mainPLL`; (P4) `bridgePLL3`; (P5) `nestAllPLL`
+(with `freePLLIn_tower`); `nestOnePLL`; and, in the coordinates of the
+readers' copy `gR` (added at stage 3),
+
+    ξ, ζ ◯-free,  [ξ] ⊢ ζ,  [ζ] ⊬ ξ   ⟹   FreePLLIn (gR ξ) (gR ζ)      (pllInGRInterval)
+
+Task 2: `rangeNoCover`, `sig3ImageNotCover`, `rangeBelowSig2T5`,
+`sig2t5_not_in_range`.  Added at stage 3: `noPLLBelowBox`, `noPLLInSig3Box`,
+`hωInSig3Box`: the interval `[σ³⊥, ◯σ³⊥]` carries `H_ω` but no sub-interval of
+it carries a faithful copy of PLL.
+
+**REFUTED**: `CoreLemmaPLLAnyXi`, `CoreLemmaPLLAnyZeta`, `CoreNoStrictPLL`,
+`CoverSig3` (`not_coverSig3`, and again `not_coverSig3'`).
+
+**OPEN**: `CoverSig2T5` (not attempted).
+
 Status note: `wip/f0NestPLL-STATUS.md`.
 -/
 
@@ -530,3 +554,448 @@ end PLLND
 #axioms_within PLLND.F0.NestPLL.cy_t3_hi [propext, Quot.sound]
 #axioms_within PLLND.F0.NestPLL.sig2t5_lo [propext, Quot.sound]
 #axioms_within PLLND.F0.NestPLL.sig2t5_strict [propext, Quot.sound]
+
+/-! ## Stage 3: the proofs
+
+**Task 1.**  The pen argument of the brief, mechanised as planned.
+
+* Preservation (`rel_preservesPLL`): `relB_preservesO` of `wip/f0FreePLL.lean`
+  (all formulas), through `rel_iff_relB_gen` of `wip/f0MovingTop.lean` (at a
+  world forcing the top, `rel` and `relB` agree on every formula, `◯`
+  included), since every `rel`-image forces the top (`force_rel_b`).
+* Reflection (`core_reflectsPLL`): the gluing `Interval.Glue.G` of the IPC
+  proof unchanged.  The copy of `K` keeps `K`'s own `S` (`Glue.SG`), so the
+  relativisation lemma with `◯` (`relB_transferO`) applies with
+  `hS : inl k ∈ S ⟺ k ∈ K.S` by `Iff.rfl`; `Glue.collapse` is used for `ξ`,
+  `ζ` only, which is where "◯-free" enters.
+* Nesting (`nestPLL`), main theorem (`mainPLL`), bridge (`bridgePLL3`), depth
+  one (`nestOnePLL`) and the tower (`nestAllPLL`): the IPC proofs with `FreeIn`
+  replaced by `FreeInPLL`; `rel_comp` already covered `◯`.
+
+**Task 2.**  `rangeNoCover`: `gR (B ∧ (A ∨ q))`, `q` fresh, lies strictly
+inside `[gR A, gR B]` (PLL with the atom `q` set true, respectively false, on a
+countermodel of `[B] ⊢ A`; then the faithfulness of `gR`).  `sig3ImageNotCover`
+is its instance at closed `A`, `B` (`gR c = σ³c`, `Endpoints.gR_closed`).
+`rangeBelowSig2T5`: every copy world of the readers' gadget refutes `σ²t5`
+(it sees the `S`-killer, which forces `σ³⊥` and refutes `◯σ²⊥`).
+
+**Added at stage 3** (the second half of Matthew's question, "such intervals
+inside every interval"):
+
+    NoPLLBelowBox :   [b] ⊢ ◯a,  [a] ⊢ a′,  [b′] ⊢ b  ⟹  ¬ FreeInPLL a′ b′ x
+    NoPLLInSig3Box :  no sub-interval of [σ³⊥, ◯σ³⊥] carries a faithful copy of PLL
+    HωInSig3Box :     [σ³⊥, ◯σ³⊥] carries a faithful copy of H_ω (`Interval.FreeHAωIn`)
+    PLLInGRInterval : ξ, ζ ◯-free, [ξ] ⊢ ζ, [ζ] ⊬ ξ  ⟹  FreePLLIn (gR ξ) (gR ζ)
+
+So "a faithful copy of PLL inside every interval" is REFUTED in this form: the
+interval `[σ³⊥, ◯σ³⊥]` contains `H_ω` but no sub-interval carrying PLL. -/
+
+namespace PLLND
+namespace F0
+namespace NestPLL
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF Fresh coreGen nestGen freshRen ICopy TowerHyp sem_of_deriv
+  deriv_of_sem deriv_congr force_rel_b rel_comp)
+open PLLND.LaxInfinite (atomFree)
+open SubframeModel.CF (FinDec)
+
+/-! ### Stage 3 (a): preservation, all formulas -/
+
+/-- **Preservation (`⟹`), `◯` included**: for `a ≤ x p ≤ b` in every model,
+`[A] ⊢ B` gives `[rel a b x A] ⊢ rel a b x B`. -/
+theorem rel_preservesPLL (a b : PLLFormula) (x : String → PLLFormula)
+    (hax : ∀ (M : SubframeModel) v p, M.force v a → M.force v (x p))
+    (hxb : ∀ (M : SubframeModel) v p, M.force v (x p) → M.force v b)
+    {A B : PLLFormula} (hd : Deriv [A] B) : Deriv [rel a b x A] (rel a b x B) := by
+  have hR := relB_preservesO a x (fun M v p hv => hax M v p hv) hd
+  refine deriv_of_sem fun M _ v hv => ?_
+  have hb := force_rel_b M a b x (fun u hu => hxb M u "" (hax M u "" hu)) (hxb M) A v hv
+  exact (rel_iff_relB_gen M a b x x (fun _ _ _ => Iff.rfl) B v hb).mpr
+    (sem_of_deriv hR M v ((rel_iff_relB_gen M a b x x (fun _ _ _ => Iff.rfl) A v hb).mp hv))
+
+/-! ### Stage 3 (b): the core lemma for PLL -/
+
+/-- **The core lemma, `⟸`, by the gluing, `◯` included**: in the glued model
+the copy of `u` forces `rel ξ ζ y A` iff `u ⊩ A`, for every `A`. -/
+theorem core_reflectsPLL {ξ ζ : PLLFormula} {ρ : String → String} (hξ : boxFree ξ = true)
+    (hζ : boxFree ζ = true) (hle : Deriv [ξ] ζ) (hstrict : ¬ Deriv [ζ] ξ) (hfr : Fresh ρ ξ ζ)
+    {A B : PLLFormula}
+    (hd : Deriv [rel ξ ζ (coreGen ξ ζ ρ) A] (rel ξ ζ (coreGen ξ ζ ρ) B)) : Deriv [A] B := by
+  have h0 : ¬ Deriv [] (ζ.ifThen ξ) := fun h =>
+    hstrict (Deriv.impElim (h.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _)))
+  obtain ⟨N, hN, k, hk⟩ := SubframeModel.CF.exists_countermodel h0
+  obtain ⟨w₁, _, hw₁ζ, hw₁ξ⟩ := SubframeModel.CF.exists_of_not_force_imp hk
+  obtain ⟨w, hw₁w, hwξ, hmax⟩ := Interval.exists_max_not N ξ _ w₁ (Nat.le_refl _) hw₁ξ
+  have hwζ : N.force w ζ := SubframeModel.force_mono N ζ hw₁w hw₁ζ
+  have hoξ : ∀ p, Interval.occ (ρ p) ξ = false := fun p => (hfr.2 p).1
+  have hoζ : ∀ p, Interval.occ (ρ p) ζ = false := fun p => (hfr.2 p).2
+  refine deriv_of_sem fun K _ u hu => ?_
+  let Gm := Interval.Glue.G N w ξ K ρ
+  have cξ := Interval.Glue.collapse (K := K) (ρ := ρ) hmax ξ hξ hoξ
+  have cζ := Interval.Glue.collapse (K := K) (ρ := ρ) hmax ζ hζ hoζ
+  have hb : ∀ u' : K.W, ¬ Gm.force (.inl u') ξ := fun u' h => hwξ ((cξ (.inl u')).mp h)
+  have hz : ∀ u' : K.W, Gm.force (.inl u') ζ := fun u' => (cζ (.inl u')).mpr hwζ
+  have hbx : ∀ (v : Gm.W) p, Gm.force v ξ → Gm.force v (coreGen ξ ζ ρ p) := fun v _ hv =>
+    ⟨Or.inr hv, sem_of_deriv hle Gm v hv⟩
+  have hback : ∀ (u' : K.W) (v : Gm.W), Gm.le (.inl u') v →
+      Gm.force v ξ ∨ ∃ j, K.le u' j ∧ Sum.inl j = v := by
+    intro u' v hv
+    cases v with
+    | inl j => exact Or.inr ⟨j, hv, rfl⟩
+    | inr n => exact Or.inl ((cξ (.inr n)).mpr hv.2)
+  have hatom : ∀ (u' : K.W) p, (Gm.force (.inl u') (coreGen ξ ζ ρ p) ↔ u' ∈ K.V p) := by
+    intro u' p
+    constructor
+    · intro h
+      rcases h.1 with hv | hv
+      · rcases hv with ⟨p', e, hu'⟩ | ⟨hne, _⟩
+        · rw [hfr.1 p' p e] at hu'
+          exact hu'
+        · exact absurd rfl (hne p)
+      · exact absurd hv (hb u')
+    · intro h
+      exact ⟨Or.inl (Or.inl ⟨p, rfl, h⟩), hz u'⟩
+  have htr := relB_transferO Gm ξ (coreGen ξ ζ ρ) K Sum.inl hbx hb (fun h => h) hback
+    (fun _ => Iff.rfl) hatom
+  have hrA : Gm.force (.inl u) (rel ξ ζ (coreGen ξ ζ ρ) A) :=
+    (rel_iff_relB_gen Gm ξ ζ _ _ (fun _ _ _ => Iff.rfl) A (.inl u) (hz u)).mpr ((htr A u).mpr hu)
+  have hrB := sem_of_deriv hd Gm (.inl u) hrA
+  exact (htr B u).mp
+    ((rel_iff_relB_gen Gm ξ ζ _ _ (fun _ _ _ => Iff.rfl) B (.inl u) (hz u)).mp hrB)
+
+/-- **PROVED: (P1), the core lemma for PLL.** -/
+theorem coreLemmaPLL : CoreLemmaPLL := by
+  intro ξ ζ ρ hξ hζ hle hstrict hfr
+  refine ⟨fun p => (Interval.core_bounds hle p).1, fun p => (Interval.core_bounds hle p).2,
+    fun A B => ?_⟩
+  exact ⟨rel_preservesPLL ξ ζ (coreGen ξ ζ ρ)
+      (fun M v _ hv => ⟨Or.inr hv, sem_of_deriv hle M v hv⟩) (fun _ _ _ hv => hv.2),
+    core_reflectsPLL hξ hζ hle hstrict hfr⟩
+
+/-! ### Stage 3 (c): nesting, the main theorem, the bridge, every depth -/
+
+/-- **PROVED: (P2)**, so `Interval.NestPLL` (OPEN in `wip/f0FreeInterval.lean`)
+holds. -/
+theorem nestPLL : NestPLLFree := by
+  intro a b x ξ ζ ρ hF hξ hζ hle hstrict hfr
+  obtain ⟨hax, hxb, hfaith⟩ := hF
+  obtain ⟨hyl, hyu, hyf⟩ := coreLemmaPLL ξ ζ ρ hξ hζ hle hstrict hfr
+  have sxb : ∀ (M : SubframeModel) v p, M.force v (x p) → M.force v b := fun M v p h =>
+    sem_of_deriv (hxb p) M v h
+  have sab : ∀ (M : SubframeModel) v, M.force v a → M.force v b := fun M v h =>
+    sxb M v "" (sem_of_deriv (hax "") M v h)
+  refine ⟨fun p => (hfaith _ _).mp (hyl p), fun p => (hfaith _ _).mp (hyu p), fun A B => ?_⟩
+  refine (hyf A B).trans ((hfaith _ _).trans (deriv_congr ?_ ?_))
+  · exact fun M v => (rel_comp M a b x ξ ζ (coreGen ξ ζ ρ) (sab M) (sxb M) A v).symm
+  · exact fun M v => (rel_comp M a b x ξ ζ (coreGen ξ ζ ρ) (sab M) (sxb M) B v).symm
+
+/-- `Interval.NestPLL`, as stated there. -/
+theorem nestPLL_interval : Interval.NestPLL := nestPLL
+
+/-- **PROVED: (P3), the main theorem for PLL.** -/
+theorem mainPLL : MainPLL := by
+  intro a b x ξ ζ ha hb hx hF hξ hζ hle hstrict
+  exact ⟨nestGen a b x ξ ζ (freshRen ξ ζ), fun p => Interval.atomFree_rel ha hb hx _,
+    nestPLL a b x ξ ζ _ hF hξ hζ hle hstrict (Interval.fresh_freshRen ξ ζ)⟩
+
+/-- **PROVED: (P4)**, the readers' copy of PLL as an interval copy in `[σ³⊥, ⊤]`. -/
+theorem bridgePLL3 : BridgePLL3 := by
+  refine ⟨b3_le_xr, fun _ => le_top _, fun A B => ?_⟩
+  exact (freeReaders A B).trans (deriv_congr
+    (fun M v => (rel_iff_relB_gen M (base 3) topF xr xr (fun _ _ _ => Iff.rfl) A v
+      (Interval.force_topF M v)).symm)
+    (fun M v => (rel_iff_relB_gen M (base 3) topF xr xr (fun _ _ _ => Iff.rfl) B v
+      (Interval.force_topF M v)).symm))
+
+/-- **PROVED: depth one inside the base copy.** -/
+theorem nestOnePLL : NestOnePLL := fun ξ ζ hξ hζ hle hstrict =>
+  mainPLL _ _ _ ξ ζ b3_vf rfl xr_vf bridgePLL3 hξ hζ hle hstrict
+
+/-- A faithful copy is non-degenerate: `[b] ⊬ a`. -/
+theorem freeInPLL_strict {a b : PLLFormula} {x : String → PLLFormula} (hF : FreeInPLL a b x) :
+    ¬ Deriv [b] a := fun h =>
+  Interval.ipc_top_bot ((hF.2.2 topF .falsePLL).mpr
+    (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) h))
+
+/-- What the induction on the depth carries. -/
+theorem towerP_props (ξs ζs : Nat → PLLFormula) (h : TowerHyp ξs ζs) : ∀ d : Nat,
+    FreeInPLL (towerP ξs ζs d).a (towerP ξs ζs d).b (towerP ξs ζs d).x ∧
+    (∀ p, atomFree ((towerP ξs ζs d).x p) = true) ∧
+    atomFree (towerP ξs ζs d).a = true ∧ atomFree (towerP ξs ζs d).b = true
+  | 0 => ⟨bridgePLL3, xr_vf, b3_vf, rfl⟩
+  | d + 1 => by
+      obtain ⟨hF, hx, ha, hb⟩ := towerP_props ξs ζs h d
+      obtain ⟨h1, h2, h3, h4⟩ := h d
+      exact ⟨nestPLL _ _ _ _ _ _ hF h1 h2 h3 h4 (Interval.fresh_freshRen _ _),
+        fun _ => Interval.atomFree_rel ha hb hx _, Interval.atomFree_rel ha hb hx _,
+        Interval.atomFree_rel ha hb hx _⟩
+
+/-- **PROVED: (P5), every finite depth.** -/
+theorem nestAllPLL : NestAllPLL := by
+  intro ξs ζs h d
+  obtain ⟨hF, hx, _, _⟩ := towerP_props ξs ζs h d
+  obtain ⟨_, _, h3, _⟩ := h d
+  refine ⟨hF, hx, freeInPLL_strict hF, ?_, ?_, ?_⟩
+  · exact (hF.2.2 .falsePLL (ξs d)).mp (bot_le _)
+  · exact (hF.2.2 (ξs d) (ζs d)).mp h3
+  · exact Deriv.cutHead ((hF.2.2 (ζs d) topF).mp (le_top _)) (Deriv.andElim2 (Deriv.iden (.head _)))
+
+/-- **PROVED: every depth of the tower carries PLL inside F0.** -/
+theorem freePLLIn_tower (ξs ζs : Nat → PLLFormula) (h : TowerHyp ξs ζs) (d : Nat) :
+    FreePLLIn (towerP ξs ζs d).a (towerP ξs ζs d).b :=
+  ⟨(towerP ξs ζs d).x, (towerP_props ξs ζs h d).2.1, (towerP_props ξs ζs h d).1⟩
+
+/-! ### Stage 3 (d): the statement in the coordinates of the readers' copy (added at stage 3) -/
+
+/-- The interval translation respects `⊣⊢` of its endpoints, in every model. -/
+theorem rel_congr_force (M : SubframeModel) {a b a' b' : PLLFormula} (x : String → PLLFormula)
+    (ha : ∀ v, M.force v a ↔ M.force v a') (hb : ∀ v, M.force v b ↔ M.force v b') :
+    ∀ (A : PLLFormula) (v : M.W), M.force v (rel a b x A) ↔ M.force v (rel a' b' x A)
+  | .prop _, _ => Iff.rfl
+  | .falsePLL, v => ha v
+  | .and A B, v => and_congr (rel_congr_force M x ha hb A v) (rel_congr_force M x ha hb B v)
+  | .or A B, v => or_congr (rel_congr_force M x ha hb A v) (rel_congr_force M x ha hb B v)
+  | .ifThen A B, v => by
+      have ihA := rel_congr_force M x ha hb A
+      have ihB := rel_congr_force M x ha hb B
+      show ((∀ u, M.le v u → M.force u (rel a b x A) → M.force u (rel a b x B)) ∧ M.force v b) ↔
+        ((∀ u, M.le v u → M.force u (rel a' b' x A) → M.force u (rel a' b' x B)) ∧ M.force v b')
+      exact and_congr
+        ⟨fun h u hu hA => (ihB u).mp (h u hu ((ihA u).mpr hA)),
+         fun h u hu hA => (ihB u).mpr (h u hu ((ihA u).mp hA))⟩ (hb v)
+  | .somehow A, v => by
+      have ihA := rel_congr_force M x ha hb A
+      show ((∀ u, M.le v u → u ∈ M.S → M.force u (rel a b x A)) ∧ M.force v b) ↔
+        ((∀ u, M.le v u → u ∈ M.S → M.force u (rel a' b' x A)) ∧ M.force v b')
+      exact and_congr
+        ⟨fun h u hu hS => (ihA u).mp (h u hu hS), fun h u hu hS => (ihA u).mpr (h u hu hS)⟩ (hb v)
+
+/-- A faithful copy is carried along `⊣⊢` of its endpoints. -/
+theorem freeInPLL_congr {a b a' b' : PLLFormula} {x : String → PLLFormula}
+    (hF : FreeInPLL a b x) (ha : Interd a a') (hb : Interd b b') : FreeInPLL a' b' x := by
+  obtain ⟨hax, hxb, hf⟩ := hF
+  have sa : ∀ (M : SubframeModel) v, M.force v a ↔ M.force v a' := fun M v =>
+    ⟨sem_of_deriv ha.1 M v, sem_of_deriv ha.2 M v⟩
+  have sb : ∀ (M : SubframeModel) v, M.force v b ↔ M.force v b' := fun M v =>
+    ⟨sem_of_deriv hb.1 M v, sem_of_deriv hb.2 M v⟩
+  refine ⟨fun p => Deriv.cutHead ha.2 (hax p), fun p => Deriv.cutHead (hxb p) hb.1,
+    fun A B => (hf A B).trans (deriv_congr ?_ ?_)⟩
+  · exact fun M v => rel_congr_force M x (sa M) (sb M) A v
+  · exact fun M v => rel_congr_force M x (sa M) (sb M) B v
+
+/-- In `[σ³⊥, ⊤]`, the interval translation is the readers' copy: `rel σ³⊥ ⊤ xr A ⊣⊢ gR A`. -/
+theorem rel_top_interd_gR (A : PLLFormula) : Interd (rel (base 3) topF xr A) (gR A) :=
+  interd_of_sem fun M v =>
+    rel_iff_relB_gen M (base 3) topF xr xr (fun _ _ _ => Iff.rfl) A v (Interval.force_topF M v)
+
+/-- **The clearest form (added at stage 3)**: for ◯-free `ξ`, `ζ` with `[ξ] ⊢ ζ`
+and `[ζ] ⊬ ξ`, the interval `[gR ξ, gR ζ]` of F0 carries a faithful copy of PLL,
+`◯` included, with variable-free generators. -/
+def PLLInGRInterval : Prop :=
+  ∀ ξ ζ : PLLFormula, boxFree ξ = true → boxFree ζ = true → Deriv [ξ] ζ → ¬ Deriv [ζ] ξ →
+    FreePLLIn (gR ξ) (gR ζ)
+
+/-- **PROVED.** -/
+theorem pllInGRInterval : PLLInGRInterval := fun ξ ζ hξ hζ hle hstrict =>
+  let ⟨x, hx, hF⟩ := nestOnePLL ξ ζ hξ hζ hle hstrict
+  ⟨x, hx, freeInPLL_congr hF (rel_top_interd_gR ξ) (rel_top_interd_gR ζ)⟩
+
+/-! ### Stage 3 (e): not inside every interval (added at stage 3) -/
+
+/-- **(added at stage 3)** No sub-interval of an interval `[a, b]` with
+`[b] ⊢ ◯a` carries a faithful copy of PLL. -/
+def NoPLLBelowBox : Prop :=
+  ∀ (a b a' b' : PLLFormula) (x : String → PLLFormula),
+    Deriv [b] (.somehow a) → Deriv [a] a' → Deriv [b'] b → ¬ FreeInPLL a' b' x
+
+/-- **(added at stage 3)** The instance `[σ³⊥, ◯σ³⊥]`. -/
+def NoPLLInSig3Box : Prop :=
+  ∀ (a' b' : PLLFormula) (x : String → PLLFormula),
+    Deriv [base 3] a' → Deriv [b'] (.somehow (base 3)) → ¬ FreeInPLL a' b' x
+
+/-- **(added at stage 3)** `[σ³⊥, ◯σ³⊥]` carries a faithful copy of `H_ω`. -/
+def HωInSig3Box : Prop := Interval.FreeHAωIn (base 3) (.somehow (base 3))
+
+/-- **PROVED**: `[b′] ⊢ b ⊢ ◯a ⊢ ◯a′`, then `not_freeInPLL_of_top_box`. -/
+theorem noPLLBelowBox : NoPLLBelowBox := fun _ _ _ _ _ hb ha hb' =>
+  not_freeInPLL_of_top_box (Deriv.cutHead (Deriv.cutHead hb' hb) (Deriv.somehowMono ha))
+
+/-- **PROVED.** -/
+theorem noPLLInSig3Box : NoPLLInSig3Box := fun a' b' x ha hb' =>
+  noPLLBelowBox (base 3) (.somehow (base 3)) a' b' x (Deriv.iden (.head _)) ha hb'
+
+theorem code_empty : Base3.code "" = 0 := by decide
+
+theorem xω_empty : rel (base 3) topF xω (.prop "") = .somehow (base 3) := by
+  show gen (Base3.code "") = _
+  rw [code_empty]
+  rfl
+
+/-- **PROVED**: `[σ³⊥, ◯σ³⊥] = [rel ⊥, rel p₀]` in the `xω` copy of `H_ω`
+(`◯σ³⊥ = x₀`), so `Interval.nestOne` applies. -/
+theorem hωInSig3Box : HωInSig3Box := by
+  have h := Interval.nestOne .falsePLL (.prop "") rfl rfl Interval.Cells.hyp2_le
+    Interval.Cells.hyp2_strict
+  rw [xω_empty] at h
+  exact h
+
+/-! ### Stage 3 (f): Task 2 -/
+
+/-- The model `M` with the atom `q` set to the constant `P`. -/
+def setAtom (M : SubframeModel) (q : String) (P : Prop) : SubframeModel where
+  W := M.W
+  le := M.le
+  S := M.S
+  V c := fun w => if c = q then P else w ∈ M.V c
+  refl := M.refl
+  trans := M.trans
+  hered {c u v} h hu := by
+    have hu' : (if c = q then P else u ∈ M.V c) := hu
+    show (if c = q then P else v ∈ M.V c)
+    rcases Decidable.em (c = q) with hc | hc
+    · rw [if_pos hc] at hu' ⊢
+      exact hu'
+    · rw [if_neg hc] at hu' ⊢
+      exact M.hered h hu'
+
+/-- Setting an atom that does not occur changes nothing. -/
+theorem force_setAtom (M : SubframeModel) (q : String) (P : Prop) :
+    ∀ (φ : PLLFormula), Interval.occ q φ = false → ∀ w : M.W,
+      ((setAtom M q P).force w φ ↔ M.force w φ)
+  | .prop c, h, w => by
+      have hc : ¬ c = q := of_decide_eq_false h
+      show (if c = q then P else w ∈ M.V c) ↔ w ∈ M.V c
+      rw [if_neg hc]
+  | .falsePLL, _, _ => Iff.rfl
+  | .and A B, h, w =>
+      and_congr (force_setAtom M q P A (Interval.or_eq_false_split h).1 w)
+        (force_setAtom M q P B (Interval.or_eq_false_split h).2 w)
+  | .or A B, h, w =>
+      or_congr (force_setAtom M q P A (Interval.or_eq_false_split h).1 w)
+        (force_setAtom M q P B (Interval.or_eq_false_split h).2 w)
+  | .ifThen A B, h, w => by
+      have hA := force_setAtom M q P A (Interval.or_eq_false_split h).1
+      have hB := force_setAtom M q P B (Interval.or_eq_false_split h).2
+      show (∀ u, M.le w u → (setAtom M q P).force u A → (setAtom M q P).force u B) ↔
+        (∀ u, M.le w u → M.force u A → M.force u B)
+      exact ⟨fun h' u hu ha => (hB u).mp (h' u hu ((hA u).mpr ha)),
+        fun h' u hu ha => (hB u).mpr (h' u hu ((hA u).mp ha))⟩
+  | .somehow A, h, w => by
+      have hA := force_setAtom M q P A h
+      show (∀ u, M.le w u → u ∈ M.S → (setAtom M q P).force u A) ↔
+        (∀ u, M.le w u → u ∈ M.S → M.force u A)
+      exact ⟨fun h' u hu hS => (hA u).mp (h' u hu hS), fun h' u hu hS => (hA u).mpr (h' u hu hS)⟩
+
+theorem force_setAtom_q (M : SubframeModel) (q : String) (P : Prop) (w : M.W) :
+    (setAtom M q P).force w (.prop q) ↔ P := by
+  show (if q = q then P else w ∈ M.V q) ↔ P
+  rw [if_pos rfl]
+
+/-- **Density in PLL**: for `q` occurring in neither `A` nor `B`, `[B] ⊬ A`
+gives `A < B ∧ (A ∨ q) < B` strictly (the countermodel of `[B] ⊢ A` with `q`
+set true, respectively false). -/
+theorem nd_between {A B : PLLFormula} (q : String) (hqA : Interval.occ q A = false)
+    (hqB : Interval.occ q B = false) (h : ¬ Deriv [B] A) :
+    ¬ Deriv [B.and (A.or (.prop q))] A ∧ ¬ Deriv [B] (B.and (A.or (.prop q))) := by
+  have h0 : ¬ Deriv [] (B.ifThen A) := fun h' =>
+    h (Deriv.impElim (h'.rename fun _ h => absurd h List.not_mem_nil) (Deriv.iden (.head _)))
+  obtain ⟨N, _, k, hk⟩ := SubframeModel.CF.exists_countermodel h0
+  obtain ⟨w, _, hwB, hwA⟩ := SubframeModel.CF.exists_of_not_force_imp hk
+  constructor
+  · intro hd
+    have h1 : (setAtom N q True).force w (B.and (A.or (.prop q))) :=
+      ⟨(force_setAtom N q True B hqB w).mpr hwB, Or.inr ((force_setAtom_q N q True w).mpr trivial)⟩
+    exact hwA ((force_setAtom N q True A hqA w).mp (sem_of_deriv hd (setAtom N q True) w h1))
+  · intro hd
+    have h1 := sem_of_deriv hd (setAtom N q False) w ((force_setAtom N q False B hqB w).mpr hwB)
+    rcases h1.2 with hA | hq
+    · exact hwA ((force_setAtom N q False A hqA w).mp hA)
+    · exact (force_setAtom_q N q False w).mp hq
+
+/-- **PROVED: no cover has both ends in the range of `gR`**: `gR (B ∧ (A ∨ q))`,
+`q` fresh, lies strictly between `gR A` and `gR B`. -/
+theorem rangeNoCover : RangeNoCover := by
+  rintro A B hAB hBA ⟨-, -, hc⟩
+  have hq := (Interval.fresh_freshRen A B).2 ""
+  obtain ⟨n1, n2⟩ := nd_between (freshRen A B "") hq.1 hq.2 hBA
+  have hlo : Deriv [gR A] (gR (B.and (A.or (.prop (freshRen A B ""))))) :=
+    (g_faithful _ _).mp (Deriv.andIntro hAB (Deriv.orIntro1 (Deriv.iden (.head _))))
+  have hhi : Deriv [gR (B.and (A.or (.prop (freshRen A B ""))))] (gR B) :=
+    (g_faithful _ _).mp (Deriv.andElim1 (Deriv.iden (.head _)))
+  rcases hc _ (g_af _) hlo hhi with i | i
+  · exact n1 ((g_faithful _ _).mpr i.1)
+  · exact n2 ((g_faithful _ _).mpr i.2)
+
+/-- **PROVED: no `σ³`-image of a strict pair of F0 (in particular of a cover)
+is a cover.** -/
+theorem sig3ImageNotCover : Sig3ImageNotCover := by
+  intro c d hc hd hcd hdc
+  have h := rangeNoCover c d hcd hdc
+  rw [Endpoints.gR_closed hc, Endpoints.gR_closed hd] at h
+  exact h
+
+/-- `REFUTED CoverSig3` again, from `rangeNoCover` (`σ³⊥ = gR ⊥`, `◯σ³⊥ = gR ◯⊥`). -/
+theorem not_coverSig3' : ¬ CoverSig3 :=
+  rangeNoCover .falsePLL (.somehow .falsePLL) (bot_le _) nd_e_bot
+
+/-- `σ²t5 = σ³⊥ ∨ (σ³⊥ → ◯σ²⊥)`. -/
+theorem sig2t5_eq : sigN 2 t5 = (base 3).or ((base 3).ifThen (.somehow (base 2))) := rfl
+
+/-- Every copy world of the readers' gadget refutes `σ²t5`. -/
+theorem w_not_sig2t5 {K : SubframeModel} {Sw : K.W → Prop} (k : K.W) :
+    ¬ (GadR.MS K Sw).force (Base3.Gad.Pt.w k) (sigN 2 t5) := by
+  rw [sig2t5_eq]
+  intro h
+  rcases h with h | h
+  · exact GadR.w_not_b3 k h
+  · have h1 := h (Base3.Gad.Pt.z 0 (Cell.bot 0)) trivial (GadR.z_b3 0 _)
+    exact GadR.kS_not_b2 (h1 _ ((GadR.MS K Sw).refl _) GadR.kS_S)
+
+/-- **PROVED: below `σ²t5` the range of `gR` has only its bottom.** -/
+theorem rangeBelowSig2T5 : RangeBelowSig2T5 := fun A h =>
+  deriv_of_sem fun K _ k hk => absurd
+    (sem_of_deriv h (GadR.MS K (· ∈ K.S)) (Base3.Gad.Pt.w k) ((GadR.transfer A k).mpr hk))
+    (w_not_sig2t5 k)
+
+/-- **PROVED: `σ²t5` is not in the range of `gR`.** -/
+theorem sig2t5_not_in_range : ¬ ∃ A : PLLFormula, Interd (gR A) (sigN 2 t5) := by
+  rintro ⟨A, i⟩
+  have hA := rangeBelowSig2T5 A i.1
+  have h1 : Deriv [gR A] (base 3) := (g_faithful A .falsePLL).mp hA
+  exact sig2t5_strict (Deriv.cutHead i.2 h1)
+
+end NestPLL
+end F0
+end PLLND
+
+/-! ## Axiom pins: stage 3 -/
+
+#axioms_within PLLND.F0.NestPLL.rel_preservesPLL [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.core_reflectsPLL [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.coreLemmaPLL [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.nestPLL [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.nestPLL_interval [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.mainPLL [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.bridgePLL3 [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.nestOnePLL [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.freeInPLL_strict [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.towerP_props [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.nestAllPLL [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.freePLLIn_tower [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.rel_congr_force [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.freeInPLL_congr [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.rel_top_interd_gR [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.pllInGRInterval [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.noPLLBelowBox [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.noPLLInSig3Box [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.code_empty [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.hωInSig3Box [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.force_setAtom [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.nd_between [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.rangeNoCover [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.sig3ImageNotCover [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.not_coverSig3' [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.w_not_sig2t5 [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.rangeBelowSig2T5 [propext, Quot.sound]
+#axioms_within PLLND.F0.NestPLL.sig2t5_not_in_range [propext, Quot.sound]
