@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+  <text x="20" y="30" font-size="18" font-weight="600" fill="#222">7. The σ-colimit  F0 →σ F0 →σ F0 →σ ⋯ :  the nesting completed in both directions</text>
+
+  <defs>
+    <marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b22"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- grade headers -->
+  <g font-size="13" font-weight="600" text-anchor="middle" fill="#333">
+    <text x="140" y="92">k = −3</text>
+    <text x="250" y="92">k = −2</text>
+    <text x="360" y="92">k = −1</text>
+    <text x="470" y="92">k = 0</text>
+    <text x="580" y="92">k = 1</text>
+    <text x="690" y="92">k = 2</text>
+    <text x="800" y="92">k = 3</text>
+  </g>
+  <text x="62" y="92" font-size="13" text-anchor="middle" fill="#888">⋯</text>
+  <text x="870" y="92" font-size="13" text-anchor="middle" fill="#888">⋯</text>
+  <text x="20" y="56" font-size="12" fill="#666">Column k is the outer shell L₀ shifted by k: each label names y, and the point is Sᵏ(ι₀ y).</text>
+
+  <!-- S arrows between columns -->
+  <g fill="none" stroke="#b22" stroke-width="1.4" marker-end="url(#as)">
+    <path d="M150,132 C 180,118 220,118 240,132"/>
+    <path d="M260,132 C 290,118 330,118 350,132"/>
+    <path d="M370,132 C 400,118 440,118 460,132"/>
+    <path d="M480,132 C 510,118 550,118 570,132"/>
+    <path d="M590,132 C 620,118 660,118 680,132"/>
+    <path d="M700,132 C 730,118 770,118 790,132"/>
+  </g>
+  <g font-size="11.5" font-style="italic" fill="#b22" text-anchor="middle">
+    <text x="195" y="128">S</text><text x="305" y="128">S</text><text x="415" y="128">S</text>
+    <text x="525" y="128">S</text><text x="635" y="128">S</text><text x="745" y="128">S</text>
+  </g>
+
+  <g transform="translate(0,40)">
+  <!-- shell bands: base rises to the right -->
+  <g fill="#f4f6fb" stroke="#b9c4dd" stroke-width="1">
+    <rect x="98"  y="178" width="84" height="232" rx="10"/>
+    <rect x="208" y="166" width="84" height="232" rx="10"/>
+    <rect x="318" y="154" width="84" height="232" rx="10"/>
+    <rect x="428" y="142" width="84" height="232" rx="10" fill="#e6eefb" stroke="#3b6fc4" stroke-width="1.6"/>
+    <rect x="538" y="130" width="84" height="232" rx="10" fill="#e6eefb" stroke="#3b6fc4" stroke-width="1.6"/>
+    <rect x="648" y="118" width="84" height="232" rx="10" fill="#e6eefb" stroke="#3b6fc4" stroke-width="1.6"/>
+    <rect x="758" y="106" width="84" height="232" rx="10" fill="#e6eefb" stroke="#3b6fc4" stroke-width="1.6"/>
+  </g>
+
+  <!-- elements of each shell (same pattern, shifted) -->
+  <g font-size="12" text-anchor="middle" fill="#1f4f9e">
+    <!-- k = -3 .. 3: base at y0, then ◯⊥, ¬◯⊥, t5 above -->
+    <g transform="translate(140,0)">
+      <circle cx="0" cy="210" r="3.5"/><text x="0" y="203">t5</text>
+      <circle cx="0" cy="260" r="3.5"/><text x="0" y="253">¬◯⊥</text>
+      <circle cx="0" cy="310" r="3.5"/><text x="0" y="303">◯⊥</text>
+    </g>
+    <g transform="translate(250,-12)">
+      <circle cx="0" cy="210" r="3.5"/><text x="0" y="203">t5</text>
+      <circle cx="0" cy="260" r="3.5"/><text x="0" y="253">¬◯⊥</text>
+      <circle cx="0" cy="310" r="3.5"/><text x="0" y="303">◯⊥</text>
+    </g>
+    <g transform="translate(360,-24)">
+      <circle cx="0" cy="210" r="3.5"/><text x="0" y="203">t5</text>
+      <circle cx="0" cy="260" r="3.5"/><text x="0" y="253">¬◯⊥</text>
+      <circle cx="0" cy="310" r="3.5"/><text x="0" y="303">◯⊥</text>
+    </g>
+    <g transform="translate(470,-36)">
+      <circle cx="0" cy="210" r="3.5"/><text x="0" y="203">t5</text>
+      <circle cx="0" cy="260" r="3.5"/><text x="0" y="253">¬◯⊥</text>
+      <circle cx="0" cy="310" r="3.5"/><text x="0" y="303">◯⊥</text>
+    </g>
+    <g transform="translate(580,-48)">
+      <circle cx="0" cy="210" r="3.5"/><text x="0" y="203">σt5</text>
+      <circle cx="0" cy="260" r="3.5"/><text x="0" y="253">◯t3↠t3</text>
+      <circle cx="0" cy="310" r="3.5"/><text x="0" y="303">◯t3</text>
+    </g>
+    <g transform="translate(690,-60)">
+      <circle cx="0" cy="210" r="3.5"/><text x="0" y="203">σ²t5</text>
+      <circle cx="0" cy="260" r="3.5"/><text x="0" y="253">σ²¬◯⊥</text>
+      <circle cx="0" cy="310" r="3.5"/><text x="0" y="303">◯σ²⊥</text>
+    </g>
+    <g transform="translate(800,-72)">
+      <circle cx="0" cy="210" r="3.5"/><text x="0" y="203">σ³t5</text>
+      <circle cx="0" cy="260" r="3.5"/><text x="0" y="253">σ³¬◯⊥</text>
+      <circle cx="0" cy="310" r="3.5"/><text x="0" y="303">◯σ³⊥</text>
+    </g>
+  </g>
+
+  <!-- the bases: a chain unbounded below, rising to ⊤ -->
+  <g fill="#b22">
+    <circle cx="140" cy="390" r="5"/><circle cx="250" cy="378" r="5"/><circle cx="360" cy="366" r="5"/>
+    <circle cx="470" cy="354" r="5"/><circle cx="580" cy="342" r="5"/><circle cx="690" cy="330" r="5"/>
+    <circle cx="800" cy="318" r="5"/>
+  </g>
+  <path d="M70,402 L140,390 L250,378 L360,366 L470,354 L580,342 L690,330 L800,318 L880,250 L930,150" fill="none" stroke="#b22" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <g font-size="12" fill="#8a1a1a" text-anchor="middle">
+    <text x="140" y="406">ι₃⊥</text><text x="250" y="394">ι₂⊥</text><text x="360" y="382">ι₁⊥</text>
+    <text x="470" y="370">ι₀⊥</text><text x="580" y="358">t3</text><text x="690" y="346">σ²⊥</text><text x="800" y="334">σ³⊥</text>
+  </g>
+
+  <!-- top -->
+  <circle cx="930" cy="150" r="7" fill="#333"/>
+  <text x="944" y="146" font-size="15" font-weight="700" fill="#333">⊤</text>
+  <text x="995" y="116" font-size="11" fill="#555" text-anchor="end">the only</text><text x="995" y="130" font-size="11" fill="#555" text-anchor="end">fixed point of S</text>
+
+  <!-- stage images -->
+  <g stroke="#3b6fc4" stroke-width="2" fill="none">
+    <path d="M425,440 L425,448 L960,448 L960,440"/>
+  </g>
+  <g stroke="#7d93c4" stroke-width="1.6" fill="none">
+    <path d="M315,470 L315,478 L960,478 L960,470"/>
+    <path d="M205,500 L205,508 L960,508 L960,500"/>
+    <path d="M95,530 L95,538 L960,538 L960,530"/>
+  </g>
+  <g font-size="12.5" fill="#1f4f9e">
+    <text x="440" y="466">ι₀(F0) ≅ F0 : grades k ≥ 0, and ⊤   (the original F0, shells L₀, L₁, L₂, …)</text>
+    <text x="330" y="496">ι₁(F0) = S⁻¹ ι₀(F0) : grades k ≥ −1</text>
+    <text x="220" y="526">ι₂(F0) : grades k ≥ −2</text>
+    <text x="110" y="556">ι₃(F0) : grades k ≥ −3          ⋯   the colimit is the union of all stages</text>
+  </g>
+
+  <!-- notes -->
+  <g font-size="13" fill="#222">
+    <text x="20" y="596">Shift: S(n, φ) = (n, σφ) extends σ to an automorphism, moving every grade one column right; S⁻¹(n, φ) = (n+1, φ).</text>
+    <text x="20" y="618">Bases (red): ⋯ &lt; ι₂⊥ &lt; ι₁⊥ &lt; ι₀⊥ &lt; t3 &lt; σ²⊥ &lt; ⋯ → ⊤, unbounded below, so there is no least element. Every element of grade k lies above the grade-k base.</text>
+    <text x="20" y="640">Grades are not levels of the order: t3 (grade 1) lies below t5 (grade 0). Columns show sample elements, not the order within a shell.</text>
+    <text x="20" y="668" fill="#555">Status: all PROVED [pext,Q] (wip/f0SigmaColimit): the structure and its universal property, the automorphism S with ⊤ its only fixed point,</text>
+    <text x="20" y="688" fill="#555">no least element, and the grading: every x ≠ ⊤ is Sᵏ(ι₀ y) for a unique k ∈ ℤ and a unique y ∈ L₀ (up to ⊣⊢).</text>
+  </g>
+  </g>
+</svg>
