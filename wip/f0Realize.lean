@@ -83,6 +83,27 @@ with the designed cells, all at `M₀` = one world, not in `S`, no atom true
 
 Status of every statement at Stage 1: OPEN (statements only; no theorem, no
 `sorry`).
+
+## Results (Stage 3)
+
+All pins `[propext, Quot.sound]`; no `sorry`, no `native_decide`, no
+`Classical.choice`.
+
+**PROVED**: (D1) `faithfulOfRealizer`, `faithfulCOfRealizer`; (D2) `realizerComp`,
+`realizerInfComp`, `realizerCComp`; (D3) `meetRealizes`, `congrRealizes`,
+`realizerSig`, `realizerATrT3`, `realizerTauP`, `realizerTauPN`, `realizerCRelC`,
+`realizerInfReaders`, `realizerTwoSided`, `selfStepOfRealizer`; (D4) `copyT3T6_r`,
+`pllSelf_r`, `pllSelfTower_r`, `pllTowerInF0_r`, `baseSufficiency_r`; the cells
+`cellInf`, `cellAll`, `cellClosed`, `cellTwoAtoms`.
+
+**REFUTED**: (D5) `FinRealizerOfFaithful` (`not_finRealizerOfFaithful`, at `g`
+and `M₀`): a faithful translation can need infinite realizing models.
+
+**OPEN**: `FinRealizerCOfFaithfulC`, `FinRealizerOnOfFaithful` (each passes its
+cell at `g`).
+
+The line-count comparison with the original proofs is in the status note,
+`wip/f0Realize-STATUS.md`.
 -/
 
 set_option autoImplicit false
@@ -706,3 +727,213 @@ end PLLND
 #axioms_within PLLND.F0.Realize.sane_aTr_K3 [propext, Quot.sound]
 #axioms_within PLLND.F0.Realize.sane_tauP_K3 [propext, Quot.sound]
 #axioms_within PLLND.F0.Realize.gate_ext [propext, Quot.sound]
+
+/-! # Stage 3: (D1), the remaining (D3) instances, and the (D4) re-derivations
+
+(D1) is five lines: given `[h A] ⊢ h B` and a finite `M, r ⊨ A`, a realizing
+`(N, w)` has `N, w ⊨ h A`, so `N, w ⊨ h B` by soundness, so `M, r ⊨ B`; completeness
+for finite models (`Interval.deriv_of_sem`) gives `[A] ⊢ B`.  It needs neither the
+subframe tableau nor `SubCM` tables.
+
+(D4): `copyT3T6_r`, `pllSelf_r`, `pllSelfTower_r`, `pllTowerInF0_r`,
+`baseSufficiency_r`, none of which uses the original theorem it re-derives
+(checked with `#axiom_path`, Stage 3 gate watch). -/
+
+namespace PLLND
+namespace F0
+namespace Realize
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF)
+open PLLND.LaxInfinite (atomFree)
+open SubframeModel.CF (FinDec)
+
+/-! ## (D1) faithfulness from realization -/
+
+/-- **The reflection half of (D1)**: a realizer, finite or not, reflects derivability. -/
+theorem reflects_of_realizerInf {h : Tr} (hR : RealizerInf h) {A B : PLLFormula}
+    (hd : Deriv [h A] (h B)) : Deriv [A] B :=
+  Interval.deriv_of_sem fun M _ r hA => by
+    obtain ⟨N, w, hw⟩ := hR M r
+    exact (hw B).mp (Interval.sem_of_deriv hd N w ((hw A).mpr hA))
+
+/-- **(D1) PROVED** -/
+theorem faithfulOfRealizer : FaithfulOfRealizer := fun _ hp hR A B =>
+  ⟨hp A B, reflects_of_realizerInf hR⟩
+
+/-- **(D1), closed formulas, PROVED** -/
+theorem faithfulCOfRealizer : FaithfulCOfRealizer := fun _ hp hR A B hA hB =>
+  ⟨hp A B hA hB, fun hd => Interval.deriv_of_sem fun M _ r hAr => by
+    obtain ⟨N, w, hw⟩ := hR M r
+    exact (hw B hB).mp (Interval.sem_of_deriv hd N w ((hw A hA).mpr hAr))⟩
+
+theorem realizerInfC_of {h : Tr} (hR : RealizerC h) : RealizerInfC h := fun M _ r =>
+  let ⟨N, _, w, hw⟩ := hR M r
+  ⟨N, w, hw⟩
+
+/-- Preservation transfers along pointwise interderivability. -/
+theorem preserves_congr {h h' : Tr} (hi : ∀ A, Interd (h A) (h' A)) (hp : Preserves h) :
+    Preserves h' := fun A B hd => Deriv.cutHead (Deriv.cutHead (hi A).2 (hp A B hd)) (hi B).1
+
+/-! ## (D3) the A-translation instances -/
+
+/-- **(D3) PROVED** -/
+theorem realizerATrT3 : RealizerATrT3 := fun M _ r =>
+  ⟨ext M, inferInstance, XW.orig r, fun A => orig_aTr M A r⟩
+
+/-- `aTr a A ∧ b ⊣⊢ rel a b (selfGen a b) A` (`relGen`, `relB_aTr`). -/
+theorem selfGen_interd {a b : PLLFormula} (hab : Deriv [a] b) (A : PLLFormula) :
+    Interd ((aTr a A).and b) (rel a b (Endpoints.selfGen a b) A) := by
+  have h := relGen a b (fun p => (PLLFormula.prop p).or a) A hab
+  rw [Endpoints.relB_aTr] at h
+  exact h.symm
+
+/-- `A ↦ aTr a A ∧ b` preserves derivability (`aTr_deriv`). -/
+theorem aTrMeet_preserves (a b : PLLFormula) : Preserves (fun A => (aTr a A).and b) :=
+  fun A B hd => by
+    obtain ⟨d⟩ := hd
+    have h1 : Deriv [aTr a A] (aTr a B) := aTr_deriv a d
+    exact Deriv.andIntro (Deriv.cutHead (Deriv.andElim1 (Deriv.iden (.head _))) h1)
+      (Deriv.andElim2 (Deriv.iden (.head _)))
+
+/-- **(D3) PROVED**: the A-translation step from a realizer. -/
+theorem selfStepOfRealizer : SelfStepOfRealizer := by
+  intro a b hab hR
+  have hi := selfGen_interd hab
+  refine ⟨fun _ => Deriv.andIntro (Deriv.orIntro2 (Deriv.iden (.head _))) hab,
+    fun _ => Deriv.andElim2 (Deriv.iden (.head _)), ?_⟩
+  exact faithfulOfRealizer _ (preserves_congr hi (aTrMeet_preserves a b)) fun M _ r =>
+    let ⟨N, w, hw⟩ := hR M r
+    ⟨N, w, congrRealizes _ _ _ _ _ _ hi hw⟩
+
+/-- `τ_P A ⊣⊢ aTr t3 A ∧ t6`. -/
+theorem tauP_aTr (A : PLLFormula) : Interd ((aTr t3 A).and t6) (tauP A) :=
+  selfGen_interd t3_t6 A
+
+/-- **(D3) PROVED**: `ext M` realizes `M` through `τ_P` (`t6` holds everywhere in it). -/
+theorem realizerTauP : RealizerTauP := fun M _ r =>
+  ⟨ext M, inferInstance, XW.orig r, congrRealizes _ _ _ _ _ _ tauP_aTr
+    (meetRealizes _ _ _ _ _ _ (fun A => orig_aTr M A r) (t6_ext M _))⟩
+
+/-- **(D3) PROVED**: the iterates, by (D2). -/
+theorem realizerTauPN : RealizerTauPN
+  | 0 => fun M _ r => ⟨M, inferInstance, r, fun _ => Iff.rfl⟩
+  | d + 1 => realizerComp (tauPN d) tauP (realizerTauPN d) realizerTauP
+
+/-- **(D3) PROVED**: the copy of F0 in `[t3, t6]`, closed formulas. -/
+theorem realizerCRelC : RealizerCRelC := fun M _ r =>
+  ⟨ext M, inferInstance, XW.orig r, fun A hA =>
+    (sem_of_interd (relC_interd t3_t6 hA) (ext M) _).trans
+      ⟨fun h => (orig_sig M A r).mp h.1, fun h => ⟨(orig_sig M A r).mpr h, t6_ext M _⟩⟩⟩
+
+/-- **(D3) PROVED**: the two-sided model `TS` of `wip/f0Endpoints.lean`. -/
+theorem realizerTwoSided : RealizerTwoSided := by
+  intro a ha ⟨K₁, _, m₁, hm₁S, hm₁a, hm₁up⟩ ⟨K₂, _, m₂, hm₂S, hm₂a, hm₂up⟩ M _ r
+  exact ⟨Endpoints.TS M K₁ K₂ m₁ m₂, Sum.inl r, fun A =>
+    Endpoints.realize (Endpoints.ts_realizes ha hm₁S hm₁a hm₁up hm₂S hm₂a hm₂up) A r⟩
+
+/-! ## (D4) the re-derivations -/
+
+/-- **(D4) `CopyT3T6`, PROVED again**: (D1) for closed formulas with the realizer `ext`. -/
+theorem copyT3T6_r : CopyT3T6 :=
+  faithfulCOfRealizer (relC t3 t6) (fun _ _ hA hB h => relC_mono t3_t6 hA hB h)
+    (realizerInfC_of realizerCRelC)
+
+/-- **(D4) `PLLSelf`, PROVED again**: `selfStepOfRealizer` with the realizer `ext`. -/
+theorem pllSelf_r : PLLSelf :=
+  selfStepOfRealizer t3 t6 t3_t6 fun M _ r =>
+    ⟨ext M, XW.orig r, meetRealizes _ _ _ _ _ _ (fun A => orig_aTr M A r) (t6_ext M _)⟩
+
+/-- `τ_P` preserves derivability. -/
+theorem tauP_preserves : Preserves tauP := preserves_congr tauP_aTr (aTrMeet_preserves t3 t6)
+
+theorem tauPN_preserves : ∀ d : Nat, Preserves (tauPN d)
+  | 0 => fun _ _ h => h
+  | d + 1 => fun A B h => tauPN_preserves d _ _ (tauP_preserves A B h)
+
+/-- **The iterates are faithful**, by (D1) from the composite realizer (D2). -/
+theorem tauPN_faithful_r (d : Nat) : Faithful (tauPN d) :=
+  faithfulOfRealizer _ (tauPN_preserves d) (realizerInf_of (realizerTauPN d))
+
+theorem tauPN_eq : ∀ (d : Nat) (A : PLLFormula), tauPN d A = Endpoints.tauSN t3 t6 d A
+  | 0, _ => rfl
+  | d + 1, A => tauPN_eq d (tauP A)
+
+/-- The interval-translation identity, from `pllSelf_r` (`Endpoints.tauSN_rel`). -/
+theorem tauPN_rel_r (d : Nat) (A : PLLFormula) : Interd (tauPN d A)
+    (rel (tauPN d .falsePLL) (tauPN d topF) (fun p => tauPN d (.prop p)) A) := by
+  simp only [tauPN_eq]
+  exact Endpoints.tauSN_rel pllSelf_r d A
+
+/-- **(D4) `PLLSelfTower`, PROVED again**: faithfulness of `τ_Pᵈ` from the composite
+realizer; the rest as in `pllSelfTower`. -/
+theorem pllSelfTower_r : PLLSelfTower := by
+  intro d
+  have hf := tauPN_faithful_r d
+  exact ⟨hf, ⟨fun _ => (hf _ _).mp (bot_le _), fun _ => (hf _ _).mp (le_top _),
+      fun A B => (hf A B).trans (deriv_iff_of_interd (tauPN_rel_r d A) (tauPN_rel_r d B))⟩,
+    tauPN_rel_r d,
+    (hf .falsePLL (tauP .falsePLL)).mp (bot_le _),
+    fun h => nd_t3_bot ((hf (tauP .falsePLL) .falsePLL).mpr h),
+    (hf (tauP topF) topF).mp (le_top _),
+    fun h => nd_t6 (of_top (Deriv.andElim2 ((hf topF (tauP topF)).mpr h)))⟩
+
+/-- **`g` is faithful**, by (D1) from the gadget. -/
+theorem gR_faithful_r : Faithful gR :=
+  faithfulOfRealizer gR (fun _ _ h => freeReaders_preserves h) realizerInfReaders
+
+/-- **`g ∘ τ_Pᵈ` is faithful**, by (D1) from the composite realizer (D2). -/
+theorem gTower_faithful_r (d : Nat) : Faithful (gR ∘ tauPN d) :=
+  faithfulOfRealizer _ (fun A B h => freeReaders_preserves (tauPN_preserves d A B h))
+    (realizerInfComp gR (tauPN d) realizerInfReaders (realizerTauPN d))
+
+/-- **(D4) `PLLTowerInF0`, PROVED again**. -/
+theorem pllTowerInF0_r : PLLTowerInF0 := by
+  intro d
+  obtain ⟨_, _, _, h1, h2, h3, h4⟩ := pllSelfTower_r d
+  have hg := gR_faithful_r
+  have hf1 := tauPN_faithful_r (d + 1)
+  have hc := gTower_faithful_r d
+  exact ⟨fun A B => hc A B,
+    fun A => ⟨(hc _ _).mp (bot_le A), (hc _ _).mp (le_top A)⟩,
+    b3_le_g _, (hg _ _).mp h1, fun h => h2 ((hg _ _).mpr h),
+    (hg _ _).mp h3, fun h => h4 ((hg _ _).mpr h),
+    fun A => ⟨(hg _ _).mp (Deriv.cutHead h1 ((hf1 _ _).mp (bot_le A))),
+      (hg _ _).mp (Deriv.cutHead ((hf1 _ _).mp (le_top A)) h3)⟩⟩
+
+/-- **(D4) `BaseSufficiency` PROVED**: the two non-theorems give the two sides
+(`sidesOfNd`), the sides give the realizer `TS`, and `selfStepOfRealizer` the step. -/
+theorem baseSufficiency_r : BaseSufficiency := by
+  intro a ha n1 n2
+  refine selfStepOfRealizer a topF (le_top a) fun M _ r => ?_
+  obtain ⟨N, w, hw⟩ := realizerTwoSided a ha ((Endpoints.sidesOfNd a ha).1 n2)
+    ((Endpoints.sidesOfNd a ha).2 n1) M r
+  exact ⟨N, w, meetRealizes _ _ _ _ _ _ hw (Interval.force_topF N w)⟩
+
+end Realize
+end F0
+end PLLND
+
+/-! ## Axiom pins: Stage 3 -/
+
+#axioms_within PLLND.F0.Realize.reflects_of_realizerInf [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.faithfulOfRealizer [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.faithfulCOfRealizer [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.preserves_congr [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.realizerATrT3 [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.selfGen_interd [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.aTrMeet_preserves [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.selfStepOfRealizer [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.realizerTauP [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.realizerTauPN [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.realizerCRelC [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.realizerTwoSided [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.copyT3T6_r [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.pllSelf_r [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.tauPN_faithful_r [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.tauPN_rel_r [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.pllSelfTower_r [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.gR_faithful_r [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.gTower_faithful_r [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.pllTowerInF0_r [propext, Quot.sound]
+#axioms_within PLLND.F0.Realize.baseSufficiency_r [propext, Quot.sound]
