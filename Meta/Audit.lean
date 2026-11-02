@@ -15,6 +15,11 @@ This module answers the "why".
 * `#choice_sources f` — the direct dependencies of `f` that are tainted,
   i.e. which sub-lemma to attack next.
 * `#axiom_path ax f` — the same, for any axiom (`sorryAx`, `propext`, …).
+  Since 2026-11-02 `ax` may be any constant; before, a constant that is
+  not an axiom was always reported absent.
+* `#uses f g` — does `f` use `g`, through its type or value, directly or
+  transitively?  `true` with the shortest chain, or `false`.  Computed
+  over the constants used, not over axioms (`Meta/AuditTests.lean`).
 * `#axiom_pin f` — emit the `#guard_msgs`-wrapped `#print axioms` block
   for pasting into an audit module, so pins are generated rather than
   retyped.
@@ -34,11 +39,49 @@ def declDeps (env : Environment) (n : Name) : Array Name :=
   | none => #[]
   | some ci => ci.getUsedConstantsAsSet.toArray
 
-/-- Does `n` depend on the axiom `ax`?  Uses `collectAxioms`, which is
-the same oracle `#print axioms` uses — the only sound one. -/
-def dependsOn (ax : Name) (n : Name) : CommandElabM Bool := do
-  let axs ← collectAxioms n
-  return axs.contains ax
+/-- Is `n` declared by `axiom`? -/
+def isAxiom (env : Environment) (n : Name) : Bool :=
+  match env.find? n with
+  | some (.axiomInfo _) => true
+  | _ => false
+
+/-- Breadth-first search from `start` over `declDeps` for `target`: the
+shortest chain `start, …, target`, or `none` when `target` is not in the
+transitive closure of the constants `start` uses.  The closure starts at
+`start`'s own dependencies, so `start` is in it only on a cycle. -/
+def usesPath (env : Environment) (start target : Name) : Option (List Name) := Id.run do
+  let mut parent : NameMap Name := {}
+  let mut visited : NameSet := NameSet.empty.insert start
+  let mut queue : Array Name := #[start]
+  let mut i := 0
+  while h : i < queue.size do
+    let n := queue[i]
+    i := i + 1
+    for d in declDeps env n do
+      if d == target then
+        let mut path := [d]
+        let mut c := n
+        while c != start do
+          path := c :: path
+          c := parent.getD c start
+        return some (start :: path)
+      unless visited.contains d do
+        visited := visited.insert d
+        parent := parent.insert d n
+        queue := queue.push d
+  return none
+
+/-- Does `n` depend on `c`?  For an axiom `c` this asks `collectAxioms`,
+the oracle `#print axioms` uses, the only sound one.  For any other
+constant it asks `usesPath`: `collectAxioms` follows every path but
+reports only the axioms at their ends, so before 2026-11-02, when it
+answered for every `c`, a theorem `c` was never found. -/
+def dependsOn (c : Name) (n : Name) : CommandElabM Bool := do
+  let env ← getEnv
+  if isAxiom env c then
+    let axs ← collectAxioms n
+    return axs.contains c
+  return (usesPath env n c).isSome
 
 /-- Breadth-first search for the shortest chain from `start` to `ax`,
 traversing only tainted constants.
@@ -61,8 +104,12 @@ partial def searchPath (ax : Name) (queue : Array (Name × List Name))
         q := q.push (d, d :: path)
   searchPath ax q vis
 
-/-- The chain from `n` to `ax`, if there is one. -/
+/-- The chain from `n` to `ax`, if there is one.  For a target that is
+not an axiom the pruned search would ask `dependsOn` once per constant
+visited, each a closure of its own; one `usesPath` does the work. -/
 def axiomPath (ax : Name) (n : Name) : CommandElabM (Option (List Name)) := do
+  let env ← getEnv
+  if !isAxiom env ax then return usesPath env n ax
   if !(← dependsOn ax n) then return none
   searchPath ax #[(n, [n])] (NameSet.empty.insert n)
 
@@ -93,25 +140,47 @@ def originOf (env : Environment) (n : Name) : String :=
       | some m => toString m
       | none => "?"
 
+/-- A chain, one constant per line with its module of origin. -/
+private def renderChain (env : Environment) (path : List Name) : MessageData := Id.run do
+  let mut msg := m!""
+  for (c, i) in path.zipIdx do
+    msg := msg ++ m!"\n  {i}. {MessageData.ofConstName c}    [{originOf env c}]"
+  return msg
+
 private def reportPath (ax n : Name) : CommandElabM Unit := do
   match ← axiomPath ax n with
   | none => logInfo m!"'{n}' does not depend on '{ax}'"
   | some path =>
       let env ← getEnv
-      let mut msg := m!"'{n}' reaches '{ax}' by:"
-      for (c, i) in path.zipIdx do
-        msg := msg ++ m!"\n  {i}. {MessageData.ofConstName c}    [{originOf env c}]"
-      msg := msg ++ m!"\n\nRead the modules: where they stop being yours is where the "
-        ++ m!"axiom enters from the library."
-      logInfo msg
+      let msg := m!"'{n}' reaches '{ax}' by:" ++ renderChain env path
+      if isAxiom env ax then
+        logInfo <| msg
+          ++ m!"\n\nRead the modules: where they stop being yours is where the "
+          ++ m!"axiom enters from the library."
+      else
+        logInfo msg
 
 /-- `#axiom_path Classical.choice foo` — the shortest chain from `foo` to
-the given axiom. -/
+the given axiom, or to any other constant. -/
 syntax (name := axiomPathCmd) "#axiom_path " ident ident : command
 
 @[command_elab axiomPathCmd] def elabAxiomPath : CommandElab
   | `(#axiom_path $ax $id) => do
       reportPath (← resolve ax) (← resolve id)
+  | _ => throwUnsupportedSyntax
+
+/-- `#uses foo bar` — does `foo` use `bar`, directly or through other
+constants?  Prints `true` with the shortest chain, or `false`. -/
+syntax (name := usesCmd) "#uses " ident ident : command
+
+@[command_elab usesCmd] def elabUses : CommandElab
+  | `(#uses $id $c) => do
+      let n ← resolve id
+      let c ← resolve c
+      match ← axiomPath c n with
+      | none => logInfo m!"'{n}' uses '{c}': false"
+      | some path =>
+          logInfo <| m!"'{n}' uses '{c}': true, by" ++ renderChain (← getEnv) path
   | _ => throwUnsupportedSyntax
 
 /-- `#choice_path foo` — the shortest chain from `foo` to
