@@ -3,7 +3,130 @@
 The relative criterion for a faithful copy of PLL in an interval `[ξ, ζ]`.
 Brief from the LaxLogic manager, 2026-11-02, conjecture approved by Matthew
 the same day.  Branch `f0-relative-criterion`, cut from `origin/f0-nest-pll`
-(PR #120, not yet on `main`: `wip/f0NestPLL.lean` is needed).
+(PR #120, not yet on `main`: `wip/f0NestPLL.lean` is needed).  Public order
+theory about F0.
+
+## Summary
+
+All pins `[propext, Quot.sound]`; no `Classical.choice`, no `sorry`, no
+`native_decide`.
+
+**The conjecture is REFUTED** (`not_relSufficient`, `not_relCriterion`).  The
+two clauses
+
+    [ζ] ⊬ ◯ξ ↠ ξ        [ζ] ⊬ (◯ξ ↠ ξ) ↠ ξ
+
+are necessary for a faithful copy of PLL in `[ξ, ζ]` (PROVED,
+`relNecessary`), but not sufficient.  The smallest witness is closed:
+
+    ξ = ⊥,  ζ = t3 = ◯⊥ ∨ ¬◯⊥:     [t3] ⊬ ¬◯⊥,   [t3] ⊬ ¬¬◯⊥,   yet   [t3] ⊢ t3   and   ⊬ t3,
+
+so the interval `[⊥, t3]` carries no faithful copy of PLL for any generators.
+It fails with a ◯-free top as well: `ζ = p ∨ ¬p`, `ξ = (p ∧ ¬◯⊥) ∨ (¬p ∧ ◯⊥)`,
+where the first clause holds only on the `p` side and the second only on the
+`¬p` side (`not_relSufficientBoxFreeTop`).  Strengthening the two clauses to
+the one clause `[ζ] ⊬ (◯ξ ↠ ξ) ∨ ((◯ξ ↠ ξ) ↠ ξ)` does not help:
+`ξ = ⊥`, `ζ = t6` (`not_relSufficientDisj`).
+
+**What is true.**  At the top `ζ = ⊤` the criterion holds for every `ξ`, open
+or closed (PROVED, `relCriterionTop`):
+
+    FreeInPLL ξ ⊤ (coreGen ξ ⊤ ρ)   ⟺   ⊬ ◯ξ ↠ ξ   ∧   ⊬ (◯ξ ↠ ξ) ↠ ξ,
+
+extending `Endpoints.baseCriterion` from closed to open `ξ` (and giving it back,
+`selfTopIff`).  For ◯-free `ξ`, `ζ` it holds too, and there the clauses say
+just `[ζ] ⊬ ξ` (`relCriterionBoxFree`, `clausesBoxFree`).  Both kinds of pair
+nest to every depth inside the readers' copy, mixed freely
+(`goodNestAll`, `goodInGR`).
+
+**The necessary condition in full** is `TopAvoid ξ ζ`: every closed `C` with
+`[ζ] ⊢ C[⊥ := ξ]` is a theorem (PROVED necessary, `relCopyNecessary`; the two
+clauses are its instances `C = ¬◯⊥`, `¬¬◯⊥`).  Whether it is sufficient for
+the core generators is OPEN (`RelCopyCriterion`; at closed `ξ`, `ζ` it is the
+OPEN `Endpoints.CopySelf`).  At `ζ = ⊤` the two instances already imply all of
+it; for a general top they do not (D1, D2, D3).
+
+## Status table
+
+| statement | declaration | status |
+|-----------|-------------|--------|
+| (R0) `RelClauses` | definition | — |
+| **(R1) `RelNecessary`** | `relNecessary` | **PROVED** |
+| **(R2) `RelSufficient`** | `not_relSufficient` (D1) | **REFUTED** |
+| **(R3) `RelCriterion`** | `not_relCriterion` (D1, direction `⟸`) | **REFUTED** |
+| `ClausesStrict` | `clausesStrict` | PROVED |
+| `ClausesBoxFree` | `clausesBoxFree` | PROVED |
+| `RelCriterionBoxFree` | `relCriterionBoxFree` | PROVED |
+| **`RelCriterionTop`** (open `ξ`) | `relCriterionTop` | **PROVED** |
+| `RelClausesMono` (Stage 1, inclusion the wrong way round) | `not_relClausesMono` (cell E) | REFUTED |
+| (R4) `RelMain` | `not_relMain` (D1 in the readers' copy) | **REFUTED** |
+| (R4) `RelInGR` | `not_relInGR` (`[σ³⊥, σ³t3]`) | **REFUTED** |
+| (R4) `RelNestAll` | `not_relNestAll` (depth one) | **REFUTED** |
+| `RelSufficientFirst` | `not_relSufficientFirst` | REFUTED |
+| `RelSufficientSecond` | `not_relSufficientSecond` | REFUTED |
+| `RelSufficientDisj` | `not_relSufficientDisj` (D2) | REFUTED |
+| `RelCopyNecessary` | `relCopyNecessary` | PROVED |
+| `RelCopyCriterion` | direction `⟹` is `relCopyNecessary`; `⟸` | **OPEN** |
+| `RelClausesUp` (stage 3) | `relClausesUp` | PROVED |
+| `SelfTopIff` (stage 3) | `selfTopIff` | PROVED |
+| `RelSufficientBoxFreeTop` (stage 3) | `not_relSufficientBoxFreeTop` (D3) | REFUTED |
+| `RelSufficientBoxFreeBot` (stage 3) | `not_relSufficientBoxFreeBot` (D1) | REFUTED |
+| `RelSufficientClosed` (stage 3) | `not_relSufficientClosed` (D1) | REFUTED |
+| `NestOfCore` (stage 3) | `nestOfCore` | PROVED |
+| `GoodCore`, `GoodMain`, `GoodInGR`, `GoodNestAll` (stage 3) | `goodCore`, `goodMain`, `goodInGR`, `goodNestAll` | PROVED |
+
+No theorem is sorried; the open statement is a `Prop` definition.
+
+Estate check: `#axiom_sweep [wip.f0RelCriterion] allowing [propext, Quot.sound]`
+passes on all 141 declarations; with `allowing []` 70 of 141 escape, and the
+pin `#axioms_within relCriterionTop [propext]` is rejected (both gates watched
+failing, `_out/rcsweep.lean`, untracked).
+
+Added at stage 3, each stated as a `Prop` before its proof, in the same
+commit:
+
+    RelClausesUp :             [ζ] ⊢ ζ′,  RelClauses ξ ζ  ⟹  RelClauses ξ ζ′
+    SelfTopIff :               a closed  ⟹  (SelfStep a ⊤ ⟺ RelClauses a ⊤)
+    RelSufficientBoxFreeTop :  (R2) for ◯-free ζ
+    RelSufficientBoxFreeBot :  (R2) for ◯-free ξ
+    RelSufficientClosed :      (R2) for closed ξ, ζ
+    NestOfCore :   FreeInPLL a b x,  FreeInPLL ξ ζ y  ⟹  FreeInPLL (rel a b x ξ) (rel a b x ζ) (rel a b x ∘ y)
+    GoodPair ξ ζ : (ξ, ζ ◯-free ∧ [ξ] ⊢ ζ ∧ [ζ] ⊬ ξ)  ∨  (ζ = ⊤ ∧ RelClauses ξ ⊤)
+    GoodCore :     GoodPair ξ ζ  ⟹  FreeInPLL ξ ζ (coreGen ξ ζ (freshRen ξ ζ))
+    GoodMain, GoodInGR, GoodNestAll :  (R4) with GoodPair in place of [ξ] ⊢ ζ ∧ RelClauses ξ ζ
+
+## Stage 3: the proofs
+
+* (R1): faithfulness at the closed formulas `C = ¬◯⊥` and `C = ¬¬◯⊥` (both
+  non-theorems): `[ζ] ⊢ ◯ξ ↠ ξ` gives `[rel ⊤] ⊢ rel ¬◯⊥`, and
+  `[ζ] ⊢ (◯ξ ↠ ξ) ↠ ξ` gives `[rel ⊤] ⊢ rel ¬¬◯⊥`, semantically.  The generators
+  are not read.
+* `clausesBoxFree`: a ◯-free formula does not read `S` (`force_withS`); with
+  `S = ∅` the formula `◯ξ` holds everywhere, with `S` everything `◯ξ ↠ ξ` does,
+  so either clause failing gives `[ζ] ⊢ ξ`.  With `coreLemmaPLL` this is
+  `relCriterionBoxFree`.
+* `relCriterionTop`, direction `⟸`: the two-sided extension `TS` of
+  `wip/f0Endpoints.lean`, unchanged in order and `S`, with a valuation
+  (`TSA`).  A copy world `x` carries the fresh atom `ρ p` iff `x ⊩ p`, and an
+  old atom `c` iff `c` holds at `m₁` when `x` sees `S` and at `m₂` when `x` sees
+  a world with no `S` above it; the attached worlds keep their own atoms and
+  carry every fresh atom.  This is hereditary (`taV_hered`).  The
+  bisimulations of `TS` are bisimulations of `TSA` (`isBisim_TSA`) and respect
+  every old atom (`atoms_K₁`, `atoms_K₂`, `atoms_In`, `atoms_Out`): a terminal
+  cluster sees exactly one of the two sides.  So formulas without fresh atoms
+  are invariant (`bisim_forceR`, `bisim_force` with an atom condition), `ξ`
+  fails on the copy and holds above it, and the relativisation lemma with `◯`
+  (`relB_transferO`) gives `rel A ⟺ A` on the copy (`tsa_transfer`).  The two
+  sides come from the two clauses as in `sidesOfNd`, whose proof never read
+  closedness (`sidesOfNdOpen`).  Nothing has to be checked against `ζ = ⊤`,
+  which is why this case goes through and a general top does not.
+* The refutations: `no_copy` is `Endpoints.necClosed` read through
+  `copy_of_free`.  (R4): `gR t3 = t3[⊥ := σ³⊥]` (`relB_closed`), so `C = t3`
+  kills `[σ³⊥, σ³t3]`; `rel σ³⊥ ⊤ xr` is `gR` up to `⊣⊢` (`rel_top_interd_gR`),
+  which carries it to `RelMain` and to depth one of the tower.
+* The corrected transport: `nestOfCore` is the proof of `NestPLL.nestPLL` with
+  any inner copy in place of the core lemma; `goodCore` takes the copy from
+  `coreLemmaPLL` or `relCriterionTop`; the tower is `NestPLL.towerP`.
 
 ## Stage 1: the statements (committed before any proof, METHOD.md §1)
 
@@ -68,7 +191,7 @@ force `ζ`, and nothing in the two clauses controls that.
   construction `TS` goes through with atoms (terminal clusters take the atoms
   of the matching side).  Expected: `RelCriterionTop` PROVED for open `ξ`.
 * Monotonicity: `[ζ] ⊬ D` implies `⊬ D`, so a pair whose clauses hold
-  relative to `ζ` but fail at `⊤` cannot exist (`RelClausesMono`).
+  relative to `ζ` but fail at `⊤` cannot exist (`RelClausesUp`, stage 3; the Stage 1 `RelClausesMono` has the inclusion of tops the wrong way round, see the status table).
 
 
 ## Stage 2: the designed cells (refutation stage, CLAUDE.md rules 7 and 9)
@@ -134,7 +257,7 @@ occur, since no top separates regions.
 
 `RelClauses ⊥ ⊤` holds and `RelClauses ⊥ ◯⊥` fails (`[◯⊥] ⊢ ¬¬◯⊥`;
 `e_top`, `e_not`).  A pair with the clauses relative to `ζ` but not at `⊤`
-cannot exist: `[ζ] ⊬ D` implies `⊬ D` (`RelClausesMono`, stage 3).
+cannot exist: `[ζ] ⊬ D` implies `⊬ D` (`RelClausesUp`, stage 3).  The Stage 1 statement `RelClausesMono` had the inclusion of tops the wrong way round, and this cell refutes it (`not_relClausesMono`).
 
 ### Gates, watched failing
 
@@ -154,7 +277,11 @@ Registered in `lakefile.toml` (the `wip` glob list, its own last line after
 | 1 | `gtimeout 3600 lake build wip.f0RelCriterion -q` | 0 | 59.2 s (builds `wip.f0NestPLL` too) | 100,194 MB |
 | 2, body | `gtimeout 900 lake env lean wip/f0RelCriterion.lean` | 0 | 11.6 s | — |
 | 2 | `gtimeout 3600 lake build wip.f0RelCriterion -q` | 0 | 15.4 s | 100,150 MB |
+| 3, body | `gtimeout 900 lake env lean _out/rc3.lean` (stage 3 over the built module) | 1 (two elaboration errors, fixed) | 11.7 s | — |
+| 3, body | the same, after the fixes | 0 | 12.7 s | — |
+| 3 | `gtimeout 3600 lake build wip.f0RelCriterion -q` | 0 | 15.9 s | 100,124 MB |
+| 3, sweep | `gtimeout 900 lake env lean _out/rcsweep.lean` | 1 (the two gate lines, by design) | 12.3 s | — |
 
 Only `wip.f0RelCriterion` (and, at stage 1, its new dependency
 `wip.f0NestPLL`) was built; every other module replayed.  No `lake exe`.  No
-decider was run.  Skips and caps: none.
+decider was run: every table was designed by hand.  Skips and caps: none.

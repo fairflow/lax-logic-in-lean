@@ -57,6 +57,34 @@ Status of every statement at Stage 1: OPEN (statements only, no theorem, no
 `sorry`).  Pen expectation recorded in the status note: (R2) fails at
 `ξ = ⊥`, `ζ = t3` (closed `C = t3`) and at a ◯-free top `ζ = p ∨ ¬p`.
 
+## Results (Stage 3)
+
+All pins `[propext, Quot.sound]`; no `Classical.choice`, no `sorry`, no
+`native_decide`.
+
+**REFUTED**: (R2) `not_relSufficient`, (R3) `not_relCriterion`, at
+
+    ξ = ⊥,  ζ = t3 = ◯⊥ ∨ ¬◯⊥:   RelClauses ⊥ t3,  but  [t3] ⊢ t3[⊥ := ⊥]  and  ⊬ t3,
+
+so `[⊥, t3]` carries no faithful copy of PLL for any generators.  Also REFUTED:
+(R2) for ◯-free `ζ` (`ζ = p ∨ ¬p`, `ξ = (p ∧ ¬◯⊥) ∨ (¬p ∧ ◯⊥)`), for ◯-free `ξ`,
+for closed `ξ`, `ζ`; the one-clause form (`ξ = ⊥`, `ζ = t6`); (R4) `RelMain`,
+`RelInGR`, `RelNestAll`; the two weakenings; `RelClausesMono` (its inclusion
+was the wrong way round; `RelClausesUp` is the intended statement).
+
+**PROVED**: (R1) `relNecessary`; `clausesStrict`, `clausesBoxFree`,
+`relCriterionBoxFree`, `relClausesUp`, `relCopyNecessary`; and the criterion
+at the top `⊤`, for every `ξ`, open or closed (`relCriterionTop`):
+
+    FreeInPLL ξ ⊤ (coreGen ξ ⊤ ρ)   ⟺   ⊬ ◯ξ ↠ ξ   ∧   ⊬ (◯ξ ↠ ξ) ↠ ξ,
+
+which gives back `baseCriterion` at closed `ξ` (`selfTopIff`).  The corrected
+transport (`goodCore`, `goodMain`, `goodInGR`, `goodNestAll`) holds for the
+pairs `GoodPair ξ ζ`: ◯-free with `[ζ] ⊬ ξ`, or `ζ = ⊤` with the clauses.
+
+**OPEN**: `RelCopyCriterion`, direction `⟸` (it contains the OPEN
+`Endpoints.CopySelf`).
+
 Status note: `wip/f0RelCriterion-STATUS.md`.
 -/
 
@@ -469,3 +497,660 @@ end PLLND
 #axioms_within PLLND.F0.RelCrit.e_top [propext, Quot.sound]
 #axioms_within PLLND.F0.RelCrit.e_not [propext, Quot.sound]
 #axioms_within PLLND.F0.RelCrit.gate_cells [propext, Quot.sound]
+
+/-! ## Stage 3: the proofs
+
+**PROVED**: (R1) `relNecessary`; `clausesStrict`; `clausesBoxFree`;
+`relCriterionBoxFree` (from `coreLemmaPLL`); **`relCriterionTop`**, the
+criterion at `ζ = ⊤` for every `ξ`, open or closed, by the two-sided
+construction with atoms (`TSA`); `relCopyNecessary`.
+
+**REFUTED**: (R2) `not_relSufficient`, (R3) `not_relCriterion` (pair D1),
+`not_relSufficientDisj` (D2), (R4) `not_relMain`, `not_relInGR`,
+`not_relNestAll` (D1 transported), the two weakenings (stage 2), and
+`not_relClausesMono`: the Stage 1 statement `RelClausesMono` had its top
+inclusion the wrong way round; cell (E) refutes it, and the intended
+statement is `RelClausesUp` (PROVED).
+
+**Added at stage 3** (each stated as a `Prop` before its proof):
+
+    RelClausesUp :          [ζ] ⊢ ζ′,  RelClauses ξ ζ  ⟹  RelClauses ξ ζ′
+    SelfTopIff :            a closed  ⟹  (SelfStep a ⊤ ⟺ RelClauses a ⊤)        (the base criterion, again)
+    RelSufficientBoxFreeTop :  (R2) for ◯-free ζ        REFUTED (D3)
+    RelSufficientBoxFreeBot :  (R2) for ◯-free ξ        REFUTED (D1)
+    RelSufficientClosed :      (R2) for closed ξ, ζ     REFUTED (D1)
+    NestOfCore :   FreeInPLL a b x,  FreeInPLL ξ ζ y  ⟹  FreeInPLL (rel a b x ξ) (rel a b x ζ) (rel a b x ∘ y)
+    GoodPair ξ ζ :  (ξ, ζ ◯-free ∧ [ξ] ⊢ ζ ∧ [ζ] ⊬ ξ)  ∨  (ζ = ⊤ ∧ RelClauses ξ ⊤)
+    GoodCore :     GoodPair ξ ζ  ⟹  FreeInPLL ξ ζ (coreGen ξ ζ (freshRen ξ ζ))
+    GoodMain, GoodInGR, GoodNestAll :  (R4) with GoodPair in place of [ξ] ⊢ ζ ∧ RelClauses ξ ζ
+
+**OPEN**: `RelCopyCriterion`, direction `⟸` (at closed `ξ`, `ζ` it is the
+OPEN `Endpoints.CopySelf`). -/
+
+namespace PLLND
+namespace F0
+namespace RelCrit
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF Fresh coreGen nestGen freshRen ICopy)
+open NestPLL (FreePLLIn towerP)
+open PLLND.LaxInfinite (atomFree)
+open SubframeModel.CF (FinDec)
+
+/-! ### Statements added at stage 3 -/
+
+/-- The clauses pass to every larger top. -/
+def RelClausesUp : Prop :=
+  ∀ ξ ζ ζ' : PLLFormula, Deriv [ζ] ζ' → RelClauses ξ ζ → RelClauses ξ ζ'
+
+/-- The base criterion in the language of the clauses. -/
+def SelfTopIff : Prop :=
+  ∀ a : PLLFormula, atomFree a = true → (Endpoints.SelfStep a topF ↔ RelClauses a topF)
+
+/-- (R2) for a ◯-free top. -/
+def RelSufficientBoxFreeTop : Prop :=
+  ∀ (ξ ζ : PLLFormula) (ρ : String → String), boxFree ζ = true → Deriv [ξ] ζ →
+    RelClauses ξ ζ → Fresh ρ ξ ζ → FreeInPLL ξ ζ (coreGen ξ ζ ρ)
+
+/-- (R2) for a ◯-free bottom. -/
+def RelSufficientBoxFreeBot : Prop :=
+  ∀ (ξ ζ : PLLFormula) (ρ : String → String), boxFree ξ = true → Deriv [ξ] ζ →
+    RelClauses ξ ζ → Fresh ρ ξ ζ → FreeInPLL ξ ζ (coreGen ξ ζ ρ)
+
+/-- (R2) for closed endpoints. -/
+def RelSufficientClosed : Prop :=
+  ∀ (ξ ζ : PLLFormula) (ρ : String → String), atomFree ξ = true → atomFree ζ = true →
+    Deriv [ξ] ζ → RelClauses ξ ζ → Fresh ρ ξ ζ → FreeInPLL ξ ζ (coreGen ξ ζ ρ)
+
+/-- **Composition**: a faithful copy of PLL inside a faithful copy of PLL. -/
+def NestOfCore : Prop :=
+  ∀ (a b : PLLFormula) (x : String → PLLFormula) (ξ ζ : PLLFormula) (y : String → PLLFormula),
+    FreeInPLL a b x → FreeInPLL ξ ζ y →
+    FreeInPLL (rel a b x ξ) (rel a b x ζ) (fun p => rel a b x (y p))
+
+/-- The pairs for which the core copy is PROVED here. -/
+def GoodPair (ξ ζ : PLLFormula) : Prop :=
+  (boxFree ξ = true ∧ boxFree ζ = true ∧ Deriv [ξ] ζ ∧ ¬ Deriv [ζ] ξ) ∨
+    (ζ = topF ∧ RelClauses ξ topF)
+
+/-- The core copy with the chosen fresh renaming. -/
+def CoreCopy (ξ ζ : PLLFormula) : Prop := FreeInPLL ξ ζ (coreGen ξ ζ (freshRen ξ ζ))
+
+def GoodCore : Prop := ∀ ξ ζ : PLLFormula, GoodPair ξ ζ → CoreCopy ξ ζ
+
+/-- (R4), corrected: inside a faithful copy with variable-free data. -/
+def GoodMain : Prop :=
+  ∀ (a b : PLLFormula) (x : String → PLLFormula) (ξ ζ : PLLFormula),
+    atomFree a = true → atomFree b = true → (∀ p, atomFree (x p) = true) → FreeInPLL a b x →
+    GoodPair ξ ζ → FreePLLIn (rel a b x ξ) (rel a b x ζ)
+
+/-- (R4), corrected: in the coordinates of the readers' copy. -/
+def GoodInGR : Prop := ∀ ξ ζ : PLLFormula, GoodPair ξ ζ → FreePLLIn (gR ξ) (gR ζ)
+
+/-- (R4), corrected: every finite depth. -/
+def GoodNestAll : Prop :=
+  ∀ ξs ζs : Nat → PLLFormula, (∀ d, GoodPair (ξs d) (ζs d)) → ∀ d : Nat,
+    FreeInPLL (towerP ξs ζs d).a (towerP ξs ζs d).b (towerP ξs ζs d).x ∧
+    (∀ p, atomFree ((towerP ξs ζs d).x p) = true) ∧
+    ¬ Deriv [(towerP ξs ζs d).b] (towerP ξs ζs d).a ∧
+    Deriv [(towerP ξs ζs d).a] (towerP ξs ζs (d + 1)).a ∧
+    Deriv [(towerP ξs ζs (d + 1)).a] (towerP ξs ζs (d + 1)).b ∧
+    Deriv [(towerP ξs ζs (d + 1)).b] (towerP ξs ζs d).b
+
+/-! ### (R1) and the clause lemmas -/
+
+/-- **PROVED: (R1).**  Faithfulness at `C = ¬◯⊥` and `C = ¬¬◯⊥`. -/
+theorem relNecessary : RelNecessary := by
+  intro ξ ζ x hF
+  constructor
+  · intro hd
+    apply Endpoints.nd_ne
+    apply of_top
+    refine (hF.2.2 topF ne).mpr (Interval.deriv_of_sem fun M _ v hv => ?_)
+    refine ⟨fun u _ hu => ?_, hv.2⟩
+    exact Interval.sem_of_deriv hd M u hu.2 u (M.refl u) hu.1
+  · intro hd
+    apply Endpoints.nd_nne
+    apply of_top
+    refine (hF.2.2 topF Endpoints.nne).mpr (Interval.deriv_of_sem fun M _ v hv => ?_)
+    refine ⟨fun u _ hu => ?_, hv.2⟩
+    exact Interval.sem_of_deriv hd M u hu.2 u (M.refl u)
+      (fun w huw hb => hu.1 w huw ⟨hb, SubframeModel.force_mono M ζ huw hu.2⟩)
+
+/-- **PROVED.** -/
+theorem clausesStrict : ClausesStrict := fun _ ζ h =>
+  ⟨fun hd => h.1 (Interval.deriv_of_sem fun M _ _ hv u hvu _ =>
+      Interval.sem_of_deriv hd M u (SubframeModel.force_mono M ζ hvu hv)),
+   fun hd => h.2 (Interval.deriv_of_sem fun M _ _ hv u hvu hst =>
+      hst u (M.refl u) (Interval.sem_of_deriv hd M u (SubframeModel.force_mono M ζ hvu hv)))⟩
+
+/-- `M` with its `S` replaced by `T`. -/
+def withS (M : SubframeModel) (T : Set M.W) : SubframeModel where
+  W := M.W
+  le := M.le
+  S := T
+  V := M.V
+  refl := M.refl
+  trans := M.trans
+  hered := M.hered
+
+/-- A ◯-free formula does not read `S`. -/
+theorem force_withS (M : SubframeModel) (T : Set M.W) :
+    ∀ φ : PLLFormula, boxFree φ = true → ∀ w : M.W, ((withS M T).force w φ ↔ M.force w φ)
+  | .prop _, _, _ => Iff.rfl
+  | .falsePLL, _, _ => Iff.rfl
+  | .and A B, h, w => by
+      have h' := Bool.and_eq_true_iff.mp (h : (boxFree A && boxFree B) = true)
+      exact and_congr (force_withS M T A h'.1 w) (force_withS M T B h'.2 w)
+  | .or A B, h, w => by
+      have h' := Bool.and_eq_true_iff.mp (h : (boxFree A && boxFree B) = true)
+      exact or_congr (force_withS M T A h'.1 w) (force_withS M T B h'.2 w)
+  | .ifThen A B, h, w => by
+      have h' := Bool.and_eq_true_iff.mp (h : (boxFree A && boxFree B) = true)
+      have ihA := force_withS M T A h'.1
+      have ihB := force_withS M T B h'.2
+      show (∀ u, M.le w u → (withS M T).force u A → (withS M T).force u B) ↔
+        (∀ u, M.le w u → M.force u A → M.force u B)
+      exact ⟨fun h u hu ha => (ihB u).mp (h u hu ((ihA u).mpr ha)),
+        fun h u hu ha => (ihB u).mpr (h u hu ((ihA u).mp ha))⟩
+  | .somehow _, h, _ => nomatch h
+
+/-- **PROVED**: for ◯-free `ξ`, `ζ` the clauses say `[ζ] ⊬ ξ` (read `◯` as the
+constant `⊤`, `S = ∅`, for the first; as the identity, `S` everything, for the
+second). -/
+theorem clausesBoxFree : ClausesBoxFree := by
+  intro ξ ζ hξ hζ
+  refine ⟨fun h => (clausesStrict ξ ζ h).1, fun hn => ⟨fun hd => hn ?_, fun hd => hn ?_⟩⟩
+  · refine Interval.deriv_of_sem fun M _ v hv => ?_
+    have h1 := Interval.sem_of_deriv hd (withS M ∅) v ((force_withS M ∅ ζ hζ v).mpr hv)
+    exact (force_withS M ∅ ξ hξ v).mp (h1 v (M.refl v) (fun _ _ hS => (hS : False).elim))
+  · refine Interval.deriv_of_sem fun M _ v hv => ?_
+    have h1 := Interval.sem_of_deriv hd (withS M Set.univ) v
+      ((force_withS M Set.univ ζ hζ v).mpr hv)
+    exact (force_withS M Set.univ ξ hξ v).mp (h1 v (M.refl v) (fun u _ hb => hb u (M.refl u) trivial))
+
+/-- **PROVED: (R3) for ◯-free `ξ`, `ζ`.** -/
+theorem relCriterionBoxFree : RelCriterionBoxFree := fun ξ ζ ρ hξ hζ hle hfr =>
+  ⟨relNecessary ξ ζ _, fun h =>
+    NestPLL.coreLemmaPLL ξ ζ ρ hξ hζ hle ((clausesBoxFree ξ ζ hξ hζ).mp h) hfr⟩
+
+/-- **PROVED.** -/
+theorem relClausesUp : RelClausesUp := fun _ _ _ h hc =>
+  ⟨fun hd => hc.1 (Deriv.cutHead h hd), fun hd => hc.2 (Deriv.cutHead h hd)⟩
+
+/-- **REFUTED: `RelClausesMono` as stated at Stage 1** (the inclusion of tops
+the wrong way round): `[◯⊥] ⊢ ⊤`, `RelClauses ⊥ ⊤`, not `RelClauses ⊥ ◯⊥`. -/
+theorem not_relClausesMono : ¬ RelClausesMono := fun h =>
+  e_not (h .falsePLL topF e (MovingTop.le_top e) e_top)
+
+/-- **PROVED**: every closed instance is necessary. -/
+theorem relCopyNecessary : RelCopyNecessary := fun ξ ζ _ hF =>
+  (copyIffTopAvoid ξ ζ (Deriv.cutHead (hF.1 "") (hF.2.1 ""))).mp (Endpoints.copy_of_free hF)
+
+/-! ### The refutations -/
+
+/-- **REFUTED: (R2)** at `ξ = ⊥`, `ζ = t3`. -/
+theorem not_relSufficient : ¬ RelSufficient := fun h =>
+  d_t3_no_copy _ (h .falsePLL t3 (freshRen _ _) (MovingTop.bot_le _) d_t3_clauses
+    (Interval.fresh_freshRen _ _))
+
+/-- **REFUTED: (R3)**, direction `⟸`, at `ξ = ⊥`, `ζ = t3`. -/
+theorem not_relCriterion : ¬ RelCriterion := fun h =>
+  d_t3_no_copy _ ((h .falsePLL t3 (freshRen _ _) (MovingTop.bot_le _)
+    (Interval.fresh_freshRen _ _)).mpr d_t3_clauses)
+
+/-- **REFUTED: the one-clause form** at `ξ = ⊥`, `ζ = t6`. -/
+theorem not_relSufficientDisj : ¬ RelSufficientDisj := fun h =>
+  d_t6_no_copy _ (h .falsePLL t6 (freshRen _ _) (MovingTop.bot_le _) d_t6_disj
+    (Interval.fresh_freshRen _ _))
+
+/-- **REFUTED: (R2) for a ◯-free top** (D3). -/
+theorem not_relSufficientBoxFreeTop : ¬ RelSufficientBoxFreeTop := fun h =>
+  d3_no_copy _ (h x3 z3 (freshRen _ _) rfl d3_le d3_clauses (Interval.fresh_freshRen _ _))
+
+/-- **REFUTED: (R2) for a ◯-free bottom** (D1). -/
+theorem not_relSufficientBoxFreeBot : ¬ RelSufficientBoxFreeBot := fun h =>
+  d_t3_no_copy _ (h .falsePLL t3 (freshRen _ _) rfl (MovingTop.bot_le _) d_t3_clauses
+    (Interval.fresh_freshRen _ _))
+
+/-- **REFUTED: (R2) for closed endpoints** (D1). -/
+theorem not_relSufficientClosed : ¬ RelSufficientClosed := fun h =>
+  d_t3_no_copy _ (h .falsePLL t3 (freshRen _ _) rfl rfl (MovingTop.bot_le _) d_t3_clauses
+    (Interval.fresh_freshRen _ _))
+
+/-- `gR t3 = t3[⊥ := σ³⊥]`, so `[σ³⊥, σ³t3]` carries no faithful copy. -/
+theorem no_copy_gR_t3 (y : String → PLLFormula) : ¬ FreeInPLL (gR .falsePLL) (gR t3) y := by
+  have h : gR t3 = subBot (gR .falsePLL) t3 := relB_closed b3 xr t3 rfl
+  exact no_copy rfl nd_t3 (by rw [← h]; exact Deriv.iden (.head _)) y
+
+/-- **REFUTED: (R4) in the readers' coordinates** (D1 transported). -/
+theorem not_relInGR : ¬ RelInGR := fun h =>
+  let ⟨y, _, hF⟩ := h .falsePLL t3 (MovingTop.bot_le _) d_t3_clauses
+  no_copy_gR_t3 y hF
+
+/-- No faithful copy in `[rel σ³⊥ ⊤ xr ⊥, rel σ³⊥ ⊤ xr t3]`. -/
+theorem no_copy_rel_t3 (y : String → PLLFormula) :
+    ¬ FreeInPLL (rel (base 3) topF xr .falsePLL) (rel (base 3) topF xr t3) y := fun hF =>
+  no_copy_gR_t3 y (NestPLL.freeInPLL_congr hF (NestPLL.rel_top_interd_gR _)
+    (NestPLL.rel_top_interd_gR _))
+
+/-- **REFUTED: (R4) inside the readers' copy** (D1 transported). -/
+theorem not_relMain : ¬ RelMain := fun h =>
+  let ⟨y, _, hF⟩ := h (base 3) topF xr .falsePLL t3 b3_vf rfl xr_vf NestPLL.bridgePLL3
+    (MovingTop.bot_le _) d_t3_clauses
+  no_copy_rel_t3 y hF
+
+/-- **REFUTED: (R4) at every depth**: depth one already fails for
+`ξ_d = ⊥`, `ζ_d = t3`. -/
+theorem not_relNestAll : ¬ RelNestAll := fun h =>
+  no_copy_rel_t3 _ (h (fun _ => .falsePLL) (fun _ => t3)
+    (fun _ => ⟨MovingTop.bot_le _, d_t3_clauses⟩) 1).1
+
+/-! ### The base criterion with atoms: `ζ = ⊤`, any `ξ`
+
+The two-sided extension `Endpoints.TS` with a valuation: a copy world `x` of
+`K` carries the fresh atom `ρ p` iff `x ⊩_K p`, and an old atom `c` iff `c`
+holds at `m₁` when `x` sees `S`, and at `m₂` when `x` sees a world with no
+`S` above it; the attached worlds keep their own atoms and carry every fresh
+atom.  A terminal cluster of `K` sees exactly one of the two, so it is
+bisimilar, atoms included, to the cluster of `m₁` or of `m₂`. -/
+
+section TopCase
+
+open Endpoints (SeesS SeesE tsLe tsS IsBisim TS bisimK₁ bisimK₂ bisimIn bisimOut isBisimK₁
+  isBisimK₂ isBisimIn isBisimOut seesS_mono seesE_mono exists_terminal SideIn SideOut)
+
+/-- **Closed under bisimulation, atoms outside the range of `ρ` included.** -/
+theorem bisim_forceR {N K : SubframeModel} {B : N.W → K.W → Prop} (hB : IsBisim N K B)
+    {ρ : String → String}
+    (hV : ∀ {w k}, B w k → ∀ c, (∀ p, ρ p ≠ c) → (w ∈ N.V c ↔ k ∈ K.V c)) :
+    ∀ φ : PLLFormula, (∀ p, Interval.occ (ρ p) φ = false) → ∀ w k, B w k →
+      (N.force w φ ↔ K.force k φ)
+  | .prop c, ho, w, k, hb => hV hb c fun p e => by
+      have h1 : decide (c = ρ p) = false := ho p
+      exact absurd e.symm (of_decide_eq_false h1)
+  | .falsePLL, _, _, _, _ => Iff.rfl
+  | .and A C, ho, w, k, hb =>
+      and_congr (bisim_forceR hB hV A (fun p => (Interval.or_eq_false_split (ho p)).1) w k hb)
+        (bisim_forceR hB hV C (fun p => (Interval.or_eq_false_split (ho p)).2) w k hb)
+  | .or A C, ho, w, k, hb =>
+      or_congr (bisim_forceR hB hV A (fun p => (Interval.or_eq_false_split (ho p)).1) w k hb)
+        (bisim_forceR hB hV C (fun p => (Interval.or_eq_false_split (ho p)).2) w k hb)
+  | .ifThen A C, ho, w, k, hb => by
+      have hA : ∀ p, Interval.occ (ρ p) A = false := fun p => (Interval.or_eq_false_split (ho p)).1
+      have hC : ∀ p, Interval.occ (ρ p) C = false := fun p => (Interval.or_eq_false_split (ho p)).2
+      constructor
+      · intro hw k' hkk' hk
+        obtain ⟨w', hww', hb'⟩ := hB.back hb hkk'
+        exact (bisim_forceR hB hV C hC w' k' hb').mp
+          (hw w' hww' ((bisim_forceR hB hV A hA w' k' hb').mpr hk))
+      · intro hk w' hww' hw
+        obtain ⟨k', hkk', hb'⟩ := hB.forth hb hww'
+        exact (bisim_forceR hB hV C hC w' k' hb').mpr
+          (hk k' hkk' ((bisim_forceR hB hV A hA w' k' hb').mp hw))
+  | .somehow A, ho, w, k, hb => by
+      constructor
+      · intro hw k' hkk' hS
+        obtain ⟨w', hww', hS', hb'⟩ := hB.backS hb hkk' hS
+        exact (bisim_forceR hB hV A ho w' k' hb').mp (hw w' hww' hS')
+      · intro hk w' hww' hS
+        obtain ⟨k', hkk', hS', hb'⟩ := hB.forthS hb hww' hS
+        exact (bisim_forceR hB hV A ho w' k' hb').mpr (hk k' hkk' hS')
+
+variable (M K₁ K₂ : SubframeModel) (m₁ : K₁.W) (m₂ : K₂.W) (ρ : String → String)
+
+/-- The valuation of the two-sided extension with atoms. -/
+def taV (c : String) : M.W ⊕ (K₁.W ⊕ K₂.W) → Prop
+  | .inl x => (∃ p, ρ p = c ∧ x ∈ M.V p) ∨
+      ((∀ p, ρ p ≠ c) ∧ (SeesS M x → m₁ ∈ K₁.V c) ∧ (SeesE M x → m₂ ∈ K₂.V c))
+  | .inr (.inl k) => (∃ p, ρ p = c) ∨ k ∈ K₁.V c
+  | .inr (.inr k) => (∃ p, ρ p = c) ∨ k ∈ K₂.V c
+
+theorem taV_hered {c : String} {u v : M.W ⊕ (K₁.W ⊕ K₂.W)} (h : tsLe M K₁ K₂ m₁ m₂ u v)
+    (hu : taV M K₁ K₂ m₁ m₂ ρ c u) : taV M K₁ K₂ m₁ m₂ ρ c v := by
+  rcases u with x | k | k <;> rcases v with y | l | l
+  · rcases hu with ⟨p, hp, hx⟩ | ⟨hne, hS, hE⟩
+    · exact Or.inl ⟨p, hp, M.hered h hx⟩
+    · exact Or.inr ⟨hne, fun hy => hS (seesS_mono M h hy), fun hy => hE (seesE_mono M h hy)⟩
+  · rcases hu with ⟨p, hp, _⟩ | ⟨_, hS, _⟩
+    · exact Or.inl ⟨p, hp⟩
+    · exact Or.inr (K₁.hered h.2.1 (hS h.1))
+  · rcases hu with ⟨p, hp, _⟩ | ⟨_, _, hE⟩
+    · exact Or.inl ⟨p, hp⟩
+    · exact Or.inr (K₂.hered h.2.1 (hE h.1))
+  · exact False.elim h
+  · exact Or.elim hu Or.inl fun hk => Or.inr (K₁.hered h hk)
+  · exact False.elim h
+  · exact False.elim h
+  · exact False.elim h
+  · exact Or.elim hu Or.inl fun hk => Or.inr (K₂.hered h hk)
+
+/-- **The two-sided extension with atoms.** -/
+def TSA : SubframeModel where
+  W := M.W ⊕ (K₁.W ⊕ K₂.W)
+  le := tsLe M K₁ K₂ m₁ m₂
+  S := {w | tsS M K₁ K₂ w}
+  V c := {w | taV M K₁ K₂ m₁ m₂ ρ c w}
+  refl := Endpoints.tsLe_refl M K₁ K₂ m₁ m₂
+  trans h₁ h₂ := Endpoints.tsLe_trans M K₁ K₂ m₁ m₂ h₁ h₂
+  hered h hu := taV_hered M K₁ K₂ m₁ m₂ ρ h hu
+
+variable {M K₁ K₂ m₁ m₂ ρ}
+
+/-- A bisimulation of `TS` is one of `TSA` (same order, same `S`). -/
+theorem isBisim_TSA {K : SubframeModel} {B : (TS M K₁ K₂ m₁ m₂).W → K.W → Prop}
+    (h : IsBisim (TS M K₁ K₂ m₁ m₂) K B) : IsBisim (TSA M K₁ K₂ m₁ m₂ ρ) K B :=
+  ⟨h.forth, h.back, h.forthS, h.backS⟩
+
+theorem atoms_K₁ {w : (TSA M K₁ K₂ m₁ m₂ ρ).W} {k : K₁.W} (hb : bisimK₁ M K₁ K₂ m₁ m₂ w k)
+    (c : String) (hc : ∀ p, ρ p ≠ c) : (w ∈ (TSA M K₁ K₂ m₁ m₂ ρ).V c ↔ k ∈ K₁.V c) := by
+  rcases w with x | k₀ | k₀
+  · exact False.elim hb
+  · have hb' : k₀ = k := hb
+    cases hb'
+    show ((∃ p, ρ p = c) ∨ k ∈ K₁.V c) ↔ k ∈ K₁.V c
+    exact ⟨fun h => Or.elim h (fun ⟨p, hp⟩ => absurd hp (hc p)) id, Or.inr⟩
+  · exact False.elim hb
+
+theorem atoms_K₂ {w : (TSA M K₁ K₂ m₁ m₂ ρ).W} {k : K₂.W} (hb : bisimK₂ M K₁ K₂ m₁ m₂ w k)
+    (c : String) (hc : ∀ p, ρ p ≠ c) : (w ∈ (TSA M K₁ K₂ m₁ m₂ ρ).V c ↔ k ∈ K₂.V c) := by
+  rcases w with x | k₀ | k₀
+  · exact False.elim hb
+  · exact False.elim hb
+  · have hb' : k₀ = k := hb
+    cases hb'
+    show ((∃ p, ρ p = c) ∨ k ∈ K₂.V c) ↔ k ∈ K₂.V c
+    exact ⟨fun h => Or.elim h (fun ⟨p, hp⟩ => absurd hp (hc p)) id, Or.inr⟩
+
+theorem atoms_In {y s : M.W} (hterm : ∀ z, M.le y z → M.le z y) (hys : M.le y s)
+    (hs : s ∈ M.S) {w : (TSA M K₁ K₂ m₁ m₂ ρ).W} {k : K₁.W}
+    (hb : bisimIn M K₁ K₂ m₁ m₂ y w k) (c : String) (hc : ∀ p, ρ p ≠ c) :
+    (w ∈ (TSA M K₁ K₂ m₁ m₂ ρ).V c ↔ k ∈ K₁.V c) := by
+  rcases w with q | k₀ | k₀
+  · have hb' : M.le y q ∧ K₁.le m₁ k ∧ K₁.le k m₁ := hb
+    have hS : SeesS M q := ⟨s, M.trans (hterm q hb'.1) hys, hs⟩
+    have hE : ¬ SeesE M q := fun ⟨z, hqz, hz⟩ =>
+      hz s (M.trans (hterm z (M.trans hb'.1 hqz)) hys) hs
+    show ((∃ p, ρ p = c ∧ q ∈ M.V p) ∨
+      ((∀ p, ρ p ≠ c) ∧ (SeesS M q → m₁ ∈ K₁.V c) ∧ (SeesE M q → m₂ ∈ K₂.V c))) ↔ k ∈ K₁.V c
+    constructor
+    · intro h
+      rcases h with ⟨p, hp, _⟩ | ⟨_, h1, _⟩
+      · exact absurd hp (hc p)
+      · exact K₁.hered hb'.2.1 (h1 hS)
+    · intro h
+      exact Or.inr ⟨hc, fun _ => K₁.hered hb'.2.2 h, fun h' => absurd h' hE⟩
+  · have hb' : k₀ = k := hb
+    cases hb'
+    show ((∃ p, ρ p = c) ∨ k ∈ K₁.V c) ↔ k ∈ K₁.V c
+    exact ⟨fun h => Or.elim h (fun ⟨p, hp⟩ => absurd hp (hc p)) id, Or.inr⟩
+  · exact False.elim hb
+
+theorem atoms_Out {y : M.W} (hno : ¬ SeesS M y) {w : (TSA M K₁ K₂ m₁ m₂ ρ).W} {k : K₂.W}
+    (hb : bisimOut M K₁ K₂ m₁ m₂ y w k) (c : String) (hc : ∀ p, ρ p ≠ c) :
+    (w ∈ (TSA M K₁ K₂ m₁ m₂ ρ).V c ↔ k ∈ K₂.V c) := by
+  rcases w with q | k₀ | k₀
+  · have hb' : M.le y q ∧ K₂.le m₂ k ∧ K₂.le k m₂ := hb
+    have hS : ¬ SeesS M q := fun h => hno (seesS_mono M hb'.1 h)
+    have hE : SeesE M q := ⟨q, M.refl q, fun z hqz hz => hno ⟨z, M.trans hb'.1 hqz, hz⟩⟩
+    show ((∃ p, ρ p = c ∧ q ∈ M.V p) ∨
+      ((∀ p, ρ p ≠ c) ∧ (SeesS M q → m₁ ∈ K₁.V c) ∧ (SeesE M q → m₂ ∈ K₂.V c))) ↔ k ∈ K₂.V c
+    constructor
+    · intro h
+      rcases h with ⟨p, hp, _⟩ | ⟨_, _, h2⟩
+      · exact absurd hp (hc p)
+      · exact K₂.hered hb'.2.1 (h2 hE)
+    · intro h
+      exact Or.inr ⟨hc, fun h' => absurd h' hS, fun _ => K₂.hered hb'.2.2 h⟩
+  · exact False.elim hb
+  · have hb' : k₀ = k := hb
+    cases hb'
+    show ((∃ p, ρ p = c) ∨ k ∈ K₂.V c) ↔ k ∈ K₂.V c
+    exact ⟨fun h => Or.elim h (fun ⟨p, hp⟩ => absurd hp (hc p)) id, Or.inr⟩
+
+/-- **The realization with atoms**: on the copy of `M`, the relativised image of
+every formula holds exactly where the formula holds in `M`. -/
+theorem tsa_transfer [FinDec M] [FinDec K₁] [FinDec K₂] {ξ : PLLFormula} (hfr : Fresh ρ ξ topF)
+    (hm₁S : m₁ ∈ K₁.S) (hm₁a : ¬ K₁.force m₁ ξ)
+    (hm₁up : ∀ w, K₁.le m₁ w → ¬ K₁.le w m₁ → K₁.force w ξ)
+    (hm₂S : ∀ w, K₂.le m₂ w → K₂.le w m₂ → w ∉ K₂.S) (hm₂a : ¬ K₂.force m₂ ξ)
+    (hm₂up : ∀ w, K₂.le m₂ w → ¬ K₂.le w m₂ → K₂.force w ξ) :
+    ∀ (A : PLLFormula) (x : M.W),
+      ((TSA M K₁ K₂ m₁ m₂ ρ).force (.inl x) (relB ξ (coreGen ξ topF ρ) A) ↔ M.force x A) := by
+  have hoξ : ∀ p, Interval.occ (ρ p) ξ = false := fun p => (hfr.2 p).1
+  have hK₁ : ∀ k : K₁.W, ((TSA M K₁ K₂ m₁ m₂ ρ).force (.inr (.inl k)) ξ ↔ K₁.force k ξ) :=
+    fun k => bisim_forceR (isBisim_TSA (isBisimK₁ M K₁ K₂ m₁ m₂))
+      (fun hb c hc => atoms_K₁ hb c hc) ξ hoξ _ k
+      (show bisimK₁ M K₁ K₂ m₁ m₂ (Sum.inr (Sum.inl k)) k from rfl)
+  have hK₂ : ∀ k : K₂.W, ((TSA M K₁ K₂ m₁ m₂ ρ).force (.inr (.inr k)) ξ ↔ K₂.force k ξ) :=
+    fun k => bisim_forceR (isBisim_TSA (isBisimK₂ M K₁ K₂ m₁ m₂))
+      (fun hb c hc => atoms_K₂ hb c hc) ξ hoξ _ k
+      (show bisimK₂ M K₁ K₂ m₁ m₂ (Sum.inr (Sum.inr k)) k from rfl)
+  have hnot : ∀ x : M.W, ¬ (TSA M K₁ K₂ m₁ m₂ ρ).force (.inl x) ξ := by
+    intro x hx
+    obtain ⟨y, hxy, hterm⟩ := exists_terminal M x
+    have hy := SubframeModel.force_mono (TSA M K₁ K₂ m₁ m₂ ρ) ξ (u := Sum.inl x)
+      (v := Sum.inl y) hxy hx
+    rcases Decidable.em (∃ s ∈ FinDec.elems (M := M), M.le y s ∧ s ∈ M.S) with
+      ⟨s, _, hys, hs⟩ | hno
+    · have hb : bisimIn M K₁ K₂ m₁ m₂ y (Sum.inl y) m₁ := ⟨M.refl y, K₁.refl m₁, K₁.refl m₁⟩
+      exact hm₁a ((bisim_forceR
+        (isBisim_TSA (ρ := ρ) (isBisimIn (K₂ := K₂) (m₂ := m₂) hm₁S hterm hys hs))
+        (fun hb c hc => atoms_In hterm hys hs hb c hc) ξ hoξ _ m₁ hb).mp hy)
+    · have hno' : ¬ SeesS M y := fun ⟨s, hys, hs⟩ => hno ⟨s, FinDec.complete s, hys, hs⟩
+      have hb : bisimOut M K₁ K₂ m₁ m₂ y (Sum.inl y) m₂ := ⟨M.refl y, K₂.refl m₂, K₂.refl m₂⟩
+      exact hm₂a ((bisim_forceR
+        (isBisim_TSA (ρ := ρ) (isBisimOut (K₁ := K₁) (m₁ := m₁) hm₂S hterm hno'))
+        (fun hb c hc => atoms_Out hno' hb c hc) ξ hoξ _ m₂ hb).mp hy)
+  have hback : ∀ (x : M.W) (v : (TSA M K₁ K₂ m₁ m₂ ρ).W), (TSA M K₁ K₂ m₁ m₂ ρ).le (.inl x) v →
+      (TSA M K₁ K₂ m₁ m₂ ρ).force v ξ ∨ ∃ j, M.le x j ∧ Sum.inl j = v := by
+    intro x v hv
+    rcases v with j | k | k
+    · exact Or.inr ⟨j, hv, rfl⟩
+    · exact Or.inl ((hK₁ k).mpr (hm₁up k hv.2.1 hv.2.2))
+    · exact Or.inl ((hK₂ k).mpr (hm₂up k hv.2.1 hv.2.2))
+  have hatom : ∀ (x : M.W) p,
+      ((TSA M K₁ K₂ m₁ m₂ ρ).force (.inl x) (coreGen ξ topF ρ p) ↔ x ∈ M.V p) := by
+    intro x p
+    constructor
+    · intro h
+      rcases h.1 with hv | hv
+      · rcases hv with ⟨p', hp', hx⟩ | ⟨hne, _⟩
+        · rw [hfr.1 p' p hp'] at hx
+          exact hx
+        · exact absurd rfl (hne p)
+      · exact absurd hv (hnot x)
+    · intro h
+      exact ⟨Or.inl (Or.inl ⟨p, rfl, h⟩), Interval.force_topF _ _⟩
+  have hbx : ∀ (v : (TSA M K₁ K₂ m₁ m₂ ρ).W) p, (TSA M K₁ K₂ m₁ m₂ ρ).force v ξ →
+      (TSA M K₁ K₂ m₁ m₂ ρ).force v (coreGen ξ topF ρ p) :=
+    fun v _ hv => ⟨Or.inr hv, Interval.force_topF _ _⟩
+  exact relB_transferO (TSA M K₁ K₂ m₁ m₂ ρ) ξ (coreGen ξ topF ρ) M Sum.inl hbx hnot
+    (fun h => h) hback (fun _ => Iff.rfl) hatom
+
+end TopCase
+
+/-- `SideIn` and `SideOut` from the two clauses, any `ξ` (the proof of
+`Endpoints.sidesOfNd`, which does not read closedness). -/
+theorem sidesOfNdOpen (a : PLLFormula) :
+    (¬ Deriv [] (stab2 a) → Endpoints.SideIn a) ∧ (¬ Deriv [] (stab a) → Endpoints.SideOut a) := by
+  constructor
+  · intro hnd
+    rcases SubTab.complete (stab2 a) with ⟨c, hc⟩ | ⟨m, hm⟩
+    · exact absurd (SubTab.holds_of_check hc) hnd
+    · obtain ⟨hok, _, hroot⟩ := Endpoints.root_refutes hm
+      obtain ⟨y, _, hH, hya⟩ := Endpoints.exists_of_not_imp hroot
+      obtain ⟨z, hyz, hza, hmax⟩ :=
+        Interval.exists_max_not (m.toModel hok) a _ y (Nat.le_refl _) hya
+      have hbox : ¬ (m.toModel hok).force z (.somehow a) := fun hb => hza (hH z hyz hb)
+      obtain ⟨u, hzu, huS, hua⟩ := Endpoints.exists_of_not_box hbox
+      have huz : (m.toModel hok).le u z := (hmax u hzu).resolve_left hua
+      refine ⟨m.toModel hok, inferInstance, u, huS, hua, fun w huw hwu => ?_⟩
+      rcases hmax w ((m.toModel hok).trans hzu huw) with hw | hw
+      · exact hw
+      · exact absurd ((m.toModel hok).trans hw hzu) hwu
+  · intro hnd
+    rcases SubTab.complete (stab a) with ⟨c, hc⟩ | ⟨m, hm⟩
+    · exact absurd (SubTab.holds_of_check hc) hnd
+    · obtain ⟨hok, _, hroot⟩ := Endpoints.root_refutes hm
+      obtain ⟨y, _, hbox, hya⟩ := Endpoints.exists_of_not_imp hroot
+      obtain ⟨z, hyz, hza, hmax⟩ :=
+        Interval.exists_max_not (m.toModel hok) a _ y (Nat.le_refl _) hya
+      refine ⟨m.toModel hok, inferInstance, z, fun w hzw hwz hwS => ?_, hza, fun w hzw hwz => ?_⟩
+      · exact hza (SubframeModel.force_mono (m.toModel hok) a hwz
+          (hbox w ((m.toModel hok).trans hyz hzw) hwS))
+      · exact (hmax w hzw).resolve_right hwz
+
+/-- **`⟸` at `ζ = ⊤`, by the two-sided extension with atoms.** -/
+theorem top_reflects {ξ : PLLFormula} {ρ : String → String} (hfr : Fresh ρ ξ topF)
+    (hin : Endpoints.SideIn ξ) (hout : Endpoints.SideOut ξ) {A B : PLLFormula}
+    (hd : Deriv [rel ξ topF (coreGen ξ topF ρ) A] (rel ξ topF (coreGen ξ topF ρ) B)) :
+    Deriv [A] B := by
+  obtain ⟨K₁, i₁, m₁, hm₁S, hm₁a, hm₁up⟩ := hin
+  obtain ⟨K₂, i₂, m₂, hm₂S, hm₂a, hm₂up⟩ := hout
+  refine Interval.deriv_of_sem fun M _ u hu => ?_
+  have htr := tsa_transfer (M := M) (K₁ := K₁) (K₂ := K₂) (m₁ := m₁) (m₂ := m₂) (ρ := ρ)
+    hfr hm₁S hm₁a hm₁up hm₂S hm₂a hm₂up
+  have hrA : (TSA M K₁ K₂ m₁ m₂ ρ).force (Sum.inl u) (rel ξ topF (coreGen ξ topF ρ) A) :=
+    (rel_iff_relB_gen (TSA M K₁ K₂ m₁ m₂ ρ) ξ topF _ _ (fun _ _ _ => Iff.rfl) A (Sum.inl u)
+      (Interval.force_topF _ _)).mpr ((htr A u).mpr hu)
+  have hrB := Interval.sem_of_deriv hd (TSA M K₁ K₂ m₁ m₂ ρ) (Sum.inl u) hrA
+  exact (htr B u).mp ((rel_iff_relB_gen (TSA M K₁ K₂ m₁ m₂ ρ) ξ topF _ _ (fun _ _ _ => Iff.rfl) B
+    (Sum.inl u) (Interval.force_topF _ _)).mp hrB)
+
+/-- **PROVED: the relative criterion at `ζ = ⊤`, every `ξ`, open or closed.** -/
+theorem relCriterionTop : RelCriterionTop := by
+  intro ξ ρ hfr
+  refine ⟨relNecessary ξ topF _, fun hc => ?_⟩
+  have n1 : ¬ Deriv [] (stab ξ) := fun h => hc.1 (wk h)
+  have n2 : ¬ Deriv [] (stab2 ξ) := fun h => hc.2 (wk h)
+  refine ⟨fun p => (Interval.core_bounds (MovingTop.le_top ξ) p).1,
+    fun p => (Interval.core_bounds (MovingTop.le_top ξ) p).2, fun A B => ⟨?_,
+      top_reflects hfr ((sidesOfNdOpen ξ).1 n2) ((sidesOfNdOpen ξ).2 n1)⟩⟩
+  exact NestPLL.rel_preservesPLL ξ topF (coreGen ξ topF ρ)
+    (fun M v _ hv => ⟨Or.inr hv, Interval.force_topF M v⟩) (fun _ _ _ hv => hv.2)
+
+theorem occ_atomFree (c : String) : ∀ φ : PLLFormula, atomFree φ = true → Interval.occ c φ = false
+  | .prop _, h => nomatch h
+  | .falsePLL, _ => rfl
+  | .and A B, h => by
+      have h' := Bool.and_eq_true_iff.mp (h : (atomFree A && atomFree B) = true)
+      show (Interval.occ c A || Interval.occ c B) = false
+      rw [occ_atomFree c A h'.1, occ_atomFree c B h'.2]
+      rfl
+  | .or A B, h => by
+      have h' := Bool.and_eq_true_iff.mp (h : (atomFree A && atomFree B) = true)
+      show (Interval.occ c A || Interval.occ c B) = false
+      rw [occ_atomFree c A h'.1, occ_atomFree c B h'.2]
+      rfl
+  | .ifThen A B, h => by
+      have h' := Bool.and_eq_true_iff.mp (h : (atomFree A && atomFree B) = true)
+      show (Interval.occ c A || Interval.occ c B) = false
+      rw [occ_atomFree c A h'.1, occ_atomFree c B h'.2]
+      rfl
+  | .somehow A, h => occ_atomFree c A h
+
+/-- **PROVED: the base criterion recovered** (`ρ = id`, `coreGen a ⊤ id = selfGen a ⊤`). -/
+theorem selfTopIff : SelfTopIff := fun a ha =>
+  relCriterionTop a id ⟨fun _ _ h => h, fun p => ⟨occ_atomFree p a ha, rfl⟩⟩
+
+/-! ### The corrected transport -/
+
+/-- **PROVED: composition** (the proof of `NestPLL.nestPLL`, any inner copy). -/
+theorem nestOfCore : NestOfCore := by
+  intro a b x ξ ζ y hF hC
+  obtain ⟨hax, hxb, hfaith⟩ := hF
+  obtain ⟨hyl, hyu, hyf⟩ := hC
+  have sxb : ∀ (M : SubframeModel) v p, M.force v (x p) → M.force v b := fun M v p h =>
+    Interval.sem_of_deriv (hxb p) M v h
+  have sab : ∀ (M : SubframeModel) v, M.force v a → M.force v b := fun M v h =>
+    sxb M v "" (Interval.sem_of_deriv (hax "") M v h)
+  refine ⟨fun p => (hfaith _ _).mp (hyl p), fun p => (hfaith _ _).mp (hyu p), fun A B => ?_⟩
+  refine (hyf A B).trans ((hfaith _ _).trans (Interval.deriv_congr ?_ ?_))
+  · exact fun M v => (Interval.rel_comp M a b x ξ ζ y (sab M) (sxb M) A v).symm
+  · exact fun M v => (Interval.rel_comp M a b x ξ ζ y (sab M) (sxb M) B v).symm
+
+theorem goodPair_le {ξ ζ : PLLFormula} (h : GoodPair ξ ζ) : Deriv [ξ] ζ := by
+  rcases h with ⟨_, _, hle, _⟩ | ⟨rfl, _⟩
+  · exact hle
+  · exact MovingTop.le_top ξ
+
+/-- **PROVED.** -/
+theorem goodCore : GoodCore := by
+  intro ξ ζ h
+  rcases h with ⟨hξ, hζ, hle, hstrict⟩ | ⟨rfl, hc⟩
+  · exact NestPLL.coreLemmaPLL ξ ζ _ hξ hζ hle hstrict (Interval.fresh_freshRen ξ ζ)
+  · exact (relCriterionTop ξ _ (Interval.fresh_freshRen ξ topF)).mpr hc
+
+/-- **PROVED.** -/
+theorem goodMain : GoodMain := by
+  intro a b x ξ ζ ha hb hx hF h
+  exact ⟨nestGen a b x ξ ζ (freshRen ξ ζ), fun p => Interval.atomFree_rel ha hb hx _,
+    nestOfCore a b x ξ ζ _ hF (goodCore ξ ζ h)⟩
+
+/-- **PROVED.** -/
+theorem goodInGR : GoodInGR := fun ξ ζ h =>
+  ⟨fun p => gR (coreGen ξ ζ (freshRen ξ ζ) p), fun _ => g_af _,
+    Endpoints.transportG ξ ζ _ (goodCore ξ ζ h)⟩
+
+theorem towerGood_props (ξs ζs : Nat → PLLFormula) (h : ∀ d, GoodPair (ξs d) (ζs d)) :
+    ∀ d : Nat,
+    FreeInPLL (towerP ξs ζs d).a (towerP ξs ζs d).b (towerP ξs ζs d).x ∧
+    (∀ p, atomFree ((towerP ξs ζs d).x p) = true) ∧
+    atomFree (towerP ξs ζs d).a = true ∧ atomFree (towerP ξs ζs d).b = true
+  | 0 => ⟨NestPLL.bridgePLL3, xr_vf, b3_vf, rfl⟩
+  | d + 1 => by
+      obtain ⟨hF, hx, ha, hb⟩ := towerGood_props ξs ζs h d
+      exact ⟨nestOfCore _ _ _ _ _ _ hF (goodCore _ _ (h d)),
+        fun _ => Interval.atomFree_rel ha hb hx _, Interval.atomFree_rel ha hb hx _,
+        Interval.atomFree_rel ha hb hx _⟩
+
+/-- **PROVED: (R4) corrected, every finite depth.** -/
+theorem goodNestAll : GoodNestAll := by
+  intro ξs ζs h d
+  obtain ⟨hF, hx, _, _⟩ := towerGood_props ξs ζs h d
+  refine ⟨hF, hx, NestPLL.freeInPLL_strict hF, ?_, ?_, ?_⟩
+  · exact (hF.2.2 .falsePLL (ξs d)).mp (MovingTop.bot_le _)
+  · exact (hF.2.2 (ξs d) (ζs d)).mp (goodPair_le (h d))
+  · exact Deriv.cutHead ((hF.2.2 (ζs d) topF).mp (MovingTop.le_top _))
+      (Deriv.andElim2 (Deriv.iden (.head _)))
+
+end RelCrit
+end F0
+end PLLND
+
+/-! ## Axiom pins: stage 3 -/
+
+#axioms_within PLLND.F0.RelCrit.relNecessary [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.clausesStrict [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.force_withS [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.clausesBoxFree [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.relCriterionBoxFree [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.relClausesUp [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relClausesMono [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.relCopyNecessary [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relSufficient [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relCriterion [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relSufficientDisj [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relSufficientBoxFreeTop [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relSufficientBoxFreeBot [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relSufficientClosed [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.no_copy_gR_t3 [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relInGR [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.no_copy_rel_t3 [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relMain [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relNestAll [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.bisim_forceR [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.taV_hered [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.atoms_In [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.atoms_Out [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.tsa_transfer [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.sidesOfNdOpen [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.top_reflects [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.relCriterionTop [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.selfTopIff [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.nestOfCore [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.goodCore [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.goodMain [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.goodInGR [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.goodNestAll [propext, Quot.sound]
