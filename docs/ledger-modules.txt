@@ -490,6 +490,7 @@ LaxPaper.Sections.Modularity
 LaxPaper.Sections.Pipeline
 LaxPaper.Sections.Solving
 Meta.Audit
+Meta.AuditTests
 Meta.Portable
 Meta.Rules
 Meta.Slime
