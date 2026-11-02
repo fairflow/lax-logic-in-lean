@@ -414,7 +414,7 @@ globs = ["wip.frjx", "wip.frjv_consequences", "wip.minmodv", "wip.minmodv_test",
          "wip.esakiaNuclearFinProofs3", "wip.esakiaNuclearBridgeProofs", "wip.esakiaNuclearGenBase", "wip.esakiaNuclearGenProofs",
          "wip.f0InsideOut",
          "wip.f0MovingTop",
-         "wip.f0Endpoints",
+         "wip.f0Endpoints", "wip.f0SigmaColimit",
          "wip.f0Realize"]
 
 # The CimpAnt frontier attack + φ★ cross-check, compiled (review round
