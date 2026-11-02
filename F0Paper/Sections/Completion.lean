@@ -12,6 +12,8 @@ open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 open F0Nuclear MacNeille MacNeille.JoinDenseHeytingEmbedding
 
+set_option paperkit.pins true
+
 #doc (Manual) "The Dedekind–MacNeille completion" =>
 
 $`F_0` has holes: the gaps $`g_k`, $`k \ge 1`, have lower bounds but no greatest
@@ -19,9 +21,11 @@ one (Section 6), and so do the halves $`f(1/2^{n})` (Section 7).  The
 Dedekind–MacNeille completion $`F^{*}` fills every such hole, as Dedekind's cuts
 fill the holes of $`\mathbb{Q}` {pcite}`Dedekind1872 MacNeille1937`.  This
 section gives the construction, what is proved about it and where
-`Classical.choice` enters, the extension of $`\bigcirc`, and what the points of
-$`F^{*}` are.  Files: `wip/f0MacNeille.lean`, `wip/f0Nuclear.lean`,
-`wip/f0MacNeilleNonUnique.lean`, `wip/f0MacNeillePoints.lean`.
+choice enters, the extension of $`\bigcirc`, what the points of
+$`F^{*}` are, and where the bases and the $`t_6` tower of Section 9 close.
+Files: `wip/f0MacNeille.lean`, `wip/f0Nuclear.lean`,
+`wip/f0MacNeilleNonUnique.lean`, `wip/f0MacNeillePoints.lean`, with
+`wip/f0MovingTop.lean` and `wip/f0Endpoints.lean` for the last subsection.
 
 # Cuts
 
@@ -127,7 +131,7 @@ PROVED.
 {leanStmt MacNeille.principal_himp}
 
 $`F_0` is a Heyting algebra with the nucleus $`\bigcirc` without
-`Classical.choice` (`instHeyting`, `circNucleus`), so all of this holds at
+choice (`instHeyting`, `circNucleus`), so all of this holds at
 $`H = F_0`: $`F^{*}` is a complete Heyting algebra, and $`F_0` a join- and
 meet-dense Heyting subalgebra of it.  $`F_0` itself is not complete: the gaps
 have no greatest lower bound (`gap_no_glb`, Section 6), and their meet in
@@ -135,7 +139,7 @@ $`F^{*}` is a new point (below).
 
 # Where choice enters
 
-Everything about cuts carries `Classical.choice`.  `#axiom_path`
+Everything about cuts carries choice.  `#axiom_path`
 (`Meta/Audit.lean`) traces it, for every declaration about cuts in this
 section, to one of two places in Mathlib, neither of them part of the
 mathematics.
@@ -161,7 +165,7 @@ reach choice also through `L_no_greatest` (excluded middle in
 that reads $`\le` on $`F_0` as $`\vdash`, and, for the cardinality, through
 $`\mathbb{R}`.  That completeness theorem, for constraint models
 (`consequence_iff_derivable`, behind `le_iff_nonempty`), carries
-`Classical.choice`, and so does the transfer from subframe to constraint models,
+choice, and so does the transfer from subframe to constraint models,
 `SubframeModel.toConstraint_force` (a case split on membership of $`S`).  The
 non-normal filter $`F_7` below avoids all three: it goes through completeness
 for finite subframe models with decidable $`S` (`SubframeModel.CF.completeness`,
@@ -214,7 +218,7 @@ the new cut $`m` between the copies is sent to $`m` by one extension and to
 $`\top` by another ({cite}`TheunissenVenema2007`, Example 3.11).  The witness
 is a gap like those of $`F_0`: a down-set without greatest element under an
 up-set without least element.  Whether the interval of extensions is a single
-point at $`F_0` is OPEN (Section 13).
+point at $`F_0` is OPEN (Section 14).
 
 {stmt}`MacNeilleNonUnique.nucleus_extension_not_unique`
 
@@ -297,13 +301,13 @@ section is pen argument, on the definitions, except where marked.
   `dichotomy` and $`{\downarrow}t_2 = \{\bot, t_2\}`).  Over $`{\downarrow}t_1`,
   $`{\downarrow}t_2`, $`{\downarrow}t_4` the fibre is the principal filter alone:
   a non-principal filter contains none of $`\bot`, $`t_1`, $`t_2`, $`t_4` (each
-  would be its least element), so by `classify_low` (Section 10) it lies in
+  would be its least element), so by `classify_low` (Section 11) it lies in
   $`{\uparrow}t_3` and has $`t_3` as a lower bound.  Over a principal point
   $`{\downarrow}a` in general, the fibre has a second member exactly when $`a`
   is the meet in $`F_0` of a strictly decreasing sequence that avoids it.
   Over $`{\downarrow}t_7` there are at least two, $`{\uparrow}t_7` and
   $`F_7` (PROVED, below).  Over $`{\downarrow}t_3` and $`{\downarrow}t_5`: OPEN
-  (Section 13).
+  (Section 14).
 
 _Not every filter is normal._  Write
 $`\rho_k = \mathrm{rel}(r_{2k+1})` for the relativised odd rungs of Section 8
@@ -314,7 +318,7 @@ $$`d_k = \rho_k \twoheadrightarrow t_7, \qquad F_7 = \bigcup_{k \ge 2} {\uparrow
 
 Then $`F_7` is a non-principal filter with meet $`t_7` in $`F_0`, so it is not
 normal: it lies over the principal point $`{\downarrow}t_7` and
-$`F_7 \subsetneq {\uparrow}t_7`.  PROVED, without `Classical.choice`
+$`F_7 \subsetneq {\uparrow}t_7`.  PROVED, without choice
 (`wip/f0Normal.lean`, where $`F_7 = \{y : \exists k.\ d_{k+2} \le y\}`).
 
 {stmt}`PLLND.F0.Normal.NotAllNormal`
@@ -411,13 +415,79 @@ The construction needs an infinite principal downset, which $`F_0` has from
 $`t_6` on (Section 8).  In the $`\bigcirc`-free analogue, the Rieger–Nishimura
 lattice, every $`{\downarrow}t_n` is finite, so every filter is principal and
 normal (pen): the phenomenon is modal.  Whether a non-normal filter lies over a
-limit point (the gap filter is the candidate) is OPEN (Section 13).
+limit point (the gap filter is the candidate) is OPEN (Section 14).
+
+# The bases and the t6 tower
+
+_The bases._  The bases $`\sigma^{n}\bot` increase strictly (Section 9).  The
+only upper bound of all of them in $`F_0` is $`\top`: if $`\nvdash x`, a finite
+subframe countermodel of $`x` has some $`\sigma^{N}\bot` true at every world
+(`cm_eventually`), so $`\sigma^{N}\bot \nvdash x`.  PROVED.
+
+{stmt}`MovingTop.BasesOnlyTop`
+
+{leanStmt MovingTop.basesOnlyTop}
+
+{leanDef MovingTop.BasesOnlyTop}
+
+Yet none of them lies above $`t_6`: the bases are not cofinal in $`F_0`.  For
+$`n \ge 1`, $`t_6 \vdash \sigma^{n}\bot = \sigma(\sigma^{n-1}\bot)` would make
+$`\sigma^{n-1}\bot` a theorem, by `SigAvoidT6` (Section 9).  PROVED.
+
+{stmt}`MovingTop.NotCofinal`
+
+{leanStmt MovingTop.notCofinal}
+
+{leanDef MovingTop.NotCofinal}
+
+So the join of the principal cuts $`{\downarrow}\sigma^{n}\bot` in $`F^{*}` is
+$`\top`: its right set is the set of common upper bounds of the bases, which is
+$`\{\top\}` (pen, from the join of cuts above).  This corrects v0.7, which
+said that the join is $`\top` exactly when the bases are cofinal in $`F_0`:
+they are not cofinal, and the join is $`\top`.
+
+_The $`t_6` tower._  The ends of the strictly nested intervals
+$`[\tau^{d}(\bot), \tau^{d}(\top)]` of Section 9, $`\tau = \tau_{t_3,t_6}`,
+are meets with $`U_d = \top \land t_6 \land \sigma(t_6) \land \cdots \land \sigma^{d-1}(t_6)`.  PROVED.
+
+{stmt}`Endpoints.TowerEnds`
+
+{leanStmt Endpoints.towerEnds}
+
+{leanDef Endpoints.TowerEnds}
+
+The intervals close: every common lower bound of the tops lies below every
+common upper bound of the bottoms, again because $`\sigma^{N}\bot` holds
+everywhere in a finite model for large $`N`.  PROVED.
+
+{stmt}`Endpoints.Closing`
+
+{leanStmt Endpoints.closing}
+
+{leanDef Endpoints.Closing}
+
+In $`F^{*}` this says that $`\bigvee_d {\downarrow}\tau^{d}(\bot) = \bigwedge_d {\downarrow}\tau^{d}(\top)`: the intervals close on one point (pen,
+from the meets and joins of cuts).  At most one element of $`F_0` lies in every
+interval (`InAllUnique`, `inAllUnique`), and one does exactly when $`\tau` has a
+variable-free fixed point (`TauFixedPoint`).  PROVED.  So the point lies in
+$`F_0` exactly when $`\tau` has a fixed point there (pen, from the two).
+
+{stmt}`Endpoints.FixedIffInAll`
+
+{leanStmt Endpoints.fixedIffInAll}
+
+{leanDef Endpoints.FixedIffInAll}
+
+$`\top`, $`t_6` and $`U_2` are not fixed points (`notFixed_top`,
+`notFixed_t6`, `notFixed_U2`).  Whether $`\tau` has one is OPEN (Section 14).
 
 # Supporting declarations
 
-{lemmaTable instHeyting le_himp_iff_rn circNucleus box_inf MacNeille.instFrame cutHimp mem_left_cutHimp principalHom extNucleus extNucleus_apply extNucleus_comm le_extNucleus leastExt dmNucleus dmNucleus_principal le_dmNucleus PLLND.F0.Points.gaps PLLND.F0.Points.exists_nonprincipal PLLND.F0.Points.CF PLLND.F0.Points.CF.onto PLLND.F0.Points.fq_lt PLLND.F0.Points.X PLLND.F0.Points.X_injective PLLND.F0.Normal.ρF PLLND.F0.Normal.dF PLLND.F0.Normal.F7 PLLND.F0.Normal.IsFilter PLLND.F0.Normal.F7_isFilter PLLND.F0.Normal.lowerBounds_F7 PLLND.F0.Normal.upperBounds_lowerBounds_F7 PLLND.F0.Normal.t7_not_mem_F7 PLLND.F0.Normal.bot_not_mem_F7 PLLND.F0.Normal.force_d_x PLLND.F0.Normal.force_ρ_succ_x PLLND.F0.Normal.exists_force_chain PLLND.F0.Normal.toConstraint_force_fd PLLND.SubframeModel.CF.completeness}
+{lemmaTable instHeyting le_himp_iff_rn circNucleus box_inf MacNeille.instFrame cutHimp mem_left_cutHimp principalHom extNucleus extNucleus_apply extNucleus_comm le_extNucleus leastExt dmNucleus dmNucleus_principal le_dmNucleus PLLND.F0.Points.gaps PLLND.F0.Points.exists_nonprincipal PLLND.F0.Points.fq_lt PLLND.F0.Points.X PLLND.F0.Points.X_injective PLLND.F0.Normal.ρF PLLND.F0.Normal.dF PLLND.F0.Normal.F7 PLLND.F0.Normal.IsFilter PLLND.F0.Normal.F7_isFilter PLLND.F0.Normal.lowerBounds_F7 PLLND.F0.Normal.upperBounds_lowerBounds_F7 PLLND.F0.Normal.t7_not_mem_F7 PLLND.F0.Normal.bot_not_mem_F7 PLLND.F0.Normal.force_d_x PLLND.F0.Normal.force_ρ_succ_x PLLND.F0.Normal.exists_force_chain PLLND.F0.Normal.toConstraint_force_fd PLLND.SubframeModel.CF.completeness Endpoints.Ud Endpoints.InAll Endpoints.InAllUnique Endpoints.inAllUnique MovingTop.TauFixedPoint Endpoints.notFixed_top Endpoints.notFixed_t6 Endpoints.notFixed_U2}
 
-Pins (`#axioms_within`, each watched failing at a tighter set): `propext`,
-`Quot.sound` for `instHeyting`, `le_himp_iff_rn`, `circNucleus`, `box_inf` and
-every declaration of `wip/f0Normal.lean`; `propext`, `Classical.choice`,
-`Quot.sound` for the rest, by the routes traced above.
+Pins: each row's pin is computed when the document is built.  The modules
+bound them by `#axioms_within`: \[pext,Q\] for `instHeyting`,
+`le_himp_iff_rn`, `circNucleus`, `box_inf`, every declaration of
+`wip/f0Normal.lean` and those of the last subsection; \[pext,C,Q\] for the
+rest, by the routes traced above.  Every bound outside the last subsection was
+watched failing at a tighter set.

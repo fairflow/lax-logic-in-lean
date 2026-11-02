@@ -11,6 +11,8 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "The bottom of F0" =>
 
 The downsets of $`t_1, \ldots, t_5` are computed exactly, and seven covers read
@@ -85,8 +87,8 @@ the seven intervals.
 
 {lemmaTable red_box red_imp red_or DownTable DownTable.classify_below D1_table D2_table D3_table D4_table D5_table D5_box_2 D5_box_4 pen_box_ne_t4 Covers cover_0_1 cover_0_2 cover_1_3 cover_2_3 cover_1_4 cover_3_5 cover_4_5 covers9_eq}
 
-Pins: every declaration here is within `propext`, `Quot.sound`
+Pins: every declaration here is within \[pext,Q\]
 (`#axioms_within`); `#print axioms` reports none for `red_box`, `red_imp`,
-`red_or`, `propext` alone for the tables, the method, the modal cells and
-`low_trichotomy`, and `propext`, `Quot.sound` for the covers.  `covers9_eq`
+`red_or`, \[pext\] for the tables, the method, the modal cells and
+`low_trichotomy`, and \[pext,Q\] for the covers.  `covers9_eq`
 (`wip/ladder8.lean`) is pinned at no axioms.

@@ -11,12 +11,14 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "Below the sixth rung" =>
 
 The downsets $`{\downarrow}t_n` are finite for $`n \le 5` (Section 3).  For
 $`n = 6, 7` and every $`n \ge 9` they are infinite: the conjecture that every
 $`{\downarrow}t_n` is finite is REFUTED there, and OPEN at $`n = 8`.  No
-`Classical.choice`; `wip/f0T6.lean`.
+choice; `wip/f0T6.lean`.
 
 The sixth rung is double-negation elimination for $`\bigcirc\bot`, where the fifth,
 $`t_3 \lor t_4`, is up to $`\dashv\vdash` weak excluded middle
@@ -55,5 +57,5 @@ countermodel's ladder, where the chain holds.
 {lemmaTable T6.t6F T6.uF T6.t3_le_u T6.rel T6.xc T6.t6_chain T6.t6_le_rung}
 
 Pins: every declaration here, the designed cells `cell_m6`, `cell_m9` and
-`rel_transfer` within `propext`, `Quot.sound` (`#axioms_within`, confirmed by
+`rel_transfer` within \[pext,Q\] (`#axioms_within`, confirmed by
 `#print axioms`); the odd rungs' truth sets come from Section 4, choice-free.

@@ -11,6 +11,8 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed PLLND.F0.FilterIso
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "Filters isomorphic to F0" =>
 
 Is a proper filter $`[p, \top]`, $`p \ne \bot`, order-isomorphic to $`F_0`?
@@ -172,12 +174,12 @@ not cover $`t_5`); (iii) fails at $`t_3` (the gap $`g_1` does not cover
 $`t_3`); (iv) fails at $`t_3` and $`t_5`.  PROVED.  Whether some $`p` above
 $`t_3` realises a shape and is isomorphic all the same, that is
 $`\mathit{AboveResidue}(t_3)`, is OPEN in each of the four cases
-(Section 13).
+(Section 14).
 
 # Supporting declarations
 
 {lemmaTable HasDisjPair BigAtom MeetPrime CoversC hasDisjPair_of_iso bigAtom_of_iso bigAtom_rn rn_hasDisjPair not_above_t3_filter_not_iso ne_filter_not_iso t4_filter_not_iso e_filter_not_iso refutes_sig c1_filter_not_iso t5_filter_not_iso C1n_box C1n_above_t3 iso_split iso_split_a iso_himp iso_cover iso_prime Di_himp D4i_himp obstructionA_F0_case case_d_shape case_d4_shape case_a_shape box_t3_not_meetPrime box_t5_not_cover gap_t3_not_cover box_t3_not_bigAtom box_t5_not_bigAtom t3_compl above_t3_iff_compl_eq_bot subBot_le}
 
-Pins: every declaration here within `propext`, `Quot.sound`
+Pins: every declaration here within \[pext,Q\]
 (`#axioms_within`, each watched failing at a tighter set), and within
-`propext` alone for `obstructionA`, `refutes_sig`, `subBot_le`.
+\[pext\] for `obstructionA`, `refutes_sig`, `subBot_le`.

@@ -11,6 +11,8 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "A hole" =>
 
 The gaps $`g_k`, $`k \ge 1`, have no greatest lower bound, among all formulas
@@ -28,12 +30,11 @@ high enough world, since it fails where $`g_{m+1}` fails on the edged lift
 $`\mathcal{E}_m` and the two models agree on it at world $`m + 3` past some
 level.  A greatest lower bound would lie above every $`W_b`, so its truth set
 would be unbounded: impossible.  A second unfilled cut is in Section 7;
-Section 11 fills both in the Dedekind–MacNeille completion.
+Section 12 fills both in the Dedekind–MacNeille completion.
 
 # Supporting declarations
 
 {lemmaTable Wit Wit_below_all_gaps L_no_greatest L_bounded}
 
-Pins (`#print axioms` under `#guard_msgs`): `propext`, `Classical.choice`,
-`Quot.sound` for all four and `gap_no_glb`, through the edged lifts and the
+Pins (`#print axioms` under `#guard_msgs`): \[pext,C,Q\] for all four and `gap_no_glb`, through the edged lifts and the
 ladder's truth sets; whether choice is needed has not been examined.

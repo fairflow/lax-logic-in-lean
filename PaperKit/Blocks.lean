@@ -28,6 +28,21 @@ output):
   (`tools/F0/FigureData.lean`).
 * The Lean statement line is `\footnotesize` in the PDF and 90% in the HTML
   (v0.4; v0.3 had `\scriptsize` and 80%).
+* The pin key (Matthew, 2026-11-01, a standing rule for all papers): one
+  key defines pext = `propext`, Q = `Quot.sound`, C = `Classical.choice`, and
+  every pin is written `[pext]`, `[pext,Q]`, `[pext,C,Q]`, full names only
+  inside the key.  Opt-in, so that a paper that does not use it is unchanged:
+  `{pinKey}` (a block) prints the key; `{pinsOf}`n₁ n₂`` prints the
+  abbreviated pin of the named declarations, computed as `{axiomsOf}`; and
+  `set_option paperkit.pins true` gives every `{lemmaTable}` row its
+  computed pin, in a column before the source link (default `false`: the
+  tables of the semantics paper are unchanged).  First used by the F0 paper v0.8.
+* `{letteredAppendix}`: the first block of a chapter that opens the
+  appendices (the F0 paper v0.7, 2026-10-29).  In the PDF that chapter and
+  the ones after it are lettered, the heading reading "Appendix A":
+  `scripts/verso-tex-pdf.sh` moves `\appendix` before the chapter's heading,
+  which Verso has already written when the block is reached.  Nothing in the
+  HTML (mark the part `number := false` there).
 -/
 import Lean
 import Lean.DocString.Syntax
@@ -41,6 +56,23 @@ open Verso Doc Elab Genre Manual ArgParse
 open Verso.Output Html
 
 namespace PaperKit.Blocks
+
+/-- Whether `{lemmaTable}` gives each row its pin (the pin key, v0.8 of the F0
+paper).  Default `false`, so that a paper that does not set it is unchanged. -/
+register_option paperkit.pins : Bool := {
+  defValue := false
+  descr := "give each {lemmaTable} row its computed axiom pin, abbreviated by the pin key"
+}
+
+/-- The pin key's abbreviation of a set of axioms: `[pext]`, `[pext,Q]`,
+`[pext,C,Q]` (in the order pext, C, Q, then any other axiom by its full name),
+and `none` for the empty set. -/
+def pinAbbrev (axs : Array Name) : String :=
+  let key : List (Name × String) :=
+    [(``propext, "pext"), (``Classical.choice, "C"), (``Quot.sound, "Q")]
+  let known := (key.filter fun (n, _) => axs.contains n).map (·.2)
+  let other := (axs.toList.filter fun a => !key.any (·.1 == a)).map toString
+  if known.isEmpty && other.isEmpty then "none" else "[" ++ ",".intercalate (known ++ other) ++ "]"
 
 /-- TeX-escape running text (Verso's own escape covers `\ { } ^` only). -/
 def texEsc (s : String) : String :=
@@ -168,7 +200,7 @@ wide) per row: a definition by cases has an item per case, a line break
 allowed between items (`PaperKit.Math.stmtFlat`).  `wide` (the semantics
 paper, whose module names are long) widens the label column and lets a label
 break before its line number; the F0 paper's tables are unchanged. -/
-abbrev LemmaRow := String × List String × String × String × Nat × Bool
+abbrev LemmaRow := String × List String × String × String × Nat × Bool × String
 
 block_extension Block.f0Lemmas where
   traverse _ _ _ := pure none
@@ -177,15 +209,24 @@ block_extension Block.f0Lemmas where
     | .error e => do reportError s!"lemmaTable: bad data: {e}"; pure .empty
     | .ok rows =>
       let mut body := ""
-      let wide := rows.any fun (_, _, _, _, _, w) => w
-      for (nm, f, label, path, line, w) in rows do
+      let wide := rows.any fun (_, _, _, _, _, w, _) => w
+      -- the pin key (v0.8 of the F0 paper): a fourth, narrow column with each row's pin
+      let pins := rows.any fun (_, _, _, _, _, _, p) => !p.isEmpty
+      for (nm, f, label, path, line, w, pin) in rows do
         let url ← (srcUrl path line : IO String)
         let lab := if w then (texName label).replace ":" "\\allowbreak{}:" else texName label
+        -- the pin before the source link, which stays the last column (a long
+        -- label runs into the margin, as before, not into the pin)
+        let pinTeX := if pins then " & " ++ texEsc pin else ""
         body := body ++ "\\texttt{" ++ texName nm ++ "} & " ++
           -- items apart by a stretchable space, where a line may break
           "\\hskip 0.7em plus 0.4em\\relax ".intercalate (f.map fun s => "$" ++ s ++ "$") ++
-          " & \\oldhref{" ++ texUrl url ++ "}{\\texttt{" ++ lab ++ "}}\\\\\n"
-      let cols := if wide then
+          pinTeX ++ " & \\oldhref{" ++ texUrl url ++ "}{\\texttt{" ++ lab ++ "}}\\\\\n"
+      let cols := if pins then
+          "\\setlength{\\tabcolsep}{4pt}\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.22\\linewidth}" ++
+          ">{\\raggedright\\arraybackslash}p{0.49\\linewidth}>{\\raggedright\\arraybackslash}p{0.09\\linewidth}" ++
+          ">{\\raggedleft\\arraybackslash}p{0.14\\linewidth}@{}}\n"
+        else if wide then
           "\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.21\\linewidth}" ++
           ">{\\raggedright\\arraybackslash}p{0.48\\linewidth}>{\\raggedleft\\arraybackslash}p{0.27\\linewidth}@{}}\n"
         else
@@ -199,21 +240,24 @@ block_extension Block.f0Lemmas where
     | .error e => do reportError s!"lemmaTable: bad data: {e}"; pure .empty
     | .ok rows =>
       let mut trs : Array Html := #[]
-      for (nm, f, label, path, line, _) in rows do
+      for (nm, f, label, path, line, _, pin) in rows do
         let url ← (srcUrl path line : IO String)
         let mut cells : Array Html := #[]
         for s in f do
           cells := cells.push {{ <code class="math inline">{{s}}</code> }}
           cells := cells.push (Html.text true " ")
-        trs := trs.push {{ <tr><td><code>{{nm}}</code></td><td>{{cells}}</td><td><a href={{url}}><code>{{label}}</code></a></td></tr> }}
+        let pinHtml : Html := if pin.isEmpty then .empty else {{ <td class="f0-pin">{{pin}}</td> }}
+        trs := trs.push {{ <tr><td><code>{{nm}}</code></td><td>{{cells}}</td>{{pinHtml}}<td><a href={{url}}><code>{{label}}</code></a></td></tr> }}
       pure {{ <table class="f0-lemmas"><tbody>{{trs}}</tbody></table> }}
   extraCss := [r#"
 table.f0-lemmas { border-collapse: collapse; font-size: 85%; margin: 0.6em 0 1.2em 0; width: 100%; }
 table.f0-lemmas td { border-top: 1px solid #ddd; padding: 0.2em 0.5em; vertical-align: top; }
 table.f0-lemmas td:first-child { white-space: nowrap; }
 table.f0-lemmas td:last-child { text-align: right; white-space: nowrap; }
+table.f0-lemmas td.f0-pin { white-space: nowrap; }
 table.f0-lemmas a { text-decoration: none; }
 table.f0-lemmas td code.math { margin-right: 0.6em; }
+table.f0-lemmas .f0-pin { font-size: 90%; color: #555; }
 "#]
 
 structure NamesConfig where
@@ -233,7 +277,9 @@ def lemmaTable : BlockCommandOf NamesConfig
         throwError "lemmaTable: {n} prints as empty"
       let (path, line, label) ← srcInfo n
       let wide := PaperKit.Math.paperkit.notation.get (← getOptions) == "sem"
-      rows := rows.push (← shortName n, f, label, path, line, wide)
+      let pin ← if paperkit.pins.get (← getOptions) then
+          pure (pinAbbrev (← collectAxioms n)) else pure ""
+      rows := rows.push (← shortName n, f, label, path, line, wide, pin)
     let js := (ToJson.toJson rows).compress
     `(Verso.Doc.Block.other {Block.f0Lemmas with data := (Json.parse $(quote js)).toOption.getD Json.null} #[])
 
@@ -340,6 +386,39 @@ def axiomsOf : RoleExpanderOf RoleCfg
     `(Verso.Doc.Inline.text $(quote t))
   | _, _ => throwError "Expected exactly one code literal"
 
+/-- The pin of the named declarations (space-separated), by `collectAxioms`,
+abbreviated by the pin key: `[pext]`, `[pext,Q]`, `[pext,C,Q]`, `none`. -/
+@[role]
+def pinsOf : RoleExpanderOf RoleCfg
+  | _, #[arg] => do
+    let `(inline|code( $s:str )) := arg
+      | throwErrorAt arg "Expected a code literal with declaration names"
+    let mut axs : Array Name := #[]
+    for w in (s.getString.splitOn " ").filter (· ≠ "") do
+      let identStx := mkIdentFrom arg w.toName (canonical := true)
+      let n ← realizeGlobalConstNoOverloadWithInfo identStx
+      for a in ← collectAxioms n do
+        unless axs.contains a do axs := axs.push a
+    `(Verso.Doc.Inline.text $(quote (pinAbbrev axs)))
+  | _, _ => throwError "Expected exactly one code literal"
+
+/-! ## The pin key -/
+
+block_extension Block.pinKey where
+  traverse _ _ _ := pure none
+  toTeX := some <| fun _ _ _ _ _ => pure (.raw ("\\par\\noindent\\textbf{Pin key.} " ++
+    "pext = \\texttt{propext}, Q = \\texttt{Quot.sound}, C = \\texttt{Classical.choice}.  " ++
+    "A pin lists the axioms a declaration depends on, as \\texttt{collectAxioms} computes " ++
+    "them when the document is built: [pext,Q] is \\{\\texttt{propext}, \\texttt{Quot.sound}\\}, " ++
+    "[pext,C,Q] adds \\texttt{Classical.choice}, and none is the empty set.\\par "))
+  toHtml := some <| fun _ _ _ _ _ => pure {{
+    <p class="pin-key"><strong>"Pin key. "</strong>"pext = "<code>"propext"</code>", Q = "<code>"Quot.sound"</code>", C = "<code>"Classical.choice"</code>".  A pin lists the axioms a declaration depends on, as "<code>"collectAxioms"</code>" computes them when the document is built: [pext,Q] is {"<code>"propext"</code>", "<code>"Quot.sound"</code>"}, [pext,C,Q] adds "<code>"Classical.choice"</code>", and none is the empty set."</p> }}
+
+/-- The pin key: the one place a paper using it writes the axioms' full names. -/
+@[block_command]
+def pinKey : BlockCommandOf RoleCfg
+  | _ => `(Verso.Doc.Block.other Block.pinKey #[])
+
 /-- A list of formulas of the development, printed as the set it lists. -/
 @[role]
 def listElems : RoleExpanderOf RoleCfg
@@ -364,6 +443,23 @@ def listSize : RoleExpanderOf RoleCfg
     let some l := PaperKit.Math.listLit? dv.value | throwErrorAt arg "not a list literal"
     `(Verso.Doc.Inline.text $(quote (toString l.length)))
   | _, _ => throwError "Expected exactly one code literal"
+
+/-! ## A lettered appendix -/
+
+/-- The marker that `scripts/verso-tex-pdf.sh` replaces: `\appendix`, and the
+heading "Appendix A", before the heading of the chapter that contains it.  On
+lines of its own, so that the TeX compiles unchanged without the script. -/
+def appendixMarker : String := "%PaperKit:appendix"
+
+block_extension Block.letteredAppendix where
+  traverse _ _ _ := pure none
+  toTeX := some <| fun _ _ _ _ _ => pure (.raw ("\n" ++ appendixMarker ++ "\n"))
+  toHtml := some <| fun _ _ _ _ _ => pure .empty
+
+/-- The first block of the chapter that opens the appendices. -/
+@[block_command]
+def letteredAppendix : BlockCommandOf RoleCfg
+  | _ => `(Verso.Doc.Block.other Block.letteredAppendix #[])
 
 /-! ## Generated figures -/
 

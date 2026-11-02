@@ -11,6 +11,8 @@ open CLPPaper CLPPaper.Cite PaperKit.Math PaperKit.Blocks
 open PLLND PLLND.SemUI PLLND.F0 PLLND.RNEmbed
 open PLLND.LaxInfinite (atomFree)
 
+set_option paperkit.pins true
+
 #doc (Manual) "Covers and threads together" =>
 
 How the covers of Section 3 and the dyadic thread $`f` of Section 5 sit
@@ -40,7 +42,7 @@ fresh block of variables, satisfy $`e_k(0) \dashv\vdash [\![ p ]\!]`,
 $`e_k(1) \dashv\vdash [\![ q ]\!]`, and $`e_k[(0, 1)] \parallel e_{k'}[(0, 1)]` for
 $`k \ne k'`.  So the open interval of every pair in the odd-gap lattice contains
 $`\aleph_0` threads, pairwise $`\parallel`.  PROVED.  Which other pairs have a
-thread is OPEN (Section 13).
+thread is OPEN (Section 14).
 
 {stmt}`incomparable_copies`
 
@@ -67,9 +69,8 @@ greatest lower bound.  PROVED.
 
 {lemmaTable t16_not_le_half leCheck lpoly_deriv_decide copyP copyF copy_zero copy_one cover_above_em half_step halves_no_glb_vf}
 
-Pins (`#axioms_within`, confirmed by `#print axioms`): within `propext`,
-`Quot.sound` for `ladder_le_formula`, `lpoly_deriv_iff`, `lpoly_deriv_decide`,
+Pins (`#axioms_within`, confirmed by `#print axioms`): within \[pext,Q\] for `ladder_le_formula`, `lpoly_deriv_iff`, `lpoly_deriv_decide`,
 `incomparable_copies`, `copy_zero`, `copy_one`, `cover_above`, `half_step`;
-`propext`, `Classical.choice`, `Quot.sound` for `cover_above_em`,
+\[pext,C,Q\] for `cover_above_em`,
 `t16_not_le_half`, `halves_no_glb`, `halves_no_glb_vf` (excluded middle, the
 single-edge lifts, and the bounds $`W_b` of Section 6).
