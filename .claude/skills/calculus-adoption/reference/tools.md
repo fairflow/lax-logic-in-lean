@@ -72,7 +72,8 @@ Reading that still takes a second step.
 ```lean
 #choice_path myTheorem      -- shortest chain to Classical.choice, with modules
 #choice_sources myTheorem   -- which direct dependencies are tainted
-#axiom_path sorryAx thm     -- any axiom
+#axiom_path sorryAx thm     -- any axiom (any constant, since 2026-11-02)
+#uses thm lemma             -- does thm use lemma? true + shortest chain, or false
 #axiom_pin myTheorem        -- emit the #guard_msgs block, ready to paste
 ```
 
