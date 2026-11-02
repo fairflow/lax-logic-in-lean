@@ -60,3 +60,57 @@ Gates and controls, watched failing:
   rejected; the error is pinned by `#guard_msgs`.
 
 Run: `gtimeout 900 lake env lean wip/f0SigmaColimit.lean`, exit 0.
+
+## Stage 3 — proofs (2026-11-02 14:28 CET)
+
+Every statement of stage 1 is PROVED, each pinned `[propext, Quot.sound]`
+by `#axioms_within` (no `Classical.choice`, no `sorryAx`, no
+`native_decide`); the pin gate is watched failing (`#guard_msgs` on the
+empty bound for `graded_exists`).
+
+| id | representatives | quotient | status |
+|---|---|---|---|
+| C1 | `c1` | `sigCol_nucImpLat : NucImpLat leQ opsQ`, `nucQ_meet` | PROVED [pext,Q] |
+| C2 | `stageCompat`, `stageEmb`, `stageHom`, `universal` | `iotaQ_compat`, `iotaQ_le_iff`, `iotaQ_eq_iff`, mediating map `liftU` | PROVED [pext,Q] |
+| C3 | `shiftExtends`, `shiftOrderIso`, `unshiftOrderIso`, `shiftInverse`, `shiftHom`, `unshiftStage` | `shiftQ_iotaQ`, `unshiftQ_iotaQ`, `shiftQ_unshiftQ`, `unshiftQ_shiftQ`, `shiftQ_le_iff`, `shiftQ_hom` | PROVED [pext,Q] |
+| C4 | `botStrict`, `noLowerBound`, `coinitial`, `noLeast` | `iotaQ_bot_strict`, `no_lower_bound`, `no_least` | PROVED [pext,Q] |
+| C5 | `topIff`, `fixedTop` | `shiftQ_fixed_iff : S X = X ↔ X = ⊤` | PROVED [pext,Q] |
+| C6 | `gradePow`, `gradeShift`, `gradeNotTop`, `gradeInj`, `gradeSurj`, `sigImageDec` | `graded_exists`, `graded_unique`, `shiftQ_powQ`, `graded_ne_top` | PROVED [pext,Q] |
+| C7 | `notUpset`, `notDownset`, `filterUnion` | `iota0_not_convex`, `iota0_not_downset`, `filter_union` | PROVED [pext,Q] |
+
+Findings.
+
+* **The common-stage lemma** (`leP_iff_at`) carries every law: for
+  `n + k = m + j`, `(n, φ) ≤ (m, ψ) ⟺ σᵏ φ ⊢ σʲ ψ` (from `sigN_faithful`).
+* **C4 needs no finite-model argument.**  `(m, χ) ≤ ιₘ₊₁ ⊥` reduces by
+  faithfulness to `σχ ⊢ ⊥`, and `t3 ⊢ σχ`, `t3 ⊬ ⊥`.  So the stage bottoms
+  have no lower bound and the colimit has no least element; they are also
+  coinitial (`ιₘ ⊥ ≤ (m, χ)`).
+* **C6 survives and is PROVED, choice-free.**  `SigCol ∖ {⊤}` is in
+  bijection with `ℤ × (L₀/⊣⊢)`, `(k, y) ↦ Sᵏ (ι₀ y)`, with `S` acting as
+  `k ↦ k + 1`.  The decision procedure for `x ∈ σᵈ(F0)` (needed for
+  existence, not for uniqueness): `τ` (`tau`), the restriction of a formula
+  to the old worlds of the two-top extension `ext M` of
+  `wip/f0SelfSim.lean`, is a syntactic left inverse of `σ`
+  (`tau_sig : τ (σψ) ⊣⊢ ψ`, for every formula), whence
+  `x ∈ σ(F0) ⟺ σ(τ x) ⊣⊢ x` (`inSig1_iff`) and
+  `x ∈ σᵈ⁺¹(F0) ⟺ x ∈ σ(F0) ∧ τ x ∈ σᵈ(F0)` (`inSig_succ_iff`); `⊣⊢` is
+  decided by `FRJ.Gbu.W.decideLaxND` (`decInSig`, a `Decidable`).  The bound
+  on `d` is `InsideOut.orbit_order_limit` (choice-free).  `orbits_vs_L0`
+  (excluded middle) is not used.  Validation: `ι₀ t3`, `ι₀ t5`, `ι₁ ⊥` at
+  grades `1`, `0`, `−1` (`grade_t3`, `grade_t5`, `grade_bot1`,
+  `grades_distinct`; `bot_L0`, `cellT5`).
+* **C7.**  `ι₀(F0)` is a subalgebra, but not convex (`ι₀ ⊥ ≤ ι₁ t5 ≤ ι₀ ⊤`,
+  `ι₁ t5 ∉ ι₀(F0)`) and not a down-set (`ι₁ ⊥ ≤ ι₀ ⊥`, `ι₁ ⊥ ∉ ι₀(F0)`): not
+  an up-set, an interval or a principal filter.  The colimit is the
+  increasing union of the principal filters `↑ιₙ ⊥`, each carried onto the
+  next by `S⁻¹`, all order-isomorphic to `↑ι₀ ⊥` (the colimit of the
+  intervals `[σⁿ⊥, ⊤]`).  OPEN: whether `↑ι₀ ⊥ ≅ F0` as posets.
+
+Runs.
+
+* `gtimeout 900 lake env lean wip/f0SigmaColimit.lean`: exit 0, no
+  warnings (several iterations; the last clean).
+* `gtimeout 3600 lake build wip.f0SigmaColimit`: exit 0, 14:27:16 to
+  14:27:53 CET (37 s wall; the module itself 19 s; one module built, the
+  rest replayed from the seeded cache).  `df` before: 100610 MB available.
