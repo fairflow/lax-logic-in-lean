@@ -363,6 +363,72 @@ def CellT5 : Prop :=
 
 end Stmt
 
+/-! ## Designed cells (stage 2)
+
+Each cell is read off the rules and the banked F0 facts; the one new
+countermodel (`M1`, one world, in `S`) is checked by `decide +kernel`. -/
+
+/-- One world, in `S`: `◯⊥` fails there and `t3` holds. -/
+def M1 : SubTab.SubCM := { n := 1, root := 0, le := [[true]], S := [true], val := [[]] }
+
+/-- One world, not in `S` (the gate's model): every `◯`-formula holds. -/
+def M0 : SubTab.SubCM := { n := 1, root := 0, le := [[true]], S := [false], val := [[]] }
+
+/-- **Cell: `ι₁ ⊥ < ι₀ ⊥`** (`sigN_bot_strict 0`). -/
+theorem cellBot : Stmt.CellBot := ⟨(sigN_bot_strict 0).1, (sigN_bot_strict 0).2⟩
+
+/-- `◯t3 ⊬ ◯⊥`, refuted at the one-world model `M1`. -/
+theorem nd_oT3_oBot : ¬ Deriv [.somehow t3] (.somehow .falsePLL) := fun h =>
+  SubTab.SubCM.refutes_sound (m := M1) (by decide +kernel) (Deriv.impIntro h)
+
+/-- **Cell: `S ⊤ ~ ⊤`, and `S (ι₀ ◯⊥) = ι₀ ◯t3 ≁ ι₀ ◯⊥`.** -/
+theorem cellShiftTop : Stmt.CellShiftTop :=
+  ⟨⟨Deriv.impIntro (Deriv.iden (.head _)), Deriv.impIntro (Deriv.iden (.head _))⟩,
+    fun h => nd_oT3_oBot h.1⟩
+
+/-- **Cell: `ι₀ t5` is not `S (ι₀ z)`** (`sig_not_onto`), **and `t5 ∈ L₀`**. -/
+theorem cellT5 : Stmt.CellT5 :=
+  ⟨fun ⟨z, hz⟩ => SigOnto.sig_not_onto ⟨z.1, z.2, hz⟩,
+    ⟨rfl, fun ⟨z, hz, hi⟩ => SigOnto.sig_not_onto ⟨z, hz, hi⟩⟩⟩
+
+/-! ### Gates and controls, watched failing -/
+
+/-- Gate: `M1` does not refute the derivable direction `◯⊥ ↠ ◯t3`. -/
+theorem gate_M1 : M1.refutes ((PLLFormula.somehow .falsePLL).ifThen (.somehow t3)) = false := by
+  decide +kernel
+
+/-- Gate: the model without `S`-points does not refute `◯t3 ↠ ◯⊥`. -/
+theorem gate_M0 : M0.refutes ((PLLFormula.somehow t3).ifThen (.somehow .falsePLL)) = false := by
+  decide +kernel
+
+/-- Control: at `t3 = σ⊥` in place of `t5` the statement of `cellT5` fails:
+`ι₀ t3 = S (ι₀ ⊥)`. -/
+theorem ctrl_t3 : ∃ z : CF, rP (shiftP (iota 0 z)) (iota 0 ⟨t3, rfl⟩) :=
+  ⟨botCF, Deriv.iden (.head _), Deriv.iden (.head _)⟩
+
+/-! The swapped `CellBot` is rejected (watched failing). -/
+
+/--
+error: Type mismatch
+  (sigN_bot_strict 0).left
+has type
+  Deriv [sigN 0 ⊥] (sigN (0 + 1) ⊥)
+but is expected to have type
+  leP (iota 0 botCF) (iota 1 botCF)
+-/
+#guard_msgs in
+example : leP (iota 0 botCF) (iota 1 botCF) := (sigN_bot_strict 0).1
+
 end SigmaColimit
 end F0
 end PLLND
+
+/-! ## Axiom pins -/
+
+#axioms_within PLLND.F0.SigmaColimit.cellBot [propext, Quot.sound]
+#axioms_within PLLND.F0.SigmaColimit.nd_oT3_oBot [propext, Quot.sound]
+#axioms_within PLLND.F0.SigmaColimit.cellShiftTop [propext, Quot.sound]
+#axioms_within PLLND.F0.SigmaColimit.cellT5 [propext, Quot.sound]
+#axioms_within PLLND.F0.SigmaColimit.gate_M1 [propext, Quot.sound]
+#axioms_within PLLND.F0.SigmaColimit.gate_M0 [propext, Quot.sound]
+#axioms_within PLLND.F0.SigmaColimit.ctrl_t3 [propext, Quot.sound]

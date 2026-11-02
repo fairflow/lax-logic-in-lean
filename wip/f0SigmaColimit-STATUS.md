@@ -39,3 +39,24 @@ idempotent, meet-preserving); its axioms are the fields of
 | cell | `ι₀ t5 ≁ S (ι₀ z)` for every closed `z`; `t5 ∈ L₀` | `Stmt.CellT5` |
 
 Checked: `lake env lean wip/f0SigmaColimit.lean` exit 0 (statements only).
+
+## Stage 2 — designed cells (2026-11-02 14:13 CET)
+
+All three cells PASS, kernel-checked, each pinned `[propext, Quot.sound]`.
+
+| cell | verdict | proof | pin |
+|---|---|---|---|
+| `cellBot`: `ι₁ ⊥ < ι₀ ⊥` | pass | `sigN_bot_strict 0` (`⊥ ⊢ t3`, `t3 ⊬ ⊥`) | [pext,Q] |
+| `cellShiftTop`: `S ⊤ ~ ⊤`; `S (ι₀ ◯⊥) = ι₀ ◯t3 ≁ ι₀ ◯⊥` | pass | `σ⊤ = t3 ↠ t3`; `◯t3 ⊬ ◯⊥` refuted by `M1` (one world, in `S`), `decide +kernel` (`nd_oT3_oBot`) | [pext,Q] |
+| `cellT5`: `ι₀ t5 ≁ S (ι₀ z)` for closed `z`; `t5 ∈ L₀` | pass | `sig_not_onto` | [pext,Q] |
+
+Gates and controls, watched failing:
+
+* `gate_M1`: `M1` does not refute the derivable `◯⊥ ↠ ◯t3` (`refutes = false`).
+* `gate_M0`: the one-world model outside `S` does not refute `◯t3 ↠ ◯⊥`.
+* `ctrl_t3`: with `t3 = σ⊥` in place of `t5` the statement of `cellT5`
+  fails: `ι₀ t3 ~ S (ι₀ ⊥)`.
+* The swapped `CellBot` (`ι₀ ⊥ ≤ ι₁ ⊥` from the same proof term) is
+  rejected; the error is pinned by `#guard_msgs`.
+
+Run: `gtimeout 900 lake env lean wip/f0SigmaColimit.lean`, exit 0.
