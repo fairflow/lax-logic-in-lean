@@ -70,7 +70,11 @@ so `[⊥, t3]` carries no faithful copy of PLL for any generators.  Also REFUTED
 (R2) for ◯-free `ζ` (`ζ = p ∨ ¬p`, `ξ = (p ∧ ¬◯⊥) ∨ (¬p ∧ ◯⊥)`), for ◯-free `ξ`,
 for closed `ξ`, `ζ`; the one-clause form (`ξ = ⊥`, `ζ = t6`); (R4) `RelMain`,
 `RelInGR`, `RelNestAll`; the two weakenings; `RelClausesMono` (its inclusion
-was the wrong way round; `RelClausesUp` is the intended statement).
+was the wrong way round; `RelClausesUp` is the intended statement).  Inside
+Matthew's range `σ³⊥ ≤ ξ < ζ ≤ ⊤` it fails too (`not_relSufficientInRange`):
+the readers' copy `gR` (`= σ³` on closed formulas) keeps the clauses and the
+closed part (`relTransportGR`, `relTransportSig3`), so `(σ³⊥, σ³t3)`,
+`(σ³⊥, σ³t6)` and `gR` of the ◯-free-top pair are counterexamples there.
 
 **PROVED**: (R1) `relNecessary`; `clausesStrict`, `clausesBoxFree`,
 `relCriterionBoxFree`, `relClausesUp`, `relCopyNecessary`; and the criterion
@@ -1154,3 +1158,161 @@ end PLLND
 #axioms_within PLLND.F0.RelCrit.goodMain [propext, Quot.sound]
 #axioms_within PLLND.F0.RelCrit.goodInGR [propext, Quot.sound]
 #axioms_within PLLND.F0.RelCrit.goodNestAll [propext, Quot.sound]
+
+/-! ## Addition (Matthew via the manager, 2026-11-02): inside `σ³⊥ ≤ ξ < ζ ≤ ⊤`
+
+Matthew's range was `σ³⊥ ≤ a < b ≤ ⊤`; the pairs D1–D3 lie outside it.  The
+readers' copy `gR = relB σ³⊥ xr` (`= σ³` on closed formulas, `gR_closed`)
+carries every pair into the range and keeps both the clauses and the closed
+part, because it commutes with `◯ξ ↠ ξ`, `(◯ξ ↠ ξ) ↠ ξ` and with `C[⊥ := ξ]`
+for closed `C`, and is faithful (`g_faithful`, all formulas):
+
+    RelTransportGR :    RelClauses (gR ξ) (gR ζ) ⟺ RelClauses ξ ζ,   TopAvoid (gR ξ) (gR ζ) ⟺ TopAvoid ξ ζ
+    RelTransportSig3 :  the same for closed ξ, ζ with σ³ in place of gR
+    RelSufficientInRange :  σ³⊥ ≤ ξ,  [ξ] ⊢ ζ,  RelClauses ξ ζ  ⟹  ∃ x, FreeInPLL ξ ζ x
+                        REFUTED at (σ³⊥, σ³t3) = σ³(D1), at (σ³⊥, σ³t6) = σ³(D2),
+                        and at gR(D3) (open pair, ◯-free top, carried to closed formulas)
+
+The manager's pen argument, checked: `gR (C[⊥ := ξ]) = C[⊥ := gR ξ]` for
+closed `C` and every `ξ` (`gR_subBot`), and on closed formulas `gR = σ³`, which
+is therefore faithful there.  The statement is stated with `∃ x`: no
+generators at all work at the witnesses, since the closed part already
+fails. -/
+
+namespace PLLND
+namespace F0
+namespace RelCrit
+
+open SemUI Sig FreeHAn Base3 FreePLL MovingTop
+open Interval (rel FreeInPLL topF Fresh coreGen nestGen freshRen ICopy)
+open NestPLL (FreePLLIn towerP)
+open PLLND.LaxInfinite (atomFree)
+
+/-- The readers' copy keeps both clauses and the closed part, all formulas. -/
+def RelTransportGR : Prop :=
+  ∀ ξ ζ : PLLFormula, (RelClauses (gR ξ) (gR ζ) ↔ RelClauses ξ ζ) ∧
+    (TopAvoid (gR ξ) (gR ζ) ↔ TopAvoid ξ ζ)
+
+/-- `σ³` keeps both clauses and the closed part, closed `ξ`, `ζ`. -/
+def RelTransportSig3 : Prop :=
+  ∀ ξ ζ : PLLFormula, atomFree ξ = true → atomFree ζ = true →
+    (RelClauses (sigN 3 ξ) (sigN 3 ζ) ↔ RelClauses ξ ζ) ∧
+    (TopAvoid (sigN 3 ξ) (sigN 3 ζ) ↔ TopAvoid ξ ζ)
+
+/-- **(R2) inside Matthew's range** `σ³⊥ ≤ ξ`, any generators. -/
+def RelSufficientInRange : Prop :=
+  ∀ ξ ζ : PLLFormula, Deriv [sigN 3 .falsePLL] ξ → Deriv [ξ] ζ → RelClauses ξ ζ →
+    ∃ x : String → PLLFormula, FreeInPLL ξ ζ x
+
+/-- `relB` commutes with `C[⊥ := a]` for closed `C`. -/
+theorem relB_subBot (b a : PLLFormula) (x : String → PLLFormula) :
+    ∀ C : PLLFormula, atomFree C = true → relB b x (subBot a C) = subBot (relB b x a) C
+  | .prop _, h => nomatch h
+  | .falsePLL, _ => rfl
+  | .and A B, h => by
+      have h' := Bool.and_eq_true_iff.mp (h : (atomFree A && atomFree B) = true)
+      show (relB b x (subBot a A)).and (relB b x (subBot a B)) = _
+      rw [relB_subBot b a x A h'.1, relB_subBot b a x B h'.2]
+      rfl
+  | .or A B, h => by
+      have h' := Bool.and_eq_true_iff.mp (h : (atomFree A && atomFree B) = true)
+      show (relB b x (subBot a A)).or (relB b x (subBot a B)) = _
+      rw [relB_subBot b a x A h'.1, relB_subBot b a x B h'.2]
+      rfl
+  | .ifThen A B, h => by
+      have h' := Bool.and_eq_true_iff.mp (h : (atomFree A && atomFree B) = true)
+      show (relB b x (subBot a A)).ifThen (relB b x (subBot a B)) = _
+      rw [relB_subBot b a x A h'.1, relB_subBot b a x B h'.2]
+      rfl
+  | .somehow A, h => by
+      show (relB b x (subBot a A)).somehow = _
+      rw [relB_subBot b a x A h]
+      rfl
+
+/-- `gR (C[⊥ := ξ]) = C[⊥ := gR ξ]` for closed `C`. -/
+theorem gR_subBot (ξ C : PLLFormula) (hC : atomFree C = true) :
+    gR (subBot ξ C) = subBot (gR ξ) C :=
+  relB_subBot b3 ξ xr C hC
+
+/-- **PROVED.** -/
+theorem relTransportGR : RelTransportGR := by
+  intro ξ ζ
+  refine ⟨⟨fun h => ⟨fun hd => h.1 ((g_faithful ζ (stab ξ)).mp hd),
+      fun hd => h.2 ((g_faithful ζ (stab2 ξ)).mp hd)⟩,
+    fun h => ⟨fun hd => h.1 ((g_faithful ζ (stab ξ)).mpr hd),
+      fun hd => h.2 ((g_faithful ζ (stab2 ξ)).mpr hd)⟩⟩, ⟨?_, ?_⟩⟩
+  · intro h C hC hd
+    apply h C hC
+    rw [← gR_subBot ξ C hC]
+    exact (g_faithful ζ (subBot ξ C)).mp hd
+  · intro h C hC hd
+    apply h C hC
+    rw [← gR_subBot ξ C hC] at hd
+    exact (g_faithful ζ (subBot ξ C)).mpr hd
+
+/-- **PROVED.** -/
+theorem relTransportSig3 : RelTransportSig3 := fun ξ ζ hξ hζ => by
+  rw [← Endpoints.gR_closed hξ, ← Endpoints.gR_closed hζ]
+  exact relTransportGR ξ ζ
+
+/-- A pair failing the closed part has no faithful copy, any generators. -/
+theorem no_copy_of_not_topAvoid {ξ ζ : PLLFormula} (h : ¬ TopAvoid ξ ζ) (x : String → PLLFormula) :
+    ¬ FreeInPLL ξ ζ x := fun hF => h (relCopyNecessary ξ ζ x hF)
+
+theorem not_topAvoid_t3 : ¬ TopAvoid .falsePLL t3 := fun h => nd_t3 (h t3 rfl (Deriv.iden (.head _)))
+
+theorem not_topAvoid_t6 : ¬ TopAvoid .falsePLL t6 := fun h => nd_t6 (h t6 rfl (Deriv.iden (.head _)))
+
+theorem not_topAvoid_d3 : ¬ TopAvoid x3 z3 := fun h => nd_ne_nne (h _ rfl d3_disj)
+
+/-- An in-range pair from a pair below: `gR` of it, with the clauses and no
+copy. -/
+theorem inRange_witness {ξ ζ : PLLFormula} (hle : Deriv [ξ] ζ) (hc : RelClauses ξ ζ)
+    (hn : ¬ TopAvoid ξ ζ) :
+    Deriv [sigN 3 .falsePLL] (gR ξ) ∧ Deriv [gR ξ] (gR ζ) ∧ RelClauses (gR ξ) (gR ζ) ∧
+      ∀ x, ¬ FreeInPLL (gR ξ) (gR ζ) x :=
+  ⟨(g_faithful .falsePLL ξ).mp (MovingTop.bot_le ξ), (g_faithful ξ ζ).mp hle,
+    (relTransportGR ξ ζ).1.mpr hc,
+    no_copy_of_not_topAvoid fun h => hn ((relTransportGR ξ ζ).2.mp h)⟩
+
+/-- **REFUTED inside Matthew's range**, at `(σ³⊥, σ³t3) = σ³(D1)`. -/
+theorem not_relSufficientInRange : ¬ RelSufficientInRange := fun h =>
+  have w := inRange_witness (MovingTop.bot_le t3) d_t3_clauses not_topAvoid_t3
+  (h _ _ w.1 w.2.1 w.2.2.1).elim fun x hF => w.2.2.2 x hF
+
+/-- `σ³(D1)` in closed coordinates: `[σ³⊥, σ³t3]`, clauses, no copy. -/
+theorem sig3_D1 : RelClauses (sigN 3 .falsePLL) (sigN 3 t3) ∧
+    ∀ x, ¬ FreeInPLL (sigN 3 .falsePLL) (sigN 3 t3) x := by
+  have w := inRange_witness (MovingTop.bot_le t3) d_t3_clauses not_topAvoid_t3
+  rw [Endpoints.gR_closed (rfl : atomFree PLLFormula.falsePLL = true),
+    Endpoints.gR_closed (rfl : atomFree t3 = true)] at w
+  exact ⟨w.2.2.1, w.2.2.2⟩
+
+/-- `σ³(D2)`: `[σ³⊥, σ³t6]`, clauses, no copy. -/
+theorem sig3_D2 : RelClauses (sigN 3 .falsePLL) (sigN 3 t6) ∧
+    ∀ x, ¬ FreeInPLL (sigN 3 .falsePLL) (sigN 3 t6) x := by
+  have w := inRange_witness (MovingTop.bot_le t6) d_t6_clauses not_topAvoid_t6
+  rw [Endpoints.gR_closed (rfl : atomFree PLLFormula.falsePLL = true),
+    Endpoints.gR_closed (rfl : atomFree t6 = true)] at w
+  exact ⟨w.2.2.1, w.2.2.2⟩
+
+/-- `gR(D3)`: the ◯-free-top pair carried into the range (closed). -/
+theorem gR_D3 : Deriv [sigN 3 .falsePLL] (gR x3) ∧ Deriv [gR x3] (gR z3) ∧
+    RelClauses (gR x3) (gR z3) ∧ ∀ x, ¬ FreeInPLL (gR x3) (gR z3) x :=
+  inRange_witness d3_le d3_clauses not_topAvoid_d3
+
+end RelCrit
+end F0
+end PLLND
+
+/-! ## Axiom pins: the addition -/
+
+#axioms_within PLLND.F0.RelCrit.relB_subBot [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.relTransportGR [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.relTransportSig3 [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.no_copy_of_not_topAvoid [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.inRange_witness [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.not_relSufficientInRange [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.sig3_D1 [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.sig3_D2 [propext, Quot.sound]
+#axioms_within PLLND.F0.RelCrit.gR_D3 [propext, Quot.sound]

@@ -28,6 +28,19 @@ where the first clause holds only on the `p` side and the second only on the
 the one clause `[ζ] ⊬ (◯ξ ↠ ξ) ∨ ((◯ξ ↠ ξ) ↠ ξ)` does not help:
 `ξ = ⊥`, `ζ = t6` (`not_relSufficientDisj`).
 
+**Inside Matthew's range `σ³⊥ ≤ ξ < ζ ≤ ⊤`** it fails as well
+(`not_relSufficientInRange`, stated with `∃ x`, any generators).  The readers'
+copy `gR = relB σ³⊥ xr`, which is `σ³` on closed formulas, keeps both clauses
+and the closed part, for all `ξ`, `ζ` (`relTransportGR`; closed form
+`relTransportSig3`), because `gR(◯ξ ↠ ξ) = ◯gR ξ ↠ gR ξ`,
+`gR(C[⊥ := ξ]) = C[⊥ := gR ξ]` for closed `C` (`gR_subBot`), and `gR` is
+faithful.  So
+
+    (σ³⊥, σ³t3) = σ³(D1),     (σ³⊥, σ³t6) = σ³(D2),     (gR ξ₃, gR (p ∨ ¬p)) = gR(D3)
+
+all lie in the range, satisfy both clauses, and carry no faithful copy
+(`sig3_D1`, `sig3_D2`, `gR_D3`).  The manager's pen argument was right.
+
 **What is true.**  At the top `ζ = ⊤` the criterion holds for every `ξ`, open
 or closed (PROVED, `relCriterionTop`):
 
@@ -74,13 +87,23 @@ it; for a general top they do not (D1, D2, D3).
 | `RelSufficientClosed` (stage 3) | `not_relSufficientClosed` (D1) | REFUTED |
 | `NestOfCore` (stage 3) | `nestOfCore` | PROVED |
 | `GoodCore`, `GoodMain`, `GoodInGR`, `GoodNestAll` (stage 3) | `goodCore`, `goodMain`, `goodInGR`, `goodNestAll` | PROVED |
+| `RelTransportGR` (addition) | `relTransportGR` | PROVED |
+| `RelTransportSig3` (addition) | `relTransportSig3` | PROVED |
+| **`RelSufficientInRange`** (addition) | `not_relSufficientInRange` (`σ³(D1)`; also `sig3_D1`, `sig3_D2`, `gR_D3`) | **REFUTED** |
 
 No theorem is sorried; the open statement is a `Prop` definition.
 
 Estate check: `#axiom_sweep [wip.f0RelCriterion] allowing [propext, Quot.sound]`
-passes on all 141 declarations; with `allowing []` 70 of 141 escape, and the
+passes on all 159 declarations; with `allowing []` 83 of 159 escape, and the
 pin `#axioms_within relCriterionTop [propext]` is rejected (both gates watched
 failing, `_out/rcsweep.lean`, untracked).
+
+Addition (Matthew via the manager, 2026-11-02), stated as `Prop`s before the
+proofs, in the same commit:
+
+    RelTransportGR :        RelClauses (gR ξ) (gR ζ) ⟺ RelClauses ξ ζ,   TopAvoid (gR ξ) (gR ζ) ⟺ TopAvoid ξ ζ
+    RelTransportSig3 :      ξ, ζ closed  ⟹  the same with σ³ in place of gR
+    RelSufficientInRange :  [σ³⊥] ⊢ ξ,  [ξ] ⊢ ζ,  RelClauses ξ ζ  ⟹  ∃ x, FreeInPLL ξ ζ x
 
 Added at stage 3, each stated as a `Prop` before its proof, in the same
 commit:
@@ -281,6 +304,9 @@ Registered in `lakefile.toml` (the `wip` glob list, its own last line after
 | 3, body | the same, after the fixes | 0 | 12.7 s | — |
 | 3 | `gtimeout 3600 lake build wip.f0RelCriterion -q` | 0 | 15.9 s | 100,124 MB |
 | 3, sweep | `gtimeout 900 lake env lean _out/rcsweep.lean` | 1 (the two gate lines, by design) | 12.3 s | — |
+| addition, body | `gtimeout 900 lake env lean _out/rc4.lean` (over the built module) | 0 | 11.5 s | — |
+| addition | `gtimeout 3600 lake build wip.f0RelCriterion -q` | 0 | 15.9 s | 100,127 MB |
+| addition, sweep | `gtimeout 900 lake env lean _out/rcsweep.lean` | 1 (the two gate lines, by design) | 12.3 s | — |
 
 Only `wip.f0RelCriterion` (and, at stage 1, its new dependency
 `wip.f0NestPLL`) was built; every other module replayed.  No `lake exe`.  No
