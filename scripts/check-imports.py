@@ -33,6 +33,9 @@ EXTERNAL = {
     "Qq", "Aesop", "ProofWidgets", "Cli", "LeanSearchClient", "Verso",
     "SubVerso", "MD4Lean", "VersoManual", "VersoBlog", "VersoBlueprint",
     "LeanCertify",
+    # proof-tools (2026-11-19): the package that now carries `LeanCertify`,
+    # and `ProofTools`, of which the subframe tableau is an instance
+    "ProofTools",
     # the Lean–Wolfram bridge: the sibling repository `mathematica-in-lean`,
     # put on LEAN_PATH by `scripts/clp-wolfram.sh` rather than made a Lake
     # dependency, and imported by exactly one file that nothing imports
