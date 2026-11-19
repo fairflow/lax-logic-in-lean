@@ -10,3 +10,5 @@ import CK.HilbertProps
 import CK.Sound
 import CK.Structural
 import CK.Identity
+import CK.Height
+import CK.Inversion
