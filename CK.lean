@@ -6,3 +6,5 @@ Plan: `docs/ck-ui-adoption-plan.md`.
 import CK.Syntax
 import CK.G4CK
 import CK.Hilbert
+import CK.HilbertProps
+import CK.Sound
