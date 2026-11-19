@@ -60,11 +60,11 @@ theorem perm {Γ : List Form} {φ : Form} (d : G4CK Γ φ) :
   | impR _ ih => intro Γ' hp; exact .impR (ih (hp.cons _))
   | impAndL h d _ => intro Γ' hp; exact .impAndL (hp.symm.trans h) d
   | impOrL h d _ => intro Γ' hp; exact .impOrL (hp.symm.trans h) d
-  | impVarL h d _ => intro Γ' hp; exact .impVarL (hp.symm.trans h) d
+  | impVarL h hv d _ => intro Γ' hp; exact .impVarL (hp.symm.trans h) hv d
   | impImpL h d₁ d₂ _ _ => intro Γ' hp; exact .impImpL (hp.symm.trans h) d₁ d₂
   | boxR _ ih => intro Γ' hp; exact .boxR (ih (unbox_perm hp))
   | impBoxL h d₁ d₂ _ _ => intro Γ' hp; exact .impBoxL (hp.symm.trans h) d₁ d₂
-  | impDiaL h d₁ d₂ _ _ => intro Γ' hp; exact .impDiaL (hp.symm.trans h) d₁ d₂
+  | impDiaL h hγ d₁ d₂ _ _ => intro Γ' hp; exact .impDiaL (hp.symm.trans h) hγ d₁ d₂
   | diaL h d _ => intro Γ' hp; exact .diaL (hp.symm.trans h) d
 
 /-- Weakening of the premise of a modal rule: `□⁻¹Δ ⇒ φ` gives
@@ -113,12 +113,10 @@ theorem weaken {Γ : List Form} {φ : Form} (d : G4CK Γ φ) :
       exact .impOrL ((h.cons ψ).trans (List.Perm.swap _ _ _))
         ((ih ψ).perm (((List.Perm.swap _ _ _).trans
           ((List.Perm.swap _ _ _).cons _))))
-  | impVarL h _ ih =>
+  | impVarL h hv _ ih =>
       intro ψ
-      exact .impVarL ((h.cons ψ).trans (((List.Perm.swap _ _ _).trans
-          ((List.Perm.swap _ _ _).cons _))))
-        ((ih ψ).perm (((List.Perm.swap _ _ _).trans
-          ((List.Perm.swap _ _ _).cons _))))
+      exact .impVarL ((h.cons ψ).trans (List.Perm.swap _ _ _)) (List.mem_cons_of_mem _ hv)
+        ((ih ψ).perm (List.Perm.swap _ _ _))
   | impImpL h _ _ ih₁ ih₂ =>
       intro ψ
       exact .impImpL ((h.cons ψ).trans (List.Perm.swap _ _ _))
@@ -128,13 +126,10 @@ theorem weaken {Γ : List Form} {φ : Form} (d : G4CK Γ φ) :
       intro ψ
       exact .impBoxL ((h.cons ψ).trans (List.Perm.swap _ _ _))
         (unbox_weaken ψ ih₁ d₁) ((ih₂ ψ).perm (List.Perm.swap _ _ _))
-  | impDiaL h d₁ _ ih₁ ih₂ =>
+  | impDiaL h hγ d₁ _ ih₁ ih₂ =>
       intro ψ
-      exact .impDiaL ((h.cons ψ).trans (((List.Perm.swap _ _ _).trans
-          ((List.Perm.swap _ _ _).cons _))))
-        (unbox_weaken_cons ψ ih₁ d₁)
-        ((ih₂ ψ).perm (((List.Perm.swap _ _ _).trans
-          ((List.Perm.swap _ _ _).cons _))))
+      exact .impDiaL ((h.cons ψ).trans (List.Perm.swap _ _ _)) (List.mem_cons_of_mem _ hγ)
+        (unbox_weaken_cons ψ ih₁ d₁) ((ih₂ ψ).perm (List.Perm.swap _ _ _))
   | diaL h d ih =>
       intro ψ
       exact .diaL ((h.cons ψ).trans (List.Perm.swap _ _ _)) (unbox_weaken_cons ψ ih d)

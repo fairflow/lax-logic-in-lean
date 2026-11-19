@@ -42,7 +42,8 @@ private abbrev MpAt (φ : Form) : Prop :=
 private theorem id_mp : ∀ φ : Form, IdAt φ ∧ MpAt φ
   | .var p =>
       ⟨fun _ => .idP List.mem_cons_self,
-       fun _ _ _ d => .impVarL (List.Perm.refl _) (d.weaken _)⟩
+       fun _ _ _ d => .impVarL (List.Perm.swap _ _ _) List.mem_cons_self
+         ((d.weaken _).perm (List.Perm.swap _ _ _))⟩
   | .bot =>
       ⟨fun _ => .botL List.mem_cons_self, fun _ _ _ _ => .botL List.mem_cons_self⟩
   | .and φ₁ φ₂ => by
@@ -100,7 +101,8 @@ private theorem id_mp : ∀ φ : Form, IdAt φ ∧ MpAt φ
       have ⟨i, _⟩ := id_mp φ
       refine ⟨fun Γ => .diaL (List.Perm.refl _) (i (unbox Γ)), fun Γ ψ δ d => ?_⟩
       -- ◇φ, ◇φ→ψ, Γ ⇒ δ
-      exact .impDiaL (List.Perm.refl _) (i (unbox Γ)) (d.weaken (◇φ))
+      exact .impDiaL (Δ := (◇φ) :: Γ) (List.Perm.swap _ _ _) List.mem_cons_self (i (unbox Γ))
+        ((d.weaken (◇φ)).perm (List.Perm.swap _ _ _))
 
 /-- **Lemma 1, `(Id)`** (`lemma:weakening`): `Γ,φ ⇒ φ`.
 Rocq `generalised_axiom`. -/

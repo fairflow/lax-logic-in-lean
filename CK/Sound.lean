@@ -60,16 +60,13 @@ theorem G4CK.toCKH {Γ : List Form} {φ : Form} (d : G4CK Γ φ) : CKH (ctx Γ) 
       · exact CKH.impI (.mp (CKH.orI2 (.el List.mem_cons_self))
           (.el (List.mem_cons_of_mem _ hm)))
       · exact .el (h.mem_iff.2 (List.mem_cons_of_mem _ hx))
-  | @impVarL Γ Δ p φ χ h _ ih =>
-      have hp : Form.var p ∈ Γ := h.mem_iff.2 List.mem_cons_self
-      have hi : (Form.var p ⟶ φ) ∈ Γ :=
-        h.mem_iff.2 (List.mem_cons_of_mem _ List.mem_cons_self)
+  | @impVarL Γ Δ p φ χ h hp _ ih =>
+      have hΔ : ∀ x ∈ Δ, x ∈ Γ := fun x hx => h.mem_iff.2 (List.mem_cons_of_mem _ hx)
+      have hi : (Form.var p ⟶ φ) ∈ Γ := h.mem_iff.2 List.mem_cons_self
       refine ih.subst fun x hx => ?_
       rcases List.mem_cons.1 hx with rfl | hx
-      · exact .el hp
-      rcases List.mem_cons.1 hx with rfl | hx
-      · exact .mp (.el hp) (.el hi)
-      · exact .el (h.mem_iff.2 (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hx)))
+      · exact .mp (.el (hΔ _ hp)) (.el hi)
+      · exact .el (hΔ x hx)
   | @impImpL Γ Δ φ ψ χ δ h _ _ ih₁ ih₂ =>
       have hm : ((φ ⟶ ψ) ⟶ χ) ∈ Γ := h.mem_iff.2 List.mem_cons_self
       have hΔ : ∀ x ∈ Δ, CKH (ctx Γ) x := fun x hx =>
@@ -97,19 +94,14 @@ theorem G4CK.toCKH {Γ : List Form} {φ : Form} (d : G4CK Γ φ) : CKH (ctx Γ) 
       rcases List.mem_cons.1 hx with rfl | hx
       · exact .mp d₁ (.el hm)
       · exact .el (hΔ x hx)
-  | @impDiaL Γ Δ γ φ ψ δ h _ _ ih₁ ih₂ =>
-      have hg : (◇γ) ∈ Γ := h.mem_iff.2 List.mem_cons_self
-      have hm : ((◇φ) ⟶ ψ) ∈ Γ :=
-        h.mem_iff.2 (List.mem_cons_of_mem _ List.mem_cons_self)
-      have hΔ : ∀ x ∈ Δ, x ∈ Γ := fun x hx =>
-        h.mem_iff.2 (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hx))
+  | @impDiaL Γ Δ γ φ ψ δ h hγ _ _ ih₁ ih₂ =>
+      have hΔ : ∀ x ∈ Δ, x ∈ Γ := fun x hx => h.mem_iff.2 (List.mem_cons_of_mem _ hx)
+      have hm : ((◇φ) ⟶ ψ) ∈ Γ := h.mem_iff.2 List.mem_cons_self
       -- Γ ⊢ □(γ → φ), hence Γ ⊢ ◇φ by K◇
       have d₁ : CKH (ctx Γ) (□(γ ⟶ φ)) :=
         CKH.boxI (CKH.impI ih₁) fun x hx => .el (hΔ _ (box_mem_of_mem_unbox hx))
-      have d₂ : CKH (ctx Γ) (◇φ) := .mp (.el hg) (.mp d₁ (.ax (.kDia γ φ)))
+      have d₂ : CKH (ctx Γ) (◇φ) := .mp (.el (hΔ _ hγ)) (.mp d₁ (.ax (.kDia γ φ)))
       refine ih₂.subst fun x hx => ?_
-      rcases List.mem_cons.1 hx with rfl | hx
-      · exact .el hg
       rcases List.mem_cons.1 hx with rfl | hx
       · exact .mp d₂ (.el hm)
       · exact .el (hΔ x hx)

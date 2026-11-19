@@ -15,7 +15,9 @@ The paper's antecedents are finite multisets and Rocq uses `stdpp`'s
 field `h : Γ.Perm (principal :: Δ)`, the convention of
 `LaxLogic/PLL/G4/G4.lean`.  So every index of every conclusion is a variable
 or a constructor applied to variables, and `□⁻¹` (`unbox`) occurs in
-premises only.
+premises only.  Two rules, `(p→L)` and `(◇→L)`, have a second formula that
+the rule leaves in place (`p`, `◇γ`); it is a membership side condition, as in
+`G4h.impLProp` of `LaxLogic/PLL/G4/G4H.lean` (divergence D4).
 
 Provability is a `Prop` (divergence D2): Rocq's `Provable` lives in `Type`.
 -/
@@ -60,10 +62,13 @@ inductive G4CK : List Form → Form → Prop
   | impOrL {Γ Δ : List Form} {φ ψ χ δ : Form}
       (h : Γ.Perm (((φ ⋎ ψ) ⟶ χ) :: Δ)) :
       G4CK ((φ ⟶ χ) :: (ψ ⟶ χ) :: Δ) δ → G4CK Γ δ
-  /-- `(p→L)`  `Γ,p,φ ⇒ χ  /  Γ,p,p→φ ⇒ χ`.  Rocq `ImpLVar`. -/
+  /-- `(p→L)`  `Γ,p,φ ⇒ χ  /  Γ,p,p→φ ⇒ χ`.  Rocq `ImpLVar`.
+  The atom `p` occurs in the conclusion and in the premise alike, so it is
+  recorded as a side condition `p ∈ Δ` and only `p→φ` is exposed
+  (divergence D4). -/
   | impVarL {Γ Δ : List Form} {p : Nat} {φ χ : Form}
-      (h : Γ.Perm (Form.var p :: (Form.var p ⟶ φ) :: Δ)) :
-      G4CK (Form.var p :: φ :: Δ) χ → G4CK Γ χ
+      (h : Γ.Perm ((Form.var p ⟶ φ) :: Δ)) (hp : Form.var p ∈ Δ) :
+      G4CK (φ :: Δ) χ → G4CK Γ χ
   /-- `(→→L)`  `Γ,ψ→χ ⇒ φ→ψ   Γ,χ ⇒ δ  /  Γ,(φ→ψ)→χ ⇒ δ`.
   Rocq `ImpLImp`. -/
   | impImpL {Γ Δ : List Form} {φ ψ χ δ : Form}
@@ -78,10 +83,12 @@ inductive G4CK : List Form → Form → Prop
       (h : Γ.Perm (((□φ) ⟶ ψ) :: Δ)) :
       G4CK (unbox Δ) φ → G4CK (ψ :: Δ) δ → G4CK Γ δ
   /-- `(◇→L)`  `□⁻¹Γ,γ ⇒ φ   Γ,◇γ,ψ ⇒ δ  /  Γ,◇γ,◇φ→ψ ⇒ δ`.
-  Rocq `ImpDiam`. -/
+  Rocq `ImpDiam`.  As for `(p→L)`, `◇γ` occurs in the conclusion and in the
+  second premise alike and is recorded as `◇γ ∈ Δ` (divergence D4); it is not
+  a box, so `□⁻¹(Γ,◇γ) = □⁻¹Γ` and the first premise is `γ, □⁻¹Δ ⇒ φ`. -/
   | impDiaL {Γ Δ : List Form} {γ φ ψ δ : Form}
-      (h : Γ.Perm ((◇γ) :: ((◇φ) ⟶ ψ) :: Δ)) :
-      G4CK (γ :: unbox Δ) φ → G4CK ((◇γ) :: ψ :: Δ) δ → G4CK Γ δ
+      (h : Γ.Perm (((◇φ) ⟶ ψ) :: Δ)) (hγ : (◇γ) ∈ Δ) :
+      G4CK (γ :: unbox Δ) φ → G4CK (ψ :: Δ) δ → G4CK Γ δ
   /-- `(◇L)`  `□⁻¹Γ,φ ⇒ ψ  /  Γ,◇φ ⇒ ◇ψ`.  Rocq `DiamL`. -/
   | diaL {Γ Δ : List Form} {φ ψ : Form}
       (h : Γ.Perm ((◇φ) :: Δ)) :

@@ -180,6 +180,7 @@ its axioms (decision 3).
 |---|---|---|---|---|
 | D1 | Figure 2 | antecedents are finite multisets | antecedents are lists; each left rule has a field `Γ.Perm (principal :: Δ)` | every conclusion index stays a variable (`#slime`: 0); the repository's G4 convention |
 | D2 | Figure 2 | (Rocq) `Provable : env → form → Type` | `G4CK : List Form → Form → Prop` | the theorems need no proof terms; removes the decidability detour of Theorem 2 |
+| D4 | Figure 2, `(p→L)` and `(◇→L)` | `Γ,p,p→φ` and `Γ,◇γ,◇φ→ψ` in the conclusion | only the implication is exposed by `Perm`; `p ∈ Δ`, `◇γ ∈ Δ` are side conditions | the rule leaves that formula in place; this is the encoding of `G4h.impLProp` in `LaxLogic/PLL/G4/G4H.lean`, whose inversion and contraction proofs are the templates |
 | D3 | Figure 1 | axioms as schemes | `Axiom` is an inductive family indexed by the instance | Rocq states each axiom with an equation `F = …`; the index form is the same set |
 
 Opened empty on 2026-11-19; D1–D3 recorded with the transcription the same
