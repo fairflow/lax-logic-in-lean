@@ -1035,3 +1035,9 @@ globs = ["F0.Weight", "F0.WeightGates", "F0.Names", "F0.NamesGates", "F0.Bridge"
 [[lean_exe]]
 name = "explorergen"
 root = "tools.F0.ExplorerGen"
+
+# CK: the sequent calculus G4CK and uniform interpolation for constructive K,
+# adopted from van der Giessen and Shillito, arXiv:2602.16880 (Rocq:
+# github.com/ianshil/CK).  Mathlib-free.  Plan: docs/ck-ui-adoption-plan.md.
+[[lean_lib]]
+name = "CK"
