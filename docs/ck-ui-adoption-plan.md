@@ -195,10 +195,11 @@ Theorem 2 unnecessary; the representation of multisets (decision 1).
    theorems, and no `Type`-valued twin until a searcher is wanted (stage 4).
 3. **Choice.** The repository standard is choice-free for anything that is
    to become a procedure. `Ep`, `Ap` and the decision procedure are such.
-   If Mathlib's Dershowitz–Manna theorem carries `Classical.choice`, I
-   propose a weight-indexed measure proved here instead (a count vector by
-   weight, compared lexicographically), recorded as a divergence in the
-   proof of termination only.
+   Mathlib's `Multiset.wellFounded_isDershowitzMannaLT` depends on
+   `[propext, Classical.choice, Quot.sound]` (checked 2026-11-19 with
+   `#print axioms`). So I propose a weight-indexed measure proved here
+   instead (a count vector by weight, compared lexicographically), recorded
+   as a divergence in the proof of termination only.
 4. **Where.** A new top-level library `CK/` (as `LJF/`, `FRJ/` are), with
    `CK.lean` as its root, on a new durable branch `ck-ui-adoption`. The
    paper and its Rocq code are public, and this plan mentions no private
