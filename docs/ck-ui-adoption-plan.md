@@ -141,8 +141,8 @@ out of scope here.
 | Definition 2 (no label) | sequent order `≺` | `pointed_env_order` | | OPEN |
 | Proposition (no label) | G4CK strongly terminates | (in `CKOrder`) | | OPEN |
 | Proposition (no label) | G4CK provability is decidable | `Provable_dec` | | OPEN |
-| Lemma 1 · `lemma:weakening` | `wk`, `Id`, `→L` admissible | `generalised_weakeningR`, `generalised_axiom`, `weak_ImpL` | `CK.G4CK.weakenList` (`wk`); exchange `CK.G4CK.perm` | `wk` PROVED [propext]; `Id` PROVED [propext] (`CK.G4CK.id`, with the detachment lemma `CK.G4CK.mp`); `→L` OPEN |
-| Proposition (no label) | contraction admissible | `contraction` | | OPEN |
+| Lemma 1 · `lemma:weakening` | `wk`, `Id`, `→L` admissible | `generalised_weakeningR`, `generalised_axiom`, `weak_ImpL` | `CK.G4CK.weakenList` (`wk`); exchange `CK.G4CK.perm` | `wk` PROVED [propext]; `Id` PROVED [propext] (`CK.G4CK.id`, with the detachment lemma `CK.G4CK.mp`); `→L` PROVED [propext] (`CK.G4CK.weakImp`) |
+| Proposition (no label) | contraction admissible | `contraction` | `CK.G4CK.contract` (with `CK.G4CKh.inv`, `CK.G4CK.impImpL_dup`) | PROVED [propext, Quot.sound] |
 | Theorem (no label) | additive cut admissible | `additive_cut` | | OPEN |
 | Theorem 2 · `thm:equiv` | `⊢G4CK Γ ⇒ φ` iff `Γ ⊢CK φ` | `G4CK_sound_CKH`, `G4CK_compl_CKH` | `CK.G4CK.toCKH` (left to right) | left to right PROVED [propext]; right to left OPEN |
 | Definition 3 · `def:UIP` | UIP of a logic | | | OPEN |

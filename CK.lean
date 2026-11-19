@@ -12,3 +12,4 @@ import CK.Structural
 import CK.Identity
 import CK.Height
 import CK.Inversion
+import CK.Contraction
