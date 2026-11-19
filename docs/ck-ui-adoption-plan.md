@@ -138,13 +138,13 @@ out of scope here.
 | Definition 1 · `def:weight` | weight of a formula | `weight` | `CK.Form.weight` | transcribed |
 | Figure 2 | G4CK | `Provable` | `CK.G4CK` | transcribed; `#rules` compared, `#slime` 0 |
 | Figure 1 | CKH | `CKH_prv` | `CK.CKH`, `CK.Axiom` | transcribed |
-| Definition 2 (no label) | sequent order `≺` | `pointed_env_order` | | OPEN |
+| Definition 2 (no label) | sequent order `≺` | `pointed_env_order` | `CK.wt`, `CK.sw` | transcribed from Rocq (divergence D5) |
 | Proposition (no label) | G4CK strongly terminates | (in `CKOrder`) | | OPEN |
 | Proposition (no label) | G4CK provability is decidable | `Provable_dec` | | OPEN |
 | Lemma 1 · `lemma:weakening` | `wk`, `Id`, `→L` admissible | `generalised_weakeningR`, `generalised_axiom`, `weak_ImpL` | `CK.G4CK.weakenList` (`wk`); exchange `CK.G4CK.perm` | `wk` PROVED [propext]; `Id` PROVED [propext] (`CK.G4CK.id`, with the detachment lemma `CK.G4CK.mp`); `→L` PROVED [propext] (`CK.G4CK.weakImp`) |
 | Proposition (no label) | contraction admissible | `contraction` | `CK.G4CK.contract` (with `CK.G4CKh.inv`, `CK.G4CK.impImpL_dup`) | PROVED [propext, Quot.sound] |
-| Theorem (no label) | additive cut admissible | `additive_cut` | | OPEN |
-| Theorem 2 · `thm:equiv` | `⊢G4CK Γ ⇒ φ` iff `Γ ⊢CK φ` | `G4CK_sound_CKH`, `G4CK_compl_CKH` | `CK.G4CK.toCKH` (left to right) | left to right PROVED [propext]; right to left OPEN |
+| Theorem (no label) | additive cut admissible | `additive_cut` | `CK.G4CK.cut` | PROVED [propext, Quot.sound] |
+| Theorem 2 · `thm:equiv` | `⊢G4CK Γ ⇒ φ` iff `Γ ⊢CK φ` | `G4CK_sound_CKH`, `G4CK_compl_CKH` | `CK.G4CK_iff_CKH` (`CK.G4CK.toCKH`, `CK.G4CK.ofCKH`) | PROVED [propext, Quot.sound] |
 | Definition 3 · `def:UIP` | UIP of a logic | | | OPEN |
 | Definition 4 · `def SUIP` | UIP of a set of sequents | | | OPEN |
 | Lemma 2 (no label) | sequent UIP gives UIP of the logic | | | OPEN |
@@ -181,6 +181,7 @@ its axioms (decision 3).
 | D1 | Figure 2 | antecedents are finite multisets | antecedents are lists; each left rule has a field `Γ.Perm (principal :: Δ)` | every conclusion index stays a variable (`#slime`: 0); the repository's G4 convention |
 | D2 | Figure 2 | (Rocq) `Provable : env → form → Type` | `G4CK : List Form → Form → Prop` | the theorems need no proof terms; removes the decidability detour of Theorem 2 |
 | D4 | Figure 2, `(p→L)` and `(◇→L)` | `Γ,p,p→φ` and `Γ,◇γ,◇φ→ψ` in the conclusion | only the implication is exposed by `Perm`; `p ∈ Δ`, `◇γ ∈ Δ` are side conditions | the rule leaves that formula in place; this is the encoding of `G4h.impLProp` in `LaxLogic/PLL/G4/G4H.lean`, whose inversion and contraction proofs are the templates |
+| D5 | Definition 2 | `≺` is the Dershowitz–Manna extension of the order by weight | `sw Γ φ = Σ 5^w + 5^w(φ)` compared by `<` on ℕ | this is what Rocq mechanises (`env_weight`); choice-free; decreases on every premise |
 | D3 | Figure 1 | axioms as schemes | `Axiom` is an inductive family indexed by the instance | Rocq states each axiom with an equation `F = …`; the index form is the same set |
 
 Opened empty on 2026-11-19; D1–D3 recorded with the transcription the same
