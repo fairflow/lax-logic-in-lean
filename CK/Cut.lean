@@ -241,6 +241,244 @@ theorem cut_impR {w : Nat} (IHw : CutUpTo w) {A B ψ : Form} {Γ : List Form}
       · have hu : (unbox Δ).Perm (unbox l') := by have := unbox_perm hΔ; exact this
         exact .diaL hΓ (e.perm (hu.cons A₁))
 
+/-! ## The left premise ends in `(□R)` -/
+
+theorem cut_boxR {w : Nat} (IHw : CutUpTo w) {χ ψ : Form} {Γ : List Form}
+    (hχ : χ.weight ≤ w)
+    (IHW : ∀ {Γ₀ : List Form} {ψ₀ : Form}, sw Γ₀ ψ₀ < sw Γ ψ → CutAt (□χ) Γ₀ ψ₀)
+    (d : G4CK (unbox Γ) χ) :
+    ∀ {Γ' : List Form}, G4CK Γ' ψ → Γ'.Perm ((□χ) :: Γ) → G4CK Γ ψ := by
+  have HPφ : G4CK Γ (□χ) := .boxR d
+  intro Γ' HPψ hp
+  cases HPψ with
+  | botL h =>
+      rcases List.mem_cons.1 (hp.subset h) with e | h'
+      · cases e
+      · exact .botL h'
+  | idP h =>
+      rcases List.mem_cons.1 (hp.subset h) with e | h'
+      · cases e
+      · exact .idP h'
+  | andR e₁ e₂ =>
+      exact .andR (IHW (sw_andR₁ _ _ _) HPφ (e₁.perm hp)) (IHW (sw_andR₂ _ _ _) HPφ (e₂.perm hp))
+  | orR1 e => exact .orR1 (IHW (sw_orR₁ _ _ _) HPφ (e.perm hp))
+  | orR2 e => exact .orR2 (IHW (sw_orR₂ _ _ _) HPφ (e.perm hp))
+  | @impR _ C₁ C₂ e =>
+      exact .impR (IHW (sw_impR _ _ _) (HPφ.weaken C₁)
+        (e.perm ((hp.cons C₁).trans (List.Perm.swap _ _ _))))
+  | @andL _ Δ A' B' _ h e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .andL hΓ (rc IHW HPφ (.and A' B') hΓ hΔ e)
+  | @orL _ Δ A' B' _ h e₁ e₂ =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .orL hΓ (rc IHW HPφ (.or₁ A' B') hΓ hΔ e₁) (rc IHW HPφ (.or₂ A' B') hΓ hΔ e₂)
+  | @impVarL _ Δ p B' _ h ha e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .impVarL hΓ (mem_of_perm_cons_ne hΔ ha (by intro e'; cases e'))
+          (rc IHW HPφ (.impVar p B') hΓ hΔ e)
+  | @impAndL _ Δ A₁ B₁ D₁ _ h e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .impAndL hΓ (rc IHW HPφ (.impAnd A₁ B₁ D₁) hΓ hΔ e)
+  | @impOrL _ Δ A₁ B₁ D₁ _ h e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .impOrL hΓ (rc IHW HPφ (.impOr A₁ B₁ D₁) hΓ hΔ e)
+  | @impImpL _ Δ A₁ B₁ D₁ _ h e₁ e₂ =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .impImpL hΓ (rcImpImp₁ IHW HPφ hΓ hΔ e₁)
+          (rc IHW HPφ (.impImp A₁ B₁ D₁) hΓ hΔ e₂)
+  | boxR e =>
+      -- (VIII-c): cut on `χ` under the box
+      have hu : (unbox Γ').Perm (χ :: unbox Γ) := by have := unbox_perm hp; exact this
+      exact .boxR (IHw hχ d (e.perm hu))
+  | @impBoxL _ Δ A₁ B₁ _ h e₁ e₂ =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · -- (VIII-b)
+        have hu : (unbox Δ).Perm (χ :: unbox l') := by have := unbox_perm hΔ; exact this
+        have hΓu : (unbox Γ).Perm (unbox l') := by have := unbox_perm hΓ; exact this
+        exact .impBoxL hΓ (IHw hχ (d.perm hΓu) (e₁.perm hu))
+          (rc IHW HPφ (.impBox A₁ B₁) hΓ hΔ e₂)
+  | @impDiaL _ Δ G₁ A₁ B₁ _ h hγ e₁ e₂ =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · -- (VIII-d)
+        have hu : (unbox Δ).Perm (χ :: unbox l') := by have := unbox_perm hΔ; exact this
+        have hΓu : (unbox Γ).Perm (unbox l') := by have := unbox_perm hΓ; exact this
+        exact .impDiaL hΓ (mem_of_perm_cons_ne hΔ hγ (by intro e'; cases e'))
+          (IHw hχ ((d.perm hΓu).weaken G₁)
+            (e₁.perm ((hu.cons G₁).trans (List.Perm.swap _ _ _))))
+          (rc IHW HPφ (.impDia A₁ B₁) hΓ hΔ e₂)
+  | @diaL _ Δ A₁ _ h e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · -- (VIII-e)
+        have hu : (unbox Δ).Perm (χ :: unbox l') := by have := unbox_perm hΔ; exact this
+        have hΓu : (unbox Γ).Perm (unbox l') := by have := unbox_perm hΓ; exact this
+        exact .diaL hΓ (IHw hχ ((d.perm hΓu).weaken A₁)
+          (e.perm ((hu.cons A₁).trans (List.Perm.swap _ _ _))))
+
+/-! ## The left premise ends in `(◇L)` -/
+
+theorem cut_diaL {w : Nat} (IHw : CutUpTo w) {A B ψ : Form} {Γ Θ : List Form}
+    (hB : B.weight ≤ w)
+    (IHW : ∀ {Γ₀ : List Form} {ψ₀ : Form}, sw Γ₀ ψ₀ < sw Γ ψ → CutAt (◇B) Γ₀ ψ₀)
+    (h₀ : Γ.Perm ((◇A) :: Θ)) (d : G4CK (A :: unbox Θ) B) :
+    ∀ {Γ' : List Form}, G4CK Γ' ψ → Γ'.Perm ((◇B) :: Γ) → G4CK Γ ψ := by
+  have HPφ : G4CK Γ (◇B) := .diaL h₀ d
+  have hΓΘ : (unbox Γ).Perm (unbox Θ) := by have := unbox_perm h₀; exact this
+  intro Γ' HPψ hp
+  cases HPψ with
+  | botL h =>
+      rcases List.mem_cons.1 (hp.subset h) with e | h'
+      · cases e
+      · exact .botL h'
+  | idP h =>
+      rcases List.mem_cons.1 (hp.subset h) with e | h'
+      · cases e
+      · exact .idP h'
+  | andR e₁ e₂ =>
+      exact .andR (IHW (sw_andR₁ _ _ _) HPφ (e₁.perm hp)) (IHW (sw_andR₂ _ _ _) HPφ (e₂.perm hp))
+  | orR1 e => exact .orR1 (IHW (sw_orR₁ _ _ _) HPφ (e.perm hp))
+  | orR2 e => exact .orR2 (IHW (sw_orR₂ _ _ _) HPφ (e.perm hp))
+  | @impR _ C₁ C₂ e =>
+      exact .impR (IHW (sw_impR _ _ _) (HPφ.weaken C₁)
+        (e.perm ((hp.cons C₁).trans (List.Perm.swap _ _ _))))
+  | @andL _ Δ A' B' _ h e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .andL hΓ (rc IHW HPφ (.and A' B') hΓ hΔ e)
+  | @orL _ Δ A' B' _ h e₁ e₂ =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .orL hΓ (rc IHW HPφ (.or₁ A' B') hΓ hΔ e₁) (rc IHW HPφ (.or₂ A' B') hΓ hΔ e₂)
+  | @impVarL _ Δ p B' _ h ha e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .impVarL hΓ (mem_of_perm_cons_ne hΔ ha (by intro e'; cases e'))
+          (rc IHW HPφ (.impVar p B') hΓ hΔ e)
+  | @impAndL _ Δ A₁ B₁ D₁ _ h e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .impAndL hΓ (rc IHW HPφ (.impAnd A₁ B₁ D₁) hΓ hΔ e)
+  | @impOrL _ Δ A₁ B₁ D₁ _ h e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .impOrL hΓ (rc IHW HPφ (.impOr A₁ B₁ D₁) hΓ hΔ e)
+  | @impImpL _ Δ A₁ B₁ D₁ _ h e₁ e₂ =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · exact .impImpL hΓ (rcImpImp₁ IHW HPφ hΓ hΔ e₁)
+          (rc IHW HPφ (.impImp A₁ B₁ D₁) hΓ hΔ e₂)
+  | boxR e =>
+      have hu : (unbox Γ').Perm (unbox Γ) := by have := unbox_perm hp; exact this
+      exact .boxR (e.perm hu)
+  | @impBoxL _ Δ A₁ B₁ _ h e₁ e₂ =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · have hu : (unbox Δ).Perm (unbox l') := by have := unbox_perm hΔ; exact this
+        exact .impBoxL hΓ (e₁.perm hu) (rc IHW HPφ (.impBox A₁ B₁) hΓ hΔ e₂)
+  | @impDiaL _ Δ G₁ A₁ B₁ _ h hγ e₁ e₂ =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', _⟩ | ⟨l', hΔ, hΓ⟩
+      · cases e'
+      · have hu : (unbox Δ).Perm (unbox l') := by have := unbox_perm hΔ; exact this
+        rcases List.mem_cons.1 (hΔ.subset hγ) with eG | hγ'
+        · -- the diamond the rule uses is the cut formula: use `◇A` instead
+          obtain rfl : B = G₁ := by cases eG; rfl
+          have hΓl : (unbox Γ).Perm (unbox l') := by have := unbox_perm hΓ; exact this
+          have hΘl : (unbox Θ).Perm (unbox l') := hΓΘ.symm.trans hΓl
+          have hA' : (◇A) ∈ l' :=
+            mem_of_perm_cons_ne hΓ (h₀.symm.subset List.mem_cons_self) (by intro e'; cases e')
+          have prem₁ : G4CK (A :: unbox l') A₁ :=
+            IHw hB (d.perm (hΘl.cons A))
+              (((e₁.perm (hu.cons B)).weaken A).perm (List.Perm.swap _ _ _))
+          exact .impDiaL hΓ hA' prem₁ (rc IHW HPφ (.impDia A₁ B₁) hΓ hΔ e₂)
+        · exact .impDiaL hΓ hγ' (e₁.perm (hu.cons G₁)) (rc IHW HPφ (.impDia A₁ B₁) hΓ hΔ e₂)
+  | @diaL _ Δ A₁ _ h e =>
+      rcases perm_cons_cases (h.symm.trans hp) with ⟨e', hΔΓ⟩ | ⟨l', hΔ, hΓ⟩
+      · -- principal: cut on `B` under the diamond
+        obtain rfl : B = A₁ := by cases e'; rfl
+        have hu : (unbox Δ).Perm (unbox Θ) := (unbox_perm hΔΓ).trans hΓΘ
+        exact .diaL h₀ (IHw hB d
+          (((e.perm (hu.cons B)).weaken A).perm (List.Perm.swap _ _ _)))
+      · have hu : (unbox Δ).Perm (unbox l') := by have := unbox_perm hΔ; exact this
+        exact .diaL hΓ (e.perm (hu.cons A₁))
+
+/-! ## The theorem -/
+
+/-- Cut, bounded by the weight of the cut formula and the measure of the
+conclusion. -/
+theorem cut_bounded : ∀ (w : Nat) {φ : Form}, φ.weight ≤ w → ∀ (m : Nat) {Γ : List Form}
+    {ψ : Form}, sw Γ ψ ≤ m → G4CK Γ φ → G4CK (φ :: Γ) ψ → G4CK Γ ψ := by
+  intro w
+  induction w with
+  | zero => intro φ hφ; exact absurd hφ (Nat.not_le_of_gt φ.weight_pos)
+  | succ w ihw =>
+      intro φ hw m
+      induction m with
+      | zero =>
+          intro Γ ψ hm
+          exact absurd hm (Nat.not_le_of_gt (Nat.lt_of_lt_of_le (pow5_pos ψ.weight)
+            (Nat.le_add_left _ _)))
+      | succ m ihm =>
+          intro Γ ψ hm HPφ HPψ
+          have IHw : CutUpTo w := fun {_} hφ' {_ _} d e => ihw hφ' _ (Nat.le_refl _) d e
+          have IHW : ∀ {Γ₀ : List Form} {ψ₀ : Form}, sw Γ₀ ψ₀ < sw Γ ψ → CutAt φ Γ₀ ψ₀ :=
+            fun hlt d e => ihm (Nat.le_of_lt_succ (Nat.lt_of_lt_of_le hlt hm)) d e
+          -- commuting the cut past an invertible left rule of the left premise
+          have lc : ∀ {X : Form} {L Δ : List Form}, Inv X L → Γ.Perm (X :: Δ) →
+              G4CK (L ++ Δ) φ → G4CK (L ++ Δ) ψ := fun hInv h d₁ =>
+            IHW (sw_replace_lt ψ h hInv.wt_lt) d₁
+              ((HPψ.inv hInv ((h.cons φ).trans (List.Perm.swap _ _ _))).perm List.perm_middle)
+          cases HPφ with
+          | botL h => exact .botL h
+          | idP h =>
+              obtain ⟨Γ₀, hΓ₀⟩ := exists_perm_cons_of_mem h
+              exact (HPψ.contract (hΓ₀.cons _)).perm hΓ₀.symm
+          | @andR _ A B d₁ d₂ =>
+              have hA : A.weight ≤ w := by simp only [Form.weight] at hw; omega
+              have hB : B.weight ≤ w := by simp only [Form.weight] at hw; omega
+              have e : G4CK (A :: B :: Γ) ψ := HPψ.inv (.and A B) (List.Perm.refl _)
+              exact IHw hA d₁ (IHw hB (d₂.weaken A) (e.perm (List.Perm.swap _ _ _)))
+          | @orR1 _ A B d₁ =>
+              have hA : A.weight ≤ w := by simp only [Form.weight] at hw; omega
+              exact IHw hA d₁ (HPψ.inv (.or₁ A B) (List.Perm.refl _))
+          | @orR2 _ A B d₁ =>
+              have hB : B.weight ≤ w := by simp only [Form.weight] at hw; omega
+              exact IHw hB d₁ (HPψ.inv (.or₂ A B) (List.Perm.refl _))
+          | impR d₁ => exact cut_impR IHw hw IHW d₁ HPψ (List.Perm.refl _)
+          | @boxR _ χ d₁ =>
+              have hχ : χ.weight ≤ w := by simp only [Form.weight] at hw; omega
+              exact cut_boxR IHw hχ IHW d₁ HPψ (List.Perm.refl _)
+          | @diaL _ Θ A B h d₁ =>
+              have hB : B.weight ≤ w := by simp only [Form.weight] at hw; omega
+              exact cut_diaL IHw hB IHW h d₁ HPψ (List.Perm.refl _)
+          | @andL _ Δ A' B' _ h d₁ => exact .andL h (lc (.and A' B') h d₁)
+          | @orL _ Δ A' B' _ h d₁ d₂ =>
+              exact .orL h (lc (.or₁ A' B') h d₁) (lc (.or₂ A' B') h d₂)
+          | @impVarL _ Δ p B' _ h ha d₁ => exact .impVarL h ha (lc (.impVar p B') h d₁)
+          | @impAndL _ Δ A₁ B₁ D₁ _ h d₁ => exact .impAndL h (lc (.impAnd A₁ B₁ D₁) h d₁)
+          | @impOrL _ Δ A₁ B₁ D₁ _ h d₁ => exact .impOrL h (lc (.impOr A₁ B₁ D₁) h d₁)
+          | @impImpL _ Δ A₁ B₁ D₁ _ h d₁ d₂ =>
+              exact .impImpL h d₁ (lc (.impImp A₁ B₁ D₁) h d₂)
+          | @impBoxL _ Δ A₁ B₁ _ h d₁ d₂ => exact .impBoxL h d₁ (lc (.impBox A₁ B₁) h d₂)
+          | @impDiaL _ Δ G₁ A₁ B₁ _ h hγ d₁ d₂ =>
+              exact .impDiaL h hγ d₁ (lc (.impDia A₁ B₁) h d₂)
+
+/-- **Theorem** (unlabelled, §3): the additive cut rule is admissible in
+G4CK, `Γ ⇒ φ   φ,Γ ⇒ ψ  /  Γ ⇒ ψ`.  Rocq `additive_cut`. -/
+theorem G4CK.cut {Γ : List Form} {φ ψ : Form} (d : G4CK Γ φ) (e : G4CK (φ :: Γ) ψ) :
+    G4CK Γ ψ :=
+  cut_bounded φ.weight (Nat.le_refl _) (sw Γ ψ) (Nat.le_refl _) d e
+
 end CK
 
 #print axioms CK.cut_impR
+#print axioms CK.cut_boxR
+#print axioms CK.cut_diaL
+#print axioms CK.G4CK.cut

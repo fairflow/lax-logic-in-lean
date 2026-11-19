@@ -13,3 +13,5 @@ import CK.Identity
 import CK.Height
 import CK.Inversion
 import CK.Contraction
+import CK.Order
+import CK.Cut
