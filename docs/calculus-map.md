@@ -393,6 +393,24 @@ result is really about**.
   all subframe models and uses `Classical.choice`; `CF.derivable_iff_valid`
   is the choice-free one, for the finite decidable models.
 
+* **A move at a time** (2026-11-19): the tableau is an instance of the proof
+  explorer of proof-tools (`LaxLogic/PLL/SubTab/Explore.lean`, library
+  `SubTabExplore`, not a default target).  A move is a constructor of
+  `TCert` without its subtrees, and `Move.rule` has the conditions and the
+  premises of `check`.  A derivation of the explorer and a closed tableau
+  are each computed from the other (PROVED, `[propext, Quot.sound]`):
+
+      check_cert d : check s (cert d) = true                  for d : Der STab s
+      cert_ofCert c s h : cert (ofCert c s h) = c
+      holds_of_der : Der STab ⟨false, [], [φ]⟩ → Holds φ
+      complete_script φ : (∃ ls, yesScript.check φ ls = true) ∨ (∃ m, no.check φ m = true)
+
+  `yesScript` is the certifier whose certificate is a script: a list of
+  moves, each at a numbered open goal, which the kernel runs.  It goes
+  through `holds_of_check'`, so it reaches no `FRJ` constant.  The tactic is
+  `subtab` (`ExploreTactic.lean`).  The campaign's record is
+  `LaxLogic/PLL/SubTab/campaign/`.
+
 ### The term calculus and reduction
 
 Not a logic, but frequently confused with one. `LaxLogic/PLL/G4/G4Term.lean` gives

@@ -5674,3 +5674,39 @@ not consistent.  In progress:
   `publication/core`; this is Matthew's decision.
 * The repository ruleset "No delete" covers all branches and blocks
   branch deletion.
+
+## 2026-11-19 — the subframe tableau as an instance of the proof explorer; the Lean certify dependency becomes proof-tools
+
+Branch `lax-proof-tools` (durable, by agreement with Matthew the same day).
+
+**What.**  The subframe tableau is now also usable a move at a time, as an
+instance of the proof explorer of
+[proof-tools](https://github.com/fairflow/proof-tools) (`ProofTools.Explore`).
+* `LaxLogic/PLL/SubTab/Explore.lean`: `Move` (the twelve rules, each named
+  by its formulas), `Move.rule` and `step` (the conditions and premises of
+  `check`), the proof system `STab`, and the passage both ways between a
+  derivation of the explorer and a closed tableau (`cert`, `ofCert`).
+  PROVED, `[propext, Quot.sound]`: `check_cert_of`, `sound`, `check_cert`,
+  `cert_ofCert`, `holds_of_der`, `complete_script`; `yesScript` is the
+  certifier whose certificate is a script.
+* `ExploreEngine.lean`: the engine with scripts on the yes side.
+  `ExploreTactic.lean`: the tactic `subtab`.  `ExploreTest.lean`: tests,
+  every message pinned.  Library `SubTabExplore`, outside defaultTargets.
+* `Play/SubTab.lean`: exercises for Matthew to type (his file).
+* `LaxLogic/PLL/SubTab/campaign/`: the campaign's record, written after the
+  fact, and the report of this stage.
+
+**The dependency.**  `lakefile.toml` requires `proof-tools` in place of
+`lean-certify`.  proof-tools carries the library `LeanCertify` over with
+the same module names, so a project requires one of the two.  Its
+`LeanCertify` is lean-certify's `main` (later than the tag `v0.3.0` that
+was pinned here: `Certify.Fixpoint`, and lint rules R3 and R4 as revised).
+`TOOLS.md` §8 has the row.
+
+**Open.**
+* The pin is a commit of proof-tools' branch `proof-tools-home` (its pull
+  request 3); move it to `main` there once that is merged.
+* The full exploration (stage 4 of the campaign): the alternatives kept in
+  view where `impR` and `boxR` drop formulas; a countermodel of the current
+  goal from `solve`, from the tactic; the tutorial.  Not started.
+* `ofCert (cert d) s _ = d`, the other round trip: OPEN, not attempted.

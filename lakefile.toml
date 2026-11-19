@@ -40,11 +40,17 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.31.0"
 
-# Lean certify: the certified-computation harness (Mathlib-free), pinned by tag.
+# proof-tools (2026-11-19): Lean certify, the certified-computation harness
+# (the library `LeanCertify`, carried there from lean-certify, which this
+# requirement replaces: the two packages hold modules of the same names, so a
+# project requires one of them), and `ProofTools`, of which the subframe
+# tableau is an instance of the proof explorer (`SubTabExplore`, below).  Core
+# Lean only.  Pinned to a commit; to move it, change `rev`, then
+# `lake update proof-tools`.
 [[require]]
-name = "lean-certify"
-git = "https://github.com/fairflow/lean-certify"
-rev = "v0.3.0"
+name = "proof-tools"
+git = "https://github.com/fairflow/proof-tools"
+rev = "71ef3bc078fb8ec1171698d1038dfa00c27013f8"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is
@@ -187,6 +193,19 @@ globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
          "LaxLogic.PLL.SubTab.Tableau", "LaxLogic.PLL.SubTab.Engine",
          "LaxLogic.PLL.SubTab.Gates", "LaxLogic.PLL.SubTab.Facts",
          "LaxLogic.PLL.SubTab.Source"]
+
+# SubTabExplore: the subframe tableau as an instance of the proof explorer of
+# proof-tools (2026-11-19; campaign record in LaxLogic/PLL/SubTab/campaign/).
+# `Explore`: the twelve rules as moves, `step`, the soundness of the moves,
+# and the passage both ways between a derivation of the explorer and a closed
+# tableau, within [propext, Quot.sound].  `ExploreEngine`: the engine whose
+# yes side is a script.  `ExploreTactic`: the tactic `subtab` and what the
+# editor needs (code, not trusted).  `ExploreTest`: its tests.
+# NOT in defaultTargets: build with `lake build SubTabExplore`.
+[[lean_lib]]
+name = "SubTabExplore"
+globs = ["LaxLogic.PLL.SubTab.Explore", "LaxLogic.PLL.SubTab.ExploreEngine",
+         "LaxLogic.PLL.SubTab.ExploreTactic", "LaxLogic.PLL.SubTab.ExploreTest"]
 
 # BeliefF0: the F0 free-algebra facts the Belief paper cites (faithful IPC
 # embedding, faithful PLL self-embedding), promoted 2026-11-01 as pinned
