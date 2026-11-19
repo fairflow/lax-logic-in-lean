@@ -135,16 +135,16 @@ out of scope here.
 
 | Paper item | Statement (short) | Rocq name | Lean name | Status |
 |---|---|---|---|---|
-| Definition 1 · `def:weight` | weight of a formula | `weight` | | OPEN |
-| Figure 2 | G4CK | `Provable` | | OPEN |
-| Figure 1 | CKH | `CKH_prv` | | OPEN |
+| Definition 1 · `def:weight` | weight of a formula | `weight` | `CK.Form.weight` | transcribed |
+| Figure 2 | G4CK | `Provable` | `CK.G4CK` | transcribed; `#rules` compared, `#slime` 0 |
+| Figure 1 | CKH | `CKH_prv` | `CK.CKH`, `CK.Axiom` | transcribed |
 | Definition 2 (no label) | sequent order `≺` | `pointed_env_order` | | OPEN |
 | Proposition (no label) | G4CK strongly terminates | (in `CKOrder`) | | OPEN |
 | Proposition (no label) | G4CK provability is decidable | `Provable_dec` | | OPEN |
 | Lemma 1 · `lemma:weakening` | `wk`, `Id`, `→L` admissible | `generalised_weakeningR`, `generalised_axiom`, `weak_ImpL` | | OPEN |
 | Proposition (no label) | contraction admissible | `contraction` | | OPEN |
 | Theorem (no label) | additive cut admissible | `additive_cut` | | OPEN |
-| Theorem 2 · `thm:equiv` | `⊢G4CK Γ ⇒ φ` iff `Γ ⊢CK φ` | `G4CK_sound_CKH`, `G4CK_compl_CKH` | | OPEN |
+| Theorem 2 · `thm:equiv` | `⊢G4CK Γ ⇒ φ` iff `Γ ⊢CK φ` | `G4CK_sound_CKH`, `G4CK_compl_CKH` | `CK.G4CK.toCKH` (left to right) | left to right PROVED [propext]; right to left OPEN |
 | Definition 3 · `def:UIP` | UIP of a logic | | | OPEN |
 | Definition 4 · `def SUIP` | UIP of a set of sequents | | | OPEN |
 | Lemma 2 (no label) | sequent UIP gives UIP of the logic | | | OPEN |
@@ -178,9 +178,12 @@ its axioms (decision 3).
 
 | # | Paper item (label) | What the paper says | What is proved here | Why |
 |---|---|---|---|---|
-| | | | | |
+| D1 | Figure 2 | antecedents are finite multisets | antecedents are lists; each left rule has a field `Γ.Perm (principal :: Δ)` | every conclusion index stays a variable (`#slime`: 0); the repository's G4 convention |
+| D2 | Figure 2 | (Rocq) `Provable : env → form → Type` | `G4CK : List Form → Form → Prop` | the theorems need no proof terms; removes the decidability detour of Theorem 2 |
+| D3 | Figure 1 | axioms as schemes | `Axiom` is an inductive family indexed by the instance | Rocq states each axiom with an equation `F = …`; the index form is the same set |
 
-Opened empty. Divergences foreseen and waiting on the decisions below:
+Opened empty on 2026-11-19; D1–D3 recorded with the transcription the same
+day. Divergences foreseen and waiting on the decisions below:
 `Prop`-valued provability (decision 2) makes the decidability detour in
 Theorem 2 unnecessary; the representation of multisets (decision 1).
 
@@ -210,3 +213,28 @@ Theorem 2 unnecessary; the representation of multisets (decision 1).
    that the cited commit compiles before porting from it. Wanted, or is
    reading the source enough?
 6. **WK.** Second campaign, or not at all?
+
+## The Rocq development, reproduced (2026-11-19)
+
+Built here in a separate opam switch `ck-rocq` (Rocq 9.0.0, `stdpp`,
+`Equations`): all 63 files of commit `cd09fce` compile. `Print Assumptions`:
+
+| Rocq theorem | Assumptions |
+|---|---|
+| `CK_uniform_interpolation` | `functional_extensionality_dep` |
+| `additive_cut` | none |
+| `Provable_dec` | none |
+| `G4CK_compl_CKH` | `Extensionality_Ensembles` |
+
+Two facts the paper does not state, read off the Rocq source:
+
+* **The mechanised order is not Dershowitz–Manna.** `CKOrder.v` compares
+  sequents by the natural number `env_weight Γ = Σ_{φ ∈ Γ} 5^{w(φ)}`. That is
+  a choice-free measure and is the one to port (it settles decision 3). The
+  paper's Definition 2 is the multiset order; the two agree on what the rules
+  need (every premise is smaller).
+* `Ef`, `Af` do not reduce inside Rocq (`vm_compute` stops at the
+  accessibility proof); they do run after extraction to OCaml. Values on
+  fifteen small formulas are kept outside the repository as test data for the
+  Lean functions, for example `Ap(p) = ⊥ ∨ ⊥` and
+  `Ap(□p) = □((⊤ ∧ ⊤) → (⊥ ∨ ⊥)) ∨ ⊥` with `⊤ = ⊥ → ⊥`.
