@@ -16,3 +16,5 @@ import CK.Contraction
 import CK.Order
 import CK.Cut
 import CK.Complete
+import CK.Interp
+import CK.InterpTest

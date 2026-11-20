@@ -148,8 +148,8 @@ out of scope here.
 | Definition 3 · `def:UIP` | UIP of a logic | | | OPEN |
 | Definition 4 · `def SUIP` | UIP of a set of sequents | | | OPEN |
 | Lemma 2 (no label) | sequent UIP gives UIP of the logic | | | OPEN |
-| Definition 5 · `def_Ap_Ep` | `Ep(Γ)`, `Ap(Γ ⇒ φ)`, Figure 3 | `e_rule`, `a_rule_env`, `a_rule_form`, `EA` | | OPEN |
-| Theorem 3 · `thm:terminating` | the definition terminates | (the `Program`/`Equations` obligations) | | OPEN |
+| Definition 5 · `def_Ap_Ep` | `Ep(Γ)`, `Ap(Γ ⇒ φ)`, Figure 3 | `e_rule`, `a_rule_env`, `a_rule_form`, `EA` | `CK.EA`, `Ep`, `Ap`, `Ef`, `Af` (`CK/Interp.lean`) | DEFINED; 22 values equal to Rocq's (`CK/InterpTest.lean`) |
+| Theorem 3 · `thm:terminating` | the definition terminates | (the `Program`/`Equations` obligations) | the `termination_by`/`decreasing_by` of `CK.EA`, measure `pw` | PROVED [propext, Quot.sound] |
 | Lemma 3 · `Lemma_simple1` | a member of the `Ep` set on the left, of the `Ap` set on the right | `E_left`, `A_right` | | OPEN |
 | Lemma 4 · `Lemma_simple2` | `Π, □Ep(□⁻¹Γ) ⇒ φ` gives `Π, Ep(Γ) ⇒ φ` | `E9_left` | | OPEN |
 | Theorem 4 · `thm:UIP_CK` | G4CK has UIP: p-freeness, implication, uniformity | `EA_vars`, `entail_correct`, `pq_correct` | | OPEN |
