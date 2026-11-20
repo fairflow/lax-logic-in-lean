@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-11-01 19:21 GMT from `ff865426` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-11-09 15:34 CET from `12262b58` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**44531 declarations** in **835 modules**: 25340 theorems, 19191 definitions and data. **41 carry `sorryAx`** and **0 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**45225 declarations** in **842 modules**: 25753 theorems, 19472 definitions and data. **41 carry `sorryAx`** and **0 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -17,12 +17,12 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | area | decls | theorems | kernel-clean | `sorryAx` | native |
 |---|--:|--:|--:|--:|--:|
 | `BiLax` | 629 | 270 | 629 |  |  |
-| `CLPPaper` | 285 | 36 | 285 |  |  |
+| `CLPPaper` | 291 | 39 | 291 |  |  |
 | `Certified` | 1502 | 1130 | 1502 |  |  |
 | `CertifyAdoption` | 25 | 4 | 25 |  |  |
 | `CurryPaper` | 1 | 0 | 1 |  |  |
 | `F0` | 8565 | 8430 | 8565 |  |  |
-| `F0Paper` | 23 | 8 | 23 |  |  |
+| `F0Paper` | 37 | 20 | 37 |  |  |
 | `FRJ.Basic` | 240 | 127 | 240 |  |  |
 | `FRJ.Bridge` | 15 | 12 | 15 |  |  |
 | `FRJ.BridgeV` | 2 | 2 | 2 |  |  |
@@ -180,8 +180,8 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `LaxLogic.Util.Turnstile` | 122 | 8 | 122 |  |  |
 | `LaxLogic.Util.TurnstileTests` | 1 | 1 | 1 |  |  |
 | `LaxPaper` | 10 | 0 | 10 |  |  |
-| `Meta` | 133 | 16 | 133 |  |  |
-| `PaperKit` | 214 | 24 | 214 |  |  |
+| `Meta` | 146 | 21 | 146 |  |  |
+| `PaperKit` | 227 | 24 | 227 |  |  |
 | `RNDB` | 2149 | 95 | 2149 |  |  |
 | `Reject` | 224 | 116 | 224 |  |  |
 | `Rewrite` | 113 | 62 | 113 |  |  |
@@ -264,13 +264,17 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `wip.f0MeetCount` | 65 | 44 | 65 |  |  |
 | `wip.f0Minkowski` | 66 | 51 | 66 |  |  |
 | `wip.f0MovingTop` | 178 | 120 | 178 |  |  |
+| `wip.f0NestPLL` | 119 | 80 | 119 |  |  |
 | `wip.f0Normal` | 128 | 83 | 128 |  |  |
 | `wip.f0NotIso` | 44 | 27 | 44 |  |  |
 | `wip.f0Nuclear` | 15 | 9 | 15 |  |  |
 | `wip.f0OddGaps` | 3 | 3 | 3 |  |  |
 | `wip.f0Rat` | 15 | 10 | 15 |  |  |
+| `wip.f0Realize` | 120 | 70 | 120 |  |  |
+| `wip.f0RelCriterion` | 142 | 91 | 142 |  |  |
 | `wip.f0SelfSim` | 77 | 46 | 77 |  |  |
 | `wip.f0SigOnto` | 10 | 7 | 10 |  |  |
+| `wip.f0SigmaColimit` | 267 | 152 | 267 |  |  |
 | `wip.f0Structure` | 71 | 59 | 71 |  |  |
 | `wip.f0T6` | 75 | 41 | 75 |  |  |
 | `wip.families` | 42 | 40 | 42 |  |  |
@@ -461,12 +465,12 @@ Every distinct axiom set in the estate, most common first.
 
 | axioms | declarations |
 |---|--:|
-| *(none — axiom-free)* | 15980 |
-| `propext`, `Quot.sound` | 14175 |
-| `propext` | 11055 |
-| `propext`, `Classical.choice`, `Quot.sound` | 3258 |
+| *(none — axiom-free)* | 16312 |
+| `propext`, `Quot.sound` | 14459 |
+| `propext` | 11110 |
+| `propext`, `Classical.choice`, `Quot.sound` | 3276 |
 | `propext`, `sorryAx` | 22 |
-| `Quot.sound` | 13 |
+| `Quot.sound` | 18 |
 | `sorryAx` | 9 |
 | `propext`, `sorryAx`, `Classical.choice`, `Quot.sound` | 8 |
 | `propext`, `Classical.choice` | 6 |
