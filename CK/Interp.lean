@@ -238,46 +238,46 @@ theorem Form.weight_eq (φ : Form) : φ.weight = φ.w0 + 1 := by
 
 /-- Closes a side condition "every exponent in the list is below the weight
 of the principal formula". -/
-local macro "wts" : tactic =>
+macro "ea_wts" : tactic =>
   `(tactic| (intro x hx
              simp only [List.map, List.mem_cons, List.not_mem_nil, or_false, Form.weight] at hx ⊢
              simp only [Form.weight_eq] at hx ⊢
              omega))
 
 /-- Closes "the new succedent is no heavier than the old one". -/
-local macro "wle" : tactic =>
+macro "ea_wle" : tactic =>
   `(tactic| first
       | exact Nat.le_refl _
       | exact Form.weight_pos _
       | (simp only [Form.weight]; omega))
 
 /-- Closes the side goals of the measure lemmas. -/
-local macro "side" : tactic =>
+macro "ea_side" : tactic =>
   `(tactic| first
       | assumption
       | decide
       | (simp only [List.length_cons, List.length_nil]; omega)
       | (intro x hx; cases hx; done)
-      | wts
+      | ea_wts
       | (intro e; cases e; done)
-      | wle
+      | ea_wle
       | (simp only [Form.weight]; omega))
 
 /-- Closes one termination goal of `EA`. -/
-local macro "dec" : tactic =>
+macro "ea_dec" : tactic =>
   `(tactic| first
       | exact pw_unbox_lt _ (by assumption)
-      | (refine pw_envLe_rm (L := [_, _]) ?_ ?_ ?_ ?_ <;> side)
-      | (refine pw_envLe_rm (L := [_]) ?_ ?_ ?_ ?_ <;> side)
-      | (refine pw_envLe_unbox (L := [_]) ?_ ?_ ?_ ?_ <;> side)
-      | (refine pw_envLe_unbox (L := []) ?_ ?_ ?_ ?_ <;> side)
-      | (refine pw_envNew_rm (L := [_, _]) ?_ ?_ ?_ <;> side)
-      | (refine pw_envNew_unbox (L := []) ?_ ?_ ?_ <;> side)
-      | (refine pw_env2Le_unbox (L := [_]) ?_ ?_ ?_ ?_ ?_ ?_ <;> side)
-      | (refine pw_env2New_unbox (L := [_]) ?_ ?_ ?_ ?_ ?_ ?_ <;> side)
-      | (refine pw_formNew_unbox (L := []) ?_ ?_ <;> side)
-      | (refine pw_formNew_same (L := []) ?_ ?_ <;> side)
-      | (refine pw_formNew_same (L := [_]) ?_ ?_ <;> side))
+      | (refine pw_envLe_rm (L := [_, _]) ?_ ?_ ?_ ?_ <;> ea_side)
+      | (refine pw_envLe_rm (L := [_]) ?_ ?_ ?_ ?_ <;> ea_side)
+      | (refine pw_envLe_unbox (L := [_]) ?_ ?_ ?_ ?_ <;> ea_side)
+      | (refine pw_envLe_unbox (L := []) ?_ ?_ ?_ ?_ <;> ea_side)
+      | (refine pw_envNew_rm (L := [_, _]) ?_ ?_ ?_ <;> ea_side)
+      | (refine pw_envNew_unbox (L := []) ?_ ?_ ?_ <;> ea_side)
+      | (refine pw_env2Le_unbox (L := [_]) ?_ ?_ ?_ ?_ ?_ ?_ <;> ea_side)
+      | (refine pw_env2New_unbox (L := [_]) ?_ ?_ ?_ ?_ ?_ ?_ <;> ea_side)
+      | (refine pw_formNew_unbox (L := []) ?_ ?_ <;> ea_side)
+      | (refine pw_formNew_same (L := []) ?_ ?_ <;> ea_side)
+      | (refine pw_formNew_same (L := [_]) ?_ ?_ <;> ea_side))
 
 /-- **Definition 5** (`def_Ap_Ep`), Figure 3.  `EA p true Δ ϕ = Ep(Δ)` and
 `EA p false Δ ϕ = Ap(Δ ⇒ ϕ)`.  Rocq `EA`.  The row names are the paper's. -/
@@ -411,7 +411,7 @@ def EA (p : Nat) : Bool → List Form → Form → Form
             | _, _ => ⊥')))
 termination_by _ Δ ϕ => pw Δ ϕ
 decreasing_by
-  all_goals dec
+  all_goals ea_dec
 
 /-- `Ep(Δ)`.  Rocq `E`. -/
 def Ep (p : Nat) (Δ : List Form) : Form := EA p true Δ ⊥'

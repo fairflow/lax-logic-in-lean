@@ -18,3 +18,5 @@ import CK.Cut
 import CK.Complete
 import CK.Interp
 import CK.InterpTest
+import CK.InterpRows
+import CK.InterpVars
