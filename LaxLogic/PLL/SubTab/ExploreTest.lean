@@ -12,7 +12,8 @@ side condition that stops it and with the engine's countermodel; queries
 and patterns; a script checked by the kernel with no tactic; every closed
 tableau the search finds, turned into a script that `derives` accepts; a
 proof by hand of 16 moves where the search's has 403; a corrupted script
-rejected; the goal shown as its sequent; the axioms.
+rejected; the goal shown as its sequent; two attempts and a derivation
+walked with `#walk`; the axioms.
 -/
 
 -- a query makes no move, which the linter would remark on at every one
@@ -402,6 +403,92 @@ theorem short_script_rejected :
     yesScript.check ((◯p ∧ ◯q) ↠ ◯(p ∧ q))
       [⟨0, .impR (◯p ∧ ◯q) (◯(p ∧ q))⟩, ⟨0, .andL (◯p) (◯q)⟩] = false := by
   decide +kernel
+
+/-! ## Walking an attempt that is built
+
+`#walk` (proof-tools, `ProofTools.Explore.Walk`) shows a named attempt or
+derivation at the position its motions reach, and changes nothing.  Walked
+to its open goal, an attempt shows every sequent on the way down: here,
+that `boxR p` was made where `◯q` was false too, and what the second `impR`
+of Peirce's law left behind. -/
+
+set_option apply_move.tryThis false in
+/-- The attempt at `◯(p ∨ q) ↠ (◯p ∨ ◯q)` of the test above, named. -/
+def distAtt : Explore.Att STab true (goal (◯(p ∨ q) ↠ (◯p ∨ ◯q))) := by
+  subtab impR
+  subtab orR
+  subtab boxR p
+  subtab boxL
+  subtab orL
+  subtab ax
+  leave_open
+
+set_option apply_move.tryThis false in
+/-- The attempt at Peirce's law of the test above, named. -/
+def peirceAtt : Explore.Att STab true (goal (((p ↠ q) ↠ p) ↠ p)) := by
+  subtab impR
+  subtab impL
+  subtab ax at 1
+  subtab impR
+  leave_open
+
+/--
+info:   ⇒ (◯(p ∨ q) ↠ (◯p ∨ ◯q))   by impR (◯(p ∨ q)) (◯p ∨ ◯q)
+    ◯(p ∨ q) ⇒ (◯p ∨ ◯q)   by orR (◯p) (◯q)
+      ◯(p ∨ q) ⇒ (◯p ∨ ◯q), ◯p, ◯q   by boxR p
+        ◯(p ∨ q) ⇒ ◯[p]   by boxL (p ∨ q)
+          ◯(p ∨ q), (p ∨ q) ⇒ ◯[p]   by orL p q
+>           ? ◯(p ∨ q), (p ∨ q), q ⇒ ◯[p]
+  at 0.0.0.0.1: open goal 0; 1 open in all
+-/
+#guard_msgs in
+#walk distAtt goal 0
+
+/--
+info:   ⇒ (((p ↠ q) ↠ p) ↠ p)   by impR ((p ↠ q) ↠ p) p
+    ((p ↠ q) ↠ p) ⇒ p   by impL (p ↠ q) p
+      ((p ↠ q) ↠ p) ⇒ p, (p ↠ q)   by impR p q
+>       ? ((p ↠ q) ↠ p), p ⇒ q
+  at 0.0.0: open goal 0; 1 open in all
+-/
+#guard_msgs in
+#walk peirceAtt goal 0
+
+-- a derivation, a motion to a line: the view after each line
+/--
+info: > ⇒ ((◯p ∧ ◯q) ↠ ◯(p ∧ q))   by impR (◯p ∧ ◯q) (◯(p ∧ q))
+    0: (◯p ∧ ◯q) ⇒ ◯(p ∧ q)   by andL (◯p) (◯q)   [closed]
+  at the root: 1 premise; no open goals
+---
+info:   ⇒ ((◯p ∧ ◯q) ↠ ◯(p ∧ q))   by impR (◯p ∧ ◯q) (◯(p ∧ q))
+>   (◯p ∧ ◯q) ⇒ ◯(p ∧ q)   by andL (◯p) (◯q)
+      0: (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯(p ∧ q)   by boxR (p ∧ q)   [closed]
+  at 0: 1 premise; no open goals
+---
+info:   ⇒ ((◯p ∧ ◯q) ↠ ◯(p ∧ q))   by impR (◯p ∧ ◯q) (◯(p ∧ q))
+    (◯p ∧ ◯q) ⇒ ◯(p ∧ q)   by andL (◯p) (◯q)
+>     (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯(p ∧ q)   by boxR (p ∧ q)
+        0: (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯[(p ∧ q)]   by boxL p   [closed]
+  at 0.0: 1 premise; no open goals
+-/
+#guard_msgs in
+#walk strength
+  down 0
+  down 0
+
+-- the last node with two premises, and across them
+/--
+info:   ⇒ ((◯p ∧ ◯q) ↠ ◯(p ∧ q))   by impR (◯p ∧ ◯q) (◯(p ∧ q))
+    (◯p ∧ ◯q) ⇒ ◯(p ∧ q)   by andL (◯p) (◯q)
+      (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯(p ∧ q)   by boxR (p ∧ q)
+        (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯[(p ∧ q)]   by boxL p
+          (◯p ∧ ◯q), ◯p, ◯q, p ⇒ ◯[(p ∧ q)]   by boxL q
+            (◯p ∧ ◯q), ◯p, ◯q, p, q ⇒ ◯[(p ∧ q)]   by andR p q
+>             (◯p ∧ ◯q), ◯p, ◯q, p, q ⇒ ◯[(p ∧ q), q]   by ax q
+  at 0.0.0.0.0.1: no premises; no open goals
+-/
+#guard_msgs in
+#walk strength down 0, down 0, down 0, down 0, down 0, down 0, right
 
 end ExploreTest
 end SubTab

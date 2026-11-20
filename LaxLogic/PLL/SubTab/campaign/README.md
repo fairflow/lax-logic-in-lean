@@ -30,7 +30,10 @@ way.  This folder holds the record of its campaign, in the sense of
   `[propext, Quot.sound]`.
 * `../ExploreEngine.lean`: the engine whose yes side is a script.
 * `../ExploreTactic.lean`: the tactic `subtab`.  Code for the editor.
-* `../ExploreTest.lean`: tests, with every message pinned.
+* `../ExploreTest.lean`: tests, with every message pinned.  Since
+  2026-11-20 also walks: `#walk d m₁ m₂ …` (proof-tools) shows a named
+  attempt or derivation at the position the motions `up`, `down i`,
+  `left`, `right`, `top`, `goal k` reach, and changes nothing.
 * `../ExploreTerm.lean` (2026-11-20, a spike): from a derivation to its
   proof term (`tm`) and to that term's normal form (`nf`), through the
   normalisation of `LaxLogic/PLL/Normalisation/`.  The four laws of `◯`
