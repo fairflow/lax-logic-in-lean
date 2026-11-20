@@ -50,7 +50,7 @@ rev = "v4.31.0"
 [[require]]
 name = "proof-tools"
 git = "https://github.com/fairflow/proof-tools"
-rev = "71ef3bc078fb8ec1171698d1038dfa00c27013f8"
+rev = "ab974f36d8ddbc098a3eb43aa621985aa4745872"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is
@@ -200,12 +200,15 @@ globs = ["LaxLogic.PLL.SubTab.Semantics", "LaxLogic.PLL.SubTab.Sound",
 # and the passage both ways between a derivation of the explorer and a closed
 # tableau, within [propext, Quot.sound].  `ExploreEngine`: the engine whose
 # yes side is a script.  `ExploreTactic`: the tactic `subtab` and what the
-# editor needs (code, not trusted).  `ExploreTest`: its tests.
+# editor needs (code, not trusted).  `ExploreTest`: its tests.  `ExploreTerm`
+# (2026-11-20, a spike): the proof term of a derivation and its normal form;
+# it imports the normalisation of proof terms (`LaxLogic/PLL/Normalisation/`).
 # NOT in defaultTargets: build with `lake build SubTabExplore`.
 [[lean_lib]]
 name = "SubTabExplore"
 globs = ["LaxLogic.PLL.SubTab.Explore", "LaxLogic.PLL.SubTab.ExploreEngine",
-         "LaxLogic.PLL.SubTab.ExploreTactic", "LaxLogic.PLL.SubTab.ExploreTest"]
+         "LaxLogic.PLL.SubTab.ExploreTactic", "LaxLogic.PLL.SubTab.ExploreTest",
+         "LaxLogic.PLL.SubTab.ExploreTerm"]
 
 # BeliefF0: the F0 free-algebra facts the Belief paper cites (faithful IPC
 # embedding, faithful PLL self-embedding), promoted 2026-11-01 as pinned
