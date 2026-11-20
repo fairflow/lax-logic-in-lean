@@ -31,6 +31,11 @@ way.  This folder holds the record of its campaign, in the sense of
 * `../ExploreEngine.lean`: the engine whose yes side is a script.
 * `../ExploreTactic.lean`: the tactic `subtab`.  Code for the editor.
 * `../ExploreTest.lean`: tests, with every message pinned.
+* `../ExploreTerm.lean` (2026-11-20, a spike): from a derivation to its
+  proof term (`tm`) and to that term's normal form (`nf`), through the
+  normalisation of `LaxLogic/PLL/Normalisation/`.  The four laws of `◯`
+  have the terms of the monad as normal forms; two derivations of one
+  sequent can have proof terms that are not convertible.
 * `Play/SubTab.lean` (at the repository's root): exercises to type.
 
 Build: `lake build SubTabExplore`.
