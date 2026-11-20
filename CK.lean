@@ -1,6 +1,5 @@
 /-
 # CK — the calculus G4CK of van der Giessen and Shillito (arXiv:2602.16880), in Lean
-
 Plan: `docs/ck-ui-adoption-plan.md`.
 -/
 import CK.Syntax
@@ -17,7 +16,9 @@ import CK.Order
 import CK.Cut
 import CK.Complete
 import CK.Interp
-import CK.InterpTest
 import CK.InterpRows
 import CK.InterpVars
 import CK.InterpEntail
+import CK.InterpUniform
+import CK.UniformInterpolation
+import CK.InterpTest

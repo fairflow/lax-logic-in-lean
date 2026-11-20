@@ -5674,3 +5674,35 @@ not consistent.  In progress:
   `publication/core`; this is Matthew's decision.
 * The repository ruleset "No delete" covers all branches and blocks
   branch deletion.
+
+## §2026-11-20 — CK: uniform interpolation for CK, ported from Rocq (branch `ck-ui-adoption`)
+
+**Source.** I. van der Giessen and I. Shillito, "Uniform interpolation with
+constructive diamond", arXiv:2602.16880v2; Rocq at github.com/ianshil/CK,
+branch `uniform_interpolation`, commit `cd09fce` (no licence file: the Lean
+text is a re-proof with attribution, nothing is copied). Plan, results table
+and divergence log D1–D10: `docs/ck-ui-adoption-plan.md`.
+
+**PROVED** (library `CK/`, 4,554 lines, no `sorry`, every `#print axioms`
+within [propext, Quot.sound]; `lake build CK`):
+
+    CK.G4CK.cut                     additive cut for G4CK
+    CK.G4CK_iff_CKH                 G4CK Γ φ ↔ CKH (ctx Γ) φ          (Theorem 2)
+    CK.EA                           Ep, Ap of Figure 3; its termination is Theorem 3
+    CK.Ep_vars, Ap_vars             Theorem 4 (i)
+    CK.Ep_entail, Ap_entail         Theorem 4 (ii)
+    CK.pq_correct                   Theorem 4 (iii)
+    CK.G4CK_uniform_interpolation   the Rocq statement
+    CK.CK_UIP                       CK has UIP, in the form of Definition 3
+
+`CK/InterpTest.lean`: 22 values of `Ef`, `Af` equal to the values of the
+OCaml extraction of the Rocq definition, and one use of the theorem.
+
+**OPEN.** Strong termination and decidability of G4CK (the two unlabelled
+propositions of §3): not needed for uniform interpolation here, since
+provability is `Prop`-valued; a statement must be chosen first. The paper's
+WK (G4WK) is not started.
+
+**Not done, by instruction.** No extension to other logics before this
+reproduction was complete. A note to the authors was drafted for Matthew to
+send. Nothing here concerns PLL.

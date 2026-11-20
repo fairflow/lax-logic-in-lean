@@ -145,15 +145,15 @@ out of scope here.
 | Proposition (no label) | contraction admissible | `contraction` | `CK.G4CK.contract` (with `CK.G4CKh.inv`, `CK.G4CK.impImpL_dup`) | PROVED [propext, Quot.sound] |
 | Theorem (no label) | additive cut admissible | `additive_cut` | `CK.G4CK.cut` | PROVED [propext, Quot.sound] |
 | Theorem 2 · `thm:equiv` | `⊢G4CK Γ ⇒ φ` iff `Γ ⊢CK φ` | `G4CK_sound_CKH`, `G4CK_compl_CKH` | `CK.G4CK_iff_CKH` (`CK.G4CK.toCKH`, `CK.G4CK.ofCKH`) | PROVED [propext, Quot.sound] |
-| Definition 3 · `def:UIP` | UIP of a logic | | | OPEN |
-| Definition 4 · `def SUIP` | UIP of a set of sequents | | | OPEN |
-| Lemma 2 (no label) | sequent UIP gives UIP of the logic | | | OPEN |
+| Definition 3 · `def:UIP` | UIP of a logic | | not a separate definition; `CK.CK_UIP` states the property for CK directly | stated in the theorem |
+| Definition 4 · `def SUIP` | UIP of a set of sequents | | not transcribed; `CK.pq_correct` is the sequent form used | not transcribed |
+| Lemma 2 (no label) | sequent UIP gives UIP of the logic | | the proofs of `CK.G4CK_uniform_interpolation` and `CK.CK_UIP` (instance for CK only) | PROVED for CK [propext, Quot.sound] |
 | Definition 5 · `def_Ap_Ep` | `Ep(Γ)`, `Ap(Γ ⇒ φ)`, Figure 3 | `e_rule`, `a_rule_env`, `a_rule_form`, `EA` | `CK.EA`, `Ep`, `Ap`, `Ef`, `Af` (`CK/Interp.lean`) | DEFINED; 22 values equal to Rocq's (`CK/InterpTest.lean`) |
 | Theorem 3 · `thm:terminating` | the definition terminates | (the `Program`/`Equations` obligations) | the `termination_by`/`decreasing_by` of `CK.EA`, measure `pw` | PROVED [propext, Quot.sound] |
-| Lemma 3 · `Lemma_simple1` | a member of the `Ep` set on the left, of the `Ap` set on the right | `E_left`, `A_right` | | OPEN |
-| Lemma 4 · `Lemma_simple2` | `Π, □Ep(□⁻¹Γ) ⇒ φ` gives `Π, Ep(Γ) ⇒ φ` | `E9_left` | | OPEN |
-| Theorem 4 · `thm:UIP_CK` | G4CK has UIP: p-freeness, implication, uniformity | `EA_vars`, `entail_correct`, `pq_correct` | | OPEN |
-| Corollary (no label) | CK has UIP | `CK_uniform_interpolation` | | OPEN |
+| Lemma 3 · `Lemma_simple1` | a member of the `Ep` set on the left, of the `Ap` set on the right | `E_left`, `A_right` | `CK.E_left`, `E12_left`, `A_right`, `Af_right`, `A16_right`, `A17_right` (`CK/InterpUniform.lean`) | PROVED [propext, Quot.sound] |
+| Lemma 4 · `Lemma_simple2` | `Π, □Ep(□⁻¹Γ) ⇒ φ` gives `Π, Ep(Γ) ⇒ φ` | `E9_left` | `CK.E9_left`, `E9_dup`, `e9_unbox`, `Ep_boxR` | PROVED [propext, Quot.sound] |
+| Theorem 4 · `thm:UIP_CK` | G4CK has UIP: p-freeness, implication, uniformity | `EA_vars`, `entail_correct`, `pq_correct` | `CK.Ep_vars`, `Ap_vars` (`CK/InterpVars.lean`); `CK.Ep_entail`, `Ap_entail` (`CK/InterpEntail.lean`); `CK.pq_correct` (`CK/InterpUniform.lean`) | PROVED [propext, Quot.sound] |
+| Corollary (no label) | CK has UIP | `CK_uniform_interpolation` | `CK.G4CK_uniform_interpolation` (the Rocq statement), `CK.CK_uniform_interpolation` (the same for `CKH`), `CK.CK_UIP` (Definition 3 form) (`CK/UniformInterpolation.lean`) | PROVED [propext, Quot.sound] |
 
 The final theorem, as Rocq states it and as it will be stated here: for
 `p ∉ V` and every `φ` with variables in `p :: V`,
@@ -183,8 +183,13 @@ its axioms (decision 3).
 | D4 | Figure 2, `(p→L)` and `(◇→L)` | `Γ,p,p→φ` and `Γ,◇γ,◇φ→ψ` in the conclusion | only the implication is exposed by `Perm`; `p ∈ Δ`, `◇γ ∈ Δ` are side conditions | the rule leaves that formula in place; this is the encoding of `G4h.impLProp` in `LaxLogic/PLL/G4/G4H.lean`, whose inversion and contraction proofs are the templates |
 | D5 | Definition 2 | `≺` is the Dershowitz–Manna extension of the order by weight | `sw Γ φ = Σ 5^w + 5^w(φ)` compared by `<` on ℕ | this is what Rocq mechanises (`env_weight`); choice-free; decreases on every premise |
 | D3 | Figure 1 | axioms as schemes | `Axiom` is an inductive family indexed by the instance | Rocq states each axiom with an equation `F = …`; the index form is the same set |
+| D6 | Figure 3 | (Rocq) the rows `e_rule`, `a_rule_env`, … take the recursive calls as functions defined only below the current pointed environment, with membership proofs | `CK.eRow`, `aEnv`, … take plain functions `E A : List Form → Form → Form`; `CK.EA` is total and unfolds by `EA_true`, `EA_false` | the Rocq congruence lemmas `…_cong_strong` are not needed; `EA_cong` is kept (`CK.EA_true_eq`) |
+| D7 | Theorem 4 (ii), (iii) | (Rocq) case distinctions `is_box (E p Δ)`, `is_box (A …)` wherever an interpolant sits under `□⁻¹` | one lemma, `CK.G4CK.unboxWk`: weakening under `□⁻¹` | same derivations, fewer cases |
+| D8 | Theorem 4 (iii) | (Rocq) in the case `(p→L)` with both principal formulas in `Δ`, a distinction `p = p0` | no distinction: with `p0 ∈ Δ` the rows (E5′), (A5′) apply whatever `p0` is | the rows do not depend on it |
+| D9 | Theorem 4 (iii) | (Rocq) in the case `(◇→L)` with `◇φ→ψ ∈ Δ`, `◇γ ∈ Γ`, a contraction on `Ep(Δ)` before the row (E13) | the row (E13) is used directly | the copy of `Ep(Δ)` is not used |
+| D10 | Corollary | CK has UIP (Definition 3) | three statements: `CK.G4CK_uniform_interpolation` (Rocq's, over a variable list `V`), the same for `CKH`, and `CK.CK_UIP` in the form of Definition 3; Definition 4 and Lemma 2 are not transcribed as such | the Rocq development states only the first |
 
-Opened empty on 2026-11-19; D1–D3 recorded with the transcription the same
+Opened empty on 2026-11-19; D6–D10 recorded 2026-11-20 with §4. D1–D3 recorded with the transcription the same
 day. Divergences foreseen and waiting on the decisions below:
 `Prop`-valued provability (decision 2) makes the decidability detour in
 Theorem 2 unnecessary; the representation of multisets (decision 1).
