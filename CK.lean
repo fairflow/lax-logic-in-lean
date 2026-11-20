@@ -20,3 +20,4 @@ import CK.Interp
 import CK.InterpTest
 import CK.InterpRows
 import CK.InterpVars
+import CK.InterpEntail
