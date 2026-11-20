@@ -4,6 +4,7 @@ import CLPPaper.Src
 import CLPPaper.Cite
 import SemPaper.Math
 import SemPaper.Blocks
+import wip.esakiaNuclearWF
 
 open Verso.Genre
 open Verso.Genre.Manual
@@ -279,6 +280,49 @@ antisymmetric $`R_i`, `toSubframe` of Section 4 is the dual of its complex
 algebra (R2, R3a–R3c).  On $`\omega` the $`S`-points exist only in the Esakia
 dual (R5), which is why `toSubframe` is stated for finite models.
 
+# Between the two layers: well-founded posets
+
+The finite layer needs no topology and the general case needs the prime
+spectrum with its topology.  Between them: for a partial order $`P` whose
+strict order is well-founded, the order alone suffices.  The down-sets of
+$`P` form a frame, and for $`Z \subseteq P`
+$$`j_Z(D) = \{p \in P \mid \forall q \le p.\ q \in Z \Longrightarrow q \in D\}`
+is a nucleus on it, with no hypothesis on $`P`; this is the
+$`\bigcirc`-clause of a subframe model with $`S = Z`, the down-sets being
+the propositions.  PROVED, over Mathlib's `Nucleus` and `LowerSet`; the pins
+are `propext`, `Classical.choice`, `Quot.sound`, the choice entering through
+Mathlib's instances on those two types.
+
+$$`p \in j_Z(D) \iff \forall q \le p.\ q \in Z \Longrightarrow q \in D`
+
+{leanStmt EsakiaNuclear.WF.mem_jZ}
+
+Every nucleus is the nucleus of the points it keeps:
+$$`{<} \text{ well-founded on } P \;\Longrightarrow\; j = j_{Z_j}, \qquad Z_j = \{p \mid p \notin j({\downarrow}p \setminus \{p\})\}`
+
+{leanStmt EsakiaNuclear.WF.nucleus_eq_jZ}
+
+{leanDef EsakiaNuclear.WF.kept}
+
+So the nuclei are the subsets, with the order reversed, and the frame of
+nuclei is complemented, hence a Boolean algebra:
+$$`N(\mathrm{Dn}(P)) \cong \mathcal{P}(P)^{\mathrm{op}}`
+
+{leanStmt EsakiaNuclear.WF.nucleus_complemented}
+
+For a finite $`P` this is F4 with F6.  Well-foundedness cannot be dropped.
+On the descending chain $`\mathbb{N}^{\mathrm{op}}` the down-sets are
+$`\emptyset` and the tails, and the nucleus sending every nonempty down-set
+to the top is $`j_Z` for no $`Z`; it is the cell R5 read in Mathlib's types.
+$$`\mathit{dense}(D) = \top \text{ for } D \ne \emptyset, \quad \mathit{dense}(\emptyset) = \emptyset: \qquad \mathit{dense} \ne j_Z \text{ for every } Z \subseteq \mathbb{N}^{\mathrm{op}}`
+
+{leanStmt EsakiaNuclear.WF.mem_dense}
+
+{leanStmt EsakiaNuclear.WF.dense_ne_jZ}
+
+OPEN: the converse, that a partial order with an infinite descending chain
+always carries a nucleus on its down-sets that is $`j_Z` for no $`Z`.
+
 # Supporting declarations
 
 {lemmaTable EsakiaNuclear.Cells.m_naive_cell_nuclear EsakiaNuclear.Gen.isNuclear_Nj EsakiaNuclear.Gen.lower_basic_nuclear EsakiaNuclear.Gen.isClopen_lowerClosure EsakiaNuclear.Bridge.r1_dne EsakiaNuclear.Bridge.r3c_dne EsakiaNuclear.Bridge.r4_dne}
@@ -293,4 +337,6 @@ for the general case; {axiomsOf}`EsakiaNuclear.Bridge.r2` for R2;
 {axiomsOf}`EsakiaNuclear.Bridge.r1 EsakiaNuclear.Bridge.r3a EsakiaNuclear.Bridge.r3b EsakiaNuclear.Bridge.r3c EsakiaNuclear.Bridge.r4 EsakiaNuclear.Bridge.r5`
 for R1, R3a–R3c, R4 and R5;
 {axiomsOf}`EsakiaNuclear.Bridge.r1_dne EsakiaNuclear.Bridge.r3c_dne EsakiaNuclear.Bridge.r4_dne`
-for the three implications.
+for the three implications;
+{axiomsOf}`EsakiaNuclear.WF.nucleus_eq_jZ EsakiaNuclear.WF.nucleus_complemented EsakiaNuclear.WF.dense_ne_jZ`
+for the well-founded layer.
