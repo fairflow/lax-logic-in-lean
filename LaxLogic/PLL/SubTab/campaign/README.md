@@ -33,12 +33,17 @@ way.  This folder holds the record of its campaign, in the sense of
 * `../ExploreTest.lean`: tests, with every message pinned.  Since
   2026-11-20 also walks: `#walk d m₁ m₂ …` (proof-tools) shows a named
   attempt or derivation at the position the motions `up`, `down i`,
-  `left`, `right`, `top`, `goal k` reach, and changes nothing.
+  `left`, `right`, `top`, `goal k` reach, and changes nothing.  Since
+  2026-11-21 it offers, after its last view, the motions that can be made
+  from there: a click writes one after the last motion.
 * `../ExploreTerm.lean` (2026-11-20, a spike): from a derivation to its
   proof term (`tm`) and to that term's normal form (`nf`), through the
   normalisation of `LaxLogic/PLL/Normalisation/`.  The four laws of `◯`
   have the terms of the monad as normal forms; two derivations of one
   sequent can have proof terms that are not convertible.
 * `Play/SubTab.lean` (at the repository's root): exercises to type.
+* `Play/SubTabExploreTerm.lean`: a derivation built, walked by typing
+  motions and by clicking them, and its proof term and normal form; an
+  attempt stopped and looked at; what the search found, walked.
 
 Build: `lake build SubTabExplore`.

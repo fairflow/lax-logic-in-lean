@@ -13,7 +13,7 @@ and patterns; a script checked by the kernel with no tactic; every closed
 tableau the search finds, turned into a script that `derives` accepts; a
 proof by hand of 16 moves where the search's has 403; a corrupted script
 rejected; the goal shown as its sequent; two attempts and a derivation
-walked with `#walk`; the axioms.
+walked with `#walk`, and the motions it offers; the axioms.
 -/
 
 -- a query makes no move, which the linter would remark on at every one
@@ -410,7 +410,13 @@ theorem short_script_rejected :
 derivation at the position its motions reach, and changes nothing.  Walked
 to its open goal, an attempt shows every sequent on the way down: here,
 that `boxR p` was made where `◯q` was false too, and what the second `impR`
-of Peirce's law left behind. -/
+of Peirce's law left behind.
+
+After its last view `#walk` offers the motions that can be made from there,
+to click.  The offer is off here, so that a test pins the view alone; the
+last test of the section has it on. -/
+
+set_option walk.offer false
 
 set_option apply_move.tryThis false in
 /-- The attempt at `◯(p ∨ q) ↠ (◯p ∨ ◯q)` of the test above, named. -/
@@ -489,6 +495,29 @@ info:   ⇒ ((◯p ∧ ◯q) ↠ ◯(p ∧ q))   by impR (◯p ∧ ◯q) (◯(p 
 -/
 #guard_msgs in
 #walk strength down 0, down 0, down 0, down 0, down 0, down 0, right
+
+-- the motions that can be made from the position reached, offered to click:
+-- at the node with two premises
+set_option walk.offer true in
+/--
+info:   ⇒ ((◯p ∧ ◯q) ↠ ◯(p ∧ q))   by impR (◯p ∧ ◯q) (◯(p ∧ q))
+    (◯p ∧ ◯q) ⇒ ◯(p ∧ q)   by andL (◯p) (◯q)
+      (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯(p ∧ q)   by boxR (p ∧ q)
+        (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯[(p ∧ q)]   by boxL p
+          (◯p ∧ ◯q), ◯p, ◯q, p ⇒ ◯[(p ∧ q)]   by boxL q
+>           (◯p ∧ ◯q), ◯p, ◯q, p, q ⇒ ◯[(p ∧ q)]   by andR p q
+              0: (◯p ∧ ◯q), ◯p, ◯q, p, q ⇒ ◯[(p ∧ q), p]   by ax p   [closed]
+              1: (◯p ∧ ◯q), ◯p, ◯q, p, q ⇒ ◯[(p ∧ q), q]   by ax q   [closed]
+  at 0.0.0.0.0: 2 premises; no open goals
+---
+info: Motions from here:
+  [apply] down 0
+  [apply] down 1
+  [apply] up
+  [apply] top
+-/
+#guard_msgs in
+#walk strength down 0 down 0 down 0 down 0 down 0
 
 end ExploreTest
 end SubTab
