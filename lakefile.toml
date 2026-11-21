@@ -45,12 +45,13 @@ rev = "v4.31.0"
 # requirement replaces: the two packages hold modules of the same names, so a
 # project requires one of them), and `ProofTools`, of which the subframe
 # tableau is an instance of the proof explorer (`SubTabExplore`, below).  Core
-# Lean only.  Pinned to a commit; to move it, change `rev`, then
+# Lean only.  Pinned to a commit of its `main` (since 2026-11-21 the merge
+# commit of its pull request 3); to move it, change `rev`, then
 # `lake update proof-tools`.
 [[require]]
 name = "proof-tools"
 git = "https://github.com/fairflow/proof-tools"
-rev = "ab974f36d8ddbc098a3eb43aa621985aa4745872"
+rev = "86838a6b25920003feed5cd674407f5e8871a942"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is
