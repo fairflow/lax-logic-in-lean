@@ -55,7 +55,11 @@ rev = "v4.31.0"
 # `mapOut_eq` and the round trip `ofCert_cert`, and where the library shows
 # a goal as its sequent (its `Explore.delabAtt`, in place of the delaborator
 # `SubTab/ExploreTactic.lean` had), draws the attempt so far (`subtab
-# where`) and walks a derivation in a tactic block (`Explore.Walk`); before that, since
+# where`) and walks a derivation in a tactic block (`Explore.Walk`), and
+# where the motions of its cursor are the moves of its generic zipper and an
+# attempt that is built can be changed at a position (`Cursor.replace`,
+# `Cursor.walk`: neither is used here, which holds nothing of the kind by
+# hand); before that, since
 # 2026-11-21, the head of its pull request 5 (a trial: the panel of `#walk`,
 # off unless `set_option walk.panel true`), `8310474`; before that the merge
 # commit of its pull request 4, `2cf7044`, the latest commit of its `main`
@@ -63,7 +67,7 @@ rev = "v4.31.0"
 [[require]]
 name = "proof-tools"
 git = "https://github.com/fairflow/proof-tools"
-rev = "b2f2cdb73855efefa74139eedbca87d746f2bfcd"
+rev = "3fa25c01debd98ad751233e194ea56b6f2e666d2"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is
