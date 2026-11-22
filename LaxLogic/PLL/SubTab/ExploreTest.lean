@@ -13,7 +13,8 @@ and patterns; a script checked by the kernel with no tactic; every closed
 tableau the search finds, turned into a script that `derives` accepts; a
 proof by hand of 16 moves where the search's has 403; a corrupted script
 rejected; the goal shown as its sequent; two attempts and a derivation
-walked with `#walk`, and the motions it offers; the axioms.
+walked with `#walk`, and the motions it offers; an attempt as a derived
+rule of natural deduction; the axioms.
 -/
 
 -- a query makes no move, which the linter would remark on at every one
@@ -450,6 +451,13 @@ info:   ⇒ (◯(p ∨ q) ↠ (◯p ∨ ◯q))   by impR (◯(p ∨ q)) (◯p �
 #guard_msgs in
 #walk distAtt goal 0
 
+/-- **An attempt is a derived rule of natural deduction** (the library's map
+out, at `soundND`): from a derivation of the reading of the open goal of
+`distAtt`, a derivation of the reading of its root. -/
+def distRule (d : [◯(p ∨ q), p ∨ q, q] ⊢ ◯(bigOr [p])) :
+    [] ⊢ bigOr [◯(p ∨ q) ↠ (◯p ∨ ◯q)] :=
+  Explore.Att.mapOut soundND distAtt ⟨d, ⟨⟩⟩
+
 /--
 info:   ⇒ (((p ↠ q) ↠ p) ↠ p)   by impR ((p ↠ q) ↠ p) p
     ((p ↠ q) ↠ p) ⇒ p   by impL (p ↠ q) p
@@ -530,6 +538,10 @@ end PLLND
 #axioms_within PLLND.SubTab.ExploreTest.strengthTerm [propext, Quot.sound]
 #axioms_within PLLND.SubTab.ExploreTest.not_unbox [propext, Quot.sound]
 #axioms_within PLLND.SubTab.ExploreTest.bad_script_rejected [propext, Quot.sound]
+#axioms_within PLLND.SubTab.soundND [propext, Quot.sound]
+#axioms_within PLLND.SubTab.term [propext, Quot.sound]
+#axioms_within PLLND.SubTab.term_eq [propext, Quot.sound]
+#axioms_within PLLND.SubTab.ExploreTest.distRule [propext, Quot.sound]
 #axioms_within PLLND.SubTab.yesScript [propext, Quot.sound]
 #axioms_within PLLND.SubTab.complete_script [propext, Quot.sound]
 

@@ -45,16 +45,19 @@ rev = "v4.31.0"
 # requirement replaces: the two packages hold modules of the same names, so a
 # project requires one of them), and `ProofTools`, of which the subframe
 # tableau is an instance of the proof explorer (`SubTabExplore`, below).  Core
-# Lean only.  Pinned to a commit: since 2026-11-21 the head of its pull
-# request 5 (a trial: the panel of `#walk`, off unless `set_option
-# walk.panel true`; moved 2026-11-22 to its second commit, where the
-# panel's buttons are the motions offered); before that the merge commit of
-# its pull request 4, `2cf7044`, the latest commit of its `main` pinned
-# here.  To move it, change `rev`, then `lake update proof-tools`.
+# Lean only.  Pinned to a commit: since 2026-11-22 a commit of its branch
+# `proof-tools-home` after pull request 5, where the moves' soundness is
+# for a family into any sort (`SoundT`) and a derivation is mapped out to
+# the calculus's own derivations as data (`Der.mapOut`), which
+# `SubTab/Explore.lean` uses for `derivation` and `term`; before that, since
+# 2026-11-21, the head of its pull request 5 (a trial: the panel of `#walk`,
+# off unless `set_option walk.panel true`), `8310474`; before that the merge
+# commit of its pull request 4, `2cf7044`, the latest commit of its `main`
+# pinned here.  To move it, change `rev`, then `lake update proof-tools`.
 [[require]]
 name = "proof-tools"
 git = "https://github.com/fairflow/proof-tools"
-rev = "8310474c84f79f8ddeb6b4842dd37c108c6bb8c1"
+rev = "178683ba2f7849395c39a5a1663112941093e616"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is

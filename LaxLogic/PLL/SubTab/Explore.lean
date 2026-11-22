@@ -23,16 +23,29 @@ sequents `check` goes on to (`Move.rule`).
     STab.Sound (fun s => ∃ c, check s c = true)                        (sound)
     check s (cert d) = true                    for d : Der STab s      (check_cert)
     cert (ofCert c s h) = c                                            (cert_ofCert)
+    Der.mapOut soundND d = derive_gl (cert d) s.isS s.ant s.suc (check_cert d)
+                                                                        (mapOut_eq)
     Der STab ⟨false, [], [φ]⟩ → Holds φ                                (holds_of_der)
     (∃ ls, derives STab ⟨false, [], [φ]⟩ ls = true) ∨ (∃ m, no.check φ m = true)
                                                                         (complete_script)
 
+and a definition, the moves' soundness for natural deduction as data (the
+library's `SoundT`; `ND s` is `s.ant ⊢ gl s.isS s.suc`, the reading of `s`):
+
+    soundND : STab.SoundT ND
+            = ∀ m s ps, STab.step m s = .ok ps → Each ND ps → ND s
+
 So a derivation in the explorer's sense and a closed tableau are the same
-thing, each computed from the other (`cert`, `ofCert`); a derivation gives
-its natural-deduction derivation through `deriveOf` (`derivation`, `term`);
-and a script is a certificate of provability, with the tableau's
-completeness carried over: every formula has a script that `derives`
-accepts or a finite subframe countermodel.
+thing, each computed from the other (`cert`, `ofCert`).  A derivation gives
+its natural-deduction derivation by the library's map out at `soundND`
+(`derivation`, `term`): each move is a rule of `Translate.lean`, applied,
+with no closed tableau in between; by `mapOut_eq` it is the derivation
+`deriveOf` computes from the closed tableau, which is how `derivation` and
+`term` were defined until 2026-11-22.  An attempt with open goals is, the
+same way, a derived rule of natural deduction (`Att.mapOut soundND`).  And
+a script is a certificate of provability, with the tableau's completeness
+carried over: every formula has a script that `derives` accepts or a finite
+subframe countermodel.
 
 What the library then gives the tableau with no further proof: scripts and
 `run`, the certifier whose certificate is a script, the combinators on
@@ -305,16 +318,145 @@ theorem cert_ofCert : ∀ (c : TCert) (s : SSeq) (h : check s c = true), cert (o
   | .boxR A c, s, h => by
     simp only [ofCert, cert, certs, Move.cert, cert_ofCert c]
 
-/-! ## To natural deduction, and to provability -/
+/-! ## To natural deduction, and to provability
+
+The moves are sound for natural deduction, as data (`soundND`): a move that
+applies is a rule of the translation of `Translate.lean`, applied to the
+derivations of its premises.  The library's map out then carries a
+derivation of the explorer to its natural-deduction derivation, with no
+closed tableau in between. -/
+
+/-- What a sequent's derivation proves in natural deduction: the reading of
+the sequent as the rules of `Translate.lean` state it (`⋁Δ`, or `◯⋁Δ` at an
+S-point). -/
+abbrev ND (s : SSeq) : Type := s.ant ⊢ gl s.isS s.suc
+
+/-- **A move is a rule of the translation**: where the move applies, from
+the natural-deduction derivations of its premises, by position, that of its
+sequent. -/
+def Move.nd : (m : Move) → (s : SSeq) → (m.rule s).ok = true →
+    Explore.Each ND (m.rule s).prems → ND s
+  | .bot, _, h, _ => r_bot (mem_of h)
+  | .ax _, _, h, _ => r_ax (mem_of (and_left h)) (mem_of (and_right h))
+  | .andL _ _, _, h, e => r_andL (mem_of h) e.1
+  | .orL _ _, _, h, e => r_orL (mem_of h) e.1 e.2.1
+  | .impL _ _, _, h, e => r_impL (mem_of h) e.1 e.2.1
+  | .boxL _, ⟨true, _, _⟩, h, e => r_boxL (mem_of h) e.1
+  | .boxL _, ⟨false, _, _⟩, h, _ => absurd h Bool.false_ne_true
+  | .andR _ _, _, h, e => r_andR (mem_of h) e.1 e.2.1
+  | .orR _ _, _, h, e => r_orR (mem_of h) e.1
+  | .impLoc _ _, _, h, e => r_impLoc (mem_of (and_left h)) e.1
+  | .boxLoc _, ⟨true, _, _⟩, h, e => r_boxLoc (mem_of h) e.1
+  | .boxLoc _, ⟨false, _, _⟩, h, _ => absurd h Bool.false_ne_true
+  | .impR _ _, _, h, e => r_impR (mem_of h) e.1
+  | .boxR _, _, h, e => r_boxR (mem_of h) e.1
+
+/-- **The moves are sound for natural deduction**, as data. -/
+def soundND : STab.SoundT ND := fun m s _ h e =>
+  m.nd s (step_ok h).1 ((step_ok h).2 ▸ e)
 
 /-- **The natural-deduction derivation of a derivation**, of the reading of
-its sequent (`⋁Δ`, or `◯⋁Δ` at an S-point), through `deriveOf`. -/
+its sequent (`⋁Δ`, or `◯⋁Δ` at an S-point): the library's map out at
+`soundND`. -/
 def derivation {s : SSeq} (d : Explore.Der STab s) : s.ant ⊢ s.goal :=
-  deriveOf (cert d) s (check_cert d)
+  goal_eq s ▸ Explore.Der.mapOut soundND d
 
 /-- **The proof term of a derivation of `⊢ φ`.** -/
 def term {φ : PLLFormula} (d : Explore.Der STab ⟨false, [], [φ]⟩) : [] ⊢ φ :=
-  termOf φ (cert d) (check_cert d)
+  of_bigOr_one (Explore.Der.mapOut soundND d)
+
+/-! ### The map out and the closed tableau
+
+`Translate.lean` translates a closed tableau, constructor by constructor
+(`derive_gl`); the map out translates a derivation, move by move
+(`Move.nd`).  Both apply the same rules, and (PROVED) they give the same
+natural-deduction derivation: -/
+
+/-- `mapOut_eq`, by induction on a bound on the number of moves, for every
+attempt with no open goal allowed. -/
+theorem mapOut_eq_aux : (n : Nat) → {o : Bool} → {s : SSeq} → (d : Explore.Att STab o s) →
+    d.size ≤ n → (ho : o = false) → (g : Explore.Each ND d.goals) →
+    Explore.Att.mapOut soundND d g = derive_gl (cert d) s.isS s.ant s.suc (check_cert_aux d ho)
+  | _, _, _, .goal, _, ho, _ => by cases ho
+  | 0, _, _, .node _ _ _ _, hn, _, _ => by simp [Explore.Att.size] at hn
+  | n + 1, o, ⟨b, Γ, Δ⟩, .node m ps h ds, hn, ho, g => by
+    obtain ⟨hok, rfl⟩ := step_ok h
+    -- one premise: the induction hypothesis at it
+    have one : ∀ {p : SSeq} (d : Explore.Att STab o p) (g : Explore.Each ND (d.goals ++ [])),
+        d.size + 0 + 1 ≤ n + 1 → Explore.Att.mapOut soundND d (Explore.Each.split d.goals g).1 =
+          derive_gl (cert d) p.isS p.ant p.suc (check_cert_aux d ho) := fun d g hd =>
+      mapOut_eq_aux n d (by omega) ho _
+    -- two premises: the induction hypothesis at each
+    have two₁ : ∀ {p q : SSeq} (d : Explore.Att STab o p) (e : Explore.Att STab o q)
+        (g : Explore.Each ND (d.goals ++ (e.goals ++ []))), d.size + (e.size + 0) + 1 ≤ n + 1 →
+        Explore.Att.mapOut soundND d (Explore.Each.split d.goals g).1 =
+          derive_gl (cert d) p.isS p.ant p.suc (check_cert_aux d ho) := fun d _ g hd =>
+      mapOut_eq_aux n d (by omega) ho _
+    have two₂ : ∀ {p q : SSeq} (d : Explore.Att STab o p) (e : Explore.Att STab o q)
+        (g : Explore.Each ND (d.goals ++ (e.goals ++ []))), d.size + (e.size + 0) + 1 ≤ n + 1 →
+        Explore.Att.mapOut soundND e
+            (Explore.Each.split e.goals (Explore.Each.split d.goals g).2).1 =
+          derive_gl (cert e) q.isS q.ant q.suc (check_cert_aux e ho) := fun _ e g hd =>
+      mapOut_eq_aux n e (by omega) ho _
+    cases m with
+    | bot => match ds, g with | .nil, _ => rfl
+    | ax A => match ds, g with | .nil, _ => rfl
+    | andL A B =>
+      match ds, hn, g with
+      | .cons d .nil, hn, g => exact congrArg (r_andL _) (one d g hn)
+    | orL A B =>
+      match ds, hn, g with
+      | .cons d (.cons e .nil), hn, g => exact congrArg₂ (r_orL _) (two₁ d e g hn) (two₂ d e g hn)
+    | impL A B =>
+      match ds, hn, g with
+      | .cons d (.cons e .nil), hn, g => exact congrArg₂ (r_impL (mem_of hok)) (two₁ d e g hn) (two₂ d e g hn)
+    | boxL A =>
+      cases b with
+      | false => exact absurd hok Bool.false_ne_true
+      | true =>
+        match ds, hn, g with
+        | .cons d .nil, hn, g => exact congrArg (r_boxL _) (one d g hn)
+    | andR A B =>
+      match ds, hn, g with
+      | .cons d (.cons e .nil), hn, g => exact congrArg₂ (r_andR _) (two₁ d e g hn) (two₂ d e g hn)
+    | orR A B =>
+      match ds, hn, g with
+      | .cons d .nil, hn, g => exact congrArg (r_orR _) (one d g hn)
+    | impLoc A B =>
+      match ds, hn, g with
+      | .cons d .nil, hn, g => exact congrArg (r_impLoc _) (one d g hn)
+    | boxLoc A =>
+      cases b with
+      | false => exact absurd hok Bool.false_ne_true
+      | true =>
+        match ds, hn, g with
+        | .cons d .nil, hn, g => exact congrArg (r_boxLoc _) (one d g hn)
+    | impR A B =>
+      match ds, hn, g with
+      | .cons d .nil, hn, g => exact congrArg (r_impR _) (one d g hn)
+    | boxR A =>
+      match ds, hn, g with
+      | .cons d .nil, hn, g => exact congrArg (r_boxR _) (one d g hn)
+
+/-- **The map out is the translation of the closed tableau**: the
+natural-deduction derivation the library computes from a derivation, move by
+move, is the one `derive_gl` computes from its closed tableau. -/
+theorem mapOut_eq {s : SSeq} (d : Explore.Der STab s) :
+    Explore.Der.mapOut soundND d = derive_gl (cert d) s.isS s.ant s.suc (check_cert d) :=
+  mapOut_eq_aux d.size d (Nat.le_refl _) rfl _
+
+/-- `derivation` is what it was before the map out: the translation of the
+closed tableau. -/
+theorem derivation_eq {s : SSeq} (d : Explore.Der STab s) :
+    derivation d = deriveOf (cert d) s (check_cert d) := by
+  obtain ⟨b, Γ, Δ⟩ := s
+  simp only [derivation, deriveOf, mapOut_eq]
+
+/-- `term` is what it was before the map out: the proof term of the closed
+tableau. -/
+theorem term_eq {φ : PLLFormula} (d : Explore.Der STab ⟨false, [], [φ]⟩) :
+    term d = termOf φ (cert d) (check_cert d) :=
+  congrArg of_bigOr_one (mapOut_eq d)
 
 /-- **A derivation of `⊢ φ` proves `φ`**, by the tableau's own rules. -/
 theorem holds_of_der {φ : PLLFormula} (d : Explore.Der STab ⟨false, [], [φ]⟩) : Holds φ :=
