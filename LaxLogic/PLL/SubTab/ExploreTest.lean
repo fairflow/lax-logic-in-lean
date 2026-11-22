@@ -14,7 +14,9 @@ tableau the search finds, turned into a script that `derives` accepts; a
 proof by hand of 16 moves where the search's has 403; a corrupted script
 rejected; the goal shown as its sequent; two attempts and a derivation
 walked with `#walk`, and the motions it offers; an attempt as a derived
-rule of natural deduction; the axioms.
+rule of natural deduction; the round trip between a derivation and its
+closed tableau, and the library's tree of moves of a derivation, checked by
+the kernel; the axioms.
 -/
 
 -- a query makes no move, which the linter would remark on at every one
@@ -96,6 +98,26 @@ set_option apply_move.tryThis true
 
 -- The closed tableau of a derivation checks, in the kernel.
 example : check (goal ((◯p ∧ ◯q) ↠ ◯(p ∧ q))) (cert strength) = true := by decide +kernel
+
+-- The round trip, PROVED for every derivation (`ofCert_cert`; open until 2026-11-22): a
+-- derivation is the derivation of its closed tableau.
+example : ofCert (cert strength) _ (check_cert strength) = strength := ofCert_cert strength
+
+-- The library's certificate, a tree of moves: every derivation has one, with nothing
+-- written for it in the instance, and the kernel checks it.
+example : Explore.Cert.check (goal ((◯p ∧ ◯q) ↠ ◯(p ∧ q))) strength.cert = true := by
+  decide +kernel
+
+-- It is the tree of moves of the closed tableau.
+example : toCert (cert strength) = strength.cert := toCert_cert strength
+example : strength.cert =
+    .mk (.impR (◯p ∧ ◯q) (◯(p ∧ q))) [.mk (.andL (◯p) (◯q)) [.mk (.boxR (p ∧ q)) [.mk (.boxL p)
+      [.mk (.boxL q) [.mk (.andR p q) [.mk (.ax p) [], .mk (.ax q) []]]]]]] := rfl
+
+-- Provability from the tree of moves alone: the library's certifier of trees, at the
+-- moves' soundness for natural deduction; the kernel checks the tree.
+example : [] ⊢ gl false [(◯p ∧ ◯q) ↠ ◯(p ∧ q)] :=
+  (Explore.Cert.certifier soundND).verdict (goal ((◯p ∧ ◯q) ↠ ◯(p ∧ q))) strength.cert
 
 -- The numbers of moves.
 #guard [unit.script.length, mult.script.length, functor.script.length, strength.script.length,
@@ -544,6 +566,11 @@ end PLLND
 #axioms_within PLLND.SubTab.ExploreTest.distRule [propext, Quot.sound]
 #axioms_within PLLND.SubTab.yesScript [propext, Quot.sound]
 #axioms_within PLLND.SubTab.complete_script [propext, Quot.sound]
+#axioms_within PLLND.SubTab.check_cert [propext, Quot.sound]
+#axioms_within PLLND.SubTab.cert_ofCert [propext, Quot.sound]
+#axioms_within PLLND.SubTab.ofCert_cert [propext, Quot.sound]
+#axioms_within PLLND.SubTab.toCert_cert [propext, Quot.sound]
+#axioms_within PLLND.SubTab.mapOut_eq [propext, Quot.sound]
 
 /-! ## Lean certify gates (R2, R3) -/
 
