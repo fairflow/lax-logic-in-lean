@@ -45,5 +45,7 @@ way.  This folder holds the record of its campaign, in the sense of
 * `Play/SubTabExploreTerm.lean`: a derivation built, walked by typing
   motions and by clicking them, and its proof term and normal form; an
   attempt stopped and looked at; what the search found, walked.
+* `Play/SubTabPanel.lean`: the panel of `#walk`, a trial (proof-tools'
+  pull request 5): the attempt drawn as a tree in the infoview.
 
 Build: `lake build SubTabExplore`.
