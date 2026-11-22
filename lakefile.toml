@@ -63,7 +63,7 @@ rev = "v4.31.0"
 [[require]]
 name = "proof-tools"
 git = "https://github.com/fairflow/proof-tools"
-rev = "4314c3e0f1b0f63b6ca14598a8486ac9eec6292f"
+rev = "b2f2cdb73855efefa74139eedbca87d746f2bfcd"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is
