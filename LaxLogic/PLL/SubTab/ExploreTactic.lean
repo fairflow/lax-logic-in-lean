@@ -14,7 +14,11 @@ system `STab` of `Explore.lean`:
 
 A goal is an attempt `Att STab true s` or a derivation `Der STab s`, shown
 as its sequent: `Γ ⇒ Δ` at a world outside S, `Γ ⇒ ◯[Δ]` at an S-point,
-after the reading of a signed sequent (`Translate.lean`).
+after the reading of a signed sequent (`Translate.lean`).  The library
+shows it so, through `showS` below (its `Explore.delabAtt`, for every
+instance since 2026-11-22; this file had a delaborator of its own before).
+
+    subtab where      draw the attempt so far, the first goal marked
 
 This file is code for the editor; none of it is trusted.  The node the
 tactic builds carries the equation `STab.step m s = .ok ps`, which the
@@ -111,25 +115,6 @@ instance : Explore.Explorable STab where
 open Lean Meta Elab
 
 declare_move_tactic subtab for STab
-
-/-- See `evalSSeq`. -/
-unsafe def evalSSeqU (e : Expr) : MetaM SSeq := evalExpr SSeq (mkConst ``SSeq) e
-/-- Evaluate a closed term of type `SSeq`. -/
-@[implemented_by evalSSeqU] opaque evalSSeq (e : Expr) : MetaM SSeq
-
-open PrettyPrinter Delaborator SubExpr in
-/-- A goal `Att STab o s` with a closed `s`, shown as the sequent. -/
-@[delab app.ProofTools.Explore.Att]
-def delabGoal : Delab := do
-  let e ← getExpr
-  let some (o, s) := (match e.getAppFnArgs with
-    | (``Explore.Att, #[sys, o, s]) => if sys.isConstOf ``STab then some (o, s) else none
-    | _ => none) | failure
-  if s.hasLooseBVars || s.hasFVar || s.hasMVar then failure
-  let seq ← try evalSSeq s catch _ => failure
-  let head := if o.isConstOf ``Bool.true then "Att STab" else "Der STab"
-  let text := head ++ "   " ++ showS seq
-  return ⟨Syntax.node .none strLitKind #[Syntax.atom .none text]⟩
 
 end SubTab
 end PLLND

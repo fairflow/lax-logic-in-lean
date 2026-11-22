@@ -52,7 +52,10 @@ rev = "v4.31.0"
 # `SubTab/Explore.lean` uses for `derivation` and `term`, the map out is
 # natural in the family (`Der.mapOut_map`) and a tree of moves is a
 # certificate (`Explore.Cert`), which it uses for `cert`, `check_cert`,
-# `mapOut_eq` and the round trip `ofCert_cert`; before that, since
+# `mapOut_eq` and the round trip `ofCert_cert`, and where the library shows
+# a goal as its sequent (its `Explore.delabAtt`, in place of the delaborator
+# `SubTab/ExploreTactic.lean` had), draws the attempt so far (`subtab
+# where`) and walks a derivation in a tactic block (`Explore.Walk`); before that, since
 # 2026-11-21, the head of its pull request 5 (a trial: the panel of `#walk`,
 # off unless `set_option walk.panel true`), `8310474`; before that the merge
 # commit of its pull request 4, `2cf7044`, the latest commit of its `main`
@@ -60,7 +63,7 @@ rev = "v4.31.0"
 [[require]]
 name = "proof-tools"
 git = "https://github.com/fairflow/proof-tools"
-rev = "24d9d85ce905a4e6a0620200bcde2f9d5ec813ac"
+rev = "4314c3e0f1b0f63b6ca14598a8486ac9eec6292f"
 
 # LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
 # it is the only target that pulls verso into the import graph, and it is

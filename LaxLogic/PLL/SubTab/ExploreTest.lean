@@ -13,7 +13,8 @@ and patterns; a script checked by the kernel with no tactic; every closed
 tableau the search finds, turned into a script that `derives` accepts; a
 proof by hand of 16 moves where the search's has 403; a corrupted script
 rejected; the goal shown as its sequent; two attempts and a derivation
-walked with `#walk`, and the motions it offers; an attempt as a derived
+walked with `#walk`, and the motions it offers; the attempt so far drawn
+while it is built (`subtab where`), and a walk as a tactic block; an attempt as a derived
 rule of natural deduction; the round trip between a derivation and its
 closed tableau, and the library's tree of moves of a derivation, checked by
 the kernel; the axioms.
@@ -548,6 +549,58 @@ info: Motions from here:
 -/
 #guard_msgs in
 #walk strength down 0 down 0 down 0 down 0 down 0
+
+/-! ## Where the proof is, while it is built; a walk as a tactic block
+
+`subtab where` draws the attempt so far, with the first goal marked
+(`where at k`: goal `k`).  It shows what the goals do not: below the goal
+`◯(p ∨ q) ⇒ ◯[p]`, the sequent where `boxR p` was made had `◯q` false too.
+
+A block whose goal is `Explore.Walk d` has motions as its lines, and its
+goal after each line is the view there. -/
+
+set_option apply_move.tryThis false in
+/--
+info:   ⇒ (◯(p ∨ q) ↠ (◯p ∨ ◯q))   by impR (◯(p ∨ q)) (◯p ∨ ◯q)
+    ◯(p ∨ q) ⇒ (◯p ∨ ◯q)   by orR (◯p) (◯q)
+      ◯(p ∨ q) ⇒ (◯p ∨ ◯q), ◯p, ◯q   by boxR p
+>       ? ◯(p ∨ q) ⇒ ◯[p]
+  at 0.0.0: open goal 0; 1 open in all
+---
+info:   ⇒ (◯(p ∨ q) ↠ (◯p ∨ ◯q))   by impR (◯(p ∨ q)) (◯p ∨ ◯q)
+    ◯(p ∨ q) ⇒ (◯p ∨ ◯q)   by orR (◯p) (◯q)
+      ◯(p ∨ q) ⇒ (◯p ∨ ◯q), ◯p, ◯q   by boxR p
+        ◯(p ∨ q) ⇒ ◯[p]   by boxL (p ∨ q)
+          ◯(p ∨ q), (p ∨ q) ⇒ ◯[p]   by orL p q
+            ? ◯(p ∨ q), (p ∨ q), p ⇒ ◯[p]
+>           ? ◯(p ∨ q), (p ∨ q), q ⇒ ◯[p]
+  at 0.0.0.0.1: open goal 1; 2 open in all
+-/
+#guard_msgs in
+example : Explore.Att STab true (goal (◯(p ∨ q) ↠ (◯p ∨ ◯q))) := by
+  subtab impR
+  subtab orR
+  subtab boxR p
+  subtab where
+  subtab boxL
+  subtab orL
+  subtab where at 1
+  all_goals leave_open
+
+/--
+trace: ⊢ Walk strength
+      ⇒ ((◯p ∧ ◯q) ↠ ◯(p ∧ q))   by impR (◯p ∧ ◯q) (◯(p ∧ q))
+        (◯p ∧ ◯q) ⇒ ◯(p ∧ q)   by andL (◯p) (◯q)
+    >     (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯(p ∧ q)   by boxR (p ∧ q)
+            0: (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯[(p ∧ q)]   by boxL p   [closed]
+      at 0.0: 1 premise; no open goals
+-/
+#guard_msgs in
+example : Explore.Walk strength := by
+  down 0
+  down 0
+  trace_state
+  top
 
 end ExploreTest
 end SubTab
