@@ -142,6 +142,20 @@ bound):
 | `Der STab ⟨false, [], [φ]⟩ → Holds φ` | `holds_of_der` |
 | `(∃ ls, yesScript.check φ ls = true) ∨ (∃ m, no.check φ m = true)` | `complete_script` |
 
+Added 2026-11-22, on the library's soundness into any sort (`SoundT`) and
+its map out (`Explore.lean`, the same bound).  `ND s` is
+`s.ant ⊢ gl s.isS s.suc`, the reading of the sequent `s`:
+
+| statement | name |
+|---|---|
+| `STab.SoundT ND`, that is `∀ m s ps, STab.step m s = .ok ps → Each ND ps → ND s` | `soundND`, a definition: each move is a rule of `Translate.lean`, applied |
+| `Der.mapOut soundND d = derive_gl (cert d) s.isS s.ant s.suc (check_cert d)`, for `d : Der STab s` | `mapOut_eq` |
+| `derivation d = deriveOf (cert d) s (check_cert d)` | `derivation_eq` |
+| `term d = termOf φ (cert d) (check_cert d)` | `term_eq` |
+
+`derivation` and `term` are now the map out at `soundND`, with no closed
+tableau in between; by the last two they are the functions they were.
+
 OPEN (not attempted): `ofCert (cert d) s (check_cert d) = d`, the other
 round trip; and that the compiled search `SubTab.solve` terminates.
 

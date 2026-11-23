@@ -13,7 +13,11 @@ and patterns; a script checked by the kernel with no tactic; every closed
 tableau the search finds, turned into a script that `derives` accepts; a
 proof by hand of 16 moves where the search's has 403; a corrupted script
 rejected; the goal shown as its sequent; two attempts and a derivation
-walked with `#walk`, and the motions it offers; the axioms.
+walked with `#walk`, and the motions it offers; the attempt so far drawn
+while it is built (`subtab where`), and a walk as a tactic block; an attempt as a derived
+rule of natural deduction; the round trip between a derivation and its
+closed tableau, and the library's tree of moves of a derivation, checked by
+the kernel; the axioms.
 -/
 
 -- a query makes no move, which the linter would remark on at every one
@@ -95,6 +99,26 @@ set_option apply_move.tryThis true
 
 -- The closed tableau of a derivation checks, in the kernel.
 example : check (goal ((◯p ∧ ◯q) ↠ ◯(p ∧ q))) (cert strength) = true := by decide +kernel
+
+-- The round trip, PROVED for every derivation (`ofCert_cert`; open until 2026-11-22): a
+-- derivation is the derivation of its closed tableau.
+example : ofCert (cert strength) _ (check_cert strength) = strength := ofCert_cert strength
+
+-- The library's certificate, a tree of moves: every derivation has one, with nothing
+-- written for it in the instance, and the kernel checks it.
+example : Explore.Cert.check (goal ((◯p ∧ ◯q) ↠ ◯(p ∧ q))) strength.cert = true := by
+  decide +kernel
+
+-- It is the tree of moves of the closed tableau.
+example : toCert (cert strength) = strength.cert := toCert_cert strength
+example : strength.cert =
+    .mk (.impR (◯p ∧ ◯q) (◯(p ∧ q))) [.mk (.andL (◯p) (◯q)) [.mk (.boxR (p ∧ q)) [.mk (.boxL p)
+      [.mk (.boxL q) [.mk (.andR p q) [.mk (.ax p) [], .mk (.ax q) []]]]]]] := rfl
+
+-- Provability from the tree of moves alone: the library's certifier of trees, at the
+-- moves' soundness for natural deduction; the kernel checks the tree.
+example : [] ⊢ gl false [(◯p ∧ ◯q) ↠ ◯(p ∧ q)] :=
+  (Explore.Cert.certifier soundND).verdict (goal ((◯p ∧ ◯q) ↠ ◯(p ∧ q))) strength.cert
 
 -- The numbers of moves.
 #guard [unit.script.length, mult.script.length, functor.script.length, strength.script.length,
@@ -450,6 +474,13 @@ info:   ⇒ (◯(p ∨ q) ↠ (◯p ∨ ◯q))   by impR (◯(p ∨ q)) (◯p �
 #guard_msgs in
 #walk distAtt goal 0
 
+/-- **An attempt is a derived rule of natural deduction** (the library's map
+out, at `soundND`): from a derivation of the reading of the open goal of
+`distAtt`, a derivation of the reading of its root. -/
+def distRule (d : [◯(p ∨ q), p ∨ q, q] ⊢ ◯(bigOr [p])) :
+    [] ⊢ bigOr [◯(p ∨ q) ↠ (◯p ∨ ◯q)] :=
+  Explore.Att.mapOut soundND distAtt ⟨d, ⟨⟩⟩
+
 /--
 info:   ⇒ (((p ↠ q) ↠ p) ↠ p)   by impR ((p ↠ q) ↠ p) p
     ((p ↠ q) ↠ p) ⇒ p   by impL (p ↠ q) p
@@ -519,6 +550,58 @@ info: Motions from here:
 #guard_msgs in
 #walk strength down 0 down 0 down 0 down 0 down 0
 
+/-! ## Where the proof is, while it is built; a walk as a tactic block
+
+`subtab where` draws the attempt so far, with the first goal marked
+(`where at k`: goal `k`).  It shows what the goals do not: below the goal
+`◯(p ∨ q) ⇒ ◯[p]`, the sequent where `boxR p` was made had `◯q` false too.
+
+A block whose goal is `Explore.Walk d` has motions as its lines, and its
+goal after each line is the view there. -/
+
+set_option apply_move.tryThis false in
+/--
+info:   ⇒ (◯(p ∨ q) ↠ (◯p ∨ ◯q))   by impR (◯(p ∨ q)) (◯p ∨ ◯q)
+    ◯(p ∨ q) ⇒ (◯p ∨ ◯q)   by orR (◯p) (◯q)
+      ◯(p ∨ q) ⇒ (◯p ∨ ◯q), ◯p, ◯q   by boxR p
+>       ? ◯(p ∨ q) ⇒ ◯[p]
+  at 0.0.0: open goal 0; 1 open in all
+---
+info:   ⇒ (◯(p ∨ q) ↠ (◯p ∨ ◯q))   by impR (◯(p ∨ q)) (◯p ∨ ◯q)
+    ◯(p ∨ q) ⇒ (◯p ∨ ◯q)   by orR (◯p) (◯q)
+      ◯(p ∨ q) ⇒ (◯p ∨ ◯q), ◯p, ◯q   by boxR p
+        ◯(p ∨ q) ⇒ ◯[p]   by boxL (p ∨ q)
+          ◯(p ∨ q), (p ∨ q) ⇒ ◯[p]   by orL p q
+            ? ◯(p ∨ q), (p ∨ q), p ⇒ ◯[p]
+>           ? ◯(p ∨ q), (p ∨ q), q ⇒ ◯[p]
+  at 0.0.0.0.1: open goal 1; 2 open in all
+-/
+#guard_msgs in
+example : Explore.Att STab true (goal (◯(p ∨ q) ↠ (◯p ∨ ◯q))) := by
+  subtab impR
+  subtab orR
+  subtab boxR p
+  subtab where
+  subtab boxL
+  subtab orL
+  subtab where at 1
+  all_goals leave_open
+
+/--
+trace: ⊢ Walk strength
+      ⇒ ((◯p ∧ ◯q) ↠ ◯(p ∧ q))   by impR (◯p ∧ ◯q) (◯(p ∧ q))
+        (◯p ∧ ◯q) ⇒ ◯(p ∧ q)   by andL (◯p) (◯q)
+    >     (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯(p ∧ q)   by boxR (p ∧ q)
+            0: (◯p ∧ ◯q), ◯p, ◯q ⇒ ◯[(p ∧ q)]   by boxL p   [closed]
+      at 0.0: 1 premise; no open goals
+-/
+#guard_msgs in
+example : Explore.Walk strength := by
+  down 0
+  down 0
+  trace_state
+  top
+
 end ExploreTest
 end SubTab
 end PLLND
@@ -530,8 +613,17 @@ end PLLND
 #axioms_within PLLND.SubTab.ExploreTest.strengthTerm [propext, Quot.sound]
 #axioms_within PLLND.SubTab.ExploreTest.not_unbox [propext, Quot.sound]
 #axioms_within PLLND.SubTab.ExploreTest.bad_script_rejected [propext, Quot.sound]
+#axioms_within PLLND.SubTab.soundND [propext, Quot.sound]
+#axioms_within PLLND.SubTab.term [propext, Quot.sound]
+#axioms_within PLLND.SubTab.term_eq [propext, Quot.sound]
+#axioms_within PLLND.SubTab.ExploreTest.distRule [propext, Quot.sound]
 #axioms_within PLLND.SubTab.yesScript [propext, Quot.sound]
 #axioms_within PLLND.SubTab.complete_script [propext, Quot.sound]
+#axioms_within PLLND.SubTab.check_cert [propext, Quot.sound]
+#axioms_within PLLND.SubTab.cert_ofCert [propext, Quot.sound]
+#axioms_within PLLND.SubTab.ofCert_cert [propext, Quot.sound]
+#axioms_within PLLND.SubTab.toCert_cert [propext, Quot.sound]
+#axioms_within PLLND.SubTab.mapOut_eq [propext, Quot.sound]
 
 /-! ## Lean certify gates (R2, R3) -/
 
